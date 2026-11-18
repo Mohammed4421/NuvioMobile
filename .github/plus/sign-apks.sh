@@ -10,6 +10,7 @@
 # Usage: sign-apks.sh <built-dir> <signed-dir> <public-keystore>
 # Prints the SHA-256 digest of the signing certificate.
 set -euo pipefail
+trap 'echo "::error::sign-apks.sh line ${LINENO}: ${BASH_COMMAND}" >&2' ERR
 in="$1"; out="$2"; public_keystore="$3"
 tools="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)"
 mkdir -p "${out}"
