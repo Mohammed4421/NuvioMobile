@@ -40,8 +40,15 @@ for apk in "${apks[@]}"; do
     --ks-pass env:SIGNING_PASSWORD --key-pass env:SIGNING_PASSWORD \
     --v1-signing-enabled false --v2-signing-enabled true --v3-signing-enabled false --v4-signing-enabled false \
     --out "${out}/${name}" "${aligned}"
-  "${tools}/apksigner" verify "${out}/${name}" >&2
-  signers="$("${tools}/apksigner" verify --print-certs "${out}/${name}" | grep -c '^Signer #[0-9]* certificate SHA-256')"
-  [[ "${signers}" == 1 ]] || { echo "::error::${name} has ${signers} signers after signing" >&2; exit 1; }
+  certs="$("${tools}/apksigner" verify --verbose --print-certs "${out}/${name}")"
+  digests="$(sed -n 's/^Signer #[0-9]* certificate SHA-256 digest: //p' <<< "${certs}" | sort -u)"
+  if [[ "$(grep -c . <<< "${digests}" || true)" != 1 ]]; then
+    echo "::error::${name}: expected exactly one signing certificate after signing" >&2
+    sed 's/^/::error::  /' <<< "${certs}" >&2
+    exit 1
+  fi
+  [[ -z "${certificate:-}" || "${certificate}" == "${digests}" ]] \
+    || { echo "::error::${name} is signed with another certificate than the other APKs" >&2; exit 1; }
+  certificate="${digests}"
 done
-"${tools}/apksigner" verify --print-certs "${out}/${name}" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n 1
+echo "${certificate}"

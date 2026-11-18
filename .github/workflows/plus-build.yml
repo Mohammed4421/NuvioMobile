@@ -248,7 +248,7 @@ jobs:
         run: |
           trap 'echo "::error::Failed (line ${LINENO}): ${BASH_COMMAND}"' ERR
           certificate="$(bash .github/plus/sign-apks.sh built signed signing/nuvio-plus.p12 2> sign.log)" || {
-            tail -n 15 sign.log | sed 's/^/::error::/'; exit 1; }
+            tail -n 40 sign.log | sed 's/^/::error::/'; exit 1; }
           cat sign.log
           [[ "${certificate}" =~ ^[0-9a-f]{64}$ ]] || { echo "::error::No signing certificate"; exit 1; }
           cp built/checks-build.md signed/
