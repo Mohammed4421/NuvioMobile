@@ -85,7 +85,10 @@ jobs:
             -Pnuvio.applicationIdSuffix=.plus \
             -Pnuvio.customVersionCode=$((1000 + build)) \
             -Pnuvio.customVersionName="${version}-plus.${build}$([[ "${{ inputs.channel }}" == beta ]] && echo -beta)" \
-            --stacktrace 2>&1 | tee build.log
+            --stacktrace 2>&1 | tee build.log || {
+              grep -E "^e: " build.log | head -n 20 | sed 's/^/::error::/'
+              exit 1
+            }
           echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${build} (${{ inputs.channel }})." > checks.md
 
       - name: Name the APKs
@@ -157,7 +160,10 @@ jobs:
             -Pnuvio.ios.distribution=appstore \
             --continue > tests.log 2>&1 || true
           tail -n 30 tests.log
-          grep -q "BUILD SUCCESSFUL\|There were failing tests" tests.log || { echo "::error::Unit tests did not finish (timeout or build error)"; exit 1; }
+          grep -q "BUILD SUCCESSFUL\|There were failing tests" tests.log || {
+            grep -E "^e: |What went wrong" -A2 tests.log | head -n 20 | sed 's/^/::error::/'
+            echo "::error::Unit tests did not finish (timeout or build error)"; exit 1
+          }
           python3 .github/plus/test-results.py composeApp/build/test-results plus-tests.json
 
       - name: Keep the results
