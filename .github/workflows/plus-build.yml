@@ -1,7 +1,8 @@
 name: Nuvio Plus build and checks
 
 # Builds a commit, runs every check and, when asked, publishes the APKs. Nothing is published
-# unless the build, all unit tests, the update check and the emulator test pass.
+# unless the build, the unit tests, the update check and the emulator test pass. A unit test may
+# fail only if it also fails in the Nuvio release the commit is based on (not caused by Nuvio Plus).
 on:
   workflow_call:
     inputs:
@@ -52,7 +53,10 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 17
+          # 17 builds the app (as Nuvio does); 21 runs Robolectric tests for Android 15 and 16.
+          java-version: |
+            21
+            17
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -81,22 +85,14 @@ jobs:
 
       - name: Unit tests (all of them)
         run: |
-          set -o pipefail
-          ./gradlew :composeApp:testAndroidHostTest \
+          # Nuvio's own updater tests expect the official update source.
+          sed -i '/^PLUS_/d' local.properties
+          JAVA_HOME="${JAVA_HOME_21_X64}" ./gradlew :composeApp:testAndroidHostTest \
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
-            --continue --stacktrace 2>&1 | tee tests.log
-          python3 - <<'PY' >> checks.md
-          import glob, xml.etree.ElementTree as ET
-          tests = failures = skipped = 0
-          for path in glob.glob("composeApp/build/test-results/**/*.xml", recursive=True):
-              suite = ET.parse(path).getroot()
-              tests += int(suite.get("tests", 0)); skipped += int(suite.get("skipped", 0))
-              failures += int(suite.get("failures", 0)) + int(suite.get("errors", 0))
-          print(f"- Unit tests: {tests - skipped - failures} passed, {failures} failed, {skipped} skipped.")
-          if tests == 0 or failures:
-              raise SystemExit("unit tests did not pass")
-          PY
+            --continue > tests.log 2>&1 || true
+          tail -n 30 tests.log
+          python3 .github/plus/test-results.py composeApp/build/test-results plus-tests.json
 
       - name: Name the APKs
         run: |
@@ -122,6 +118,14 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Keep the test results
+        uses: actions/upload-artifact@v7
+        with:
+          name: plus-tests
+          path: plus-tests.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Keep the logs
         if: always()
         uses: actions/upload-artifact@v7
@@ -134,9 +138,90 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  nuvio-tests:
+    name: Unit tests of the Nuvio release it is based on
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.base.outputs.tag }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Find the Nuvio release
+        id: base
+        run: |
+          git remote add upstream https://github.com/NuvioMedia/NuvioMobile.git
+          git fetch --quiet --tags upstream
+          cp .github/plus/select-upstream-tag.py "${RUNNER_TEMP}/"
+          tag="$(git tag --merged HEAD | python3 "${RUNNER_TEMP}/select-upstream-tag.py" beta)"
+          [[ -n "${tag}" ]] || { echo "::error::No Nuvio release found in this commit"; exit 1; }
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          cp .github/plus/test-results.py "${RUNNER_TEMP}/"
+          git checkout --quiet "${tag}"
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: |
+            21
+            17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Unit tests
+        run: |
+          touch local.properties
+          JAVA_HOME="${JAVA_HOME_21_X64}" ./gradlew :composeApp:testAndroidHostTest \
+            -Pnuvio.android.distribution=full \
+            -Pnuvio.ios.distribution=appstore \
+            --continue > tests.log 2>&1 || true
+          tail -n 30 tests.log
+          python3 "${RUNNER_TEMP}/test-results.py" composeApp/build/test-results nuvio-tests.json
+
+      - name: Keep the results
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuvio-tests
+          path: nuvio-tests.json
+          if-no-files-found: error
+          retention-days: 14
+
+  test-gate:
+    name: No test fails because of Nuvio Plus
+    needs: [build, nuvio-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Get the results
+        uses: actions/download-artifact@v8
+        with:
+          pattern: '*-tests'
+          merge-multiple: true
+          path: results
+
+      - name: Compare
+        run: python3 .github/plus/test-gate.py results/plus-tests.json results/nuvio-tests.json "${{ needs.nuvio-tests.outputs.tag }}"
+
+      - name: Keep the summary
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuvio-plus-gate
+          path: checks-tests.md
+          if-no-files-found: error
+          retention-days: 14
+
   emulator:
     name: Install, update and launch on an emulator
-    needs: build
+    needs: [build, test-gate]
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
@@ -191,7 +276,7 @@ jobs:
 
   publish:
     name: Publish
-    needs: [build, emulator]
+    needs: [build, test-gate, emulator]
     if: inputs.publish
     runs-on: ubuntu-latest
     env:
@@ -205,7 +290,7 @@ jobs:
       - name: Get the tested APKs
         uses: actions/download-artifact@v8
         with:
-          pattern: nuvio-plus-{apk,emulator}
+          pattern: nuvio-plus-{apk,emulator,gate}
           merge-multiple: true
           path: dist
 
@@ -214,7 +299,7 @@ jobs:
 
   report-failure:
     name: Report a failed build
-    needs: [build, emulator]
+    needs: [build, nuvio-tests, test-gate, emulator]
     if: failure() && inputs.publish
     runs-on: ubuntu-latest
     env:
@@ -235,7 +320,9 @@ jobs:
           {
             echo "Build ${build} at \`${sha::7}\` did not pass its checks, so nothing was published. The previous build stays current."
             echo
-            echo "Build: ${{ needs.build.result }} · Emulator: ${{ needs.emulator.result }} · Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "Build: ${{ needs.build.result }} · Nuvio tests: ${{ needs.nuvio-tests.result }} · Test gate: ${{ needs.test-gate.result }} · Emulator: ${{ needs.emulator.result }}"
+            echo
+            echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo
             echo '```'
             cat logs/build.log logs/tests.log 2>/dev/null \

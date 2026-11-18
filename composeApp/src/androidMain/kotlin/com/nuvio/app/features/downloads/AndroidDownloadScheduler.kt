@@ -378,7 +378,8 @@ internal class AndroidDownloadScheduler(val context: Context) {
                 File("/storage/$volume")
             }
         }
-        StatFs(path.path).availableBytes
+        // A volume that reports no size at all (some providers, test environments) is unknown.
+        StatFs(path.path).takeIf { it.totalBytes > 0L }?.availableBytes
     }.getOrNull()
 
     private fun formatGigabytes(bytes: Long): String {

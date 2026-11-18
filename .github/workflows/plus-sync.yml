@@ -130,7 +130,7 @@ jobs:
       - name: Get the tested APKs
         uses: actions/download-artifact@v8
         with:
-          pattern: nuvio-plus-{apk,emulator}
+          pattern: nuvio-plus-{apk,emulator,gate}
           merge-multiple: true
           path: dist
 

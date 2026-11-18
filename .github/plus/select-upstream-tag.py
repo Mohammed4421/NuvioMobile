@@ -3,6 +3,7 @@
 
 stable: plain versions only (1.2.0). beta: also -beta/-rc versions (1.2.0-beta.1).
 Usage: git ls-remote --tags upstream | select-upstream-tag.py <stable|beta>
+       git tag --merged HEAD | select-upstream-tag.py beta
 """
 import re
 import sys
@@ -11,10 +12,13 @@ channel = sys.argv[1]
 pattern = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:-(beta|rc)\.?(\d*))?$")
 candidates = []
 for line in sys.stdin:
-    ref = line.split()[-1]
-    if not ref.startswith("refs/tags/") or ref.endswith("^{}"):
+    if not line.strip():
         continue
-    tag = ref[len("refs/tags/"):]
+    ref = line.split()[-1]
+    if ref.endswith("^{}"):
+        continue
+    # Accepts `git ls-remote --tags` lines and plain tag names (`git tag --merged`).
+    tag = ref[len("refs/tags/"):] if ref.startswith("refs/tags/") else ref
     match = pattern.match(tag)
     if not match:
         continue

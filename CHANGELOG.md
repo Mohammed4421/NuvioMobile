@@ -14,7 +14,8 @@ Newest first.
 - **No APK is published unless every check passes:** the build, all unit tests of the app, an update
   check against the published build (package, signing certificate, version code) and an emulator test
   that installs the previous build, updates it in place, checks that app data stays and opens the app.
-  Failed checks publish only a `build-failed-…` pre-release with the errors.
+  Failed checks publish only a `build-failed-…` pre-release with the errors. The unit tests of the
+  Nuvio release a build is based on run alongside; a test may fail only if it fails there too.
 - The scheduled pipeline also lives on the repository's default branch, where GitHub runs schedules.
 - Build numbers continue from the last published build in every workflow.
 
@@ -25,6 +26,8 @@ Newest first.
 - **Library downloads:** a finished movie plays even while another copy downloads; a movie and a show
   with the same id no longer share a poster; a failed episode stays visible next to a running one;
   posters read their title and state to screen readers; grouping is a single pass.
+- The free space check no longer stops a download when the storage reports no size at all (it
+  failed the download tests, which run without real storage).
 - The last 16 texts still in English are translated (ratings and a subtitle sync message).
 
 ### Added
