@@ -1,0 +1,4 @@
+# Nuvio Plus keeps its own README and changelog when Nuvio updates are merged in
+# (the sync workflow sets the "ours" merge driver).
+README.md merge=ours
+CHANGELOG.md merge=ours

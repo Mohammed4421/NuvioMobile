@@ -89,6 +89,17 @@
 > البناءات 1–6 كانت تُوقَّع بمفتاح مختلف كل مرة؛ احذفها مرة واحدة قبل تثبيت البناء 8 أو أحدث، وبعدها كل بناء يُثبَّت كتحديث. حساب Nuvio يعمل، أما Trakt
 > فيحتاج مفاتيح Trakt خاصة بك.
 
+## Staying up to date / التحديثات
+
+- **Nuvio updates:** every day the *Sync with Nuvio* workflow merges new Nuvio stable releases with the
+  Nuvio Plus changes and builds an update. When Nuvio changed the same code as Nuvio Plus, or changed
+  workflow files, nothing is published; a `sync-needed` pre-release lists the files to merge by hand.
+- **In the app:** the update check follows this fork's releases, so a new build shows up in the app and
+  installs over the current one.
+
+تحديثات Nuvio الرسمية تُدمج تلقائيًا كل يوم وتُبنى نسخة جديدة، وتظهر لك داخل التطبيق. إذا عدّل فريق Nuvio
+نفس الأجزاء التي عدّلتها Nuvio Plus لا يُنشر شيء، ويظهر إصدار تجريبي باسم `sync-needed` يحتاج دمجًا يدويًا.
+
 ## Known limits / حدود معروفة
 
 - Subtitle brightness does not reach ASS subtitles drawn by libass (that renderer lives in a prebuilt

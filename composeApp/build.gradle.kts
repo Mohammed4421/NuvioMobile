@@ -124,6 +124,21 @@ abstract class GenerateRuntimeConfigsTask : DefaultTask() {
             )
         }
 
+        outDir.resolve("com/nuvio/app/features/updater").apply {
+            mkdirs()
+            resolve("PlusUpdateConfig.kt").writeText(
+                """
+                |package com.nuvio.app.features.updater
+                |
+                |/** Set for Nuvio Plus builds: the fork whose releases the in-app updater follows. */
+                |object PlusUpdateConfig {
+                |    const val REPO = "${props.getProperty("PLUS_UPDATE_REPO", "").trim()}"
+                |    const val BUILD = ${props.getProperty("PLUS_BUILD", "0").trim().toIntOrNull() ?: 0}
+                |}
+                """.trimMargin()
+            )
+        }
+
         outDir.resolve("com/nuvio/app/features/mdblist").apply {
             mkdirs()
             resolve("MdbListConfig.kt").writeText(

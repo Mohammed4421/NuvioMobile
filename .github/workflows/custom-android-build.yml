@@ -54,6 +54,9 @@ jobs:
           {
             echo "NUVIO_SUPABASE_URL=https://api.nuvio.tv"
             echo "NUVIO_SUPABASE_FALLBACK_URL=https://api-two.nuvioapp.space"
+            # The in-app updater follows this fork's releases.
+            echo "PLUS_UPDATE_REPO=${GITHUB_REPOSITORY}"
+            echo "PLUS_BUILD=${GITHUB_RUN_NUMBER}"
             echo "NUVIO_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzgxNTIxMzQ2LCJleHAiOjE5MzkyMDEzNDZ9.tmQaj682pwzehpqlgCDMnySOqiUvpgRbrE43T4VJpDI"
           } > local.properties
           printf '%s\n' "${CUSTOM_LOCAL_PROPERTIES}" >> local.properties
@@ -73,7 +76,7 @@ jobs:
             -Pnuvio.ios.distribution=appstore \
             -Pnuvio.applicationIdSuffix=.plus \
             -Pnuvio.customVersionCode=$((1000 + GITHUB_RUN_NUMBER)) \
-            -Pnuvio.customVersionName="1.0.0-plus.${GITHUB_RUN_NUMBER}" \
+            -Pnuvio.customVersionName="$(sed -n 's/^MARKETING_VERSION=//p' iosApp/Configuration/Version.xcconfig | tr -d '[:space:]')-plus.${GITHUB_RUN_NUMBER}" \
             --stacktrace 2>&1 | tee build.log
 
       - name: Run Nuvio Plus unit tests
@@ -88,6 +91,7 @@ jobs:
             --tests 'com.nuvio.app.features.player.SubtitleAppearanceTest' \
             --tests 'com.nuvio.app.features.library.LibraryDownloadEntriesTest' \
             --tests 'com.nuvio.app.features.downloads.SeasonStreamMatcherTest' \
+            --tests 'com.nuvio.app.features.updater.PlusUpdatesTest' \
             2>&1 | tee tests.log
 
       - name: Publish build errors

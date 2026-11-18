@@ -112,7 +112,11 @@ class AppUpdaterController internal constructor(
             if (channel != preferences.channel.value) return@launch
 
             result.onSuccess { update ->
-                val remoteNewer = VersionUtils.isRemoteNewer(update.tag, AppVersionConfig.VERSION_NAME)
+                val remoteNewer = if (PlusUpdates.enabled) {
+                    PlusUpdates.isNewer(update.tag)
+                } else {
+                    VersionUtils.isRemoteNewer(update.tag, AppVersionConfig.VERSION_NAME)
+                }
                 val ignored = ignoredTag != null && ignoredTag == update.tag
                 val shouldShowDialog = remoteNewer && (force || !ignored)
 

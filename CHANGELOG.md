@@ -4,6 +4,20 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
+## Build 11 — follows Nuvio automatically
+
+### Added
+- **Automatic Nuvio updates.** Every day the fork checks Nuvio's stable branch (`main`); new releases
+  are merged with the Nuvio Plus changes and built. A merge that conflicts with Nuvio Plus changes, or
+  that touches workflow files, is not published: it shows up as a `sync-needed` pre-release (and an
+  issue, when issues are enabled) to merge by hand.
+- **In-app updates from this fork.** The update check follows Nuvio Plus releases instead of the
+  official app, offers the next build and installs it over the current one.
+
+### Changed
+- The version name follows Nuvio's version, e.g. `1.0.0-plus.11`.
+- Nuvio's issue housekeeping workflows run only in the official repository.
+
 ## Build 10 — review fixes
 
 ### Fixed

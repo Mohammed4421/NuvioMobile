@@ -40,7 +40,11 @@ internal object AppUpdaterRepository {
     suspend fun getLatestChannelUpdate(channel: UpdateChannel): Result<AppUpdate> = runCatching {
         val response = httpRequestRaw(
             method = "GET",
-            url = "https://api.github.com/repos/NuvioMedia/NuvioMobile/${releasePath(channel)}",
+            url = if (PlusUpdates.enabled) {
+                PlusUpdates.releasesUrl
+            } else {
+                "https://api.github.com/repos/NuvioMedia/NuvioMobile/${releasePath(channel)}"
+            },
             headers = mapOf(
                 "Accept" to "application/vnd.github+json",
                 "User-Agent" to "NuvioMobile",
@@ -52,8 +56,13 @@ internal object AppUpdaterRepository {
         if (response.status !in 200..299) {
             error(getString(Res.string.updates_github_api_error, response.status))
         }
-        selectUpdate(response.body, channel, AppUpdaterPlatform.getSupportedAbis())
-            ?: throw NoChannelReleaseException()
+        val abis = AppUpdaterPlatform.getSupportedAbis()
+        val update = if (PlusUpdates.enabled) {
+            selectPlusUpdate(response.body, abis)
+        } else {
+            selectUpdate(response.body, channel, abis)
+        }
+        update ?: throw NoChannelReleaseException()
     }
 
     internal fun releasePath(channel: UpdateChannel): String = when (channel) {
@@ -84,6 +93,21 @@ internal object AppUpdaterRepository {
                 assetSizeBytes = asset.size,
             )
         }
+    }
+
+    internal fun selectPlusUpdate(responseBody: String, supportedAbis: List<String>): AppUpdate? {
+        val release = PlusUpdates.latest(json.decodeFromString<List<GitHubReleaseDto>>(responseBody)) ?: return null
+        val asset = chooseBestApkAsset(release.assets, supportedAbis) ?: return null
+        val tag = release.tagName.orEmpty()
+        return AppUpdate(
+            tag = tag,
+            title = release.name?.takeIf { it.isNotBlank() } ?: tag,
+            notes = release.body.orEmpty(),
+            releaseUrl = release.htmlUrl,
+            assetName = asset.name,
+            assetUrl = asset.browserDownloadUrl,
+            assetSizeBytes = asset.size,
+        )
     }
 
     private fun chooseBestApkAsset(
