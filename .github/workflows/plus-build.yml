@@ -330,10 +330,25 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  review-gate:
+    name: Nuvio merge reviews approved
+    if: inputs.publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Check the review records
+        run: python3 .github/plus/review-gate.py
+
   publish:
     name: Publish
     timeout-minutes: 15
-    needs: [build, test-gate, emulator]
+    needs: [build, test-gate, emulator, review-gate]
     if: inputs.publish
     runs-on: ubuntu-latest
     env:
