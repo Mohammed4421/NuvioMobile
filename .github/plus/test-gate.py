@@ -25,5 +25,9 @@ open("checks-tests.md", "w").write("\n".join(lines) + "\n")
 print("\n".join(lines))
 if plus["total"] == 0:
     sys.exit("No unit tests ran.")
+for name in new[:20]:
+    print(f"::error::Fails only in Nuvio Plus: {name}")
+for name in inherited[:20]:
+    print(f"::error::Fails in Nuvio Plus and in Nuvio {tag}: {name}")
 if failed:
     sys.exit(f"{len(failed)} unit tests failed; nothing is published until all pass.")
