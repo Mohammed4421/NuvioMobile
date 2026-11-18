@@ -50,6 +50,6 @@ for apk in "${apks[@]}"; do
   certificate="${digest}"
 done
 # Kept as evidence in the run: how this build-tools version prints certificates.
-{ "${tools}/apksigner" verify --print-certs "${out}/${name}" || true; } | head -n 4 | sed 's/^/::notice::apksigner --print-certs: /'
+{ "${tools}/apksigner" verify --print-certs "${out}/${name}" || true; } | head -n 4 | sed 's/^/::notice::apksigner --print-certs: /' >&2
 
 echo "${certificate}"
