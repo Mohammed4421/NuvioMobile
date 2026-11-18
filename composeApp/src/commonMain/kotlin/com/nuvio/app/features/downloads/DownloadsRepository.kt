@@ -26,6 +26,9 @@ object DownloadsRepository {
     private var hasLoaded = false
     private var nextDownloadOrdinal = 0L
 
+    internal val isLoaded: Boolean
+        get() = hasLoaded
+
     fun ensureLoaded() {
         if (hasLoaded) return
         loadFromDisk()

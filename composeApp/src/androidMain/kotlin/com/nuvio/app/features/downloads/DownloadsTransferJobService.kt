@@ -10,6 +10,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @RequiresApi(34)
@@ -40,8 +44,11 @@ class DownloadsTransferJobService : JobService() {
                     updateTransferredNetworkBytes(params, updated.item.downloadedBytes, 0L)
                     DownloadsLiveStatusPlatform.notifyTransfer(updated.item)
                 }
-                jobFinished(params, retry)
                 scheduler.notifyCurrent(fileName)
+                if (!retry && scheduler.store.get(fileName)?.item?.status == DownloadStatus.Completed) {
+                    runChainedSeasonEpisodes(scheduler, params, finishedId = transfer.item.id)
+                }
+                jobFinished(params, retry)
             } finally {
                 if (runs[generation] === currentCoroutineContext()[Job]) runs.remove(generation)
             }
@@ -49,6 +56,56 @@ class DownloadsTransferJobService : JobService() {
         runs.put(generation, run)?.cancel()
         run.start()
         return true
+    }
+
+    /**
+     * Android does not allow starting a new download job while the app is hidden, so the next
+     * episodes of a season queue run here, one after another, while this job is still active.
+     */
+    private suspend fun runChainedSeasonEpisodes(
+        scheduler: AndroidDownloadScheduler,
+        params: JobParameters,
+        finishedId: String,
+    ) {
+        var finished = finishedId
+        while (true) {
+            val next = scheduler.takeChainedTransfer {
+                SeasonDownloadQueue.continueInBackground(finished)
+            } ?: return
+            DownloadsLiveStatusPlatform.notifyTransfer(next.item)
+            var retry = true
+            while (retry) {
+                retry = executeChained(scheduler, next, params)
+                if (retry) delay(30_000L)
+            }
+            scheduler.notifyCurrent(next.item.fileName)
+            if (scheduler.store.get(next.item.fileName)?.item?.status != DownloadStatus.Completed) return
+            finished = next.item.id
+        }
+    }
+
+    /**
+     * Runs a chained transfer and stops it as soon as it is paused or removed (from the
+     * notification or the app), since it has no job of its own for Android to stop.
+     */
+    private suspend fun executeChained(
+        scheduler: AndroidDownloadScheduler,
+        transfer: AndroidDownloadTransfer,
+        params: JobParameters,
+    ): Boolean = coroutineScope {
+        val run = async {
+            scheduler.execute(transfer, params.network) { updated ->
+                updateTransferredNetworkBytes(params, updated.item.downloadedBytes, 0L)
+                DownloadsLiveStatusPlatform.notifyTransfer(updated.item)
+            }
+        }
+        val watcher = launch {
+            scheduler.store.transfers.first { !scheduler.isActive(transfer) }
+            run.cancel()
+        }
+        run.join()
+        watcher.cancel()
+        if (run.isCancelled) false else run.await()
     }
 
     override fun onStopJob(params: JobParameters): Boolean {

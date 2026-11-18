@@ -1,5 +1,7 @@
 package com.nuvio.app.features.downloads
 
+import com.nuvio.app.core.sync.AppForegroundMonitor
+import com.nuvio.app.core.sync.AppVisibility
 import com.nuvio.app.features.addons.AddonRepository
 import com.nuvio.app.features.addons.enabledAddons
 import com.nuvio.app.features.debrid.DebridSettingsRepository
@@ -10,6 +12,7 @@ import com.nuvio.app.features.details.MetaDetailsRepository
 import com.nuvio.app.features.player.isNetworkOffline
 import com.nuvio.app.features.profiles.ProfileRepository
 import com.nuvio.app.features.streams.InstalledStreamAddonTarget
+import com.nuvio.app.features.streams.StreamDebridCacheState
 import com.nuvio.app.features.streams.StreamItem
 import com.nuvio.app.features.streams.StreamLoadCompletion
 import com.nuvio.app.features.streams.StreamSearchSessions
@@ -104,6 +107,14 @@ object SeasonDownloadQueue {
     private var started = false
     private var workJob: Job? = null
     private var ordinal = 0L
+    private var appVisible = true
+
+    /**
+     * True on platforms that may start a new download while the app is in the background. On
+     * Android 14 and later this is false: the next episode then runs inside the download job that
+     * is still active (see [continueInBackground]).
+     */
+    internal var startsInBackground = false
 
     /** Loads the saved queue and keeps it moving as downloads finish. Safe to call often. */
     fun ensureStarted() {
@@ -116,6 +127,51 @@ object SeasonDownloadQueue {
             .map { if (it.state == SeasonQueueEntryState.Searching) it.copy(state = SeasonQueueEntryState.Waiting) else it }
         scope.launch {
             DownloadsRepository.uiState.collect { pump() }
+        }
+        scope.launch {
+            AppForegroundMonitor.events().collect { visibility ->
+                appVisible = visibility == AppVisibility.Foreground
+                // Coming back to the app picks up episodes that waited while it was hidden.
+                if (appVisible) pump()
+            }
+        }
+    }
+
+    /**
+     * Called by a download job that just finished a queue episode while the app may be hidden.
+     * Settles that episode, then looks up and hands over the next one so the job can keep
+     * running it. Returns true when an episode was handed to the downloader.
+     */
+    internal suspend fun continueInBackground(finishedDownloadId: String?): Boolean {
+        // Only a warm process has the add-ons, profile and downloads loaded; otherwise the queue
+        // continues when the app is opened.
+        if (!started || !DownloadsRepository.isLoaded) return false
+        if (AddonRepository.uiState.value.addons.isEmpty()) return false
+        if (finishedDownloadId != null) {
+            update { entries ->
+                entries.filterNot {
+                    it.state == SeasonQueueEntryState.Downloading && it.downloadId == finishedDownloadId
+                }
+            }
+        }
+        while (true) {
+            val downloads = DownloadsRepository.uiState.value.items.associateBy { it.id }
+            val current = _entries.value
+            val busy = workJob?.isActive == true || current.any {
+                it.state == SeasonQueueEntryState.Searching ||
+                    (it.state == SeasonQueueEntryState.Downloading &&
+                        it.downloadId?.let(downloads::get)?.status == DownloadStatus.Downloading)
+            }
+            if (busy || isNetworkOffline()) return false
+            val next = current.firstOrNull { it.state == SeasonQueueEntryState.Waiting } ?: return false
+            setState(next.id, SeasonQueueEntryState.Searching)
+            val started = try {
+                startEntry(next)
+            } catch (cancelled: CancellationException) {
+                setState(next.id, SeasonQueueEntryState.Waiting)
+                throw cancelled
+            }
+            if (started) return true
         }
     }
 
@@ -190,7 +246,9 @@ object SeasonDownloadQueue {
         if (currentWanted != null) {
             // The chosen episode uses exactly the stream the user picked.
             update { listOf(currentWanted.copy(state = SeasonQueueEntryState.Searching)) + it }
-            handOff(currentWanted, referenceStream)
+            if (!safeHandOff(currentWanted, referenceStream)) {
+                setState(currentWanted.id, SeasonQueueEntryState.NeedsChoice)
+            }
         }
         pump()
         return wanted.size
@@ -236,20 +294,13 @@ object SeasonDownloadQueue {
         }
         if (busy || workJob?.isActive == true) return
         if (isNetworkOffline()) return
+        // Android cannot start a download job from the background; the running job continues instead.
+        if (!appVisible && !startsInBackground) return
         val next = settled.firstOrNull { it.state == SeasonQueueEntryState.Waiting } ?: return
         setState(next.id, SeasonQueueEntryState.Searching)
         workJob = scope.launch {
             try {
-                val stream = withContext(Dispatchers.Default) { findMatchingStream(next) }
-                if (stream == null) {
-                    setState(next.id, SeasonQueueEntryState.NeedsChoice)
-                } else {
-                    handOff(next, stream)
-                }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                setState(next.id, SeasonQueueEntryState.NeedsChoice)
+                startEntry(next)
             } finally {
                 workJob = null
             }
@@ -257,8 +308,37 @@ object SeasonDownloadQueue {
         }
     }
 
-    /** Resolves [stream] to a direct link when needed and starts its download. */
-    private suspend fun handOff(entry: SeasonQueueEntry, stream: StreamItem) {
+    /**
+     * Finds the closest sources for [entry] and starts the first one that resolves (a debrid
+     * source that is not cached, for example, falls through to the next). Leaves the entry as
+     * Downloading or NeedsChoice and returns true when a download started.
+     */
+    private suspend fun startEntry(entry: SeasonQueueEntry): Boolean {
+        val candidates = try {
+            withContext(Dispatchers.Default) { findMatchingStreams(entry) }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            emptyList()
+        }
+        for (candidate in candidates) {
+            if (safeHandOff(entry, candidate)) return true
+        }
+        setState(entry.id, SeasonQueueEntryState.NeedsChoice)
+        return false
+    }
+
+    private suspend fun safeHandOff(entry: SeasonQueueEntry, stream: StreamItem): Boolean =
+        try {
+            handOff(entry, stream)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            false
+        }
+
+    /** Resolves [stream] to a direct link when needed and starts its download; true on success. */
+    private suspend fun handOff(entry: SeasonQueueEntry, stream: StreamItem): Boolean {
         val playable = when (
             val resolved = DirectDebridPlaybackResolver.resolveToPlayableStream(
                 stream = stream,
@@ -269,10 +349,7 @@ object SeasonDownloadQueue {
             is DirectDebridPlayableResult.Success -> resolved.stream
             else -> null
         }
-        if (playable == null) {
-            setState(entry.id, SeasonQueueEntryState.NeedsChoice)
-            return
-        }
+        if (playable == null) return false
         val result = DownloadsRepository.enqueueFromStream(
             contentType = entry.contentType,
             videoId = entry.videoId,
@@ -300,12 +377,12 @@ object SeasonDownloadQueue {
                     } else it
                 }
             }
-        } else {
-            setState(entry.id, SeasonQueueEntryState.NeedsChoice)
+            return true
         }
+        return false
     }
 
-    private suspend fun findMatchingStream(entry: SeasonQueueEntry): StreamItem? {
+    private suspend fun findMatchingStreams(entry: SeasonQueueEntry): List<StreamItem> {
         val type = entry.contentType
         val targets = AddonRepository.uiState.value.addons.enabledAddons().mapNotNull { addon ->
             val manifest = addon.manifest ?: return@mapNotNull null
@@ -320,7 +397,7 @@ object SeasonDownloadQueue {
         val preferred = targets.filter { it.addonId == entry.reference.addonId }
             .ifEmpty { targets.filter { it.addonName == entry.reference.addonName } }
         val searchTargets = preferred.ifEmpty { targets }
-        if (searchTargets.isEmpty()) return null
+        if (searchTargets.isEmpty()) return emptyList()
 
         val debridSettings = DebridSettingsRepository.snapshot()
         val streams = mutableListOf<StreamItem>()
@@ -344,7 +421,7 @@ object SeasonDownloadQueue {
                 }
             }
         }
-        return SeasonStreamMatcher.pick(streams, entry.reference)
+        return SeasonStreamMatcher.rank(streams, entry.reference).take(3)
     }
 
     private fun needsDownload(entry: SeasonQueueEntry): Boolean {
@@ -427,30 +504,45 @@ internal object SeasonStreamMatcher {
             .joinToString(" ")
             .lowercase()
 
-    fun pick(streams: List<StreamItem>, reference: SeasonQueueReference): StreamItem? {
-        val downloadable = streams.filter(::isDownloadable)
-        if (downloadable.isEmpty()) return null
+    /** The single best match, if any. */
+    fun pick(streams: List<StreamItem>, reference: SeasonQueueReference): StreamItem? =
+        rank(streams, reference).firstOrNull()
 
-        reference.bingeGroup?.let { group ->
-            downloadable.firstOrNull { it.behaviorHints.bingeGroup?.trim() == group }?.let { return it }
-        }
+    /**
+     * Acceptable matches, best first. Streams of the same binge group lead; then streams with the
+     * same resolution and release type ordered by name similarity. Sources a debrid service
+     * reported as not cached are left out, and cached ones are preferred.
+     */
+    fun rank(streams: List<StreamItem>, reference: SeasonQueueReference): List<StreamItem> {
+        val downloadable = streams
+            .filter(::isDownloadable)
+            .filterNot { it.debridCacheStatus?.state == StreamDebridCacheState.NOT_CACHED }
+        if (downloadable.isEmpty()) return emptyList()
 
         val referenceText = reference.text
         val referenceResolution = resolution(referenceText)
         val referenceFlags = flags(referenceText)
         val referenceTokens = tokens(referenceText)
-        return downloadable
+        val sameGroup = reference.bingeGroup?.let { group ->
+            downloadable.filter { it.behaviorHints.bingeGroup?.trim() == group }
+        }.orEmpty()
+        val similar = downloadable
+            .filterNot { it in sameGroup }
             .mapNotNull { stream ->
                 val text = describe(stream)
                 if (referenceResolution != null && resolution(text) != referenceResolution) return@mapNotNull null
                 if (flags(text) != referenceFlags) return@mapNotNull null
                 val score = similarity(referenceTokens, tokens(text)) +
-                    if (stream.addonId == reference.addonId) 0.1 else 0.0
-                stream to score
+                    (if (stream.addonId == reference.addonId) 0.1 else 0.0) +
+                    (if (stream.debridCacheStatus?.state == StreamDebridCacheState.CACHED) 0.15 else 0.0)
+                (stream to score).takeIf { score >= minimumScore }
             }
-            .filter { (_, score) -> score >= minimumScore }
-            .maxByOrNull { (_, score) -> score }
-            ?.first
+            .sortedByDescending { (_, score) -> score }
+            .map { (stream, _) -> stream }
+        val cachedFirst = compareBy<StreamItem> {
+            if (it.debridCacheStatus?.state == StreamDebridCacheState.CACHED) 0 else 1
+        }
+        return sameGroup.sortedWith(cachedFirst) + similar
     }
 
     private fun isDownloadable(stream: StreamItem): Boolean {

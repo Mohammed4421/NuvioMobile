@@ -2606,4 +2606,5 @@
     <string name="downloads_settings_wifi_only">Wi-Fi only</string>
     <string name="downloads_settings_wifi_only_description">New downloads wait for Wi-Fi.</string>
     <string name="downloads_location_failed">Couldn&apos;t use this folder. Choose another one.</string>
+    <string name="downloads_error_no_space">Not enough free space: %1$s more is needed.</string>
 </resources>

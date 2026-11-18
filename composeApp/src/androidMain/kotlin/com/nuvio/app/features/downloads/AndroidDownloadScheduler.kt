@@ -7,6 +7,9 @@ import android.content.Context
 import android.net.Network
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
+import android.os.StatFs
+import android.provider.DocumentsContract
 import android.os.PersistableBundle
 import android.os.SystemClock
 import androidx.annotation.RequiresApi
@@ -22,6 +25,12 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
+import nuvio.composeapp.generated.resources.Res
+import nuvio.composeapp.generated.resources.downloads_error_no_space
+import org.jetbrains.compose.resources.getString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +48,8 @@ internal class AndroidDownloadScheduler(val context: Context) {
     val store = AndroidDownloadStore(File(context.filesDir, "download-transfers"))
     val directory = File(context.filesDir, "downloads")
     private val locks = ConcurrentHashMap<String, Mutex>()
+    private val adoptedTransfers = Channel<AndroidDownloadTransfer>(Channel.UNLIMITED)
+    private val waitingHosts = AtomicInteger(0)
     private val cleanupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     fun enqueue(item: DownloadItem): AndroidDownloadTransfer {
@@ -48,9 +59,16 @@ internal class AndroidDownloadScheduler(val context: Context) {
         if (existing && Build.VERSION.SDK_INT >= 34) return transfer
         try {
             if (Build.VERSION.SDK_INT >= 34) {
-                check(jobScheduler().schedule(buildJob(transfer)) == JobScheduler.RESULT_SUCCESS) {
-                    "Android could not start the download. Open the app and try again."
+                val scheduled = runCatching {
+                    jobScheduler().schedule(buildJob(transfer)) == JobScheduler.RESULT_SUCCESS
+                }.getOrDefault(false)
+                if (!scheduled && waitingHosts.get() > 0) {
+                    // The app is hidden, so Android refuses a new job; a download job that is still
+                    // running picks this transfer up and runs it next.
+                    adoptedTransfers.trySend(transfer)
+                    return transfer
                 }
+                check(scheduled) { "Android could not start the download. Open the app and try again." }
             } else {
                 val work = OneTimeWorkRequestBuilder<DownloadsTransferWorker>()
                     .setInputData(workDataOf(FILE_NAME to item.fileName, GENERATION to transfer.generation))
@@ -178,6 +196,7 @@ internal class AndroidDownloadScheduler(val context: Context) {
                 validator = transfer.validator,
                 client = client,
                 onHeaders = { total, validator ->
+                    checkFreeSpace(transfer, total)
                     updateActive(transfer) { it.copy(validator = validator, item = it.item.copy(totalBytes = total)) }
                 },
                 onProgress = { bytes, total ->
@@ -220,6 +239,25 @@ internal class AndroidDownloadScheduler(val context: Context) {
     }
 
     /**
+     * Lets a running download job continue with the next season episode. [startNext] asks the
+     * season queue to hand over its next episode; when Android refused a separate job for it, the
+     * transfer arrives here and the caller runs it in the same job.
+     */
+    suspend fun takeChainedTransfer(startNext: suspend () -> Boolean): AndroidDownloadTransfer? {
+        waitingHosts.incrementAndGet()
+        try {
+            while (true) {
+                val stale = adoptedTransfers.tryReceive().getOrNull() ?: break
+                if (isActive(stale)) return stale
+            }
+            if (!startNext()) return null
+            return adoptedTransfers.tryReceive().getOrNull()?.takeIf(::isActive)
+        } finally {
+            waitingHosts.decrementAndGet()
+        }
+    }
+
+    /**
      * Writes the download straight into the folder the user picked, resuming the same document
      * after a pause or a lost connection, then gives it its final name.
      */
@@ -249,6 +287,7 @@ internal class AndroidDownloadScheduler(val context: Context) {
             validator = if (resumable != null) current.validator else null,
             client = client,
             onHeaders = { total, validator ->
+                checkFreeSpace(transfer, total)
                 updateActive(transfer) { it.copy(validator = validator, item = it.item.copy(totalBytes = total)) }
             },
             onProgress = { bytes, total ->
@@ -282,6 +321,41 @@ internal class AndroidDownloadScheduler(val context: Context) {
         }
     }
 
+    /** Fails early, with a clear message, when the target storage cannot hold the rest of the file. */
+    private fun checkFreeSpace(transfer: AndroidDownloadTransfer, totalBytes: Long?) {
+        val total = totalBytes ?: return
+        val written = store.get(transfer.item.fileName)?.item?.downloadedBytes ?: 0L
+        val remaining = (total - written).coerceAtLeast(0L)
+        val available = availableBytes(transfer.item) ?: return
+        if (remaining + FREE_SPACE_MARGIN_BYTES > available) {
+            throw IllegalStateException(
+                runBlocking { getString(Res.string.downloads_error_no_space, formatGigabytes(remaining)) },
+            )
+        }
+    }
+
+    private fun availableBytes(item: DownloadItem): Long? = runCatching {
+        val folder = item.targetFolderUri
+        val path = if (folder == null) {
+            directory.apply { mkdirs() }
+        } else {
+            val documentId = DocumentsContract.getTreeDocumentId(Uri.parse(folder))
+            val volume = documentId.substringBefore(':')
+            if (volume.equals("primary", ignoreCase = true)) {
+                Environment.getExternalStorageDirectory()
+            } else {
+                File("/storage/$volume")
+            }
+        }
+        StatFs(path.path).availableBytes
+    }.getOrNull()
+
+    private fun formatGigabytes(bytes: Long): String {
+        val gigabyte = 1024L * 1024L * 1024L
+        val tenths = (bytes * 10 + gigabyte - 1) / gigabyte
+        return "${tenths / 10}.${tenths % 10} GB"
+    }
+
     fun isActive(transfer: AndroidDownloadTransfer): Boolean = store.get(transfer.item.fileName)?.let {
         it.generation == transfer.generation && it.item.status == DownloadStatus.Downloading
     } == true
@@ -312,6 +386,7 @@ internal class AndroidDownloadScheduler(val context: Context) {
         const val FILE_NAME = "download_file_name"
         const val GENERATION = "download_generation"
         const val JOB_NAMESPACE = "nuvio-downloads"
+        private const val FREE_SPACE_MARGIN_BYTES = 64L * 1024L * 1024L
     }
 }
 

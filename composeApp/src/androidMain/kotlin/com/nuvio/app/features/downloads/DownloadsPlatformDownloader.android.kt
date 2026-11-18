@@ -23,6 +23,8 @@ internal actual object DownloadsPlatformDownloader {
 
     fun initialize(context: Context) {
         scheduler(context)
+        // Android 14+ refuses new download jobs from the background; the running job chains instead.
+        SeasonDownloadQueue.startsInBackground = android.os.Build.VERSION.SDK_INT < 34
     }
 
     internal fun contextOrNull(): Context? = appContext
