@@ -306,6 +306,17 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Keep the emulator log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: emulator-log
+          path: |
+            emulator.log
+            crash.log
+          if-no-files-found: ignore
+          retention-days: 14
+
   publish:
     name: Publish
     timeout-minutes: 15
@@ -369,6 +380,13 @@ jobs:
               | grep -E "^e: |error:|What went wrong|Execution failed|Unresolved reference|FAILED|> Task .*FAILED|AssertionError" -A3 \
               | head -c 60000 || true
             echo '```'
+            if [[ -f logs/emulator.log ]]; then
+              echo
+              echo "Emulator log (end):"
+              echo '```'
+              tail -n 80 logs/emulator.log
+              echo '```'
+            fi
           } > errors.md
           gh release delete "build-failed-${build}" --repo "${GITHUB_REPOSITORY}" --yes --cleanup-tag > /dev/null 2>&1 || true
           gh release create "build-failed-${build}" --repo "${GITHUB_REPOSITORY}" --target "${sha}" \
