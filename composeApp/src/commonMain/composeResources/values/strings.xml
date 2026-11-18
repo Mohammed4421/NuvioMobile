@@ -2617,4 +2617,8 @@
     <string name="library_downloads_empty_message">Open a movie or an episode, long-press a source and choose Download file.</string>
     <string name="subtitle_brightness_scope">Applies to text subtitles, and to image subtitles in ExoPlayer. Styled ASS subtitles drawn by libass keep their own brightness.</string>
     <string name="library_downloads_failed_count">%1$d failed</string>
+    <string name="updates_archive_unreadable">The downloaded update could not be read. Try again.</string>
+    <string name="updates_archive_other_app">The downloaded file is not an update of this app.</string>
+    <string name="updates_archive_not_newer">The downloaded update is not newer than the installed version.</string>
+    <string name="updates_archive_other_signer">The downloaded update is signed with a different key and cannot replace this app.</string>
 </resources>

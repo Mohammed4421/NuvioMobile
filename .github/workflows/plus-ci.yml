@@ -1,0 +1,23 @@
+name: Nuvio Plus checks
+
+# Every check of a publishing build, on fix and review branches, without publishing anything.
+on:
+  push:
+    branches: ['plus-fix/**', 'plus-review/**']
+  workflow_dispatch:
+
+concurrency:
+  group: plus-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  checks:
+    uses: ./.github/workflows/plus-build.yml
+    with:
+      ref: ${{ github.sha }}
+      publish: false
+      channel: ${{ contains(github.ref_name, 'beta') && 'beta' || 'stable' }}
+    secrets: inherit

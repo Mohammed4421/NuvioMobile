@@ -1,10 +1,11 @@
 name: Build Custom APK
 
-# Every push to the stable Nuvio Plus branch is built and checked; the APKs are published only
-# when every check passes (see plus-build.yml).
+# Publishing builds. A push to custom-subtitles publishes a stable release, a push to plus-beta a
+# beta pre-release, and only when every check passes and every Nuvio merge review is approved
+# (see plus-build.yml). Both branches change only through reviewed pull requests.
 on:
   push:
-    branches: [custom-subtitles]
+    branches: [custom-subtitles, plus-beta]
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -28,5 +29,6 @@ jobs:
     with:
       ref: ${{ github.sha }}
       publish: true
+      channel: ${{ github.ref_name == 'plus-beta' && 'beta' || 'stable' }}
       allow_key_change: ${{ inputs.allow_key_change || false }}
     secrets: inherit

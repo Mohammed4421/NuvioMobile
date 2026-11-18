@@ -1,0 +1,293 @@
+{
+  "_about": "Registry of Nuvio Plus features. The upstream review maps every Nuvio change to the features it touches. Keep it current when a feature changes. Paths are relative to composeApp/src unless they start with a top-level folder.",
+  "features": [
+    {
+      "id": "subtitle-style",
+      "title": "Subtitle brightness, gray colors, wider position range, outline repair",
+      "since": "Build 1 (repair in Build 6)",
+      "files": [
+        "commonMain/kotlin/com/nuvio/app/features/player/SubtitleAppearance.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/SubtitleAudioModels.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/StyledSubtitle.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/SubtitleAppearanceControls.kt",
+        "commonMain/kotlin/com/nuvio/app/features/settings/SubtitleAppearanceSettings.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerSettingsRepository.kt"
+      ],
+      "depends": [
+        "player-engines"
+      ],
+      "data": "subtitle appearance JSON (brightness), subtitle bottom offset, outline width",
+      "tests": [
+        "SubtitleAppearanceTest",
+        "PlusSubtitleMigrationTest"
+      ],
+      "keywords": [
+        "subtitle.?brightness",
+        "brightnessFactor",
+        "dimmedBy",
+        "SUBTITLE_BOTTOM_OFFSET",
+        "outlineWidth",
+        "subtitleOutlineWidthRange"
+      ]
+    },
+    {
+      "id": "player-engines",
+      "title": "Brightness and offsets in ExoPlayer and mpv, HDR-safe subtitle dimming",
+      "since": "Build 1",
+      "files": [
+        "androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt"
+      ],
+      "depends": [],
+      "data": "none",
+      "tests": [
+        "device matrix: subtitles on ExoPlayer and mpv, SDR/HDR"
+      ],
+      "keywords": [
+        "applySubtitleBrightnessLayer",
+        "ColorMatrixColorFilter",
+        "sub-color",
+        "fdclose://",
+        "toMpvSource"
+      ]
+    },
+    {
+      "id": "subtitle-gestures",
+      "title": "Move subtitles by swipe or two fingers, pinch to resize",
+      "since": "Build 1",
+      "files": [
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerSurfaceGestures.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeGestureActions.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerGestureOverlay.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeState.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenContent.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerOverlays.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenSupport.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeUi.kt"
+      ],
+      "depends": [
+        "subtitle-style"
+      ],
+      "data": "font size and bottom offset (shared with subtitle-style)",
+      "tests": [
+        "device matrix: gestures do not fight seek and brightness swipes"
+      ],
+      "keywords": [
+        "SubtitleTransform",
+        "SubtitleMove",
+        "detectTransformGestures",
+        "pinch"
+      ]
+    },
+    {
+      "id": "device-subtitles",
+      "title": "Load a subtitle file from the device (charset detection, language from name)",
+      "since": "Build 1",
+      "files": [
+        "commonMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.kt",
+        "androidMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.android.kt",
+        "iosMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.ios.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/SubtitleModal.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeSubtitleActions.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerAutoSyncAdapter.kt",
+        "androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenModalHosts.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeUi.kt"
+      ],
+      "depends": [
+        "player-engines"
+      ],
+      "data": "copies in cache/device-subtitles",
+      "tests": [
+        "SubtitleAppearanceTest (language from file name)"
+      ],
+      "keywords": [
+        "LocalSubtitlePicker",
+        "deviceSubtitle",
+        "OpenDocument\\(",
+        "subtitle.*(from|load).*(device|file)"
+      ]
+    },
+    {
+      "id": "download-location",
+      "title": "Download folder (SAF), .part files with resume, Wi-Fi only, free space check (playback of content:// downloads included)",
+      "since": "Build 2 (checks Build 3, rename check Build 10)",
+      "files": [
+        "commonMain/kotlin/com/nuvio/app/features/downloads/DownloadPreferences.kt",
+        "commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsModels.kt",
+        "commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsRepository.kt",
+        "commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsStorage.kt",
+        "commonMain/kotlin/com/nuvio/app/features/downloads/DownloadSubtitles.kt",
+        "commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsScreen.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadStore.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadTransfer.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/DocumentDownloads.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadDocuments.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadSubtitleStorage.android.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsPlatformDownloader.android.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsStorage.android.kt",
+        "iosMain/kotlin/com/nuvio/app/features/downloads/DownloadFolderPicker.ios.kt",
+        "iosMain/kotlin/com/nuvio/app/features/downloads/DownloadsStorage.ios.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeEffects.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeTrackActions.kt"
+      ],
+      "depends": [],
+      "data": "download records (targetFolderUri, wifiOnly), download_preferences, transfer store documentUri",
+      "tests": [
+        "PlusDownloadsMigrationTest",
+        "DownloadSubtitlesTest",
+        "DownloadsTransferWorkerTest",
+        "AndroidDownloadLifecycleTest"
+      ],
+      "keywords": [
+        "OpenDocumentTree",
+        "takePersistableUriPermission",
+        "targetFolderUri",
+        "wifiOnly",
+        "NETWORK_TYPE_UNMETERED",
+        "StatFs",
+        "renameDocument"
+      ]
+    },
+    {
+      "id": "season-downloads",
+      "title": "Download a season: queue, quality matching, background chaining on Android 14+",
+      "since": "Build 2 (chaining Build 3, quality Build 10, per-entry search Build 12)",
+      "files": [
+        "commonMain/kotlin/com/nuvio/app/features/downloads/SeasonDownloadQueue.kt",
+        "commonMain/kotlin/com/nuvio/app/features/streams/StreamsScreen.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsTransferJobService.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt"
+      ],
+      "depends": [
+        "download-location"
+      ],
+      "data": "season_queue",
+      "tests": [
+        "SeasonStreamMatcherTest",
+        "PlusDownloadsMigrationTest"
+      ],
+      "keywords": [
+        "season.?download",
+        "downloadSeason",
+        "SeasonDownload",
+        "bingeGroup"
+      ]
+    },
+    {
+      "id": "library-downloads",
+      "title": "Downloads tab in the library with posters and progress",
+      "since": "Build 8 (fixes Build 12)",
+      "files": [
+        "commonMain/kotlin/com/nuvio/app/features/library/LibraryDownloadsContent.kt",
+        "commonMain/kotlin/com/nuvio/app/features/library/LibraryScreen.kt",
+        "commonMain/kotlin/com/nuvio/app/AppShellComponents.kt",
+        "commonMain/kotlin/com/nuvio/app/MainAppContent.kt"
+      ],
+      "depends": [
+        "download-location",
+        "season-downloads"
+      ],
+      "data": "none (reads download records and the season queue)",
+      "tests": [
+        "LibraryDownloadEntriesTest"
+      ],
+      "keywords": [
+        "LibraryViewMode",
+        "library_source_downloads",
+        "LibraryDownloadsButton",
+        "DownloadShowRoute"
+      ]
+    },
+    {
+      "id": "updater",
+      "title": "In-app updates from the fork: stable/beta channels, ABI and signature checks",
+      "since": "Build 11 (channels and checks Build 13)",
+      "files": [
+        "commonMain/kotlin/com/nuvio/app/features/updater/PlusUpdates.kt",
+        "commonMain/kotlin/com/nuvio/app/features/updater/AppUpdater.kt",
+        "commonMain/kotlin/com/nuvio/app/features/updater/AppUpdaterRepository.kt",
+        "commonMain/kotlin/com/nuvio/app/features/updater/UpdateChannel.kt",
+        "commonMain/kotlin/com/nuvio/app/features/updater/UpdatePreferences.kt",
+        "androidFull/kotlin/com/nuvio/app/features/updater/AndroidAppUpdaterPlatform.kt",
+        "androidFull/kotlin/com/nuvio/app/features/updater/UpdateArchiveCheck.kt",
+        "composeApp/build.gradle.kts"
+      ],
+      "depends": [
+        "identity"
+      ],
+      "data": "nuvio_updater preferences (channel, ignored tag)",
+      "tests": [
+        "PlusUpdatesTest",
+        "PlusUpdateChannelsTest",
+        "PlusAppUpdaterControllerTest",
+        "AppUpdaterControllerTest",
+        "UpdateArchiveCheckTest"
+      ],
+      "keywords": [
+        "releases/latest",
+        "api.github.com/repos",
+        "AppUpdaterRepository",
+        "UpdateChannel",
+        "VersionUtils"
+      ]
+    },
+    {
+      "id": "identity",
+      "title": "Package com.nuvio.app.plus, launcher name, signing, version code",
+      "since": "Build 1 (fixed key Build 8)",
+      "files": [
+        "androidApp/build.gradle.kts",
+        "androidApp/src/main/AndroidManifest.xml",
+        "signing/nuvio-plus.p12"
+      ],
+      "depends": [],
+      "data": "everything: changing package or key means a reinstall",
+      "tests": [
+        "CI update check (package, certificate, version code)",
+        "CI emulator update test"
+      ],
+      "keywords": [
+        "applicationIdSuffix",
+        "appLabel",
+        "signingConfig",
+        "versionCode"
+      ]
+    },
+    {
+      "id": "account-and-sync",
+      "title": "Official Nuvio account server for sign-in and settings sync",
+      "since": "Build 5",
+      "files": [
+        ".github/plus/prepare-build.sh"
+      ],
+      "depends": [],
+      "data": "account session; synced settings (see subtitle-style outline repair)",
+      "tests": [
+        "device matrix: sign in, sync settings"
+      ],
+      "keywords": [
+        "NUVIO_SUPABASE",
+        "SupabaseConfig",
+        "ProfileSettingsSync"
+      ]
+    },
+    {
+      "id": "arabic",
+      "title": "Arabic texts for Plus features and the 46 texts missing in Nuvio 1.0.0",
+      "since": "Build 1 onwards (completed Build 12)",
+      "files": [
+        "commonMain/composeResources/values-ar/strings.xml",
+        "commonMain/composeResources/values-ar/strings_ratings.xml",
+        "commonMain/composeResources/values-ar/autosync_toast_strings.xml",
+        "commonMain/composeResources/values/strings.xml"
+      ],
+      "depends": [],
+      "data": "none",
+      "tests": [
+        "CI: build fails on duplicate resource names"
+      ],
+      "keywords": []
+    }
+  ]
+}
