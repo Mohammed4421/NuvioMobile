@@ -19,9 +19,10 @@ on:
         type: string
         default: stable
 
+# Each job asks only for what it needs. The checks job builds unreviewed Nuvio code: it gets a
+# read-only token, no secrets and no stored credentials (see plus-build.yml).
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 env:
   UPSTREAM: https://github.com/NuvioMedia/NuvioMobile.git
@@ -29,8 +30,12 @@ env:
 jobs:
   prepare:
     name: Merge the Nuvio release into a review branch
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
+    # Pushes the review branch. It runs no Nuvio code: only git and the Nuvio Plus scripts, which
+    # are copied out before the merge.
+    permissions:
+      contents: write
     outputs:
       status: ${{ steps.merge.outputs.status }}
       tag: ${{ steps.merge.outputs.tag }}
@@ -41,16 +46,18 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check out Nuvio Plus
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: custom-subtitles
           fetch-depth: 0
 
       - name: Merge into the review branch
         id: merge
+        env:
+          CHANNEL: ${{ inputs.channel }}
         run: |
           set -euo pipefail
-          channel="${{ inputs.channel }}"
+          channel="${CHANNEL}"
           [[ "${channel}" == beta ]] || channel=stable
           target=custom-subtitles
           [[ "${channel}" == beta ]] && target=plus-beta
@@ -63,6 +70,9 @@ jobs:
           git remote add upstream "${UPSTREAM}"
           tag="$(git ls-remote --tags upstream | python3 "${RUNNER_TEMP}/select-upstream-tag.py" "${channel}")"
           [[ -n "${tag}" ]] || { echo "status=none" >> "${GITHUB_OUTPUT}"; exit 0; }
+          # The tag names a branch and goes into commands: accept only plain Nuvio version tags.
+          [[ "${tag}" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-(beta|rc)\.?[0-9]*)?$ ]] \
+            || { echo "::error::Unexpected Nuvio tag name '${tag}'"; exit 1; }
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
           git fetch --no-tags upstream "refs/tags/${tag}:refs/tags/${tag}"
 
@@ -88,12 +98,18 @@ jobs:
           base_head="$(git rev-parse HEAD)"
           : > conflicts.txt
           if git merge --no-edit -m "Merge Nuvio ${tag} into ${target} for review" "${tag}^{commit}"; then
-            # Nuvio's CI files are listed in the review record and not applied (this token may not
-            # push workflow changes, and Nuvio Plus runs its own CI).
-            git diff --name-only "${base_head}" HEAD -- .github > nuvio-ci-changes.txt || true
+            # Nuvio's CI files and anything under signing/ are listed in the review record and not
+            # applied: Nuvio code must not change Nuvio Plus's CI, review gate or signing key in an
+            # unreviewed merge (and this token may not push workflow changes).
+            protected=(.github signing)
+            git diff --name-only "${base_head}" HEAD -- "${protected[@]}" > nuvio-ci-changes.txt || true
             if [[ -s nuvio-ci-changes.txt ]]; then
-              git checkout "${base_head}" -- .github
-              git diff --name-only --diff-filter=A "${base_head}" HEAD -- .github | xargs -r git rm -q
+              git diff --name-only --diff-filter=A "${base_head}" HEAD -- "${protected[@]}" | xargs -r git rm -q
+              for path in "${protected[@]}"; do
+                if [[ -n "$(git ls-tree -d --name-only "${base_head}" "${path}")" ]]; then
+                  git checkout "${base_head}" -- "${path}"
+                fi
+              done
               git commit --amend --no-edit
             fi
             status=merged
@@ -119,7 +135,7 @@ jobs:
 
       - name: Keep the review record
         if: steps.merge.outputs.branch != ''
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: review-record
           path: review.md
@@ -129,19 +145,28 @@ jobs:
     name: Build and check the review branch
     needs: prepare
     if: needs.prepare.outputs.status == 'merged'
+    permissions:
+      contents: read
+      statuses: write
     uses: Mohammed4421/NuvioMobile/.github/workflows/plus-build.yml@custom-subtitles
     with:
       ref: ${{ needs.prepare.outputs.sha }}
-      publish: false
       channel: ${{ inputs.channel == 'beta' && 'beta' || 'stable' }}
-    secrets: inherit
+      # The pull request is opened with this workflow's token, which starts no pull_request checks:
+      # these statuses on the review branch head are the ones branch protection requires.
+      status_sha: ${{ needs.prepare.outputs.sha }}
+      status_prefix: nuvio-plus
+    # No secrets: this builds Nuvio code nobody has reviewed yet.
 
   pull-request:
     name: Open the review pull request
     needs: [prepare, checks]
     if: always() && (needs.prepare.outputs.status == 'merged' || needs.prepare.outputs.status == 'conflict')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
     env:
       GH_TOKEN: ${{ github.token }}
       TAG: ${{ needs.prepare.outputs.tag }}
@@ -152,7 +177,7 @@ jobs:
       CHECKS: ${{ needs.checks.result }}
     steps:
       - name: Get the review record
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: review-record
 
@@ -167,7 +192,7 @@ jobs:
               echo "**Checks of ${SHA::7}:** ${CHECKS}. Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             fi
             echo
-            echo "Publishing stays blocked until \`.github/plus/reviews/nuvio-${TAG}.md\` is approved for a tested commit."
+            echo "Merging needs the \`nuvio-plus/checks\` and \`nuvio-plus/review\` statuses green: tick every box in \`.github/plus/reviews/nuvio-${TAG}.md\` with the decision, set \`status: approved\`, and let the checks run again. Publishing then also checks that the owner merged this pull request."
             echo
             cat review.md
           } > body.md

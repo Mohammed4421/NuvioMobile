@@ -1,23 +1,34 @@
 name: Nuvio Plus checks
 
-# Every check of a publishing build, on fix and review branches, without publishing anything.
+# Every check of a publishing build, without publishing anything:
+#   * on pull requests into custom-subtitles and plus-beta: reports nuvio-plus/checks and
+#     nuvio-plus/review on the pull request head (the statuses branch protection requires);
+#   * on pushes to fix and review branches: the same checks, reported as nuvio-plus/push/*.
+# No secrets are passed and the token cannot write code: a pull request from a review branch with
+# unreviewed Nuvio code cannot reach the signing key or the repository. pull_request_target is not
+# used on purpose.
 on:
+  pull_request:
+    branches: [custom-subtitles, plus-beta]
   push:
     branches: ['plus-fix/**', 'plus-review/**']
   workflow_dispatch:
 
 concurrency:
-  group: plus-ci-${{ github.ref }}
+  group: plus-ci-${{ github.event_name }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   checks:
+    permissions:
+      contents: read
+      statuses: write
     uses: ./.github/workflows/plus-build.yml
     with:
       ref: ${{ github.sha }}
-      publish: false
-      channel: ${{ contains(github.ref_name, 'beta') && 'beta' || 'stable' }}
-    secrets: inherit
+      channel: ${{ (github.base_ref == 'plus-beta' || (github.event_name != 'pull_request' && contains(github.ref_name, 'beta'))) && 'beta' || 'stable' }}
+      status_sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      status_prefix: ${{ github.event_name == 'pull_request' && 'nuvio-plus' || 'nuvio-plus/push' }}

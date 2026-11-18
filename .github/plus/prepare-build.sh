@@ -1,19 +1,12 @@
 #!/usr/bin/env bash
-# Writes local.properties for a Nuvio Plus build: signing, account server, updater source.
+# Writes local.properties for a Nuvio Plus build: account server, updater source and, for publishing
+# builds only, the extra properties passed in CUSTOM_LOCAL_PROPERTIES.
+# It writes no signing settings: Gradle builds unsigned APKs, and sign-apks.sh signs them in a
+# separate job that never runs Gradle or code from the commit being built.
 # Usage: prepare-build.sh <build-number>
 set -euo pipefail
 build="$1"
-if [[ -n "${CUSTOM_KEYSTORE_BASE64:-}" ]]; then
-  keystore="${RUNNER_TEMP}/custom-release.jks"
-  printf '%s' "${CUSTOM_KEYSTORE_BASE64}" | base64 --decode > "${keystore}"
-  password="${CUSTOM_KEYSTORE_PASSWORD}"
-  alias="${CUSTOM_KEY_ALIAS:-custom}"
-else
-  # Public key kept in the repository so builds install over each other (see README).
-  keystore="${GITHUB_WORKSPACE}/signing/nuvio-plus.p12"
-  password="nuvio-plus-public"
-  alias="nuvio-plus"
-fi
+[[ "${build}" =~ ^[0-9]+$ ]] || { echo "::error::Build number '${build}' is not a number"; exit 1; }
 {
   # Official Nuvio account server, as shipped in the official app (public client key).
   echo "NUVIO_SUPABASE_URL=https://api.nuvio.tv"
@@ -23,11 +16,8 @@ fi
   echo "PLUS_UPDATE_REPO=${GITHUB_REPOSITORY}"
   echo "PLUS_BUILD=${build}"
 } > local.properties
-# Extra lines (Trakt, Simkl keys and so on) come later and win.
+# Extra lines (Trakt, Simkl keys and so on) come later and win. They are compiled into the APK.
 printf '%s\n' "${CUSTOM_LOCAL_PROPERTIES:-}" >> local.properties
-{
-  echo "NUVIO_RELEASE_STORE_FILE=${keystore}"
-  echo "NUVIO_RELEASE_STORE_PASSWORD=${password}"
-  echo "NUVIO_RELEASE_KEY_ALIAS=${alias}"
-  echo "NUVIO_RELEASE_KEY_PASSWORD=${password}"
-} >> local.properties
+if grep -q '^NUVIO_RELEASE_' local.properties; then
+  echo "::error::Signing settings must not reach the Gradle build"; exit 1
+fi
