@@ -74,6 +74,8 @@ internal enum class PlayerGestureMode {
     HorizontalSeek,
     Brightness,
     Volume,
+    SubtitleMove,
+    SubtitleTransform,
 }
 
 internal data class PlayerAccumulatedSeekState(

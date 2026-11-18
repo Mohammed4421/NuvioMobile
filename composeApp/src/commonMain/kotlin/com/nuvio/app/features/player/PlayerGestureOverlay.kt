@@ -151,7 +151,8 @@ private fun PlayerGestureFeedback(
                         }
                     }
                 }
-                GestureFeedbackIcon.Speed, GestureFeedbackIcon.SeekForward, GestureFeedbackIcon.SeekBackward -> {
+                GestureFeedbackIcon.Speed, GestureFeedbackIcon.SeekForward, GestureFeedbackIcon.SeekBackward,
+                GestureFeedbackIcon.Subtitles -> {
                     val message = feedback.messageRes?.let { stringResource(it, *feedback.messageArgs.toTypedArray()) }
                         ?: feedback.message.orEmpty()
                     val secondaryMessage = feedback.secondaryMessageRes?.let {

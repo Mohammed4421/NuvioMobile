@@ -684,7 +684,7 @@ object PlayerSettingsRepository {
         ensureLoaded()
         val normalized = style.copy(
             fontSizeSp = style.fontSizeSp.coerceIn(subtitleFontSizeRangeSp),
-            bottomOffset = style.bottomOffset.coerceIn(0, 200),
+            bottomOffset = style.bottomOffset.coerceIn(0, SUBTITLE_BOTTOM_OFFSET_MAX),
             appearance = style.appearance.normalized(),
         )
         if (subtitleStyle == normalized) return

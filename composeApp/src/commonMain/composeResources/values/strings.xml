@@ -2574,4 +2574,12 @@
     <string name="subtitle_shadow_opacity">Shadow opacity</string>
     <string name="subtitle_shadow_size">Shadow size</string>
     <string name="subtitle_reset_appearance">Reset appearance</string>
+    <string name="subtitle_brightness">Subtitle brightness</string>
+    <string name="subtitle_brightness_description">Dim subtitles, useful for HDR and dark scenes.</string>
+    <string name="subtitle_load_from_device">Load from device</string>
+    <string name="subtitle_device_source">Device</string>
+    <string name="subtitle_load_from_device_failed">Could not load this subtitle file.</string>
+    <string name="subtitle_gesture_size_level">Subtitle size %1$s</string>
+    <string name="subtitle_gesture_position_level">Subtitle position %1$s</string>
+    <string name="subtitle_gestures_hint">Swipe up or down in the middle of the screen, or drag with two fingers, to move subtitles. Pinch to resize.</string>
 </resources>

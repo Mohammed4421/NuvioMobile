@@ -2,6 +2,7 @@ package com.nuvio.app.features.player
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -375,6 +376,48 @@ internal fun PlayerScreenRuntime.rememberSurfaceGestureCallbacks(): PlayerSurfac
             publishPartyPlayback(positionMs = targetPositionMs)
         },
     )
+}
+
+@Composable
+internal fun PlayerScreenRuntime.rememberSubtitleGestureCallbacks(): PlayerSubtitleGestureCallbacks {
+    val hasVisibleSubtitles = selectedSubtitleIndex >= 0 || selectedAddonSubtitleId != null
+    val enabled = rememberUpdatedState(hasVisibleSubtitles && !playerControlsLocked)
+    val begin = rememberUpdatedState(::beginSubtitleGesture)
+    val update = rememberUpdatedState(::updateSubtitleGesture)
+    val end = rememberUpdatedState(::endSubtitleGesture)
+    // The object is a pointerInput key, so it must stay the same across recompositions;
+    // the States inside always hold the latest values.
+    return remember { PlayerSubtitleGestureCallbacks(enabled, begin, update, end) }
+}
+
+internal fun PlayerScreenRuntime.beginSubtitleGesture() {
+    subtitleGestureStartStyle = subtitleStyle
+}
+
+/**
+ * [zoom] scales the font size and [upwardFraction] (of the player height) moves the subtitles;
+ * the offset unit is 1/1000 of the height, so the text follows the finger.
+ */
+internal fun PlayerScreenRuntime.updateSubtitleGesture(zoom: Float, upwardFraction: Float) {
+    val start = subtitleGestureStartStyle ?: subtitleStyle.also { subtitleGestureStartStyle = it }
+    val fontSize = (start.fontSizeSp * zoom).roundToInt().coerceIn(subtitleFontSizeRangeSp)
+    val bottomOffset = (start.bottomOffset + upwardFraction * 1000f).roundToInt()
+        .coerceIn(0, SUBTITLE_BOTTOM_OFFSET_MAX)
+    val updated = start.copy(fontSizeSp = fontSize, bottomOffset = bottomOffset)
+    if (updated != subtitleStyle) {
+        PlayerSettingsRepository.setSubtitleStyle(updated)
+    }
+    val resizing = fontSize != start.fontSizeSp
+    liveGestureFeedback = GestureFeedbackState(
+        messageRes = if (resizing) Res.string.subtitle_gesture_size_level else Res.string.subtitle_gesture_position_level,
+        messageArgs = listOf(if (resizing) fontSize.toString() else bottomOffset.toString()),
+        icon = GestureFeedbackIcon.Subtitles,
+    )
+}
+
+internal fun PlayerScreenRuntime.endSubtitleGesture() {
+    subtitleGestureStartStyle = null
+    liveGestureFeedback = null
 }
 
 private val PendingSeekWindow = 1_500.milliseconds

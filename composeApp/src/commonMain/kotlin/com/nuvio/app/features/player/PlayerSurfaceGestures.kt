@@ -9,6 +9,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntSize
 import kotlin.math.abs
+import kotlin.math.hypot
 import kotlin.math.roundToLong
 
 internal fun Modifier.playerSurfaceTapGestures(
@@ -43,6 +44,18 @@ internal fun Modifier.playerSurfaceTapGestures(
         )
     }
 
+/**
+ * Subtitle gestures: a vertical swipe in the middle of the screen or a two-finger drag moves the
+ * subtitles, a pinch resizes them. [update] receives the totals since [begin]: the pinch zoom
+ * factor and the upward movement as a fraction of the player height.
+ */
+internal class PlayerSubtitleGestureCallbacks(
+    val enabled: State<Boolean>,
+    val begin: State<() -> Unit>,
+    val update: State<(zoom: Float, upwardFraction: Float) -> Unit>,
+    val end: State<() -> Unit>,
+)
+
 internal fun Modifier.playerSurfaceDragGestures(
     gestureController: PlayerGestureController?,
     layoutSize: IntSize,
@@ -61,6 +74,7 @@ internal fun Modifier.playerSurfaceDragGestures(
     clearLiveGestureFeedbackState: State<() -> Unit>,
     revealLockedOverlayState: State<() -> Unit>,
     commitHorizontalSeekState: State<(Long) -> Unit>,
+    subtitleGestures: PlayerSubtitleGestureCallbacks? = null,
 ): Modifier =
     pointerInput(
         gestureController,
@@ -68,6 +82,7 @@ internal fun Modifier.playerSurfaceDragGestures(
         sideGestureSystemEdgeExclusionPx,
         horizontalSeekSystemEdgeExclusionPx,
         playbackGesturesEnabled,
+        subtitleGestures,
     ) {
         if (!playbackGesturesEnabled) return@pointerInput
         awaitEachGesture {
@@ -98,6 +113,10 @@ internal fun Modifier.playerSurfaceDragGestures(
                 down.position.x > width * PlayerRightGestureBoundary -> PlayerSideGesture.Volume
                 else -> null
             }
+            val subtitleGesturesActive = subtitleGestures?.enabled?.value == true
+            val isInCenterStrip = !isInSideGestureSystemEdge && region == null &&
+                down.position.x >= width * PlayerLeftGestureBoundary &&
+                down.position.x <= width * PlayerRightGestureBoundary
 
             val initialBrightness = if (region == PlayerSideGesture.Brightness) {
                 controller?.currentBrightness()
@@ -116,6 +135,12 @@ internal fun Modifier.playerSurfaceDragGestures(
             var verticalGestureActivationDy = 0f
             val horizontalSeekBaselineMs = currentPositionMsState.value
             var horizontalSeekPreviewMs = horizontalSeekBaselineMs
+            var subtitlePinchStartSpread = 0f
+            var subtitlePinchStartCentroidY = 0f
+            var subtitleZoom = 1f
+            var subtitleUpwardFraction = 0f
+            var subtitleZoomActive = false
+            var subtitlePanActive = false
 
             while (true) {
                 val event = awaitPointerEvent()
@@ -125,6 +150,18 @@ internal fun Modifier.playerSurfaceDragGestures(
                 val delta = change.position - change.previousPosition
                 totalDx += delta.x
                 totalDy += delta.y
+
+                val pressedPointers = event.changes.filter { it.pressed }
+                if (gestureMode == null && subtitleGesturesActive && pressedPointers.size >= 2) {
+                    // A second finger turns the gesture into a subtitle pinch/drag.
+                    deactivateHoldToSpeedState.value()
+                    subtitlePinchStartSpread = pointerSpread(pressedPointers)
+                    subtitlePinchStartCentroidY = pointerCentroidY(pressedPointers)
+                    subtitleGestures?.begin?.value?.invoke()
+                    gestureMode = PlayerGestureMode.SubtitleTransform
+                    event.changes.forEach { it.consume() }
+                    continue
+                }
 
                 if (gestureMode == null) {
                     val holdToSpeedActive = isHoldToSpeedGestureActiveState.value
@@ -156,6 +193,12 @@ internal fun Modifier.playerSurfaceDragGestures(
                         verticalDominant && region == PlayerSideGesture.Volume && initialVolume != null -> {
                             verticalGestureActivationDy = totalDy
                             PlayerGestureMode.Volume
+                        }
+
+                        verticalDominant && isInCenterStrip && subtitleGesturesActive -> {
+                            verticalGestureActivationDy = totalDy
+                            subtitleGestures?.begin?.value?.invoke()
+                            PlayerGestureMode.SubtitleMove
                         }
 
                         else -> null
@@ -212,13 +255,58 @@ internal fun Modifier.playerSurfaceDragGestures(
                         controller?.setVolume((initialVolume?.fraction ?: 0f) + gestureDeltaFraction)
                             ?.let(showVolumeFeedbackState.value)
                     }
+
+                    PlayerGestureMode.SubtitleMove -> {
+                        val activeTotalDy = totalDy - verticalGestureActivationDy
+                        subtitleGestures?.update?.value?.invoke(1f, -activeTotalDy / height)
+                    }
+
+                    PlayerGestureMode.SubtitleTransform -> {
+                        if (pressedPointers.size >= 2) {
+                            val spread = pointerSpread(pressedPointers)
+                            val centroidDy = pointerCentroidY(pressedPointers) - subtitlePinchStartCentroidY
+                            if (subtitlePinchStartSpread > 0f && spread > 0f) {
+                                val zoom = spread / subtitlePinchStartSpread
+                                // Small dead zones keep a pinch from also nudging the position and
+                                // a two-finger drag from also resizing.
+                                if (!subtitleZoomActive && abs(zoom - 1f) > SubtitlePinchZoomDeadZone) {
+                                    subtitleZoomActive = true
+                                }
+                                if (subtitleZoomActive) subtitleZoom = zoom
+                            }
+                            if (!subtitlePanActive && abs(centroidDy) > viewConfiguration.touchSlop * 2f) {
+                                subtitlePanActive = true
+                            }
+                            if (subtitlePanActive) subtitleUpwardFraction = -centroidDy / height
+                            subtitleGestures?.update?.value?.invoke(subtitleZoom, subtitleUpwardFraction)
+                        }
+                        event.changes.forEach { it.consume() }
+                        continue
+                    }
                 }
                 change.consume()
             }
 
+            if (gestureMode == PlayerGestureMode.SubtitleMove || gestureMode == PlayerGestureMode.SubtitleTransform) {
+                subtitleGestures?.end?.value?.invoke()
+            }
             if (gestureMode == PlayerGestureMode.HorizontalSeek && !isHoldToSpeedGestureActiveState.value) {
                 commitHorizontalSeekState.value(horizontalSeekPreviewMs)
                 clearLiveGestureFeedbackState.value()
             }
         }
     }
+
+private const val SubtitlePinchZoomDeadZone = 0.06f
+
+private fun pointerSpread(pointers: List<androidx.compose.ui.input.pointer.PointerInputChange>): Float {
+    if (pointers.size < 2) return 0f
+    val first = pointers[0].position
+    val second = pointers[1].position
+    return hypot(first.x - second.x, first.y - second.y)
+}
+
+private fun pointerCentroidY(pointers: List<androidx.compose.ui.input.pointer.PointerInputChange>): Float {
+    if (pointers.isEmpty()) return 0f
+    return pointers.sumOf { it.position.y.toDouble() }.toFloat() / pointers.size
+}

@@ -1,0 +1,67 @@
+name: Build Custom APK
+
+# Builds a personal, signed release APK of this branch. Run it from the Actions tab.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build custom APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Prepare signing and properties
+        env:
+          # Optional secrets. Without CUSTOM_KEYSTORE_BASE64 a new key is made on every run,
+          # so each new APK has to replace the previous one by uninstalling it first.
+          CUSTOM_KEYSTORE_BASE64: ${{ secrets.CUSTOM_KEYSTORE_BASE64 }}
+          CUSTOM_KEYSTORE_PASSWORD: ${{ secrets.CUSTOM_KEYSTORE_PASSWORD }}
+          # Optional extra local.properties lines (Trakt, Simkl, Supabase keys and so on).
+          CUSTOM_LOCAL_PROPERTIES: ${{ secrets.CUSTOM_LOCAL_PROPERTIES }}
+        run: |
+          keystore="${RUNNER_TEMP}/custom-release.jks"
+          if [[ -n "${CUSTOM_KEYSTORE_BASE64}" ]]; then
+            printf '%s' "${CUSTOM_KEYSTORE_BASE64}" | base64 --decode > "${keystore}"
+            password="${CUSTOM_KEYSTORE_PASSWORD}"
+          else
+            password="custom-$(openssl rand -hex 12)"
+            keytool -genkeypair -keystore "${keystore}" -storepass "${password}" -keypass "${password}" \
+              -alias custom -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Nuvio Custom"
+          fi
+          printf '%s\n' "${CUSTOM_LOCAL_PROPERTIES}" > local.properties
+          {
+            echo "NUVIO_RELEASE_STORE_FILE=${keystore}"
+            echo "NUVIO_RELEASE_STORE_PASSWORD=${password}"
+            echo "NUVIO_RELEASE_KEY_ALIAS=custom"
+            echo "NUVIO_RELEASE_KEY_PASSWORD=${password}"
+          } >> local.properties
+
+      - name: Build APK
+        run: >
+          ./gradlew :androidApp:assembleFullRelease
+          -Pnuvio.android.distribution=full
+          -Pnuvio.ios.distribution=appstore
+          -Pnuvio.applicationIdSuffix=.plus
+          --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuvio-custom-apk
+          path: androidApp/build/outputs/apk/full/release/*.apk
+          if-no-files-found: error
+          retention-days: 14

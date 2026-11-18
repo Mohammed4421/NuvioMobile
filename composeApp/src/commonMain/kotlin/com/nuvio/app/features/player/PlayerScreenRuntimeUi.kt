@@ -138,6 +138,7 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi(
         }
     }
     val gestureCallbacks = rememberSurfaceGestureCallbacks()
+    val subtitleGestureCallbacks = rememberSubtitleGestureCallbacks()
     val fold = LocalFold.current?.takeIf { !isInPip }
     val videoModifier = if (fold != null) Modifier.fillMaxWidth().height(fold.top) else Modifier.fillMaxSize()
     val panelModifier = if (fold != null) Modifier.fillMaxSize().padding(top = fold.bottom) else Modifier.fillMaxSize()
@@ -197,6 +198,7 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi(
                 clearLiveGestureFeedbackState = gestureCallbacks.clearLiveGestureFeedback,
                 revealLockedOverlayState = gestureCallbacks.revealLockedOverlay,
                 commitHorizontalSeekState = gestureCallbacks.commitHorizontalSeek,
+                subtitleGestures = subtitleGestureCallbacks,
             ),
     ) {
         val playerSurfaceSourceUrl = if (isP2pPlaybackActive) p2pResolvedSourceUrl else activeSourceUrl
@@ -636,6 +638,13 @@ private fun PlayerScreenRuntime.RenderPlayerModals(displayedPositionMs: Long) {
             controlsVisible = true
         },
     )
+    val deviceSubtitleSourceLabel = stringResource(Res.string.subtitle_device_source)
+    val deviceSubtitleLoadFailed = stringResource(Res.string.subtitle_load_from_device_failed)
+    val pickDeviceSubtitle = rememberLocalSubtitlePicker { result ->
+        result
+            .onSuccess { picked -> attachDeviceSubtitle(picked.toAddonSubtitle(deviceSubtitleSourceLabel)) }
+            .onFailure { showGestureMessage(deviceSubtitleLoadFailed) }
+    }
     PlayerScreenModalHosts(
         pendingP2pSwitch = pendingP2pSwitch,
         onPendingP2pSwitchChanged = { pendingP2pSwitch = it },
@@ -708,16 +717,21 @@ private fun PlayerScreenRuntime.RenderPlayerModals(displayedPositionMs: Long) {
             }
         },
         onAddonSubtitleSelected = { addon ->
-            isUserExplicitSubtitleSelection = true
-            selectedAddonSubtitleId = addon.selectionKey
-            selectedSubtitleIndex = -1
-            useCustomSubtitles = true
-            preferredSubtitleSelectionApplied = true
-            persistAddonSubtitlePreference(addon)
-            attachSelectedAddonSubtitleWithAutoSync(addon.url) // AutoSync hook
-            if (hasBurnedInServerSubtitle) clearServerSubtitleTrack()
+            if (addon.isDeviceSubtitle) {
+                selectDeviceSubtitle(addon)
+            } else {
+                isUserExplicitSubtitleSelection = true
+                selectedAddonSubtitleId = addon.selectionKey
+                selectedSubtitleIndex = -1
+                useCustomSubtitles = true
+                preferredSubtitleSelectionApplied = true
+                persistAddonSubtitlePreference(addon)
+                attachSelectedAddonSubtitleWithAutoSync(addon.url) // AutoSync hook
+                if (hasBurnedInServerSubtitle) clearServerSubtitleTrack()
+            }
         },
         onFetchAddonSubtitles = { fetchAddonSubtitlesForActiveItem() },
+        onLoadSubtitleFromDevice = pickDeviceSubtitle,
         onSubtitleStyleChanged = PlayerSettingsRepository::setSubtitleStyle,
         onSubtitleDelayChanged = { delayMs -> setSubtitleDelay(delayMs) },
         onSubtitleDelayReset = { setSubtitleDelay(0) },

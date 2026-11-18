@@ -85,6 +85,13 @@ internal fun SubtitleAppearanceSettings(
                 valueRange = 0..100, step = 5, isTablet = isTablet, enabled = enabled,
                 onValueChange = { onStyleChanged(style.copy(textColor = style.textColor.copy(alpha = it / 100f))) },
             )
+            SettingsGroupDivider(isTablet)
+            SettingsSliderRow(
+                title = stringResource(Res.string.subtitle_brightness),
+                value = style.appearance.brightness, valueText = { "$it%" },
+                valueRange = SUBTITLE_BRIGHTNESS_MIN..SUBTITLE_BRIGHTNESS_MAX, step = 5, isTablet = isTablet, enabled = enabled,
+                onValueChange = { onStyleChanged(style.copy(appearance = style.appearance.copy(brightness = it))) },
+            )
         }
         SettingsGroup(isTablet) {
             SettingsNavigationRow(
@@ -144,7 +151,7 @@ internal fun SubtitleAppearanceSettings(
             SettingsSliderRow(
                 title = stringResource(Res.string.settings_playback_subtitle_vertical_offset),
                 value = style.bottomOffset, valueText = { it.toString() },
-                valueRange = 0..200, step = 5, isTablet = isTablet, enabled = enabled,
+                valueRange = 0..SUBTITLE_BOTTOM_OFFSET_MAX, step = 5, isTablet = isTablet, enabled = enabled,
                 onValueChange = { onStyleChanged(style.copy(bottomOffset = it)) },
             )
         }

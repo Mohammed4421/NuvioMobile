@@ -53,4 +53,22 @@ class SubtitleAppearanceTest {
         val overflowing = truncated + ByteArray(16) { -1 }
         assertFalse(isSupportedSubtitleFont("font.ttf", overflowing))
     }
+
+    @Test
+    fun brightnessIsBoundedAndDimsColorsWithoutTouchingAlpha() {
+        assertEquals(SUBTITLE_BRIGHTNESS_MAX, SubtitleAppearance().brightness)
+        assertEquals(SUBTITLE_BRIGHTNESS_MIN, decodeSubtitleAppearance("""{"brightness":3}""").brightness)
+        assertEquals(SUBTITLE_BRIGHTNESS_MAX, decodeSubtitleAppearance("""{"brightness":500}""").brightness)
+        val dimmed = Color(1f, 1f, 1f, 0.8f).dimmedBy(0.5f)
+        assertEquals(0.5f, dimmed.red, 0.01f)
+        assertEquals(0.8f, dimmed.alpha, 0.01f)
+        assertEquals(Color.White, Color.White.dimmedBy(1f))
+    }
+
+    @Test
+    fun deviceSubtitleFileNamesWithoutLanguageStayUnknown() {
+        assertEquals("", guessLanguageFromSubtitleFileName("Movie.2020.1080p.WEB.srt"))
+        assertEquals("", guessLanguageFromSubtitleFileName("subtitle.srt"))
+        assertEquals("", guessLanguageFromSubtitleFileName("noextension"))
+    }
 }

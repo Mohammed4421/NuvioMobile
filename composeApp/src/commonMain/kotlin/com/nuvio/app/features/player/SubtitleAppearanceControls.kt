@@ -74,6 +74,11 @@ internal fun SubtitleAppearanceControls(
         SubtitleColorControl(stringResource(Res.string.compose_player_color), style.textColor) {
             onStyleChanged(style.copy(textColor = it.copy(alpha = style.textColor.alpha)))
         }
+        SubtitleValueControl(
+            stringResource(Res.string.subtitle_brightness), style.appearance.brightness,
+            SUBTITLE_BRIGHTNESS_MIN..SUBTITLE_BRIGHTNESS_MAX, 5,
+            display = "${style.appearance.brightness}%",
+        ) { onStyleChanged(style.copy(appearance = style.appearance.copy(brightness = it))) }
         val textOpacity = (style.textColor.alpha * 100).roundToInt()
         SubtitleValueControl(stringResource(Res.string.compose_player_text_opacity), textOpacity, 0..100, 5, "$textOpacity%") {
             onStyleChanged(style.copy(textColor = style.textColor.copy(alpha = it / 100f)))
@@ -109,7 +114,9 @@ internal fun SubtitleAppearanceControls(
                 onStyleChanged(style.copy(appearance = style.appearance.copy(shadowSize = it)))
             }
         }
-        SubtitleValueControl(stringResource(Res.string.compose_player_bottom_offset), style.bottomOffset, 0..200, 5) {
+        SubtitleValueControl(
+            stringResource(Res.string.compose_player_bottom_offset), style.bottomOffset, 0..SUBTITLE_BOTTOM_OFFSET_MAX, 10,
+        ) {
             onStyleChanged(style.copy(bottomOffset = it))
         }
     }

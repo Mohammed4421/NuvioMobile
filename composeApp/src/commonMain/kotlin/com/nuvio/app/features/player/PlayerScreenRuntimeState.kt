@@ -162,6 +162,8 @@ internal class PlayerScreenRuntime(
     var pausedOverlayVisible by mutableStateOf(false)
     var gestureFeedback by mutableStateOf<GestureFeedbackState?>(null)
     var liveGestureFeedback by mutableStateOf<GestureFeedbackState?>(null)
+    /** Style when the current subtitle drag/pinch started; null when no such gesture runs. */
+    var subtitleGestureStartStyle: SubtitleStyleState? = null
     var renderedGestureFeedback by mutableStateOf<GestureFeedbackState?>(null)
     var lockedOverlayVisible by mutableStateOf(false)
     var gestureMessageJob by mutableStateOf<Job?>(null)
@@ -263,6 +265,8 @@ internal class PlayerScreenRuntime(
     var selectedSubtitleIndex by mutableStateOf(-1)
     var selectedAddonSubtitleId by mutableStateOf<String?>(null)
     var useCustomSubtitles by mutableStateOf(false)
+    /** Subtitle files the user picked from the device during this session. */
+    var deviceSubtitles by mutableStateOf<List<AddonSubtitle>>(emptyList())
     var preferredAudioSelectionApplied by mutableStateOf(false)
     var appliedAudioPreferences: AppliedAudioPreferences? = null
     var preferredSubtitleSelectionApplied by mutableStateOf(false)

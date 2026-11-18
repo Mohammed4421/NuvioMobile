@@ -2063,7 +2063,13 @@ private class NuvioLibmpvView(
             }
 
             override fun setSubtitleUri(url: String) {
-                executeMpv { mpv.command("sub-add", url, "select") }
+                // Files picked from the device live in the app cache; give mpv the plain path.
+                val target = if (url.startsWith("file:", ignoreCase = true)) {
+                    android.net.Uri.parse(url).path ?: url
+                } else {
+                    url
+                }
+                executeMpv { mpv.command("sub-add", target, "select") }
             }
 
             override fun clearExternalSubtitle() {
@@ -2110,10 +2116,10 @@ private class NuvioLibmpvView(
                 executeMpv {
                     appliedSubtitleStyle = style
                     mpv.setPropertyString("sub-ass-override", "no")
-                    mpv.setPropertyString("sub-color", style.textColor.toMpvColor())
-                    mpv.setPropertyString("sub-back-color", style.backgroundColor.toMpvColor())
-                    mpv.setPropertyString("sub-outline-color", style.outlineColor.toMpvColor())
-                    mpv.setPropertyString("sub-border-color", style.outlineColor.toMpvColor())
+                    mpv.setPropertyString("sub-color", style.textColor.dimmedBy(style.brightnessFactor).toMpvColor())
+                    mpv.setPropertyString("sub-back-color", style.backgroundColor.dimmedBy(style.brightnessFactor).toMpvColor())
+                    mpv.setPropertyString("sub-outline-color", style.outlineColor.dimmedBy(style.brightnessFactor).toMpvColor())
+                    mpv.setPropertyString("sub-border-color", style.outlineColor.dimmedBy(style.brightnessFactor).toMpvColor())
                     mpv.setPropertyString("sub-border-style", style.toMpvSubtitleBorderStyle())
                     mpv.setPropertyString("sub-bold", if (style.bold) "yes" else "no")
                     mpv.setPropertyInt("sub-font-size", style.toMpvSubtitleFontSize())
@@ -2615,8 +2621,9 @@ private fun android.widget.FrameLayout.findAssOverlayChild(): AssSubtitleSurface
 private fun PlayerView.applySubtitleStyle(style: SubtitleStyleState, pipVideoHeightPx: Float? = null) {
     subtitleView?.apply {
         val baseBottomPaddingFraction = SubtitleView.DEFAULT_BOTTOM_PADDING_FRACTION * 2f / 3f
-        val offsetFraction = (style.bottomOffset / 1000f).coerceIn(0f, 0.2f)
-        val bottomPaddingFraction = (baseBottomPaddingFraction + offsetFraction).coerceIn(0f, 0.4f)
+        val offsetFraction = (style.bottomOffset / 1000f).coerceIn(0f, SUBTITLE_BOTTOM_OFFSET_MAX / 1000f)
+        val bottomPaddingFraction = (baseBottomPaddingFraction + offsetFraction).coerceIn(0f, 0.7f)
+        applySubtitleBrightnessLayer(style.brightnessFactor)
 
         setApplyEmbeddedStyles(false)
         setApplyEmbeddedFontSizes(false)
@@ -2643,6 +2650,20 @@ private fun PlayerView.applySubtitleStyle(style: SubtitleStyleState, pipVideoHei
             else -> setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp * PIP_FALLBACK_SUBTITLE_SCALE)
         }
     }
+}
+
+/**
+ * Dims everything the SubtitleView draws (text and bitmap subtitles such as PGS) by drawing it
+ * through a hardware layer with a color-scaling filter. Alpha is kept, so dimmed text stays opaque.
+ */
+private fun View.applySubtitleBrightnessLayer(factor: Float) {
+    if (factor >= 1f) {
+        if (layerType != View.LAYER_TYPE_NONE) setLayerType(View.LAYER_TYPE_NONE, null)
+        return
+    }
+    val matrix = android.graphics.ColorMatrix().apply { setScale(factor, factor, factor, 1f) }
+    val paint = android.graphics.Paint().apply { colorFilter = android.graphics.ColorMatrixColorFilter(matrix) }
+    setLayerType(View.LAYER_TYPE_HARDWARE, paint)
 }
 
 /**

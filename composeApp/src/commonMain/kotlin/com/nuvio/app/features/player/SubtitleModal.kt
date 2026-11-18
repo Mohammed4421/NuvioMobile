@@ -30,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CloudDownload
+import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -59,6 +60,7 @@ import nuvio.composeapp.generated.resources.compose_player_style
 import nuvio.composeapp.generated.resources.compose_player_subtitles
 import nuvio.composeapp.generated.resources.settings_playback_option_forced
 import nuvio.composeapp.generated.resources.subtitle_language_unknown
+import nuvio.composeapp.generated.resources.subtitle_load_from_device
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -78,6 +80,7 @@ fun SubtitleModal(
     onBuiltInTrackSelected: (Int) -> Unit,
     onAddonSubtitleSelected: (AddonSubtitle) -> Unit,
     onFetchAddonSubtitles: () -> Unit,
+    onLoadFromDevice: (() -> Unit)? = null,
     onStyleChanged: (SubtitleStyleState) -> Unit,
     onSubtitleDelayChanged: (Int) -> Unit,
     onSubtitleDelayReset: () -> Unit,
@@ -177,12 +180,20 @@ fun SubtitleModal(
                 modifier = Modifier.align(Alignment.BottomStart),
                 verticalArrangement = Arrangement.Bottom,
             ) {
-                Text(
-                    text = stringResource(Res.string.compose_player_subtitles),
-                    color = Color.White,
-                    style = MaterialTheme.typography.headlineMedium,
+                Row(
                     modifier = Modifier.padding(bottom = 12.dp),
-                )
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.compose_player_subtitles),
+                        color = Color.White,
+                        style = MaterialTheme.typography.headlineMedium,
+                    )
+                    if (onLoadFromDevice != null) {
+                        LoadSubtitleFromDeviceButton(onClick = onLoadFromDevice)
+                    }
+                }
 
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
@@ -319,6 +330,32 @@ fun SubtitleModal(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LoadSubtitleFromDeviceButton(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(Color.White.copy(alpha = 0.12f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Folder,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(18.dp),
+        )
+        Text(
+            text = stringResource(Res.string.subtitle_load_from_device),
+            color = Color.White,
+            style = MaterialTheme.typography.labelLarge,
+            maxLines = 1,
+        )
     }
 }
 

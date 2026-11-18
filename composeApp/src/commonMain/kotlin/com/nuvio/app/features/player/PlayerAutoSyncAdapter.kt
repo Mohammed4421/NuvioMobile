@@ -10,7 +10,8 @@ internal fun PlayerEngineController.setAutoSyncSubtitleCandidates(
 }
 
 internal fun PlayerEngineController.setSubtitleUriWithAutoSync(url: String) {
-    val autoSync = this as? AutoSyncPlayerController
+    // Local files (picked from the device or downloaded) are attached as they are: AutoSync reads over HTTP.
+    val autoSync = (this as? AutoSyncPlayerController)?.takeUnless { url.isLocalSubtitleUri() }
     if (autoSync != null) {
         autoSync.setSubtitleUriWithAutoSync(url)
     } else {
@@ -19,7 +20,7 @@ internal fun PlayerEngineController.setSubtitleUriWithAutoSync(url: String) {
 }
 
 internal fun PlayerEngineController.setSubtitleUriWithSelectedAutoSync(url: String) {
-    val autoSync = this as? AutoSyncPlayerController
+    val autoSync = (this as? AutoSyncPlayerController)?.takeUnless { url.isLocalSubtitleUri() }
     if (autoSync != null) {
         autoSync.setSubtitleUriWithSelectedAutoSync(url)
     } else {

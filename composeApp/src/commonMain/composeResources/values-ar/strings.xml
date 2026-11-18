@@ -2527,4 +2527,12 @@
     <string name="subtitle_shadow_opacity">عتامة الظل</string>
     <string name="subtitle_shadow_size">حجم الظل</string>
     <string name="subtitle_reset_appearance">إعادة ضبط المظهر</string>
+    <string name="subtitle_brightness">سطوع الترجمة</string>
+    <string name="subtitle_brightness_description">خفّف إضاءة الترجمة، مفيد مع HDR والمشاهد المظلمة.</string>
+    <string name="subtitle_load_from_device">تحميل من الجهاز</string>
+    <string name="subtitle_device_source">الجهاز</string>
+    <string name="subtitle_load_from_device_failed">تعذّر تحميل ملف الترجمة.</string>
+    <string name="subtitle_gesture_size_level">حجم الترجمة %1$s</string>
+    <string name="subtitle_gesture_position_level">موضع الترجمة %1$s</string>
+    <string name="subtitle_gestures_hint">اسحب لأعلى أو لأسفل في منتصف الشاشة، أو بإصبعين، لتحريك الترجمة. قرّب أو باعد إصبعين لتكبيرها وتصغيرها.</string>
 </resources>

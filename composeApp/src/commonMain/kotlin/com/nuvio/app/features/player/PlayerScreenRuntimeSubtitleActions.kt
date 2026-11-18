@@ -115,3 +115,27 @@ internal fun PlayerScreenRuntime.applySubtitleAutoSyncCue(cue: SubtitleSyncCue) 
         .coerceIn(SUBTITLE_DELAY_MIN_MS, SUBTITLE_DELAY_MAX_MS)
     setSubtitleDelay(newDelayMs)
 }
+
+internal val AddonSubtitle.isDeviceSubtitle: Boolean
+    get() = id.startsWith("device:")
+
+/** Adds a subtitle file picked from the device to the list and switches to it. */
+internal fun PlayerScreenRuntime.attachDeviceSubtitle(subtitle: AddonSubtitle) {
+    deviceSubtitles = listOf(subtitle) + deviceSubtitles.filterNot { it.url == subtitle.url }
+    selectDeviceSubtitle(subtitle)
+}
+
+/**
+ * Device files are attached directly: they are not saved as a per-title preference (the cached
+ * copy is temporary) and AutoSync, which downloads over HTTP, is skipped.
+ */
+internal fun PlayerScreenRuntime.selectDeviceSubtitle(subtitle: AddonSubtitle) {
+    isUserExplicitSubtitleSelection = true
+    selectedAddonSubtitleId = subtitle.selectionKey
+    selectedSubtitleIndex = -1
+    useCustomSubtitles = true
+    preferredSubtitleSelectionApplied = true
+    subtitleAutoSyncState = SubtitleAutoSyncUiState()
+    playerController?.setSubtitleUri(subtitle.url)
+    if (hasBurnedInServerSubtitle) clearServerSubtitleTrack()
+}

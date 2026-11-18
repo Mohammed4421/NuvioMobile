@@ -187,6 +187,17 @@ private fun readResponseBody(body: ResponseBody?): String {
     }
 }
 
+/**
+ * Subtitles picked from the device are copied to the app cache as UTF-8 and attached by a
+ * `file:` URL; read those straight from disk instead of going through OkHttp.
+ */
+private suspend fun readLocalTextFileOrNull(url: String): String? {
+    if (!url.startsWith("file:", ignoreCase = true)) return null
+    return withContext(Dispatchers.IO) {
+        java.io.File(java.net.URI(url)).readText(Charsets.UTF_8)
+    }
+}
+
 private suspend fun executeTextRequest(
     method: String,
     url: String,
@@ -244,7 +255,7 @@ actual suspend fun httpGetTextWithHeaders(
     url: String,
     headers: Map<String, String>,
 ): String =
-    executeTextRequest(
+    readLocalTextFileOrNull(url) ?: executeTextRequest(
         method = "GET",
         url = url,
         headers = mapOf("Accept" to "application/json") + headers,

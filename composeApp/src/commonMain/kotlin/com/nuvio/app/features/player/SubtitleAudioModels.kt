@@ -129,7 +129,13 @@ val SubtitleColorSwatches = listOf(
     Color(0xFF22C55E),
     Color(0xFF3B82F6),
     Color.Black,
+    Color(0xFF808080),
+    Color(0xFFD3D3D3),
+    Color(0xFF696969),
 )
+
+/** Upper bound of [SubtitleStyleState.bottomOffset]. */
+const val SUBTITLE_BOTTOM_OFFSET_MAX = 600
 
 val SubtitleBackgroundColorSwatches = listOf(
     Color.Transparent,

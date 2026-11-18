@@ -40,7 +40,7 @@ internal fun StyledSubtitleOverlay(text: String, style: SubtitleStyleState, modi
         Box(
             Modifier.fillMaxSize().padding(
                 horizontal = 16.dp * scale,
-                vertical = maxHeight * (0.0533f + style.bottomOffset.coerceIn(0, 200) / 1000f),
+                vertical = maxHeight * (0.0533f + style.bottomOffset.coerceIn(0, SUBTITLE_BOTTOM_OFFSET_MAX) / 1000f),
             ),
             contentAlignment = Alignment.BottomCenter,
         ) {
@@ -78,6 +78,7 @@ internal fun StyledSubtitleText(
         val radius = with(density) { (style.appearance.backgroundRadius.dp * scale).toPx() }
         val outline = with(density) { (style.outlineWidth.dp * scale).toPx() }
         val shadowSize = with(density) { (style.appearance.shadowSize.dp * scale).toPx() }
+        val brightness = style.brightnessFactor
         Canvas(
             Modifier.fillMaxWidth().height(textHeight).semantics { this.text = AnnotatedString(text) },
         ) {
@@ -85,19 +86,19 @@ internal fun StyledSubtitleText(
             val left = (size.width - boxWidth) / 2f
             val origin = Offset(left + paddingX, paddingY)
             drawRoundRect(
-                color = style.backgroundColor,
+                color = style.backgroundColor.dimmedBy(brightness),
                 topLeft = Offset(left, 0f),
                 size = androidx.compose.ui.geometry.Size(boxWidth, size.height),
                 cornerRadius = CornerRadius(radius),
             )
             if (style.outlineEnabled && outline > 0) {
                 drawText(
-                    layout, color = style.outlineColor.copy(alpha = style.outlineColor.alpha * style.textColor.alpha),
+                    layout, color = style.outlineColor.copy(alpha = style.outlineColor.alpha * style.textColor.alpha).dimmedBy(brightness),
                     topLeft = origin, drawStyle = Stroke(outline * 2), shadow = Shadow.None,
                 )
             }
             drawText(
-                layout, color = style.textColor, topLeft = origin, drawStyle = Fill,
+                layout, color = style.textColor.dimmedBy(brightness), topLeft = origin, drawStyle = Fill,
                 shadow = if (style.appearance.shadowEnabled) Shadow(
                     color = Color.Black.copy(alpha = style.appearance.shadowOpacity / 100f * style.textColor.alpha),
                     offset = Offset(shadowSize, shadowSize),

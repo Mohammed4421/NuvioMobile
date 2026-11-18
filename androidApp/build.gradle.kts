@@ -155,7 +155,15 @@ android {
     }
 }
 
+// Optional suffix (e.g. -Pnuvio.applicationIdSuffix=.plus) so a personal build installs next to the official app.
+val customApplicationIdSuffix = providers.gradleProperty("nuvio.applicationIdSuffix").orNull
+    ?.trim()
+    ?.takeIf { it.isNotEmpty() }
+
 androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        customApplicationIdSuffix?.let { suffix -> variant.applicationId.set("com.nuvio.app$suffix") }
+    }
     onVariants(selector().withBuildType("debug")) { variant ->
         variant.applicationId.set("com.nuviodebug.com")
     }
