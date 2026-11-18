@@ -23,6 +23,7 @@ for title, names in (("Failing only in Nuvio Plus", new), (f"Failing in Nuvio Pl
         lines += [f"  - `{name}`" for name in names]
 open("checks-tests.md", "w").write("\n".join(lines) + "\n")
 print("\n".join(lines))
+print(f"::notice::{lines[0][2:]}")
 if plus["total"] == 0:
     sys.exit("No unit tests ran.")
 for name in new[:20]:

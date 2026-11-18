@@ -98,3 +98,4 @@ if (( $(adb shell getprop ro.build.version.sdk | tr -d '\r') >= 33 )); then
 fi
 
 echo "- Emulator (Android $(adb shell getprop ro.build.version.release | tr -d '\r')): ${summary}opened without a crash; draws its UI; survives landscape rotation and Back; Arabic start: ${rtl}. Screenshots are in the run's emulator artifact." >> checks-emulator.md
+echo "::notice::$(tail -n 1 checks-emulator.md | sed 's/^- //')"

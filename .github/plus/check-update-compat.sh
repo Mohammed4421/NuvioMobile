@@ -38,5 +38,6 @@ if [[ "${new_cert}" != "${old_cert}" ]]; then
 fi
 if (( status == 0 )); then
   echo "- Update over ${previous_tag}: same package and signature, version code ${old_code} → ${new_code}." >> checks.md
+  echo "::notice::Update over ${previous_tag}: same package and signature, version code ${old_code} → ${new_code}."
 fi
 exit "${status}"
