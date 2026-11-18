@@ -9,6 +9,8 @@ permissions:
 
 jobs:
   validate_pr_body:
+    # Nuvio's issue and pull request housekeeping; not for forks such as Nuvio Plus.
+    if: github.repository == 'NuvioMedia/NuvioMobile'
     runs-on: ubuntu-latest
     steps:
       - name: Validate required PR sections
