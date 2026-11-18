@@ -6,9 +6,9 @@ name: Nuvio Plus build and checks
 # Trust boundaries:
 #   * Jobs that run Gradle or other code of the commit (build, plus-tests, nuvio-tests) get a
 #     read-only token, no stored Git credentials and no signing key.
-#   * Gradle builds unsigned APKs. The sign job signs them without running Gradle or the commit's
-#     build code, and is the only job that can see a private key (passed only by the publishing
-#     workflow).
+#   * Gradle signs with a throwaway key made in the build job. The sign job replaces that signature
+#     without running Gradle or the commit's build code, and is the only job that can see the release
+#     key (a private one is passed only by the publishing workflow).
 #   * The SHA-256 manifest of the APKs travels in job outputs, which no other job can change, and is
 #     checked when the APKs are signed and again before they are published.
 #   * The result is reported as commit statuses (<status_prefix>/checks and /review), which only this
@@ -112,7 +112,23 @@ jobs:
           BUILD: ${{ steps.number.outputs.build }}
         run: bash .github/plus/prepare-build.sh "${BUILD}"
 
-      - name: Build unsigned APKs
+      - name: Throwaway build key (not the release identity)
+        # Android's Gradle plugin refuses to package a release build without a key. Gradle gets a key
+        # made here and discarded with the job; the sign job replaces its signature with the release
+        # key, so the release key never meets Gradle.
+        run: |
+          password="$(openssl rand -hex 24)"
+          keytool -genkeypair -noprompt -storetype PKCS12 -keystore "${RUNNER_TEMP}/build-only.p12" \
+            -storepass "${password}" -keypass "${password}" -alias build-only -keyalg RSA -keysize 2048 \
+            -validity 2 -dname "CN=Nuvio Plus build-only key (replaced before publishing)"
+          {
+            echo "NUVIO_RELEASE_STORE_FILE=${RUNNER_TEMP}/build-only.p12"
+            echo "NUVIO_RELEASE_STORE_PASSWORD=${password}"
+            echo "NUVIO_RELEASE_KEY_ALIAS=build-only"
+            echo "NUVIO_RELEASE_KEY_PASSWORD=${password}"
+          } >> local.properties
+
+      - name: Build APKs
         env:
           BUILD: ${{ steps.number.outputs.build }}
         run: |
@@ -146,14 +162,14 @@ jobs:
           [[ "$(ls out/*.apk | wc -l)" -eq 4 ]] || {
             echo "::error::Expected 4 APKs, found: $(ls androidApp/build/outputs/apk/full/release/ | tr '\n' ' ')"; exit 1; }
           cp checks-build.md out/
-          (cd out && sha256sum *.apk > unsigned.sha256)
-          cat out/unsigned.sha256
-          echo "manifest=$(sha256sum out/unsigned.sha256 | cut -c1-64)" >> "${GITHUB_OUTPUT}"
+          (cd out && sha256sum *.apk > built.sha256)
+          cat out/built.sha256
+          echo "manifest=$(sha256sum out/built.sha256 | cut -c1-64)" >> "${GITHUB_OUTPUT}"
 
-      - name: Keep the unsigned APKs
+      - name: Keep the APKs to sign
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: nuvio-plus-unsigned
+          name: nuvio-plus-built
           path: out
           if-no-files-found: error
           retention-days: 3
@@ -197,20 +213,20 @@ jobs:
           git config --local --get-regexp '^includeif\.' | awk '{print $1}' | xargs -r -n1 git config --local --unset-all || true
           if git config --list --includes | grep -qi 'authorization'; then echo "::error::A Git token is still stored"; exit 1; fi
 
-      - name: Get the unsigned APKs
+      - name: Get the APKs to sign
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: nuvio-plus-unsigned
-          path: unsigned
+          name: nuvio-plus-built
+          path: built
 
       - name: Check they are the APKs the build made
         env:
           EXPECTED: ${{ needs.build.outputs.manifest }}
         run: |
-          [[ "$(sha256sum unsigned/unsigned.sha256 | cut -c1-64)" == "${EXPECTED}" ]] \
+          [[ "$(sha256sum built/built.sha256 | cut -c1-64)" == "${EXPECTED}" ]] \
             || { echo "::error::The APK list does not match the build output"; exit 1; }
-          (cd unsigned && sha256sum --check --strict unsigned.sha256)
-          [[ "$(ls unsigned/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; exit 1; }
+          (cd built && sha256sum --check --strict built.sha256)
+          [[ "$(ls built/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; exit 1; }
 
       - name: Sign
         id: sign
@@ -219,9 +235,9 @@ jobs:
           CUSTOM_KEYSTORE_PASSWORD: ${{ secrets.CUSTOM_KEYSTORE_PASSWORD }}
           CUSTOM_KEY_ALIAS: ${{ secrets.CUSTOM_KEY_ALIAS }}
         run: |
-          certificate="$(bash .github/plus/sign-apks.sh unsigned signed signing/nuvio-plus.p12)"
+          certificate="$(bash .github/plus/sign-apks.sh built signed signing/nuvio-plus.p12)"
           [[ "${certificate}" =~ ^[0-9a-f]{64}$ ]] || { echo "::error::No signing certificate"; exit 1; }
-          cp unsigned/checks-build.md signed/
+          cp built/checks-build.md signed/
           (cd signed && sha256sum *.apk > signed.sha256)
           cat signed/signed.sha256
           echo "Signing certificate SHA-256: ${certificate}"
