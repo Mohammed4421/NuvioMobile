@@ -86,17 +86,6 @@ internal object DocumentDownloads {
         return candidate
     }
 
-    fun mimeTypeFor(fileName: String): String =
-        when (fileName.substringAfterLast('.', "").lowercase()) {
-            "mkv" -> "video/x-matroska"
-            "mp4", "m4v" -> "video/mp4"
-            "webm" -> "video/webm"
-            "avi" -> "video/x-msvideo"
-            "mov" -> "video/quicktime"
-            "ts" -> "video/mp2t"
-            else -> "application/octet-stream"
-        }
-
     /** Subtitles of a download saved in a picked folder live in app storage, keyed by the document URI. */
     fun subtitleDirectory(context: Context, documentUri: String): File =
         File(context.filesDir, "$SUBTITLES_ROOT/${sha256(documentUri)}")

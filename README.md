@@ -38,6 +38,7 @@
 | Move / resize subtitles by touch | — | Swipe or two-finger drag, pinch to resize |
 | Download location | App storage only | App storage or any folder, SD card included |
 | Download a season | One episode at a time | Rest of the season or the whole season |
+| Downloads in the library | Button in the header | Own tab with posters and progress |
 | Wi-Fi only downloads | — | ✓ |
 | Free space check | — | Before the transfer starts |
 | Installs next to the official app | — | ✓ (`com.nuvio.app.plus`, shown as "Nuvio Plus") |
@@ -69,6 +70,8 @@
   release type of your first pick. Up to three candidates are tried, cached debrid sources first.
   Episodes without a match wait in the *Season queue* for a retry. On Android 14+ the queue keeps going
   while the app is in the background.
+- **Library tab / تبويب في المكتبة** — *Downloads* sits next to *Saved* and *Cloud* and shows each
+  downloaded movie or show as a poster with its progress. Tap to play a movie or open a show's episodes.
 - **Wi-Fi only / Wi-Fi فقط** and a **free space check** that stops early with a clear message.
 
 ## Install / التثبيت
@@ -76,13 +79,14 @@
 1. Download the `arm64-v8a` APK from the [latest build](https://github.com/Mohammed4421/NuvioMobile/releases/latest)
    (most phones and tablets).
 2. Install it. It sits next to the official Nuvio app and keeps its own settings and downloads.
+3. To update, install the newer APK over it; settings and downloads stay.
 
 > [!IMPORTANT]
-> Builds are signed with a new key each time, so uninstall the previous Nuvio Plus build before
-> installing a new one. Nuvio account sign-in works; Trakt sign-in needs your own Trakt API keys
+> Builds 1–6 were signed with a different key each time: uninstall such a build once before installing
+> build 7 or newer. From then on, every build installs as an update. Nuvio account sign-in works; Trakt sign-in needs your own Trakt API keys
 > (see *Build*).
 >
-> كل بناء يُوقَّع بمفتاح جديد، فاحذف النسخة السابقة قبل تثبيت الجديدة. حساب Nuvio يعمل، أما Trakt
+> البناءات 1–6 كانت تُوقَّع بمفتاح مختلف كل مرة؛ احذفها مرة واحدة قبل تثبيت البناء 7 أو أحدث، وبعدها كل بناء يُثبَّت كتحديث. حساب Nuvio يعمل، أما Trakt
 > فيحتاج مفاتيح Trakt خاصة بك.
 
 ## Known limits / حدود معروفة
@@ -99,11 +103,15 @@ Every push to `custom-subtitles` builds a signed release APK with GitHub Actions
 [Releases](https://github.com/Mohammed4421/NuvioMobile/releases). If a build fails, the error log is
 published as a pre-release so it can be read without opening the Actions log.
 
+Builds are signed with the key in `signing/`, so each one installs as an update. That key is public:
+an APK from anywhere else could be signed with it too, so install Nuvio Plus only from this
+repository's releases, or set your own key with the secrets below.
+
 Optional repository secrets:
 
 | Secret | Purpose |
 |---|---|
-| `CUSTOM_KEYSTORE_BASE64`, `CUSTOM_KEYSTORE_PASSWORD` | Sign every build with the same key, so new builds install over old ones |
+| `CUSTOM_KEYSTORE_BASE64`, `CUSTOM_KEYSTORE_PASSWORD`, `CUSTOM_KEY_ALIAS` | Sign with your own private key instead of the public one in `signing/` |
 | `CUSTOM_LOCAL_PROPERTIES` | Extra `local.properties` lines (Trakt, Simkl, Supabase keys and so on) |
 
 Local build:

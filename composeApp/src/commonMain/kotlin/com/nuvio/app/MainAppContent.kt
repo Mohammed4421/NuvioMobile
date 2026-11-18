@@ -1450,6 +1450,10 @@ internal fun MainAppContent(
                                     }
                                 },
                                 onDownloadsClick = { navController.navigate(DownloadsRoute(downloadsTitle)) },
+                                onOpenDownload = ::openDownloadedItem,
+                                onDownloadShowClick = { showId, title ->
+                                    navController.navigate(DownloadShowRoute(showId, title))
+                                },
                                 onContinueWatchingClick = onContinueWatchingClick,
                                 onContinueWatchingLongPress = onContinueWatchingLongPress,
                                 onSwitchProfile = onSwitchProfile,

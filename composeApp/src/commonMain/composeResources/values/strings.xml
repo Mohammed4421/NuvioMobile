@@ -2607,4 +2607,12 @@
     <string name="downloads_settings_wifi_only_description">New downloads wait for Wi-Fi.</string>
     <string name="downloads_location_failed">Couldn&apos;t use this folder. Choose another one.</string>
     <string name="downloads_error_no_space">Not enough free space: %1$s more is needed.</string>
+    <string name="library_source_downloads">Downloads</string>
+    <string name="library_downloads_manage">Manage downloads</string>
+    <string name="library_downloads_manage_description">Location, Wi-Fi only, running downloads and season queue</string>
+    <string name="library_downloads_active_count">%1$d running</string>
+    <string name="library_downloads_queue_count">%1$d in the season queue</string>
+    <string name="library_downloads_paused">Paused</string>
+    <string name="library_downloads_movie">Movie</string>
+    <string name="library_downloads_empty_message">Open a movie or an episode, long-press a source and choose Download file.</string>
 </resources>

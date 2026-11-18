@@ -424,7 +424,7 @@ fun StreamsScreen(
                 seasonNumber = seasonForSheet,
                 onDismiss = { seasonDownloadTarget = null },
                 onChoose = { stream, scope ->
-                    downloadScope.launch {
+                    SeasonDownloadQueue.launch {
                         val added = SeasonDownloadQueue.startSeason(
                             contentType = type,
                             parentMetaId = parentMetaId,

@@ -4,6 +4,24 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
+## Build 7 — Downloads in the library, updates in place
+
+### Added
+- **Downloads tab in the library**, next to *Saved* and *Cloud*. Downloaded movies and shows appear as
+  posters, one per title. Running downloads show a progress bar and a badge (downloading, paused,
+  failed, waiting in the season queue). Tapping a movie plays it, tapping a show opens its episodes,
+  long-pressing opens the title's page. A *Manage downloads* card opens location, Wi-Fi only, running
+  downloads and the season queue. The download button in the library header is gone.
+
+### Changed
+- **Updates install over the previous build.** Every build is signed with the same key and gets a
+  higher version number. Builds 1–6 have to be uninstalled once; from build 7 on, install the new APK
+  directly.
+- A season download keeps going when the stream list is closed right after choosing it.
+- Removing an episode from the season queue while its source is being searched stops that search, so
+  the episode is not downloaded afterwards.
+- CI runs this fork's unit tests and reports the result in the release notes.
+
 ## Build 6 — subtitle outline repair
 
 ### Fixed

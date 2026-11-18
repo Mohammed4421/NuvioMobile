@@ -164,6 +164,9 @@ val customAppLabel = providers.gradleProperty("nuvio.appLabel").orNull
     ?.trim()
     ?.takeIf { it.isNotEmpty() }
     ?: "Nuvio Plus"
+// Rising version for personal builds, so each one installs as an update over the previous one.
+val customVersionCode = providers.gradleProperty("nuvio.customVersionCode").orNull?.trim()?.toIntOrNull()
+val customVersionName = providers.gradleProperty("nuvio.customVersionName").orNull?.trim()?.takeIf { it.isNotEmpty() }
 
 androidComponents {
     onVariants(selector().withBuildType("release")) { variant ->
@@ -171,6 +174,10 @@ androidComponents {
             variant.applicationId.set("com.nuvio.app$suffix")
             // A distinct launcher name so the build is easy to tell apart from the official app.
             variant.manifestPlaceholders.put("appLabel", customAppLabel)
+            variant.outputs.forEach { output ->
+                customVersionCode?.let(output.versionCode::set)
+                customVersionName?.let(output.versionName::set)
+            }
         }
     }
     onVariants(selector().withBuildType("debug")) { variant ->

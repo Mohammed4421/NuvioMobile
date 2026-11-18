@@ -83,6 +83,10 @@ import com.nuvio.app.features.cloud.CloudLibraryUiState
 import com.nuvio.app.features.debrid.DebridSettingsRepository
 import com.nuvio.app.features.home.HomeCatalogSection
 import com.nuvio.app.features.home.MetaPreview
+import com.nuvio.app.features.downloads.DownloadItem
+import com.nuvio.app.features.downloads.DownloadStatus
+import com.nuvio.app.features.downloads.DownloadsRepository
+import com.nuvio.app.features.downloads.SeasonDownloadQueue
 import com.nuvio.app.features.home.components.HomeEmptyStateCard
 import com.nuvio.app.features.servers.ServerRepository
 import com.nuvio.app.features.home.components.HomePosterCard
@@ -114,6 +118,8 @@ fun LibraryScreen(
     onPreviewClick: ((MetaPreview) -> Unit)? = null,
     onPreviewLongClick: ((MetaPreview) -> Unit)? = null,
     onDownloadsClick: (() -> Unit)? = null,
+    onOpenDownload: ((DownloadItem) -> Unit)? = null,
+    onDownloadShowClick: ((showId: String, title: String) -> Unit)? = null,
     disintegrationRequest: DisintegrationRequest<String>? = null,
 ) {
     val uiState by remember {
@@ -149,11 +155,27 @@ fun LibraryScreen(
         ServerRepository.uiState
     }.collectAsStateWithLifecycle()
     val hasServers = serversUiState.connections.any { it.enabled }
+    val showDownloads = onDownloadsClick != null
+    val downloadsUiState by remember {
+        DownloadsRepository.ensureLoaded()
+        DownloadsRepository.uiState
+    }.collectAsStateWithLifecycle()
+    val seasonQueue by SeasonDownloadQueue.entries.collectAsStateWithLifecycle()
+    val downloadEntries = remember(downloadsUiState.items, seasonQueue) {
+        buildLibraryDownloadEntries(downloadsUiState.items, seasonQueue)
+    }
+    val runningDownloads = downloadsUiState.items.count {
+        it.status == DownloadStatus.Downloading || it.status == DownloadStatus.Paused
+    }
     var sourceModeName by rememberSaveable { mutableStateOf(LibraryViewMode.Saved.name) }
-    val sourceMode = remember(sourceModeName, hasServers) {
+    val sourceMode = remember(sourceModeName, hasServers, showDownloads) {
         runCatching { LibraryViewMode.valueOf(sourceModeName) }.getOrDefault(LibraryViewMode.Saved)
             .takeUnless { it == LibraryViewMode.Servers && !hasServers }
+            ?.takeUnless { it == LibraryViewMode.Downloads && !showDownloads }
             ?: LibraryViewMode.Saved
+    }
+    if (sourceMode == LibraryViewMode.Downloads) {
+        LaunchedEffect(downloadsUiState.completedItems.size) { DownloadsRepository.markCompletedSeen() }
     }
     var serverShelves by remember { mutableStateOf<List<LibraryServerShelf>?>(null) }
     var serverShelvesRequest by remember { mutableStateOf(0) }
@@ -365,14 +387,13 @@ fun LibraryScreen(
                                         }
                                     }
                                 }
-                                if (onDownloadsClick != null) {
-                                    LibraryDownloadsButton(onClick = onDownloadsClick)
-                                }
                             },
                         )
                         LibrarySourceSwitch(
                             selectedMode = sourceMode,
                             showServers = hasServers,
+                            showDownloads = showDownloads,
+                            runningDownloads = runningDownloads,
                             onModeSelected = { mode ->
                                 sourceModeName = mode.name
                             },
@@ -414,6 +435,29 @@ fun LibraryScreen(
                     onBackToItems = { selectedCloudItemKey = null },
                     onRefresh = { CloudLibraryRepository.refresh() },
                     onConnectCloudClick = onConnectCloudClick,
+                )
+            } else if (sourceMode == LibraryViewMode.Downloads) {
+                libraryDownloadsContent(
+                    entries = downloadEntries,
+                    activeCount = runningDownloads,
+                    queueCount = seasonQueue.size,
+                    columns = gridColumns,
+                    onManageClick = { onDownloadsClick?.invoke() },
+                    onEntryClick = { entry ->
+                        val playable = entry.completed.filter(DownloadItem::isPlayable)
+                        when {
+                            entry.isSeries && playable.isNotEmpty() && onDownloadShowClick != null ->
+                                onDownloadShowClick(entry.metaId, entry.title)
+                            !entry.isSeries && playable.size == 1 && entry.active.isEmpty() && onOpenDownload != null ->
+                                onOpenDownload(playable.first())
+                            else -> onDownloadsClick?.invoke()
+                        }
+                    },
+                    onEntryLongClick = { entry ->
+                        onPreviewClick?.invoke(
+                            MetaPreview(id = entry.metaId, type = entry.metaType, name = entry.title, poster = entry.poster),
+                        )
+                    },
                 )
             } else if (sourceMode == LibraryViewMode.Servers) {
                 serverLibraryContent(
@@ -736,11 +780,13 @@ private fun LazyListScope.cloudLibrarySkeletonItems() {
 private fun LibrarySourceSwitch(
     selectedMode: LibraryViewMode,
     showServers: Boolean,
+    showDownloads: Boolean,
+    runningDownloads: Int,
     onModeSelected: (LibraryViewMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         LibraryChip(
@@ -758,6 +804,14 @@ private fun LibrarySourceSwitch(
                 label = stringResource(Res.string.library_source_servers),
                 selected = selectedMode == LibraryViewMode.Servers,
                 onClick = { onModeSelected(LibraryViewMode.Servers) },
+            )
+        }
+        if (showDownloads) {
+            val label = stringResource(Res.string.library_source_downloads)
+            LibraryChip(
+                label = if (runningDownloads > 0) "$label · $runningDownloads" else label,
+                selected = selectedMode == LibraryViewMode.Downloads,
+                onClick = { onModeSelected(LibraryViewMode.Downloads) },
             )
         }
     }
@@ -1224,6 +1278,7 @@ private enum class LibraryViewMode {
     Saved,
     Cloud,
     Servers,
+    Downloads,
 }
 
 private fun LazyListScope.librarySections(

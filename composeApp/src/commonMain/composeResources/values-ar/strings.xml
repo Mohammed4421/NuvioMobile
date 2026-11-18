@@ -2560,4 +2560,12 @@
     <string name="downloads_settings_wifi_only_description">التنزيلات الجديدة تنتظر شبكة Wi-Fi.</string>
     <string name="downloads_location_failed">تعذّر استخدام هذا المجلد. اختر مجلدًا آخر.</string>
     <string name="downloads_error_no_space">المساحة غير كافية: يلزم %1$s إضافية.</string>
+    <string name="library_source_downloads">التنزيلات</string>
+    <string name="library_downloads_manage">إدارة التنزيلات</string>
+    <string name="library_downloads_manage_description">المكان وWi-Fi فقط والتنزيلات الجارية وطابور الموسم</string>
+    <string name="library_downloads_active_count">%1$d قيد التنزيل</string>
+    <string name="library_downloads_queue_count">%1$d في طابور الموسم</string>
+    <string name="library_downloads_paused">متوقف مؤقتًا</string>
+    <string name="library_downloads_movie">فيلم</string>
+    <string name="library_downloads_empty_message">افتح فيلمًا أو حلقة، واضغط مطوّلًا على مصدر ثم اختر «تنزيل الملف».</string>
 </resources>

@@ -254,7 +254,18 @@ object SeasonDownloadQueue {
         return wanted.size
     }
 
+    /**
+     * Runs [block] in the queue's own scope, so a season request survives leaving the screen
+     * it was made from.
+     */
+    fun launch(block: suspend () -> Unit): Job = scope.launch { block() }
+
     fun remove(entryId: String) {
+        // Stop a search that is running for this episode, so it is not downloaded afterwards.
+        if (_entries.value.any { it.id == entryId && it.state == SeasonQueueEntryState.Searching }) {
+            workJob?.cancel()
+            workJob = null
+        }
         update { entries -> entries.filterNot { it.id == entryId } }
         pump()
     }
@@ -350,6 +361,8 @@ object SeasonDownloadQueue {
             else -> null
         }
         if (playable == null) return false
+        // The episode may have been removed from the queue while its source was being resolved.
+        if (_entries.value.none { it.id == entry.id }) return false
         val result = DownloadsRepository.enqueueFromStream(
             contentType = entry.contentType,
             videoId = entry.videoId,
@@ -503,10 +516,6 @@ internal object SeasonStreamMatcher {
         listOfNotNull(stream.name, stream.title, stream.description, stream.behaviorHints.filename)
             .joinToString(" ")
             .lowercase()
-
-    /** The single best match, if any. */
-    fun pick(streams: List<StreamItem>, reference: SeasonQueueReference): StreamItem? =
-        rank(streams, reference).firstOrNull()
 
     /**
      * Acceptable matches, best first. Streams of the same binge group lead; then streams with the
