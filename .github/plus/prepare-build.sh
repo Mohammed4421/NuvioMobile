@@ -22,7 +22,6 @@ fi
   # The in-app updater follows this fork's releases.
   echo "PLUS_UPDATE_REPO=${GITHUB_REPOSITORY}"
   echo "PLUS_BUILD=${build}"
-  echo "PLUS_CHANNEL=${PLUS_CHANNEL:-stable}"
 } > local.properties
 # Extra lines (Trakt, Simkl keys and so on) come later and win.
 printf '%s\n' "${CUSTOM_LOCAL_PROPERTIES:-}" >> local.properties

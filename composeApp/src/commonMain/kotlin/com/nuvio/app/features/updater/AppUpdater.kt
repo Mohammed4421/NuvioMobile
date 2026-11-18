@@ -166,16 +166,12 @@ class AppUpdaterController internal constructor(
     }
 
     private suspend fun noUpdateMessage(channel: UpdateChannel): String = getString(
-        if (channel == UpdateChannel.STABLE && installedIsPrerelease()) {
+        if (channel == UpdateChannel.STABLE && VersionUtils.isPrerelease(AppVersionConfig.VERSION_NAME)) {
             Res.string.updates_waiting_for_stable
         } else {
             Res.string.updates_latest_version
         },
     )
-
-    private fun installedIsPrerelease(): Boolean =
-        if (PlusUpdates.enabled) PlusUpdates.buildChannel == UpdateChannel.BETA
-        else VersionUtils.isPrerelease(AppVersionConfig.VERSION_NAME)
 
     fun dismissDialog() {
         _uiState.update { state ->
