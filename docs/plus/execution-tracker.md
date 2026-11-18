@@ -65,9 +65,15 @@ Matches the reference state of the directive. Phase 1 branch: `plus-fix/security
    or plugin code. Publish took whatever `nuvio-plus-apk` artifact the run had.
 5. **Root cause:** Signing delegated to Gradle's `signingConfig`.
 6. **Selected solution:**
-   - Gradle builds unsigned APKs.
-   - Job `sign` signs them with `.github/plus/sign-apks.sh` (apksigner, **v2 only**, matching
-     build 12). It does a sparse checkout of only the script and the public key, and runs no Gradle.
+   - Gradle signs with a **throwaway build-only key** made in the build job (random password,
+     2-day validity) and discarded with the job. The Android Gradle plugin refuses to package a
+     release build without a key (run `291736fd`: `SigningConfig "release" is missing required
+     property "storeFile"`), so an unsigned build was not possible.
+   - Job `sign` re-signs with `.github/plus/sign-apks.sh` (apksigner, **v2 only**, matching
+     build 12). apksigner rewrites the APK Signing Block. The script refuses APKs with v1 signatures,
+     which would survive, and requires exactly one certificate, v2 only.
+   - It does a sparse checkout of only the script, the certificate reader and the public key, and
+     runs no Gradle.
    - The SHA-256 list of the unsigned APKs is passed as a job output and checked by `sign`. The list
      of the signed APKs is passed as an output and checked by `publish`, along with the certificate
      of every APK.
@@ -76,7 +82,7 @@ Matches the reference state of the directive. Phase 1 branch: `plus-fix/security
    - A throwaway Gradle key followed by re-signing: leaves two signing steps and keeps a key next to Gradle.
    - Signing with v2 and v3: changes the scheme set without need; v3 belongs to the rotation study (phase 5).
 8. **Modified files:** `plus-build.yml`, `custom-android-build.yml`, `prepare-build.sh` (now refuses
-   signing settings), new `sign-apks.sh`.
+   signing settings), new `sign-apks.sh`, new `apk-certs.py`.
 9. **Added tests:** Policy tests (key only in `sign`; publish needs checks and gate; emulator needs
    sign, update check, tests). In CI, the existing update check and emulator test cover signing: the
    update check compares the certificate with custom-12, and the emulator installs the new APK as an
@@ -86,8 +92,8 @@ Matches the reference state of the directive. Phase 1 branch: `plus-fix/security
     fails and nothing is published (fail closed).
 12. **Remaining risks:** The signing key itself is public (S4, phase 5); this change protects a
     future private key, not the current one.
-13. **Commit / PR:** `0d83908c`.
-14. **Final status:** Done, pending CI and owner review.
+13. **Commit / PR:** `0d83908c`, `c70685b0`, `8fd7eba2`.
+14. **Final status:** Done; CI PASS on `3ecae669`.
 
 ### SEC-3 · Review gate could be bypassed (S2)
 
@@ -252,7 +258,7 @@ Matches the reference state of the directive. Phase 1 branch: `plus-fix/security
     - Then, with an APK signed by another key renamed into the download folder, expected: the
       "different key" message.
 13. **Commit / PR:** `276c3077`.
-14. **Final status:** Done, pending CI and device test.
+14. **Final status:** Done; unit tests PASS in CI; device test NEEDS PHYSICAL DEVICE.
 
 ### SEC-8 · Signing identity of build 12 (evidence for S4, gathered to keep it unchanged)
 
@@ -304,11 +310,100 @@ Matches the reference state of the directive. Phase 1 branch: `plus-fix/security
 13. **Commit / PR:** —
 14. **Final status:** Recorded.
 
+### SEC-10 · The CI certificate comparison compared nothing (new finding)
+
+1. **ID:** SEC-10
+2. **Severity:** High (a check reported as passing did not run)
+3. **Verification status:** Confirmed for this runner image. Very likely for build 12, which ran the
+   same script on the same image family.
+4. **Evidence:**
+   - `check-update-compat.sh@28a3e4dd` read the certificate with
+     `sed -n 's/^Signer #1 certificate SHA-256 digest: //p'`.
+   - The runner's apksigner prints `V2 Signer: certificate SHA-256 digest: 40335e31…` (notice in run
+     `3ecae669`, job "Sign APKs").
+   - The match is therefore empty for both APKs, `"" != ""` is false, and the script wrote "same
+     package and signature" without comparing certificates. In build 12 only the emulator's
+     update-install actually proved the certificate.
+5. **Root cause:** Parsing a tool's human-readable output, and an empty value not treated as an error.
+6. **Selected solution:**
+   - `.github/plus/apk-certs.py` reads the certificates from the APK Signing Block itself. It
+     reproduces build 12's identity: `v2 40335e31…f48a`.
+   - It is used by the sign job, the update check and the publish job.
+   - An unreadable certificate, package or version code now fails the check.
+7. **Rejected alternatives:** Fixing the `sed` pattern (breaks again with the next apksigner format).
+8. **Modified files:** `check-update-compat.sh`, `sign-apks.sh`, `custom-android-build.yml`, new
+   `apk-certs.py`.
+9. **Added tests:** `test_apk_certs.py`:
+   - v2 reading; v2 and v3 together.
+   - Exactly one current certificate: rotation and two signers fail.
+   - Not a ZIP, unsigned, no scheme block, a length prefix that runs past the data.
+10. **Test results:** PASS. CI `3ecae669`: "Update over custom-12: same package and signature,
+    version code 1012 → 1013", now with a real certificate comparison.
+11. **Regression risk:** none; any parse failure blocks.
+12. **Remaining risks:** `--current` refuses rotated APKs (v2 old key + v3 new key) on purpose until phase 5.
+13. **Commit / PR:** `d2ad930b`, `15f80e4f`.
+14. **Final status:** Done.
+
+### CI-1 · Release build exceeded the runner's memory after a full compile (found while testing)
+
+1. **ID:** CI-1
+2. **Severity:** Medium (blocks publishing whenever app code changes)
+3. **Verification status:** Confirmed by outcome.
+   - Runs `c70685b0` and `a18a0c00` were killed while packaging: "runner lost communication" after
+     54 minutes, then exit 143.
+   - With the change below, the build finished in about 11 minutes in every later run.
+4. **Evidence:** `gradle.properties`: Gradle `-Xmx12288M` plus a separate Kotlin daemon `-Xmx8192M`
+   on a 16 GB runner. Build 12 likely reused compiled outputs from the build cache. This branch
+   changes app code, so it compiles everything and then runs R8.
+5. **Root cause:** Memory settings sized for a developer machine.
+6. **Selected solution:** In the CI build only: Kotlin compiles inside Gradle
+   (`-Pkotlin.compiler.execution.strategy=in-process`) with a 10 GB heap. On failure the step reports
+   the end of the log, the kernel's out-of-memory lines and free memory. The repository's
+   `gradle.properties` is unchanged.
+7. **Rejected alternatives:** Larger paid runners; changing Nuvio's `gradle.properties` (conflicts on every sync).
+8. **Modified files:** `plus-build.yml`.
+9. **Added tests:** none (CI behaviour).
+10. **Test results:** PASS: build 10–11 minutes in runs `56cb197c`, `dc9d56aa`, `8fd7eba2`, `99751263`, `3ecae669`.
+11. **Regression risk:** A slower build if memory is tight; no effect on the APK.
+12. **Remaining risks:** Downloads from the Gradle plugin portal and Maven failed once each (runs
+    `15f80e4f`, `99751263`). These are infrastructure failures and passed on rerun. A rerun needs a
+    push or the owner's "Re-run".
+13. **Commit / PR:** `56cb197c`.
+14. **Final status:** Done.
+
 ---
 
 ## Phase 1 results
 
-Filled in after the CI run of the pull request (see below).
+CI run on `3ecae669fb57e1b66db8bd140f9337142c2773f1` (branch `plus-fix/security-foundation`, push):
+
+| Check | Result |
+|---|---|
+| Build (throwaway key, 4 ABIs) | PASS |
+| Sign (no Gradle; v2 only; certificate `40335e31…f48a`, same as custom-12) | PASS |
+| Update check over custom-12 (package, real certificate comparison, 1012 → 1013) | PASS |
+| Nuvio Plus unit tests | PASS 2154/2154 (2141 before + 13 new update-check tests) |
+| Nuvio 1.0.0 baseline tests | 2099/2100 (failure inherited from Nuvio, shown for diagnosis only) |
+| Policy tests (gate, workflows, certificate reader) | PASS 38/38 |
+| Review records (`records` mode) | PASS (no Nuvio release since custom-12) |
+| Emulator, Android 14: install over custom-12, launch, rotation, Back | PASS |
+| Commit statuses set by `github-actions[bot]` | `nuvio-plus/push/checks` success, `nuvio-plus/push/review` success |
+
+Not proven by this run:
+- Arabic start: inconclusive, as before.
+- Data kept: only 1 prefs file, as before (phase 3 · T2).
+- The `publish` path: nothing is published from a fix branch. The gate's publish logic is covered by
+  the 20 gate tests, not by a live publish.
+- The ruleset (owner setting).
+- The Android 9+ `SigningInfo` path of the update check (NEEDS PHYSICAL DEVICE).
+
+Earlier failing runs of this branch, all explained and fixed:
+- `de53c765`: checkout with `persist-credentials: false` fails on Nuvio's `libass-android` gitlink.
+- `291736fd`: the Gradle plugin needs a key.
+- `c70685b0` and `a18a0c00`: memory.
+- `56cb197c` and `dc9d56aa`: the token step under `pipefail`.
+- `8fd7eba2`: certificate parsing (SEC-10).
+- `15f80e4f` and `99751263`: download failures.
 
 ---
 
