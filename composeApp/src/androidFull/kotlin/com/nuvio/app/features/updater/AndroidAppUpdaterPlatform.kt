@@ -13,10 +13,12 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import nuvio.composeapp.generated.resources.Res
+import nuvio.composeapp.generated.resources.updates_archive_installed_unreadable
 import nuvio.composeapp.generated.resources.updates_archive_not_newer
 import nuvio.composeapp.generated.resources.updates_archive_other_app
 import nuvio.composeapp.generated.resources.updates_archive_other_signer
 import nuvio.composeapp.generated.resources.updates_archive_unreadable
+import nuvio.composeapp.generated.resources.updates_archive_unsigned
 import nuvio.composeapp.generated.resources.updates_download_failed_http
 import nuvio.composeapp.generated.resources.updates_downloaded_file_missing
 import nuvio.composeapp.generated.resources.updates_empty_download_body
@@ -154,6 +156,8 @@ object AndroidAppUpdaterPlatform {
                     getString(
                         when (problem) {
                             UpdateArchiveProblem.Unreadable -> Res.string.updates_archive_unreadable
+                            UpdateArchiveProblem.Unsigned -> Res.string.updates_archive_unsigned
+                            UpdateArchiveProblem.InstalledUnreadable -> Res.string.updates_archive_installed_unreadable
                             UpdateArchiveProblem.OtherApp -> Res.string.updates_archive_other_app
                             UpdateArchiveProblem.NotNewer -> Res.string.updates_archive_not_newer
                             UpdateArchiveProblem.OtherSigner -> Res.string.updates_archive_other_signer
