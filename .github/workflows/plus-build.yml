@@ -128,6 +128,7 @@ jobs:
             -Pnuvio.customVersionName="${version}-plus.${BUILD}${suffix}" \
             --stacktrace 2>&1 | tee build.log || {
               grep -E "^e: " build.log | head -n 20 | sed 's/^/::error::/'
+              grep -A6 "What went wrong" build.log | head -n 20 | sed 's/^/::error::/'
               exit 1
             }
           echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${BUILD} (${CHANNEL})." > checks-build.md
@@ -142,7 +143,8 @@ jobs:
             abi="$(basename "${apk}" .apk | sed -E 's/^androidApp-full-//; s/-release(-unsigned)?$//')"
             cp "${apk}" "out/NuvioPlus-build${BUILD}-${abi}.apk"
           done
-          [[ "$(ls out/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; ls -l out; exit 1; }
+          [[ "$(ls out/*.apk | wc -l)" -eq 4 ]] || {
+            echo "::error::Expected 4 APKs, found: $(ls androidApp/build/outputs/apk/full/release/ | tr '\n' ' ')"; exit 1; }
           cp checks-build.md out/
           (cd out && sha256sum *.apk > unsigned.sha256)
           cat out/unsigned.sha256
