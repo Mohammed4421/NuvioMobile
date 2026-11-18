@@ -2604,4 +2604,40 @@
     <string name="updates_archive_other_app">الملف الذي نُزّل ليس تحديثًا لهذا التطبيق.</string>
     <string name="updates_archive_not_newer">التحديث الذي نُزّل ليس أحدث من النسخة المثبتة.</string>
     <string name="updates_archive_other_signer">التحديث الذي نُزّل موقّع بمفتاح مختلف ولا يمكنه استبدال هذا التطبيق.</string>
+    <string name="addons_tracking_consent_title">إضافة تتبّع</string>
+    <string name="addons_tracking_consent_body">%1$s إضافة تتبّع. سيرسل إليها Nuvio نشاطك: ما تشغّله وتوقفه مؤقتًا وتوقفه مع موضع التشغيل، وما تضيفه إلى مكتبتك أو تحذفه منها، وما تحدده كمشاهَد أو غير مشاهَد. هذه البيانات تخرج من Nuvio ويتولاها مطوّر الإضافة والخدمة التي تتصل بها.</string>
+    <string name="addons_tracking_consent_checkbox">أوافق على مشاركة نشاط المشاهدة ومكتبتي مع هذه الإضافة</string>
+    <string name="downloads_delete_message">سيُحرّر هذا %1$s على هذا الجهاز.</string>
+    <string name="downloads_delete_title">حذف %1$s؟</string>
+    <string name="downloads_downloading_count">%1$d قيد التنزيل</string>
+    <string name="downloads_empty_message">اضغط مطوّلًا على مصدر واختر «تنزيل الملف» لمشاهدته دون اتصال.</string>
+    <string name="downloads_pause_all">إيقاف الكل مؤقتًا</string>
+    <string name="downloads_resume_all">استئناف الكل</string>
+    <string name="downloads_section_downloaded">المنزّلة</string>
+    <string name="downloads_speed">%1$s/ث</string>
+    <string name="downloads_watched_count">%1$d مشاهَدة</string>
+    <plurals name="downloads_episodes">
+        <item quantity="zero">%1$d حلقة</item>
+        <item quantity="one">حلقة واحدة</item>
+        <item quantity="two">حلقتان</item>
+        <item quantity="few">%1$d حلقات</item>
+        <item quantity="many">%1$d حلقة</item>
+        <item quantity="other">%1$d حلقة</item>
+    </plurals>
+    <plurals name="downloads_titles">
+        <item quantity="zero">%1$d عمل</item>
+        <item quantity="one">عمل واحد</item>
+        <item quantity="two">عملان</item>
+        <item quantity="few">%1$d أعمال</item>
+        <item quantity="many">%1$d عملًا</item>
+        <item quantity="other">%1$d عمل</item>
+    </plurals>
+    <string name="library_filter_genre">النوع الفني</string>
+    <string name="library_filter_watched">المشاهدة</string>
+    <string name="library_filter_year">السنة</string>
+    <string name="library_type_all">الكل</string>
+    <string name="library_watched_filter_all">الكل</string>
+    <string name="library_watched_filter_watched">مشاهَد</string>
+    <string name="library_watched_filter_unwatched">غير مشاهَد</string>
+    <string name="subtitle_outline_width">سماكة الإطار</string>
 </resources>
