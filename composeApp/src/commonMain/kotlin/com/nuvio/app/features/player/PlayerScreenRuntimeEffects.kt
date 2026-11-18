@@ -316,7 +316,7 @@ internal fun PlayerScreenRuntime.BindPlayerRuntimeEffects() {
         addonSubtitleFetchKey,
         networkCondition,
     ) {
-        if (activeSourceUrl.startsWith("file:") && externalSubtitles.isNotEmpty()) return@LaunchedEffect
+        if ((activeSourceUrl.startsWith("file:") || activeSourceUrl.startsWith("content:")) && externalSubtitles.isNotEmpty()) return@LaunchedEffect
         val fetchKey = addonSubtitleFetchKey ?: return@LaunchedEffect
         // For P2P streams, wait until the local engine URL is available before
         // triggering the fetch so that hash computation can use the real HTTP URL.

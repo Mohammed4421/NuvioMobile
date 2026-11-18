@@ -8,7 +8,7 @@ import com.nuvio.app.features.streams.StreamLinkCacheRepository
 import kotlinx.coroutines.launch
 
 internal fun PlayerScreenRuntime.fetchAddonSubtitlesForActiveItem() {
-    if (activeSourceUrl.startsWith("file:") && externalSubtitles.isNotEmpty()) {
+    if ((activeSourceUrl.startsWith("file:") || activeSourceUrl.startsWith("content:")) && externalSubtitles.isNotEmpty()) {
         SubtitleRepository.clear()
         return
     }

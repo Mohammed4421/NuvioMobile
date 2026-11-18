@@ -53,12 +53,37 @@ jobs:
           } >> local.properties
 
       - name: Build APK
-        run: >
-          ./gradlew :androidApp:assembleFullRelease
-          -Pnuvio.android.distribution=full
-          -Pnuvio.ios.distribution=appstore
-          -Pnuvio.applicationIdSuffix=.plus
-          --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :androidApp:assembleFullRelease \
+            -Pnuvio.android.distribution=full \
+            -Pnuvio.ios.distribution=appstore \
+            -Pnuvio.applicationIdSuffix=.plus \
+            --stacktrace 2>&1 | tee build.log
+
+      - name: Publish build errors
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "Build ${GITHUB_RUN_NUMBER} failed at ${GITHUB_SHA}."
+            echo
+            echo '```'
+            grep -E "^e: |^w: .*error|error:|What went wrong|Execution failed|Unresolved reference|> Task .*FAILED" -A4 build.log | head -c 90000 || true
+            echo '```'
+            echo
+            echo '```'
+            tail -n 60 build.log | head -c 20000
+            echo '```'
+          } > errors.md
+          gh release create "build-failed-${GITHUB_RUN_NUMBER}" build.log \
+            --repo "${GITHUB_REPOSITORY}" \
+            --target "${GITHUB_SHA}" \
+            --prerelease \
+            --title "Build ${GITHUB_RUN_NUMBER} failed" \
+            --notes-file errors.md
 
       - name: Upload APK
         uses: actions/upload-artifact@v7

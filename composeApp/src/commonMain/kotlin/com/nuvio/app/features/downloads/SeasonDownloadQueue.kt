@@ -1,0 +1,488 @@
+package com.nuvio.app.features.downloads
+
+import com.nuvio.app.features.addons.AddonRepository
+import com.nuvio.app.features.addons.enabledAddons
+import com.nuvio.app.features.debrid.DebridSettingsRepository
+import com.nuvio.app.features.debrid.DebridStreamPresentation
+import com.nuvio.app.features.debrid.DirectDebridPlayableResult
+import com.nuvio.app.features.debrid.DirectDebridPlaybackResolver
+import com.nuvio.app.features.details.MetaDetailsRepository
+import com.nuvio.app.features.player.isNetworkOffline
+import com.nuvio.app.features.profiles.ProfileRepository
+import com.nuvio.app.features.streams.InstalledStreamAddonTarget
+import com.nuvio.app.features.streams.StreamItem
+import com.nuvio.app.features.streams.StreamLoadCompletion
+import com.nuvio.app.features.streams.StreamSearchSessions
+import com.nuvio.app.features.streams.StreamSearchTargets
+import com.nuvio.app.features.streams.streamAddonInstanceId
+import com.nuvio.app.features.streams.supportsStream
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+
+@Serializable
+enum class SeasonQueueEntryState {
+    /** Waiting for its turn. */
+    Waiting,
+
+    /** Looking for a source that matches the one picked for the first episode. */
+    Searching,
+
+    /** Handed to the downloader; leaves the queue once that download stops running. */
+    Downloading,
+
+    /** No matching source was found; the user downloads it manually or retries. */
+    NeedsChoice,
+}
+
+/** The source the user picked for the first episode; later episodes look for the same release. */
+@Serializable
+data class SeasonQueueReference(
+    val addonId: String,
+    val addonName: String,
+    val bingeGroup: String? = null,
+    val text: String,
+)
+
+@Serializable
+data class SeasonQueueEntry(
+    val id: String,
+    val contentType: String,
+    val parentMetaId: String,
+    val parentMetaType: String,
+    val title: String,
+    val logo: String? = null,
+    val poster: String? = null,
+    val background: String? = null,
+    val videoId: String,
+    val seasonNumber: Int,
+    val episodeNumber: Int,
+    val episodeTitle: String? = null,
+    val episodeThumbnail: String? = null,
+    val reference: SeasonQueueReference,
+    val state: SeasonQueueEntryState = SeasonQueueEntryState.Waiting,
+    val downloadId: String? = null,
+)
+
+enum class SeasonDownloadScope {
+    /** The chosen episode and every later one in the season. */
+    RestOfSeason,
+
+    /** Every episode of the season. */
+    WholeSeason,
+}
+
+@Serializable
+private data class StoredSeasonQueue(val entries: List<SeasonQueueEntry> = emptyList())
+
+/**
+ * Downloads a season one episode at a time. Each episode's source is looked up right before its
+ * turn (so debrid links are fresh), using the add-on, binge group and release details of the
+ * source picked for the first episode.
+ */
+object SeasonDownloadQueue {
+    private const val storageKey = "season_queue"
+    private const val searchTimeoutMs = 90_000L
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    private val _entries = MutableStateFlow<List<SeasonQueueEntry>>(emptyList())
+    val entries: StateFlow<List<SeasonQueueEntry>> = _entries.asStateFlow()
+
+    private var started = false
+    private var workJob: Job? = null
+    private var ordinal = 0L
+
+    /** Loads the saved queue and keeps it moving as downloads finish. Safe to call often. */
+    fun ensureStarted() {
+        if (started) return
+        started = true
+        _entries.value = DownloadsStorage.loadExtra(storageKey)
+            ?.let { runCatching { json.decodeFromString<StoredSeasonQueue>(it).entries }.getOrNull() }
+            .orEmpty()
+            // A search cut short by the app closing starts over.
+            .map { if (it.state == SeasonQueueEntryState.Searching) it.copy(state = SeasonQueueEntryState.Waiting) else it }
+        scope.launch {
+            DownloadsRepository.uiState.collect { pump() }
+        }
+    }
+
+    /**
+     * Downloads [referenceStream] for the chosen episode right away and queues the other episodes
+     * of the season. Returns how many episodes were added (the chosen one included).
+     */
+    suspend fun startSeason(
+        contentType: String,
+        parentMetaId: String,
+        parentMetaType: String,
+        title: String,
+        logo: String?,
+        poster: String?,
+        background: String?,
+        currentVideoId: String,
+        seasonNumber: Int,
+        episodeNumber: Int,
+        currentEpisodeTitle: String?,
+        currentEpisodeThumbnail: String?,
+        referenceStream: StreamItem,
+        downloadScope: SeasonDownloadScope,
+    ): Int {
+        ensureStarted()
+        DownloadsRepository.ensureLoaded()
+        val reference = SeasonQueueReference(
+            addonId = referenceStream.addonId,
+            addonName = referenceStream.addonName,
+            bingeGroup = referenceStream.behaviorHints.bingeGroup?.trim()?.takeIf { it.isNotEmpty() },
+            text = SeasonStreamMatcher.describe(referenceStream),
+        )
+        val meta = MetaDetailsRepository.peek(parentMetaType, parentMetaId)
+            ?: runCatching { MetaDetailsRepository.fetch(parentMetaType, parentMetaId) }
+                .onFailure { if (it is CancellationException) throw it }
+                .getOrNull()
+        val seasonEpisodes = meta?.videos.orEmpty()
+            .filter { it.season == seasonNumber && it.episode != null && it.available }
+            .distinctBy { it.episode }
+            .sortedBy { it.episode }
+        val currentEntry = baseEntry(
+            contentType, parentMetaId, parentMetaType, title, logo, poster, background, reference,
+            videoId = currentVideoId,
+            seasonNumber = seasonNumber,
+            episodeNumber = episodeNumber,
+            episodeTitle = currentEpisodeTitle,
+            episodeThumbnail = currentEpisodeThumbnail,
+        )
+        val others = seasonEpisodes
+            .filter { video ->
+                val episode = video.episode ?: return@filter false
+                episode != episodeNumber &&
+                    (downloadScope == SeasonDownloadScope.WholeSeason || episode > episodeNumber)
+            }
+            .map { video ->
+                baseEntry(
+                    contentType, parentMetaId, parentMetaType, title, logo, poster, background, reference,
+                    videoId = video.id,
+                    seasonNumber = seasonNumber,
+                    episodeNumber = video.episode ?: 0,
+                    episodeTitle = video.title.takeIf { it.isNotBlank() },
+                    episodeThumbnail = video.thumbnail,
+                )
+            }
+        val wanted = (listOf(currentEntry) + others)
+            .filter { entry -> needsDownload(entry) && !isQueued(entry) }
+            .sortedBy { it.episodeNumber }
+        if (wanted.isEmpty()) return 0
+
+        val currentWanted = wanted.firstOrNull { it.episodeNumber == episodeNumber }
+        val queued = wanted.filterNot { it === currentWanted }
+        update { it + queued }
+        if (currentWanted != null) {
+            // The chosen episode uses exactly the stream the user picked.
+            update { listOf(currentWanted.copy(state = SeasonQueueEntryState.Searching)) + it }
+            handOff(currentWanted, referenceStream)
+        }
+        pump()
+        return wanted.size
+    }
+
+    fun remove(entryId: String) {
+        update { entries -> entries.filterNot { it.id == entryId } }
+        pump()
+    }
+
+    /** Looks again for a source for an episode that had none. */
+    fun retry(entryId: String) {
+        update { entries ->
+            entries.map {
+                if (it.id == entryId && it.state == SeasonQueueEntryState.NeedsChoice) {
+                    it.copy(state = SeasonQueueEntryState.Waiting)
+                } else it
+            }
+        }
+        pump()
+    }
+
+    /** Drops every episode that has not started; running downloads keep going. */
+    fun clear() {
+        workJob?.cancel()
+        workJob = null
+        update { entries -> entries.filter { it.state == SeasonQueueEntryState.Downloading } }
+        pump()
+    }
+
+    private fun pump() {
+        if (!started) return
+        val downloads = DownloadsRepository.uiState.value.items.associateBy { it.id }
+        // Episodes whose download stopped running (finished, failed, paused or deleted) leave the queue.
+        val settled = _entries.value.filterNot { entry ->
+            entry.state == SeasonQueueEntryState.Downloading &&
+                entry.downloadId?.let(downloads::get)?.status != DownloadStatus.Downloading
+        }
+        if (settled.size != _entries.value.size) update { settled }
+
+        val busy = settled.any {
+            it.state == SeasonQueueEntryState.Searching || it.state == SeasonQueueEntryState.Downloading
+        }
+        if (busy || workJob?.isActive == true) return
+        if (isNetworkOffline()) return
+        val next = settled.firstOrNull { it.state == SeasonQueueEntryState.Waiting } ?: return
+        setState(next.id, SeasonQueueEntryState.Searching)
+        workJob = scope.launch {
+            try {
+                val stream = withContext(Dispatchers.Default) { findMatchingStream(next) }
+                if (stream == null) {
+                    setState(next.id, SeasonQueueEntryState.NeedsChoice)
+                } else {
+                    handOff(next, stream)
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                setState(next.id, SeasonQueueEntryState.NeedsChoice)
+            } finally {
+                workJob = null
+            }
+            pump()
+        }
+    }
+
+    /** Resolves [stream] to a direct link when needed and starts its download. */
+    private suspend fun handOff(entry: SeasonQueueEntry, stream: StreamItem) {
+        val playable = when (
+            val resolved = DirectDebridPlaybackResolver.resolveToPlayableStream(
+                stream = stream,
+                season = entry.seasonNumber,
+                episode = entry.episodeNumber,
+            )
+        ) {
+            is DirectDebridPlayableResult.Success -> resolved.stream
+            else -> null
+        }
+        if (playable == null) {
+            setState(entry.id, SeasonQueueEntryState.NeedsChoice)
+            return
+        }
+        val result = DownloadsRepository.enqueueFromStream(
+            contentType = entry.contentType,
+            videoId = entry.videoId,
+            parentMetaId = entry.parentMetaId,
+            parentMetaType = entry.parentMetaType,
+            title = entry.title,
+            logo = entry.logo,
+            poster = entry.poster,
+            background = entry.background,
+            seasonNumber = entry.seasonNumber,
+            episodeNumber = entry.episodeNumber,
+            episodeTitle = entry.episodeTitle,
+            episodeThumbnail = entry.episodeThumbnail,
+            stream = playable,
+        )
+        val download = DownloadsRepository.findDownload(entry.parentMetaId, entry.seasonNumber, entry.episodeNumber)
+        if (
+            (result == DownloadEnqueueResult.Started || result == DownloadEnqueueResult.Replaced) &&
+            download != null
+        ) {
+            update { entries ->
+                entries.map {
+                    if (it.id == entry.id) {
+                        it.copy(state = SeasonQueueEntryState.Downloading, downloadId = download.id)
+                    } else it
+                }
+            }
+        } else {
+            setState(entry.id, SeasonQueueEntryState.NeedsChoice)
+        }
+    }
+
+    private suspend fun findMatchingStream(entry: SeasonQueueEntry): StreamItem? {
+        val type = entry.contentType
+        val targets = AddonRepository.uiState.value.addons.enabledAddons().mapNotNull { addon ->
+            val manifest = addon.manifest ?: return@mapNotNull null
+            if (!manifest.supportsStream(type, entry.videoId)) return@mapNotNull null
+            InstalledStreamAddonTarget(
+                addonName = addon.displayTitle.ifBlank { manifest.name },
+                addonId = addon.streamAddonInstanceId(manifest.id),
+                manifest = manifest,
+            )
+        }
+        // Ask the add-on that supplied the first episode; fall back to all add-ons if it is gone.
+        val preferred = targets.filter { it.addonId == entry.reference.addonId }
+            .ifEmpty { targets.filter { it.addonName == entry.reference.addonName } }
+        val searchTargets = preferred.ifEmpty { targets }
+        if (searchTargets.isEmpty()) return null
+
+        val debridSettings = DebridSettingsRepository.snapshot()
+        val streams = mutableListOf<StreamItem>()
+        withTimeoutOrNull(searchTimeoutMs) {
+            StreamSearchSessions.search(
+                profileId = ProfileRepository.activeProfileId,
+                targets = StreamSearchTargets(
+                    type = type,
+                    videoId = entry.videoId,
+                    season = entry.seasonNumber,
+                    episode = entry.episodeNumber,
+                    streamAddons = searchTargets,
+                    serverSources = emptyList(),
+                    pluginProviderGroups = emptyList(),
+                ),
+                forceRefresh = false,
+            ).collect { completion ->
+                if (completion is StreamLoadCompletion.Addon) {
+                    DebridStreamPresentation.apply(listOf(completion.group), debridSettings)
+                        .forEach { streams += it.streams }
+                }
+            }
+        }
+        return SeasonStreamMatcher.pick(streams, entry.reference)
+    }
+
+    private fun needsDownload(entry: SeasonQueueEntry): Boolean {
+        val existing = DownloadsRepository.findDownload(entry.parentMetaId, entry.seasonNumber, entry.episodeNumber)
+            ?: return true
+        // Finished, running and paused downloads are kept; only failed ones are tried again.
+        return existing.status == DownloadStatus.Failed
+    }
+
+    private fun isQueued(entry: SeasonQueueEntry): Boolean =
+        _entries.value.any {
+            it.parentMetaId == entry.parentMetaId &&
+                it.seasonNumber == entry.seasonNumber &&
+                it.episodeNumber == entry.episodeNumber
+        }
+
+    private fun baseEntry(
+        contentType: String,
+        parentMetaId: String,
+        parentMetaType: String,
+        title: String,
+        logo: String?,
+        poster: String?,
+        background: String?,
+        reference: SeasonQueueReference,
+        videoId: String,
+        seasonNumber: Int,
+        episodeNumber: Int,
+        episodeTitle: String?,
+        episodeThumbnail: String?,
+    ): SeasonQueueEntry {
+        ordinal += 1
+        return SeasonQueueEntry(
+            id = "${DownloadsClock.nowEpochMs().toString(36)}_${ordinal.toString(36)}",
+            contentType = contentType,
+            parentMetaId = parentMetaId,
+            parentMetaType = parentMetaType,
+            title = title,
+            logo = logo,
+            poster = poster,
+            background = background,
+            videoId = videoId,
+            seasonNumber = seasonNumber,
+            episodeNumber = episodeNumber,
+            episodeTitle = episodeTitle,
+            episodeThumbnail = episodeThumbnail,
+            reference = reference,
+        )
+    }
+
+    private fun setState(entryId: String, state: SeasonQueueEntryState) {
+        update { entries -> entries.map { if (it.id == entryId) it.copy(state = state) else it } }
+    }
+
+    private fun update(transform: (List<SeasonQueueEntry>) -> List<SeasonQueueEntry>) {
+        val updated = transform(_entries.value)
+        _entries.value = updated
+        DownloadsStorage.saveExtra(storageKey, json.encodeToString(StoredSeasonQueue(updated)))
+    }
+}
+
+/**
+ * Picks the stream for a later episode that is most like the one chosen for the first episode:
+ * the same binge group when the add-on provides one, otherwise the same resolution and release
+ * type with the closest release name.
+ */
+internal object SeasonStreamMatcher {
+    private const val minimumScore = 0.3
+    private val ignoredTokens = Regex("^(s\\d+e\\d+|s\\d+|e\\d+|ep\\d*|episode|season|\\d+(\\.\\d+)?|\\d+(\\.\\d+)?(gb|mb|gib|mib))$")
+    private val flagPatterns = mapOf(
+        "remux" to Regex("\\bremux\\b"),
+        "hdr" to Regex("\\bhdr(10\\+?|10plus)?\\b"),
+        "dv" to Regex("\\b(dv|dovi|dolby[ ._-]?vision)\\b"),
+        "hevc" to Regex("\\b(hevc|x265|h\\.?265)\\b"),
+        "av1" to Regex("\\bav1\\b"),
+    )
+
+    fun describe(stream: StreamItem): String =
+        listOfNotNull(stream.name, stream.title, stream.description, stream.behaviorHints.filename)
+            .joinToString(" ")
+            .lowercase()
+
+    fun pick(streams: List<StreamItem>, reference: SeasonQueueReference): StreamItem? {
+        val downloadable = streams.filter(::isDownloadable)
+        if (downloadable.isEmpty()) return null
+
+        reference.bingeGroup?.let { group ->
+            downloadable.firstOrNull { it.behaviorHints.bingeGroup?.trim() == group }?.let { return it }
+        }
+
+        val referenceText = reference.text
+        val referenceResolution = resolution(referenceText)
+        val referenceFlags = flags(referenceText)
+        val referenceTokens = tokens(referenceText)
+        return downloadable
+            .mapNotNull { stream ->
+                val text = describe(stream)
+                if (referenceResolution != null && resolution(text) != referenceResolution) return@mapNotNull null
+                if (flags(text) != referenceFlags) return@mapNotNull null
+                val score = similarity(referenceTokens, tokens(text)) +
+                    if (stream.addonId == reference.addonId) 0.1 else 0.0
+                stream to score
+            }
+            .filter { (_, score) -> score >= minimumScore }
+            .maxByOrNull { (_, score) -> score }
+            ?.first
+    }
+
+    private fun isDownloadable(stream: StreamItem): Boolean {
+        val url = stream.playableDirectUrl?.lowercase()
+        if (url != null && (url.startsWith("http://") || url.startsWith("https://")) &&
+            !url.contains(".m3u8") && !url.contains(".mpd")
+        ) {
+            return true
+        }
+        return DirectDebridPlaybackResolver.shouldResolveToPlayableStream(stream)
+    }
+
+    private fun resolution(text: String): Int? = when {
+        Regex("\\b(2160p|4k|uhd)\\b").containsMatchIn(text) -> 2160
+        Regex("\\b1440p\\b").containsMatchIn(text) -> 1440
+        Regex("\\b1080p\\b").containsMatchIn(text) -> 1080
+        Regex("\\b720p\\b").containsMatchIn(text) -> 720
+        Regex("\\b(480p|576p|sd)\\b").containsMatchIn(text) -> 480
+        else -> null
+    }
+
+    private fun flags(text: String): Set<String> =
+        flagPatterns.filterValues { it.containsMatchIn(text) }.keys
+
+    private fun tokens(text: String): Set<String> =
+        text.split(Regex("[^a-z0-9+]+"))
+            .filter { it.length >= 2 && !ignoredTokens.matches(it) }
+            .toSet()
+
+    private fun similarity(first: Set<String>, second: Set<String>): Double {
+        if (first.isEmpty() || second.isEmpty()) return 0.0
+        val shared = first.intersect(second).size.toDouble()
+        return shared / first.union(second).size.toDouble()
+    }
+}

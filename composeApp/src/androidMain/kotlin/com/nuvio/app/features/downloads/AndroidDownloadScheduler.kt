@@ -5,6 +5,7 @@ import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
 import android.net.Network
+import android.net.Uri
 import android.os.Build
 import android.os.PersistableBundle
 import android.os.SystemClock
@@ -53,7 +54,11 @@ internal class AndroidDownloadScheduler(val context: Context) {
             } else {
                 val work = OneTimeWorkRequestBuilder<DownloadsTransferWorker>()
                     .setInputData(workDataOf(FILE_NAME to item.fileName, GENERATION to transfer.generation))
-                    .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                    .setConstraints(
+                        Constraints.Builder()
+                            .setRequiredNetworkType(if (item.wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED)
+                            .build(),
+                    )
                     .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
                     .build()
                 val operation = WorkManager.getInstance(context).enqueueUniqueWork(
@@ -78,7 +83,9 @@ internal class AndroidDownloadScheduler(val context: Context) {
     internal fun buildJob(transfer: AndroidDownloadTransfer): JobInfo =
         JobInfo.Builder(transfer.jobId, ComponentName(context, DownloadsTransferJobService::class.java))
             .setUserInitiated(true)
-            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+            .setRequiredNetworkType(
+                if (transfer.item.wifiOnly) JobInfo.NETWORK_TYPE_UNMETERED else JobInfo.NETWORK_TYPE_ANY,
+            )
             .setPersisted(true)
             .setEstimatedNetworkBytes(transfer.item.totalBytes ?: JobInfo.NETWORK_BYTES_UNKNOWN.toLong(), 0L)
             .setBackoffCriteria(30_000L, JobInfo.BACKOFF_POLICY_EXPONENTIAL)
@@ -117,7 +124,13 @@ internal class AndroidDownloadScheduler(val context: Context) {
 
     fun remove(fileName: String) {
         val transfer = store.get(fileName)
+        val partialDocument = transfer
+            ?.takeIf { it.item.status != DownloadStatus.Completed }
+            ?.documentUri
         store.remove(fileName)
+        partialDocument?.let { document ->
+            cleanupScope.launch { DownloadDocuments.delete(context, document) }
+        }
         transfer?.let(::cancelScheduled)
         transfer?.let { DownloadsLiveStatusPlatform.removeNotification(it.item.id) }
         cleanupScope.launch {
@@ -154,6 +167,10 @@ internal class AndroidDownloadScheduler(val context: Context) {
             DownloadSubtitles.prepare(transfer.item, destination.toURI().toString())
             currentCoroutineContext().ensureActive()
             if (!isActive(transfer)) return@withLock false
+            if (transfer.item.targetFolderUri != null) {
+                executeToFolder(transfer, destination, client, onProgress)
+                return@withLock false
+            }
             var lastProgressAt = 0L
             val partial = if (destination.isFile) destination else transferAndroidDownload(
                 item = transfer.item,
@@ -199,6 +216,69 @@ internal class AndroidDownloadScheduler(val context: Context) {
             retry
         } finally {
             if (network != null) withContext(NonCancellable + Dispatchers.IO) { client.connectionPool.evictAll() }
+        }
+    }
+
+    /**
+     * Writes the download straight into the folder the user picked, resuming the same document
+     * after a pause or a lost connection, then gives it its final name.
+     */
+    private suspend fun executeToFolder(
+        transfer: AndroidDownloadTransfer,
+        internalAnchor: File,
+        client: okhttp3.OkHttpClient,
+        onProgress: (AndroidDownloadTransfer) -> Unit,
+    ) {
+        val treeUri = checkNotNull(transfer.item.targetFolderUri)
+        if (!DownloadDocuments.hasPermission(context, treeUri)) {
+            throw IllegalStateException("The download folder is no longer accessible. Choose it again in Downloads.")
+        }
+        val current = store.get(transfer.item.fileName)?.takeIf { it.generation == transfer.generation } ?: transfer
+        val resumable = current.documentUri?.takeIf { DownloadDocuments.exists(context, it) }
+        val documentUri = resumable ?: run {
+            val folder = DocumentDownloads.folderFor(context, transfer.item)
+            val name = DocumentDownloads.uniqueName(context, transfer.item, folder, DocumentDownloads.displayName(transfer.item))
+            val created = DownloadDocuments.createFile(context, folder, "$name.part", "application/octet-stream").toString()
+            updateActive(transfer) { it.copy(documentUri = created, validator = null) }
+            created
+        }
+        var lastProgressAt = 0L
+        transferAndroidDownloadTo(
+            item = transfer.item,
+            sink = DocumentDownloadPartialSink(context, Uri.parse(documentUri)),
+            validator = if (resumable != null) current.validator else null,
+            client = client,
+            onHeaders = { total, validator ->
+                updateActive(transfer) { it.copy(validator = validator, item = it.item.copy(totalBytes = total)) }
+            },
+            onProgress = { bytes, total ->
+                val now = SystemClock.elapsedRealtime()
+                if (now - lastProgressAt >= 1_000L || bytes == total) {
+                    lastProgressAt = now
+                    updateActive(transfer) {
+                        it.copy(item = it.item.copy(downloadedBytes = bytes, totalBytes = total))
+                    }?.let(onProgress)
+                }
+            },
+        )
+        currentCoroutineContext().ensureActive()
+        val partialName = DownloadDocuments.displayName(context, documentUri)
+        val finalName = partialName?.removeSuffix(".part")?.takeIf { it.isNotBlank() }
+            ?: DocumentDownloads.displayName(transfer.item)
+        val finalUri = DownloadDocuments.rename(context, Uri.parse(documentUri), finalName).toString()
+        DocumentDownloads.finishSubtitles(context, transfer.item, internalAnchor, finalUri, finalName)
+        val bytes = DownloadDocuments.size(context, finalUri)
+        updateActive(transfer) { record ->
+            record.copy(
+                documentUri = null,
+                item = record.item.copy(
+                    status = DownloadStatus.Completed,
+                    localFileUri = finalUri,
+                    downloadedBytes = bytes ?: record.item.downloadedBytes,
+                    totalBytes = bytes ?: record.item.totalBytes,
+                    errorMessage = null,
+                ),
+            )
         }
     }
 

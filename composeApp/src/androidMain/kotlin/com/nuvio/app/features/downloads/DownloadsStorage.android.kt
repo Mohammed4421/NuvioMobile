@@ -23,4 +23,13 @@ internal actual object DownloadsStorage {
             ?.putString(ProfileScopedKey.of(payloadKey), payload)
             ?.apply()
     }
+
+    actual fun loadExtra(key: String): String? =
+        preferences?.getString("extra_$key", null)
+
+    actual fun saveExtra(key: String, value: String?) {
+        val editor = preferences?.edit() ?: return
+        if (value == null) editor.remove("extra_$key") else editor.putString("extra_$key", value)
+        editor.apply()
+    }
 }

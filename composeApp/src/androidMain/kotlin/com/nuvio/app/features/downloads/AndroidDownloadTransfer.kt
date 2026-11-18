@@ -1,8 +1,10 @@
 package com.nuvio.app.features.downloads
 
+import java.io.Closeable
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.OutputStream
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +25,40 @@ internal val downloadHttpClient = OkHttpClient.Builder()
 
 internal class DownloadHttpException(val statusCode: Int) : IOException("Download failed: HTTP $statusCode")
 
+/** Where a transfer writes its bytes: a `.part` file in app storage or a document in a picked folder. */
+internal interface DownloadPartialSink {
+    /** Bytes already written (0 when nothing exists yet). */
+    fun length(): Long
+
+    /** Opens the target for writing; [append] keeps the bytes already there. */
+    fun open(append: Boolean): DownloadPartialOutput
+}
+
+internal class DownloadPartialOutput(
+    val stream: OutputStream,
+    private val syncAction: () -> Unit,
+    private val closeAction: () -> Unit = {},
+) : Closeable {
+    fun sync() = syncAction()
+
+    override fun close() {
+        try {
+            stream.close()
+        } finally {
+            closeAction()
+        }
+    }
+}
+
+internal class FileDownloadPartialSink(private val partial: File) : DownloadPartialSink {
+    override fun length(): Long = partial.takeIf(File::isFile)?.length() ?: 0L
+
+    override fun open(append: Boolean): DownloadPartialOutput {
+        val output = FileOutputStream(partial, append)
+        return DownloadPartialOutput(output, syncAction = { output.fd.sync() })
+    }
+}
+
 internal suspend fun transferAndroidDownload(
     item: DownloadItem,
     directory: File,
@@ -30,14 +66,33 @@ internal suspend fun transferAndroidDownload(
     client: OkHttpClient = downloadHttpClient,
     onHeaders: (totalBytes: Long?, validator: String?) -> Unit,
     onProgress: (downloadedBytes: Long, totalBytes: Long?) -> Unit,
-): File = coroutineScope {
+): File {
+    require(File(item.fileName).name == item.fileName && item.fileName.isNotBlank())
+    check(directory.isDirectory || directory.mkdirs()) { "Cannot create downloads directory" }
+    val partial = File(directory, "${item.fileName}.part")
+    transferAndroidDownloadTo(
+        item = item,
+        sink = FileDownloadPartialSink(partial),
+        validator = validator,
+        client = client,
+        onHeaders = onHeaders,
+        onProgress = onProgress,
+    )
+    return partial
+}
+
+internal suspend fun transferAndroidDownloadTo(
+    item: DownloadItem,
+    sink: DownloadPartialSink,
+    validator: String?,
+    client: OkHttpClient = downloadHttpClient,
+    onHeaders: (totalBytes: Long?, validator: String?) -> Unit,
+    onProgress: (downloadedBytes: Long, totalBytes: Long?) -> Unit,
+): Unit = coroutineScope {
     val activeCall = AtomicReference<Call?>()
     val transfer = async(Dispatchers.IO) {
         try {
-            require(File(item.fileName).name == item.fileName && item.fileName.isNotBlank())
-            check(directory.isDirectory || directory.mkdirs()) { "Cannot create downloads directory" }
-            val partial = File(directory, "${item.fileName}.part")
-            var offset = partial.takeIf(File::isFile)?.length() ?: 0L
+            var offset = sink.length()
             var restarted = false
 
             while (true) {
@@ -56,6 +111,7 @@ internal suspend fun transferAndroidDownload(
                 val call = client.newCall(request)
                 activeCall.set(call)
                 ensureActive()
+                var finished = false
                 call.execute().use { response ->
                     if (response.code == 416 && offset > 0L && !restarted) {
                         offset = 0L
@@ -78,28 +134,28 @@ internal suspend fun transferAndroidDownload(
                     var downloaded = startingBytes
                     onProgress(downloaded, totalBytes)
                     body.byteStream().use { input ->
-                        FileOutputStream(partial, resumed && offset > 0L).use { output ->
+                        sink.open(append = resumed && offset > 0L).use { output ->
                             val buffer = ByteArray(64 * 1024)
                             while (true) {
                                 ensureActive()
                                 val size = input.read(buffer)
                                 if (size == -1) break
-                                output.write(buffer, 0, size)
+                                output.stream.write(buffer, 0, size)
                                 downloaded += size
                                 onProgress(downloaded, totalBytes)
                             }
-                            output.fd.sync()
+                            output.stream.flush()
+                            output.sync()
                         }
                     }
                     ensureActive()
                     if (totalBytes != null && downloaded != totalBytes) {
                         throw IOException("Download ended before all bytes were received")
                     }
-                    return@async partial
+                    finished = true
                 }
+                if (finished) break
             }
-            @Suppress("UNREACHABLE_CODE")
-            partial
         } catch (error: Exception) {
             // Closing a cancelled HTTP call throws IOException from its blocking read.
             ensureActive()

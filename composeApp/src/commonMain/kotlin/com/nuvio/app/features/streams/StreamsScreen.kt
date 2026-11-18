@@ -34,6 +34,7 @@ import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.SearchOff
+import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -72,6 +73,8 @@ import com.nuvio.app.core.ui.dismissNuvioBottomSheet
 import com.nuvio.app.core.ui.featherArtwork
 import com.nuvio.app.core.ui.rememberArtworkBackdrop
 import com.nuvio.app.features.downloads.DownloadsRepository
+import com.nuvio.app.features.downloads.SeasonDownloadQueue
+import com.nuvio.app.features.downloads.SeasonDownloadScope
 import com.nuvio.app.features.details.MetaScreenSettingsRepository
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -94,6 +97,7 @@ import com.nuvio.app.navigation.LocalUseNativeNavigation
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import nuvio.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import com.nuvio.app.core.i18n.localizedEpisodeTitle
 
@@ -164,6 +168,8 @@ fun StreamsScreen(
     val streamLinkCopiedText = stringResource(Res.string.streams_link_copied)
     val noDirectStreamLinkText = stringResource(Res.string.streams_no_direct_link)
     var streamActionsTarget by remember(videoId) { mutableStateOf<StreamItem?>(null) }
+    var seasonDownloadTarget by remember(videoId) { mutableStateOf<StreamItem?>(null) }
+    val seasonDownloadNothingText = stringResource(Res.string.season_download_nothing)
     val downloadScope = rememberCoroutineScope()
     var preferredFilterApplied by remember(videoId) { mutableStateOf(false) }
     val episodeProgress = watchProgressUiState.progressForVideo(
@@ -307,6 +313,11 @@ fun StreamsScreen(
             stream = streamActionsTarget,
             externalPlayerEnabled = playerSettings.externalPlayerEnabled,
             onDismiss = { streamActionsTarget = null },
+            onDownloadSeason = if (isEpisode) {
+                { stream -> seasonDownloadTarget = stream }
+            } else {
+                null
+            },
             onCopyLink = { stream ->
                 val directUrl = stream.playableDirectUrl ?: stream.externalOpenUrl
                 if (!directUrl.isNullOrBlank()) {
@@ -404,6 +415,43 @@ fun StreamsScreen(
                 )
             },
         )
+
+        val seasonForSheet = seasonNumber
+        val episodeForSheet = episodeNumber
+        if (seasonForSheet != null && episodeForSheet != null) {
+            SeasonDownloadSheet(
+                stream = seasonDownloadTarget,
+                seasonNumber = seasonForSheet,
+                onDismiss = { seasonDownloadTarget = null },
+                onChoose = { stream, scope ->
+                    downloadScope.launch {
+                        val added = SeasonDownloadQueue.startSeason(
+                            contentType = type,
+                            parentMetaId = parentMetaId,
+                            parentMetaType = parentMetaType,
+                            title = title,
+                            logo = logo,
+                            poster = poster,
+                            background = background,
+                            currentVideoId = videoId,
+                            seasonNumber = seasonForSheet,
+                            episodeNumber = episodeForSheet,
+                            currentEpisodeTitle = episodeTitle,
+                            currentEpisodeThumbnail = episodeThumbnail,
+                            referenceStream = stream,
+                            downloadScope = scope,
+                        )
+                        NuvioToastController.show(
+                            if (added > 0) {
+                                getString(Res.string.season_download_queued, added)
+                            } else {
+                                seasonDownloadNothingText
+                            },
+                        )
+                    }
+                },
+            )
+        }
     }
 }
 
@@ -970,6 +1018,7 @@ private fun StreamActionsSheet(
     onCopyLink: (StreamItem) -> Unit,
     onDownload: (StreamItem) -> Unit,
     onOpen: (StreamItem, openExternally: Boolean) -> Unit,
+    onDownloadSeason: ((StreamItem) -> Unit)? = null,
 ) {
     if (stream == null) return
 
@@ -1052,6 +1101,83 @@ private fun StreamActionsSheet(
                         dismissNuvioBottomSheet(sheetState = sheetState, onDismiss = onDismiss)
                     }
                 },
+            )
+            if (onDownloadSeason != null) {
+                NuvioBottomSheetActionRow(
+                    icon = Icons.Rounded.VideoLibrary,
+                    title = stringResource(Res.string.season_download_action),
+                    onClick = {
+                        onDownloadSeason(stream)
+                        coroutineScope.launch {
+                            dismissNuvioBottomSheet(sheetState = sheetState, onDismiss = onDismiss)
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SeasonDownloadSheet(
+    stream: StreamItem?,
+    seasonNumber: Int,
+    onDismiss: () -> Unit,
+    onChoose: (StreamItem, SeasonDownloadScope) -> Unit,
+) {
+    if (stream == null) return
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val coroutineScope = rememberCoroutineScope()
+
+    fun choose(scope: SeasonDownloadScope) {
+        onChoose(stream, scope)
+        coroutineScope.launch {
+            dismissNuvioBottomSheet(sheetState = sheetState, onDismiss = onDismiss)
+        }
+    }
+
+    NuvioModalBottomSheet(
+        onDismissRequest = {
+            coroutineScope.launch {
+                dismissNuvioBottomSheet(sheetState = sheetState, onDismiss = onDismiss)
+            }
+        },
+        sheetState = sheetState,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = nuvioSafeBottomPadding(16.dp)),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = stringResource(Res.string.season_download_title, seasonNumber),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = stringResource(Res.string.season_download_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            NuvioBottomSheetDivider()
+            NuvioBottomSheetActionRow(
+                icon = Icons.Rounded.Download,
+                title = stringResource(Res.string.season_download_rest),
+                onClick = { choose(SeasonDownloadScope.RestOfSeason) },
+            )
+            NuvioBottomSheetActionRow(
+                icon = Icons.Rounded.VideoLibrary,
+                title = stringResource(Res.string.season_download_all),
+                onClick = { choose(SeasonDownloadScope.WholeSeason) },
             )
         }
     }

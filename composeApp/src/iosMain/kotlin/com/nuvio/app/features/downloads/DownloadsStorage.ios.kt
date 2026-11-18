@@ -12,4 +12,15 @@ internal actual object DownloadsStorage {
     actual fun savePayload(payload: String) {
         NSUserDefaults.standardUserDefaults.setObject(payload, forKey = ProfileScopedKey.of(payloadKey))
     }
+
+    actual fun loadExtra(key: String): String? =
+        NSUserDefaults.standardUserDefaults.stringForKey("downloads_extra_$key")
+
+    actual fun saveExtra(key: String, value: String?) {
+        if (value == null) {
+            NSUserDefaults.standardUserDefaults.removeObjectForKey("downloads_extra_$key")
+        } else {
+            NSUserDefaults.standardUserDefaults.setObject(value, forKey = "downloads_extra_$key")
+        }
+    }
 }

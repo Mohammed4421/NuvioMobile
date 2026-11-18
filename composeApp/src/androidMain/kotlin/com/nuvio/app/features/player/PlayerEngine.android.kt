@@ -1843,10 +1843,17 @@ private class NuvioLibmpvView(
     }
 
     private fun String.toMpvSource(): String =
-        if (!startsWith("file:", ignoreCase = true)) {
-            this
-        } else {
-            runCatching { File(URI(this)).absolutePath }.getOrDefault(this)
+        when {
+            startsWith("file:", ignoreCase = true) ->
+                runCatching { File(URI(this)).absolutePath }.getOrDefault(this)
+            // Downloads saved in a picked folder: mpv cannot open content:// itself, so hand it
+            // a file descriptor it closes when done.
+            startsWith("content:", ignoreCase = true) ->
+                runCatching {
+                    val descriptor = context.contentResolver.openFileDescriptor(android.net.Uri.parse(this), "r")
+                    descriptor?.let { "fdclose://${it.detachFd()}" }
+                }.getOrNull() ?: this
+            else -> this
         }
 
     fun setPaused(paused: Boolean) {

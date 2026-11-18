@@ -5,7 +5,15 @@ import java.io.File
 import java.net.URI
 
 internal actual class DownloadSubtitleStorage actual constructor(localVideoUri: String) {
-    private val directory = File(File(URI(localVideoUri)).path + ".subtitles")
+    private val directory = if (DownloadDocuments.isDocumentUri(localVideoUri)) {
+        // Downloads saved in a picked folder keep their subtitles in app storage.
+        DocumentDownloads.subtitleDirectory(
+            checkNotNull(DownloadsPlatformDownloader.contextOrNull()) { "Downloads are not initialized" },
+            localVideoUri,
+        )
+    } else {
+        File(File(URI(localVideoUri)).path + ".subtitles")
+    }
 
     actual fun read(fileName: String): String? =
         runCatching { AtomicFile(file(fileName)).readFully().decodeToString() }.getOrNull()

@@ -51,6 +51,10 @@ data class DownloadItem(
     val errorMessage: String? = null,
     val createdAtEpochMs: Long,
     val updatedAtEpochMs: Long,
+    /** Folder picked by the user (a document tree URI); null keeps the file in app storage. */
+    val targetFolderUri: String? = null,
+    /** Wait for an unmetered (Wi-Fi) network before transferring. */
+    val wifiOnly: Boolean = false,
 ) {
     val isEpisode: Boolean
         get() = seasonNumber != null && episodeNumber != null

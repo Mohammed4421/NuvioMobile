@@ -128,7 +128,7 @@ internal fun PlayerScreenRuntime.restorePersistedTrackPreferenceIfNeeded(): Bool
         PersistedSubtitleSelectionType.ADDON -> {
             if (!isUserExplicitSubtitleSelection) {
                 val fetchKey = addonSubtitleFetchKey.takeUnless {
-                    activeSourceUrl.startsWith("file:") && externalSubtitles.isNotEmpty()
+                    (activeSourceUrl.startsWith("file:") || activeSourceUrl.startsWith("content:")) && externalSubtitles.isNotEmpty()
                 }
                 if (fetchKey != null && autoFetchedAddonSubtitlesForKey != fetchKey) return false
 

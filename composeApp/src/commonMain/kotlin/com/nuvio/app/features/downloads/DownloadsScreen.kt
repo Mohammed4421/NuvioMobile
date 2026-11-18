@@ -23,6 +23,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,6 +62,18 @@ fun DownloadsScreen(
     }.collectAsStateWithLifecycle()
     LaunchedEffect(uiState.completedItems.size) {
         DownloadsRepository.markCompletedSeen()
+    }
+
+    val queueEntries by SeasonDownloadQueue.entries.collectAsStateWithLifecycle()
+    val downloadPreferences by remember {
+        DownloadPreferences.ensureLoaded()
+        DownloadPreferences.state
+    }.collectAsStateWithLifecycle()
+    val folderFailedText = stringResource(Res.string.downloads_location_failed)
+    val pickDownloadFolder = rememberDownloadFolderPicker { result ->
+        result
+            .onSuccess { folder -> DownloadPreferences.setFolder(folder.uri, folder.label) }
+            .onFailure { NuvioToastController.show(folderFailedText) }
     }
 
     var selectedShowId by rememberSaveable(initialShowId) { mutableStateOf(initialShowId) }
@@ -110,6 +125,11 @@ fun DownloadsScreen(
         }
 
         if (selectedShowId == null) {
+            downloadsSettingsContent(
+                preferences = downloadPreferences,
+                onChooseFolder = pickDownloadFolder,
+            )
+            seasonQueueContent(entries = queueEntries)
             downloadsRootContent(
                 uiState = uiState,
                 onOpenDownload = onOpenDownload,
@@ -265,6 +285,182 @@ private fun LazyListScope.downloadsRootContent(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+        }
+    }
+}
+
+private fun LazyListScope.downloadsSettingsContent(
+    preferences: DownloadPreferencesState,
+    onChooseFolder: (() -> Unit)?,
+) {
+    item(key = "downloads-settings") {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.Folder,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.size(12.dp))
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            text = stringResource(Res.string.downloads_settings_location),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = preferences.folderLabel?.takeIf { preferences.folderUri != null }
+                                ?: stringResource(Res.string.downloads_settings_location_internal),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+                if (onChooseFolder != null) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = onChooseFolder) {
+                            Text(stringResource(Res.string.downloads_settings_location_change))
+                        }
+                        if (preferences.folderUri != null) {
+                            TextButton(onClick = { DownloadPreferences.setFolder(null, null) }) {
+                                Text(stringResource(Res.string.downloads_settings_location_reset))
+                            }
+                        }
+                    }
+                    Text(
+                        text = stringResource(Res.string.downloads_settings_location_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            text = stringResource(Res.string.downloads_settings_wifi_only),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = stringResource(Res.string.downloads_settings_wifi_only_description),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = preferences.wifiOnly,
+                        onCheckedChange = { DownloadPreferences.setWifiOnly(it) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun LazyListScope.seasonQueueContent(entries: List<SeasonQueueEntry>) {
+    // Episodes already downloading are listed with the other active downloads.
+    val pending = entries.filter { it.state != SeasonQueueEntryState.Downloading }
+    if (pending.isEmpty()) return
+    item(key = "season-queue-title") {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(end = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                SectionTitle(stringResource(Res.string.downloads_section_queue))
+            }
+            TextButton(onClick = { SeasonDownloadQueue.clear() }) {
+                Text(stringResource(Res.string.downloads_queue_clear))
+            }
+        }
+    }
+    items(items = pending, key = { "queue-${it.id}" }) { entry ->
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp),
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 14.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    val episodeLabel = stringResource(
+                        Res.string.downloads_queue_episode,
+                        entry.seasonNumber.toString().padStart(2, '0'),
+                        entry.episodeNumber.toString().padStart(2, '0'),
+                    )
+                    Text(
+                        text = "${entry.title} · $episodeLabel",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    entry.episodeTitle?.takeIf { it.isNotBlank() }?.let { episodeTitle ->
+                        Text(
+                            text = episodeTitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    Text(
+                        text = stringResource(
+                            when (entry.state) {
+                                SeasonQueueEntryState.Waiting -> Res.string.downloads_queue_waiting
+                                SeasonQueueEntryState.Searching -> Res.string.downloads_queue_searching
+                                SeasonQueueEntryState.Downloading -> Res.string.downloads_queue_downloading
+                                SeasonQueueEntryState.NeedsChoice -> Res.string.downloads_queue_needs_choice
+                            },
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (entry.state == SeasonQueueEntryState.NeedsChoice) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                    if (entry.state == SeasonQueueEntryState.Searching) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(top = 4.dp, end = 10.dp))
+                    }
+                }
+                if (entry.state == SeasonQueueEntryState.NeedsChoice) {
+                    IconButton(onClick = { SeasonDownloadQueue.retry(entry.id) }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = stringResource(Res.string.downloads_queue_retry),
+                        )
+                    }
+                }
+                if (entry.state != SeasonQueueEntryState.Searching) {
+                    IconButton(onClick = { SeasonDownloadQueue.remove(entry.id) }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Delete,
+                            contentDescription = stringResource(Res.string.downloads_queue_remove),
+                        )
+                    }
+                }
             }
         }
     }

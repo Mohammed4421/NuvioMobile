@@ -29,6 +29,7 @@ object DownloadsRepository {
     fun ensureLoaded() {
         if (hasLoaded) return
         loadFromDisk()
+        SeasonDownloadQueue.ensureStarted()
     }
 
     fun onProfileChanged() {
@@ -86,6 +87,13 @@ object DownloadsRepository {
         }
     }
 
+    /** The download for an episode or movie in any state, if one exists. */
+    fun findDownload(parentMetaId: String, seasonNumber: Int?, episodeNumber: Int?): DownloadItem? {
+        ensureLoaded()
+        val key = buildLogicalKey(parentMetaId, seasonNumber, episodeNumber)
+        return _uiState.value.items.firstOrNull { it.logicalContentKey == key }
+    }
+
     fun playableLocalFileUri(item: DownloadItem): String? {
         ensureLoaded()
         if (item.status != DownloadStatus.Completed) return null
@@ -136,6 +144,7 @@ object DownloadsRepository {
             return DownloadEnqueueResult.UnsupportedFormat
         }
 
+        val preferences = DownloadPreferences.current()
         val now = DownloadsClock.nowEpochMs()
         val logicalKey = buildLogicalKey(
             parentMetaId = parentMetaId,
@@ -200,6 +209,8 @@ object DownloadsRepository {
             errorMessage = null,
             createdAtEpochMs = now,
             updatedAtEpochMs = now,
+            targetFolderUri = preferences.folderUri,
+            wifiOnly = preferences.wifiOnly,
         )
 
         currentItems.add(0, item)
