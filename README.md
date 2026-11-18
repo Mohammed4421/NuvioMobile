@@ -83,10 +83,10 @@
 
 > [!IMPORTANT]
 > Builds 1–6 were signed with a different key each time: uninstall such a build once before installing
-> build 7 or newer. From then on, every build installs as an update. Nuvio account sign-in works; Trakt sign-in needs your own Trakt API keys
+> build 8 or newer. From then on, every build installs as an update. Nuvio account sign-in works; Trakt sign-in needs your own Trakt API keys
 > (see *Build*).
 >
-> البناءات 1–6 كانت تُوقَّع بمفتاح مختلف كل مرة؛ احذفها مرة واحدة قبل تثبيت البناء 7 أو أحدث، وبعدها كل بناء يُثبَّت كتحديث. حساب Nuvio يعمل، أما Trakt
+> البناءات 1–6 كانت تُوقَّع بمفتاح مختلف كل مرة؛ احذفها مرة واحدة قبل تثبيت البناء 8 أو أحدث، وبعدها كل بناء يُثبَّت كتحديث. حساب Nuvio يعمل، أما Trakt
 > فيحتاج مفاتيح Trakt خاصة بك.
 
 ## Known limits / حدود معروفة
