@@ -136,6 +136,15 @@ val SubtitleColorSwatches = listOf(
 
 /** Upper bound of [SubtitleStyleState.bottomOffset]. */
 const val SUBTITLE_BOTTOM_OFFSET_MAX = 600
+const val SUBTITLE_OUTLINE_WIDTH_MAX = 8
+
+/**
+ * Outline width in dp. An earlier third-party build stored subtitle brightness (up to 100) here and
+ * it reached accounts through settings sync, which draws a huge spiky outline. Such values fall back
+ * to the default.
+ */
+internal fun normalizeSubtitleOutlineWidth(value: Int?): Int =
+    value?.takeIf { it in 0..SUBTITLE_OUTLINE_WIDTH_MAX } ?: 2
 
 val SubtitleBackgroundColorSwatches = listOf(
     Color.Transparent,

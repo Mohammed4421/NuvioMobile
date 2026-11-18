@@ -71,4 +71,12 @@ class SubtitleAppearanceTest {
         assertEquals("", guessLanguageFromSubtitleFileName("subtitle.srt"))
         assertEquals("", guessLanguageFromSubtitleFileName("noextension"))
     }
+
+    @Test
+    fun outlineWidthOutsideRangeFallsBackToDefault() {
+        assertEquals(2, normalizeSubtitleOutlineWidth(55))
+        assertEquals(2, normalizeSubtitleOutlineWidth(-1))
+        assertEquals(2, normalizeSubtitleOutlineWidth(null))
+        assertEquals(4, normalizeSubtitleOutlineWidth(4))
+    }
 }

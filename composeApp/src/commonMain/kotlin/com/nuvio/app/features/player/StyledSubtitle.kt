@@ -76,7 +76,7 @@ internal fun StyledSubtitleText(
         )
         val textHeight = with(density) { (layout.size.height + paddingY * 2).toDp() }
         val radius = with(density) { (style.appearance.backgroundRadius.dp * scale).toPx() }
-        val outline = with(density) { (style.outlineWidth.dp * scale).toPx() }
+        val outline = with(density) { (normalizeSubtitleOutlineWidth(style.outlineWidth).dp * scale).toPx() }
         val shadowSize = with(density) { (style.appearance.shadowSize.dp * scale).toPx() }
         val brightness = style.brightnessFactor
         Canvas(

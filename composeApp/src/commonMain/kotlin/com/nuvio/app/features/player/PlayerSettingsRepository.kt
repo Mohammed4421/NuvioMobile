@@ -372,6 +372,11 @@ object PlayerSettingsRepository {
                 ?: SubtitleLanguageOption.NONE
         secondaryPreferredSubtitleLanguage =
             normalizeLanguageCode(PlayerSettingsStorage.loadSecondaryPreferredSubtitleLanguage())
+        // Repair an outline width written by an earlier third-party build, so sync stops spreading it.
+        PlayerSettingsStorage.loadSubtitleOutlineWidth()?.let { stored ->
+            val repaired = normalizeSubtitleOutlineWidth(stored)
+            if (repaired != stored) PlayerSettingsStorage.saveSubtitleOutlineWidth(repaired)
+        }
         subtitleStyle = SubtitleStyleState(
             textColor = subtitleColorFromStorage(PlayerSettingsStorage.loadSubtitleTextColor())
                 ?: SubtitleStyleState.DEFAULT.textColor,
@@ -381,8 +386,7 @@ object PlayerSettingsRepository {
                 ?: SubtitleStyleState.DEFAULT.outlineColor,
             outlineEnabled = PlayerSettingsStorage.loadSubtitleOutlineEnabled()
                 ?: SubtitleStyleState.DEFAULT.outlineEnabled,
-            outlineWidth = PlayerSettingsStorage.loadSubtitleOutlineWidth()
-                ?: SubtitleStyleState.DEFAULT.outlineWidth,
+            outlineWidth = normalizeSubtitleOutlineWidth(PlayerSettingsStorage.loadSubtitleOutlineWidth()),
             bold = PlayerSettingsStorage.loadSubtitleBold()
                 ?: SubtitleStyleState.DEFAULT.bold,
             fontSizeSp = (PlayerSettingsStorage.loadSubtitleFontSizeSp()
@@ -685,6 +689,7 @@ object PlayerSettingsRepository {
         val normalized = style.copy(
             fontSizeSp = style.fontSizeSp.coerceIn(subtitleFontSizeRangeSp),
             bottomOffset = style.bottomOffset.coerceIn(0, SUBTITLE_BOTTOM_OFFSET_MAX),
+            outlineWidth = normalizeSubtitleOutlineWidth(style.outlineWidth),
             appearance = style.appearance.normalized(),
         )
         if (subtitleStyle == normalized) return

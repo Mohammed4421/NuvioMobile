@@ -4,6 +4,14 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
+## Build 6 — subtitle outline repair
+
+### Fixed
+- **Huge black shapes around subtitles.** An earlier third-party build saved subtitle brightness in the
+  outline width setting, and settings sync carried it to the Nuvio account. After signing in, the outline
+  was drawn dozens of times too thick (spiky black shapes over the preview and the video). Outline widths
+  outside 0–8 now fall back to the default and are corrected in storage, so sync sends the fixed value.
+
 ## Build 5 — Nuvio account
 
 ### Fixed

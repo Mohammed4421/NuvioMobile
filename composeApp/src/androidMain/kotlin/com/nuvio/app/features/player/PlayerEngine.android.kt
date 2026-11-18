@@ -2300,7 +2300,7 @@ private fun SubtitleStyleState.toMpvSubtitleFontSize(): Int =
     )
 
 private fun SubtitleStyleState.toMpvSubtitleOutlineSize(): Int =
-    if (!outlineEnabled) 0 else (outlineWidth * MPV_SUBTITLE_OUTLINE_SIZE_SCALE).toInt().coerceAtLeast(1)
+    if (!outlineEnabled) 0 else (normalizeSubtitleOutlineWidth(outlineWidth) * MPV_SUBTITLE_OUTLINE_SIZE_SCALE).toInt().coerceAtLeast(1)
 
 private fun SubtitleStyleState.toMpvSubtitleBorderStyle(): String =
     if (outlineEnabled) {
