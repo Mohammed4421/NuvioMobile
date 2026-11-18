@@ -89,6 +89,6 @@ Nuvio `81f836d4` · common base `511ebd5f` · 132 files changed by Nuvio, 17 of 
 
 ## Not merged automatically / still open
 
-- [ ] 55 new Nuvio texts for Plex, Silo and server sign-in have no Arabic yet (Nuvio's beta has none); the
-      texts on screens Nuvio Plus changed (downloads, library filters, outline width, tracking consent) are translated.
+- [ ] Arabic: every new Nuvio text is translated (downloads, library filters, outline width, tracking
+      consent, and the 55 Plex, Silo and server sign-in texts). Check them on a phone in Arabic.
 - [ ] Device matrix (`docs/plus/device-test-matrix.md`) rows D2–D3, D5, D8–D14, D17, D19 on a phone with this build.
