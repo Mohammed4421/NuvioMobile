@@ -4,8 +4,8 @@ name: Nuvio Plus pipeline
 # because GitHub runs scheduled workflows only from there; the logic itself is plus-sync.yml on
 # the custom-subtitles branch.
 on:
-  schedule:
-    - cron: '23 2 * * *'
+  # Daily schedule paused until the Safe Upstream Sync v2 review flow is approved: the current sync
+  # promotes and publishes on its own. Restore with:  schedule: [{cron: '23 2 * * *'}]
   workflow_dispatch:
     inputs:
       channel:
