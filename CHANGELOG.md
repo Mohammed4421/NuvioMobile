@@ -4,6 +4,12 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
+## Build 5 — Nuvio account
+
+### Fixed
+- **Nuvio account sign-in.** Builds now connect to the official Nuvio account server (`api.nuvio.tv`),
+  so signing in, sync and the other account features work.
+
 ## Build 4 — Nuvio Plus
 
 ### Changed

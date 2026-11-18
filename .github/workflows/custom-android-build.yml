@@ -47,7 +47,14 @@ jobs:
             keytool -genkeypair -keystore "${keystore}" -storepass "${password}" -keypass "${password}" \
               -alias custom -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Nuvio Custom"
           fi
-          printf '%s\n' "${CUSTOM_LOCAL_PROPERTIES}" > local.properties
+          # Official Nuvio account server, as shipped in the official app (public client key).
+          # Lines in CUSTOM_LOCAL_PROPERTIES come later and win.
+          {
+            echo "NUVIO_SUPABASE_URL=https://api.nuvio.tv"
+            echo "NUVIO_SUPABASE_FALLBACK_URL=https://api-two.nuvioapp.space"
+            echo "NUVIO_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzgxNTIxMzQ2LCJleHAiOjE5MzkyMDEzNDZ9.tmQaj682pwzehpqlgCDMnySOqiUvpgRbrE43T4VJpDI"
+          } > local.properties
+          printf '%s\n' "${CUSTOM_LOCAL_PROPERTIES}" >> local.properties
           {
             echo "NUVIO_RELEASE_STORE_FILE=${keystore}"
             echo "NUVIO_RELEASE_STORE_PASSWORD=${password}"

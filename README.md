@@ -79,11 +79,11 @@
 
 > [!IMPORTANT]
 > Builds are signed with a new key each time, so uninstall the previous Nuvio Plus build before
-> installing a new one. Trakt and Nuvio account sign-in need service keys that are not part of this
-> build.
+> installing a new one. Nuvio account sign-in works; Trakt sign-in needs your own Trakt API keys
+> (see *Build*).
 >
-> كل بناء يُوقَّع بمفتاح جديد، فاحذف النسخة السابقة قبل تثبيت الجديدة. تسجيل الدخول إلى Trakt وحساب Nuvio
-> يحتاج مفاتيح خدمات غير موجودة في هذه النسخة.
+> كل بناء يُوقَّع بمفتاح جديد، فاحذف النسخة السابقة قبل تثبيت الجديدة. حساب Nuvio يعمل، أما Trakt
+> فيحتاج مفاتيح Trakt خاصة بك.
 
 ## Known limits / حدود معروفة
 
