@@ -6,7 +6,9 @@ import com.nuvio.app.core.build.AppVersionConfig
  * Nuvio Plus builds follow the releases of their own fork instead of the official app:
  * - stable releases are tagged `custom-<build>` (not marked as pre-release);
  * - beta releases are tagged `custom-<build>-beta` and marked as pre-release.
- * Build numbers are shared by both channels, so a higher number is always a newer build.
+ * Build numbers are shared by both channels, so a higher number is always a newer build. The
+ * default channel follows the app version, as in Nuvio: builds with a Nuvio beta inside carry a
+ * pre-release version (for example 1.1.0-beta.2) and start on Beta.
  */
 internal object PlusUpdates {
     private val tagPattern = Regex("^custom-(\\d+)(-beta)?$")
@@ -16,10 +18,6 @@ internal object PlusUpdates {
 
     val releasesUrl: String
         get() = "https://api.github.com/repos/${PlusUpdateConfig.REPO}/releases?per_page=50"
-
-    /** The channel this build was made for; the default until the user picks one. */
-    val buildChannel: UpdateChannel
-        get() = if (PlusUpdateConfig.CHANNEL == "beta") UpdateChannel.BETA else UpdateChannel.STABLE
 
     fun buildNumber(tag: String?): Int? =
         tag?.trim()?.let(tagPattern::matchEntire)?.groupValues?.get(1)?.toIntOrNull()

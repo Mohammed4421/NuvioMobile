@@ -50,8 +50,10 @@ class PlusUpdateChannelsTest {
     }
 
     @Test
-    fun betaAlsoTakesBetaReleases() {
-        assertEquals("custom-12-beta", PlusUpdates.latest(releases, UpdateChannel.BETA)?.tagName)
+    fun betaAlsoTakesBetaAndPreReleases() {
+        // custom-13 is marked as a pre-release: Beta takes it, Stable does not.
+        assertEquals("custom-13", PlusUpdates.latest(releases, UpdateChannel.BETA)?.tagName)
+        assertEquals("custom-12-beta", PlusUpdates.latest(releases.filterNot { it.tagName == "custom-13" }, UpdateChannel.BETA)?.tagName)
     }
 
     @Test
