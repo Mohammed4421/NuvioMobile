@@ -127,8 +127,8 @@ jobs:
             -Pnuvio.customVersionCode=$((1000 + BUILD)) \
             -Pnuvio.customVersionName="${version}-plus.${BUILD}${suffix}" \
             --stacktrace 2>&1 | tee build.log || {
-              grep -E "^e: " build.log | head -n 20 | sed 's/^/::error::/'
-              grep -A6 "What went wrong" build.log | head -n 20 | sed 's/^/::error::/'
+              { grep -E "^e: " build.log || true; } | head -n 20 | sed 's/^/::error::/'
+              { grep -A6 "What went wrong" build.log || true; } | head -n 20 | sed 's/^/::error::/'
               exit 1
             }
           echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${BUILD} (${CHANNEL})." > checks-build.md
