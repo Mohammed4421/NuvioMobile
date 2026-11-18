@@ -19,7 +19,7 @@ on:
         default: false
 
 concurrency:
-  group: nuvio-plus-release
+  group: nuvio-plus-publish
   cancel-in-progress: false
 
 permissions:
