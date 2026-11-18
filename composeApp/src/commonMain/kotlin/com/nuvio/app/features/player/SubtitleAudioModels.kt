@@ -83,6 +83,9 @@ val PlayerSettingsUiState.effectiveDownmixEnabled: Boolean
 internal fun audioAmplificationGain(db: Int): Double =
     10.0.pow(db.coerceIn(AUDIO_AMPLIFICATION_MIN_DB, AUDIO_AMPLIFICATION_MAX_DB) / 20.0)
 
+internal const val SUBTITLE_OUTLINE_WIDTH_DEFAULT = 2
+internal val subtitleOutlineWidthRange: IntRange = 1..5
+
 internal val subtitleFontSizeRangeSp: IntRange
     get() = if (isIos) 6..40 else 12..40
 
@@ -91,7 +94,7 @@ data class SubtitleStyleState(
     val backgroundColor: Color = Color.Transparent,
     val outlineColor: Color = Color.Black,
     val outlineEnabled: Boolean = true,
-    val outlineWidth: Int = 2,
+    val outlineWidth: Int = SUBTITLE_OUTLINE_WIDTH_DEFAULT,
     val bold: Boolean = false,
     val fontSizeSp: Int = 18,
     val bottomOffset: Int = 20,
@@ -139,12 +142,14 @@ const val SUBTITLE_BOTTOM_OFFSET_MAX = 600
 const val SUBTITLE_OUTLINE_WIDTH_MAX = 8
 
 /**
- * Outline width in dp. An earlier third-party build stored subtitle brightness (up to 100) here and
- * it reached accounts through settings sync, which draws a huge spiky outline. Such values fall back
- * to the default.
+ * Outline width for every renderer. Nuvio 1.1 added a 1..5 slider ([subtitleOutlineWidthRange]);
+ * values above [SUBTITLE_OUTLINE_WIDTH_MAX] come from an earlier third-party build that stored
+ * subtitle brightness (up to 100) here, spread through settings sync, and fall back to the default
+ * instead of being clamped to the thickest outline.
  */
 internal fun normalizeSubtitleOutlineWidth(value: Int?): Int =
-    value?.takeIf { it in 0..SUBTITLE_OUTLINE_WIDTH_MAX } ?: 2
+    value?.takeIf { it in 0..SUBTITLE_OUTLINE_WIDTH_MAX }?.coerceIn(subtitleOutlineWidthRange)
+        ?: SUBTITLE_OUTLINE_WIDTH_DEFAULT
 
 val SubtitleBackgroundColorSwatches = listOf(
     Color.Transparent,
