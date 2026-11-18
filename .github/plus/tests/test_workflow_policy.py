@@ -112,13 +112,20 @@ class WorkflowPolicyTest(unittest.TestCase):
                 self.assertEqual(("plus-build.yml", "sign"), (name, job_id))
 
     def test_checkouts_keep_no_credentials_unless_the_job_pushes(self):
+        # Every checkout is followed at once by an inline step that removes the stored token and
+        # fails if any is left (persist-credentials: false breaks on Nuvio's libass-android gitlink).
         for name, _, job_id, job in self.each_job():
-            for step in steps(job):
-                if str(step.get("uses", "")).startswith("actions/checkout@"):
-                    persisted = (step.get("with") or {}).get("persist-credentials", True)
-                    if (name, job_id) == ("plus-sync.yml", "prepare"):
-                        continue
-                    self.assertIs(False, persisted, f"{name}/{job_id} keeps Git credentials")
+            if (name, job_id) == ("plus-sync.yml", "prepare"):
+                continue
+            job_steps = steps(job)
+            for index, step in enumerate(job_steps):
+                if not str(step.get("uses", "")).startswith("actions/checkout@"):
+                    continue
+                following = job_steps[index + 1] if index + 1 < len(job_steps) else {}
+                script = following.get("run", "")
+                self.assertIn("extraheader", script, f"{name}/{job_id}: checkout keeps its token")
+                self.assertIn("includeif", script, f"{name}/{job_id}: checkout keeps its token")
+                self.assertIn("exit 1", script, f"{name}/{job_id}: token removal is not verified")
 
     def test_no_expressions_inside_scripts(self):
         # ${{ }} in a run: script is pasted into the shell before it runs (script injection).
