@@ -89,8 +89,8 @@ jobs:
         # which has no URL in .gitmodules.)
         run: |
           git config --local --unset-all 'http.https://github.com/.extraheader' || true
-          git config --local --get-regexp '^includeif\.' | awk '{print $2}' | xargs -r rm -f
-          git config --local --get-regexp '^includeif\.' | awk '{print $1}' | xargs -r -n1 git config --local --unset-all || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
           if git config --list --includes | grep -qi 'authorization'; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Build number
@@ -216,8 +216,8 @@ jobs:
         # which has no URL in .gitmodules.)
         run: |
           git config --local --unset-all 'http.https://github.com/.extraheader' || true
-          git config --local --get-regexp '^includeif\.' | awk '{print $2}' | xargs -r rm -f
-          git config --local --get-regexp '^includeif\.' | awk '{print $1}' | xargs -r -n1 git config --local --unset-all || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
           if git config --list --includes | grep -qi 'authorization'; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Get the APKs to sign
@@ -242,7 +242,9 @@ jobs:
           CUSTOM_KEYSTORE_PASSWORD: ${{ secrets.CUSTOM_KEYSTORE_PASSWORD }}
           CUSTOM_KEY_ALIAS: ${{ secrets.CUSTOM_KEY_ALIAS }}
         run: |
-          certificate="$(bash .github/plus/sign-apks.sh built signed signing/nuvio-plus.p12)"
+          certificate="$(bash .github/plus/sign-apks.sh built signed signing/nuvio-plus.p12 2> sign.log)" || {
+            tail -n 15 sign.log | sed 's/^/::error::/'; exit 1; }
+          cat sign.log
           [[ "${certificate}" =~ ^[0-9a-f]{64}$ ]] || { echo "::error::No signing certificate"; exit 1; }
           cp built/checks-build.md signed/
           (cd signed && sha256sum *.apk > signed.sha256)
@@ -280,8 +282,8 @@ jobs:
         # which has no URL in .gitmodules.)
         run: |
           git config --local --unset-all 'http.https://github.com/.extraheader' || true
-          git config --local --get-regexp '^includeif\.' | awk '{print $2}' | xargs -r rm -f
-          git config --local --get-regexp '^includeif\.' | awk '{print $1}' | xargs -r -n1 git config --local --unset-all || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
           if git config --list --includes | grep -qi 'authorization'; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Get the signed APKs
@@ -325,8 +327,8 @@ jobs:
         # which has no URL in .gitmodules.)
         run: |
           git config --local --unset-all 'http.https://github.com/.extraheader' || true
-          git config --local --get-regexp '^includeif\.' | awk '{print $2}' | xargs -r rm -f
-          git config --local --get-regexp '^includeif\.' | awk '{print $1}' | xargs -r -n1 git config --local --unset-all || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
           if git config --list --includes | grep -qi 'authorization'; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Set up Java
@@ -398,8 +400,8 @@ jobs:
         # which has no URL in .gitmodules.)
         run: |
           git config --local --unset-all 'http.https://github.com/.extraheader' || true
-          git config --local --get-regexp '^includeif\.' | awk '{print $2}' | xargs -r rm -f
-          git config --local --get-regexp '^includeif\.' | awk '{print $1}' | xargs -r -n1 git config --local --unset-all || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
           if git config --list --includes | grep -qi 'authorization'; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Find the Nuvio release
@@ -461,8 +463,8 @@ jobs:
         # which has no URL in .gitmodules.)
         run: |
           git config --local --unset-all 'http.https://github.com/.extraheader' || true
-          git config --local --get-regexp '^includeif\.' | awk '{print $2}' | xargs -r rm -f
-          git config --local --get-regexp '^includeif\.' | awk '{print $1}' | xargs -r -n1 git config --local --unset-all || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
           if git config --list --includes | grep -qi 'authorization'; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Get the results
@@ -503,8 +505,8 @@ jobs:
         # which has no URL in .gitmodules.)
         run: |
           git config --local --unset-all 'http.https://github.com/.extraheader' || true
-          git config --local --get-regexp '^includeif\.' | awk '{print $2}' | xargs -r rm -f
-          git config --local --get-regexp '^includeif\.' | awk '{print $1}' | xargs -r -n1 git config --local --unset-all || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
           if git config --list --includes | grep -qi 'authorization'; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Run
@@ -531,8 +533,8 @@ jobs:
         # which has no URL in .gitmodules.)
         run: |
           git config --local --unset-all 'http.https://github.com/.extraheader' || true
-          git config --local --get-regexp '^includeif\.' | awk '{print $2}' | xargs -r rm -f
-          git config --local --get-regexp '^includeif\.' | awk '{print $1}' | xargs -r -n1 git config --local --unset-all || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
           if git config --list --includes | grep -qi 'authorization'; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Check the review records
@@ -561,8 +563,8 @@ jobs:
         # which has no URL in .gitmodules.)
         run: |
           git config --local --unset-all 'http.https://github.com/.extraheader' || true
-          git config --local --get-regexp '^includeif\.' | awk '{print $2}' | xargs -r rm -f
-          git config --local --get-regexp '^includeif\.' | awk '{print $1}' | xargs -r -n1 git config --local --unset-all || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
           if git config --list --includes | grep -qi 'authorization'; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Get the signed APKs
