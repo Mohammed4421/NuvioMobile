@@ -21,6 +21,10 @@ import com.nuvio.app.features.streams.streamAddonInstanceId
 import com.nuvio.app.features.streams.supportsStream
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -105,7 +109,8 @@ object SeasonDownloadQueue {
     val entries: StateFlow<List<SeasonQueueEntry>> = _entries.asStateFlow()
 
     private var started = false
-    private var workJob: Job? = null
+    /** Running source searches, one per queue entry, so removing an entry stops only its own. */
+    private val searchJobs = mutableMapOf<String, Job>()
     private var ordinal = 0L
     private var appVisible = true
 
@@ -142,7 +147,12 @@ object SeasonDownloadQueue {
      * Settles that episode, then looks up and hands over the next one so the job can keep
      * running it. Returns true when an episode was handed to the downloader.
      */
-    internal suspend fun continueInBackground(finishedDownloadId: String?): Boolean {
+    internal suspend fun continueInBackground(finishedDownloadId: String?): Boolean = withContext(Dispatchers.Main) {
+        continueInBackgroundOnMain(finishedDownloadId)
+    }
+
+    /** The queue state is only touched on the main thread. */
+    private suspend fun continueInBackgroundOnMain(finishedDownloadId: String?): Boolean {
         // Only a warm process has the add-ons, profile and downloads loaded; otherwise the queue
         // continues when the app is opened.
         if (!started || !DownloadsRepository.isLoaded) return false
@@ -157,21 +167,13 @@ object SeasonDownloadQueue {
         while (true) {
             val downloads = DownloadsRepository.uiState.value.items.associateBy { it.id }
             val current = _entries.value
-            val busy = workJob?.isActive == true || current.any {
-                it.state == SeasonQueueEntryState.Searching ||
-                    (it.state == SeasonQueueEntryState.Downloading &&
-                        it.downloadId?.let(downloads::get)?.status == DownloadStatus.Downloading)
+            val busy = searchJobs.isNotEmpty() || current.any {
+                it.state == SeasonQueueEntryState.Downloading &&
+                    it.downloadId?.let(downloads::get)?.status == DownloadStatus.Downloading
             }
             if (busy || isNetworkOffline()) return false
             val next = current.firstOrNull { it.state == SeasonQueueEntryState.Waiting } ?: return false
-            setState(next.id, SeasonQueueEntryState.Searching)
-            val started = try {
-                startEntry(next)
-            } catch (cancelled: CancellationException) {
-                setState(next.id, SeasonQueueEntryState.Waiting)
-                throw cancelled
-            }
-            if (started) return true
+            if (trackSearch(next.id) { startEntry(next) }) return true
         }
     }
 
@@ -245,10 +247,9 @@ object SeasonDownloadQueue {
         update { it + queued }
         if (currentWanted != null) {
             // The chosen episode uses exactly the stream the user picked.
-            update { listOf(currentWanted.copy(state = SeasonQueueEntryState.Searching)) + it }
-            if (!safeHandOff(currentWanted, referenceStream)) {
-                setState(currentWanted.id, SeasonQueueEntryState.NeedsChoice)
-            }
+            update { listOf(currentWanted) + it }
+            val handedOff = trackSearch(currentWanted.id) { safeHandOff(currentWanted, referenceStream) }
+            if (!handedOff) setState(currentWanted.id, SeasonQueueEntryState.NeedsChoice)
         }
         pump()
         return wanted.size
@@ -261,11 +262,8 @@ object SeasonDownloadQueue {
     fun launch(block: suspend () -> Unit): Job = scope.launch { block() }
 
     fun remove(entryId: String) {
-        // Stop a search that is running for this episode, so it is not downloaded afterwards.
-        if (_entries.value.any { it.id == entryId && it.state == SeasonQueueEntryState.Searching }) {
-            workJob?.cancel()
-            workJob = null
-        }
+        // Stop the search running for this episode only, so it is not downloaded afterwards.
+        searchJobs.remove(entryId)?.cancel()
         update { entries -> entries.filterNot { it.id == entryId } }
         pump()
     }
@@ -284,8 +282,8 @@ object SeasonDownloadQueue {
 
     /** Drops every episode that has not started; running downloads keep going. */
     fun clear() {
-        workJob?.cancel()
-        workJob = null
+        searchJobs.values.toList().forEach(Job::cancel)
+        searchJobs.clear()
         update { entries -> entries.filter { it.state == SeasonQueueEntryState.Downloading } }
         pump()
     }
@@ -294,27 +292,27 @@ object SeasonDownloadQueue {
         if (!started) return
         val downloads = DownloadsRepository.uiState.value.items.associateBy { it.id }
         // Episodes whose download stopped running (finished, failed, paused or deleted) leave the queue.
-        val settled = _entries.value.filterNot { entry ->
-            entry.state == SeasonQueueEntryState.Downloading &&
-                entry.downloadId?.let(downloads::get)?.status != DownloadStatus.Downloading
-        }
-        if (settled.size != _entries.value.size) update { settled }
+        val settled = _entries.value
+            .filterNot { entry ->
+                entry.state == SeasonQueueEntryState.Downloading &&
+                    entry.downloadId?.let(downloads::get)?.status != DownloadStatus.Downloading
+            }
+            // A search whose job is gone (cancelled or interrupted) goes back to waiting.
+            .map { entry ->
+                if (entry.state == SeasonQueueEntryState.Searching && entry.id !in searchJobs) {
+                    entry.copy(state = SeasonQueueEntryState.Waiting)
+                } else entry
+            }
+        if (settled != _entries.value) update { settled }
 
-        val busy = settled.any {
-            it.state == SeasonQueueEntryState.Searching || it.state == SeasonQueueEntryState.Downloading
-        }
-        if (busy || workJob?.isActive == true) return
+        val busy = searchJobs.isNotEmpty() || settled.any { it.state == SeasonQueueEntryState.Downloading }
+        if (busy) return
         if (isNetworkOffline()) return
         // Android cannot start a download job from the background; the running job continues instead.
         if (!appVisible && !startsInBackground) return
         val next = settled.firstOrNull { it.state == SeasonQueueEntryState.Waiting } ?: return
-        setState(next.id, SeasonQueueEntryState.Searching)
-        workJob = scope.launch {
-            try {
-                startEntry(next)
-            } finally {
-                workJob = null
-            }
+        scope.launch {
+            trackSearch(next.id) { startEntry(next) }
             pump()
         }
     }
@@ -337,6 +335,25 @@ object SeasonDownloadQueue {
         }
         setState(entry.id, SeasonQueueEntryState.NeedsChoice)
         return false
+    }
+
+    /**
+     * Runs the source search of one entry as its own job (see [remove]). Returns false when the
+     * search found nothing or was cancelled because the entry was removed.
+     */
+    private suspend fun trackSearch(entryId: String, block: suspend () -> Boolean): Boolean = coroutineScope {
+        val job = async(start = CoroutineStart.LAZY) { block() }
+        searchJobs[entryId] = job
+        setState(entryId, SeasonQueueEntryState.Searching)
+        try {
+            job.await()
+        } catch (cancelled: CancellationException) {
+            // Only this entry's search was cancelled; the caller keeps running.
+            if (!job.isCancelled || !isActive) throw cancelled
+            false
+        } finally {
+            if (searchJobs[entryId] === job) searchJobs.remove(entryId)
+        }
     }
 
     private suspend fun safeHandOff(entry: SeasonQueueEntry, stream: StreamItem): Boolean =

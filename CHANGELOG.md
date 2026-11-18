@@ -4,6 +4,34 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
+## Build 12 — gated updates and review fixes
+
+### Changed
+- **Nuvio updates go through staging.** The newest stable Nuvio release is merged into `plus-staging`,
+  built and checked there, and reaches `custom-subtitles` only when every check passes. Conflicts,
+  failed checks and code that overlaps Nuvio Plus features stop the update and are reported as a
+  `sync-…` pre-release. Betas are never merged automatically.
+- **No APK is published unless every check passes:** the build, all unit tests of the app, an update
+  check against the published build (package, signing certificate, version code) and an emulator test
+  that installs the previous build, updates it in place, checks that app data stays and opens the app.
+  Failed checks publish only a `build-failed-…` pre-release with the errors.
+- The scheduled pipeline also lives on the repository's default branch, where GitHub runs schedules.
+- Build numbers continue from the last published build in every workflow.
+
+### Fixed
+- **Season queue:** each episode's source search is its own job. Removing an episode stops only its
+  search (before, it could stop another episode's search and stall the queue), and an episode removed
+  while its link was being resolved is never downloaded, also in the background.
+- **Library downloads:** a finished movie plays even while another copy downloads; a movie and a show
+  with the same id no longer share a poster; a failed episode stays visible next to a running one;
+  posters read their title and state to screen readers; grouping is a single pass.
+- The last 16 texts still in English are translated (ratings and a subtitle sync message).
+
+### Added
+- Regression tests for settings and downloads saved by the official app or older builds (subtitle
+  appearance, the repaired outline width, download records, season queue, download preferences), for
+  the library tab and for the in-app updater.
+
 ## Build 11 — follows Nuvio automatically
 
 ### Added

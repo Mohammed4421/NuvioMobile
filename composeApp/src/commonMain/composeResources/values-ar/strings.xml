@@ -2599,4 +2599,5 @@
     <string name="settings_playback_fallback_startup_timeout">مهلة بدء المصدر</string>
     <string name="settings_playback_remember_audio_delay">تذكّر تأخير الصوت لكل جهاز</string>
     <string name="settings_playback_remember_audio_delay_description">استعادة تأخير الصوت المضبوط في المشغّل كلما عاد الإخراج نفسه، مثل سماعة الهاتف أو السماعات السلكية أو كل جهاز بلوتوث</string>
+    <string name="library_downloads_failed_count">فشل: %1$d</string>
 </resources>

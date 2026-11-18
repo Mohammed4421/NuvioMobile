@@ -36,6 +36,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -71,6 +73,17 @@ internal data class LibraryDownloadEntry(
             return (running.sumOf { it.downloadedBytes }.toFloat() / total).coerceIn(0f, 1f)
         }
 
+    /** Stable identity: the same id can belong to a movie and to a show of another add-on. */
+    val key: String
+        get() = "$metaType:$metaId"
+
+    val failedCount: Int
+        get() = active.count { it.status == DownloadStatus.Failed }
+
+    /** The single finished copy to play, or null when there is none or several to choose from. */
+    val playableMovie: DownloadItem?
+        get() = completed.filter(DownloadItem::isPlayable).singleOrNull()?.takeIf { !isSeries }
+
     val activeState: DownloadStatus?
         get() = when {
             active.any { it.status == DownloadStatus.Downloading } -> DownloadStatus.Downloading
@@ -88,19 +101,22 @@ internal fun buildLibraryDownloadEntries(
     items: List<DownloadItem>,
     queue: List<SeasonQueueEntry>,
 ): List<LibraryDownloadEntry> {
-    val queuedById = queue.groupBy { it.parentMetaId }
-    val ids = LinkedHashSet<String>().apply {
-        items.forEach { add(it.parentMetaId) }
-        queue.forEach { add(it.parentMetaId) }
+    // One pass each (not a filter per title), keyed by type and id.
+    val downloadsByKey = items.groupBy { it.parentMetaType to it.parentMetaId }
+    val queuedByKey = queue.groupBy { it.parentMetaType to it.parentMetaId }
+    val keys = LinkedHashSet<Pair<String, String>>().apply {
+        addAll(downloadsByKey.keys)
+        addAll(queuedByKey.keys)
     }
-    return ids.mapNotNull { id ->
-        val downloads = items.filter { it.parentMetaId == id }
-        val queued = queuedById[id].orEmpty()
+    return keys.mapNotNull { key ->
+        val (type, id) = key
+        val downloads = downloadsByKey[key].orEmpty()
+        val queued = queuedByKey[key].orEmpty()
         val newest = downloads.maxByOrNull { it.updatedAtEpochMs }
         val title = newest?.title ?: queued.firstOrNull()?.title ?: return@mapNotNull null
         LibraryDownloadEntry(
             metaId = id,
-            metaType = newest?.parentMetaType ?: queued.first().parentMetaType,
+            metaType = type,
             title = title,
             poster = downloads.firstNotNullOfOrNull { it.poster?.takeIf(String::isNotBlank) }
                 ?: queued.firstNotNullOfOrNull { it.poster?.takeIf(String::isNotBlank) },
@@ -161,7 +177,7 @@ internal fun LazyListScope.libraryDownloadsContent(
     }
     items(
         items = entries.chunked(columns),
-        key = { row -> "library-downloads:${row.first().metaId}" },
+        key = { row -> "library-downloads:${row.first().key}" },
     ) { row ->
         Row(
             modifier = libraryContentTransitionModifier()
@@ -246,7 +262,14 @@ private fun DownloadPosterTile(
     val style = rememberPosterCardStyleUiState()
     val shape = RoundedCornerShape(style.cornerRadiusDp.dp)
     val state = entry.activeState
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val detail = downloadEntryDetail(entry)
+    Column(
+        modifier = modifier.semantics(mergeDescendants = true) {
+            // Read the state out, not only its icon or color.
+            contentDescription = "${entry.title}, $detail"
+        },
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -318,7 +341,7 @@ private fun DownloadPosterTile(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = downloadEntryDetail(entry),
+                text = detail,
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (state == DownloadStatus.Failed) {
                     MaterialTheme.colorScheme.error
@@ -347,10 +370,13 @@ private fun PosterBadge(icon: ImageVector, tint: Color, modifier: Modifier = Mod
 @Composable
 private fun downloadEntryDetail(entry: LibraryDownloadEntry): String {
     val progress = entry.activeProgress?.let { "${(it * 100).toInt()}%" }
+    // A failed episode stays visible while another one is downloading.
+    val failed = entry.failedCount.takeIf { it > 0 && entry.activeState != DownloadStatus.Failed }
+        ?.let { stringResource(Res.string.library_downloads_failed_count, it) }
     return when (entry.activeState) {
-        DownloadStatus.Downloading -> listOfNotNull(stringResource(Res.string.downloads_queue_downloading), progress)
+        DownloadStatus.Downloading -> listOfNotNull(stringResource(Res.string.downloads_queue_downloading), progress, failed)
             .joinToString(" • ")
-        DownloadStatus.Paused -> listOfNotNull(stringResource(Res.string.library_downloads_paused), progress)
+        DownloadStatus.Paused -> listOfNotNull(stringResource(Res.string.library_downloads_paused), progress, failed)
             .joinToString(" • ")
         DownloadStatus.Failed -> stringResource(Res.string.downloads_status_failed)
         else -> when {

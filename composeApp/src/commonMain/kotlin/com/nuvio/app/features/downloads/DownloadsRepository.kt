@@ -466,11 +466,11 @@ object DownloadsRepository {
 }
 
 @Serializable
-private data class StoredDownloadsPayload(
+internal data class StoredDownloadsPayload(
     val items: List<DownloadItem> = emptyList(),
 )
 
-private object DownloadsCodec {
+internal object DownloadsCodec {
     private val json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true

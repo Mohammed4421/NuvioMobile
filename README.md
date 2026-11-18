@@ -91,14 +91,25 @@
 
 ## Staying up to date / التحديثات
 
-- **Nuvio updates:** every day the *Sync with Nuvio* workflow merges new Nuvio stable releases with the
-  Nuvio Plus changes and builds an update. When Nuvio changed the same code as Nuvio Plus, or changed
-  workflow files, nothing is published; a `sync-needed` pre-release lists the files to merge by hand.
-- **In the app:** the update check follows this fork's releases, so a new build shows up in the app and
-  installs over the current one.
+Nuvio releases reach Nuvio Plus through a gated pipeline (`.github/workflows/plus-pipeline.yml`, daily):
 
-تحديثات Nuvio الرسمية تُدمج تلقائيًا كل يوم وتُبنى نسخة جديدة، وتظهر لك داخل التطبيق. إذا عدّل فريق Nuvio
-نفس الأجزاء التي عدّلتها Nuvio Plus لا يُنشر شيء، ويظهر إصدار تجريبي باسم `sync-needed` يحتاج دمجًا يدويًا.
+1. The newest **stable** Nuvio release is merged into the `plus-staging` branch. Betas are merged only
+   when chosen by hand.
+2. A Git conflict stops the run. Code that both Nuvio and Nuvio Plus changed, or a Nuvio feature that
+   looks like a Nuvio Plus one, holds the update for a review (run the pipeline again with *approve*).
+3. Staging is built and checked: all unit tests, an update check against the published build (same
+   package and signature, higher version code) and an emulator test that installs the previous build,
+   updates it in place, checks that app data is kept and opens the app.
+4. Only then does `custom-subtitles` move to the tested commit and the tested APKs get published.
+
+Anything that stops an update appears as a `sync-…` pre-release with the reason; the stable branch and
+the current build stay as they are. Pushes to `custom-subtitles` go through the same checks before a
+release is published. The in-app update check follows this fork's releases.
+
+تحديثات Nuvio المستقرة تُدمج يوميًا في فرع تجريبي (`plus-staging`) أولًا، وتمر بالبناء وكل الاختبارات
+واختبار التحديث على محاكي، ثم تنتقل للفرع المستقر وتُنشر. أي تعارض أو تداخل مع ميزات Nuvio Plus أو فشل
+اختبار يوقف النشر ويظهر كإصدار تجريبي باسم `sync-…`، والنسخة الحالية تبقى كما هي. إصدارات Beta لا تُدمج
+تلقائيًا.
 
 ## Known limits / حدود معروفة
 

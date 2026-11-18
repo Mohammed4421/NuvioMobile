@@ -444,12 +444,12 @@ fun LibraryScreen(
                     columns = gridColumns,
                     onManageClick = { onDownloadsClick?.invoke() },
                     onEntryClick = { entry ->
-                        val playable = entry.completed.filter(DownloadItem::isPlayable)
+                        val movie = entry.playableMovie
                         when {
-                            entry.isSeries && playable.isNotEmpty() && onDownloadShowClick != null ->
+                            entry.isSeries && entry.completed.any(DownloadItem::isPlayable) && onDownloadShowClick != null ->
                                 onDownloadShowClick(entry.metaId, entry.title)
-                            !entry.isSeries && playable.size == 1 && entry.active.isEmpty() && onOpenDownload != null ->
-                                onOpenDownload(playable.first())
+                            // A finished copy plays even while another copy is still downloading.
+                            movie != null && onOpenDownload != null -> onOpenDownload(movie)
                             else -> onDownloadsClick?.invoke()
                         }
                     },

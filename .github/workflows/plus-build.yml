@@ -1,0 +1,248 @@
+name: Nuvio Plus build and checks
+
+# Builds a commit, runs every check and, when asked, publishes the APKs. Nothing is published
+# unless the build, all unit tests, the update check and the emulator test pass.
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit to build
+        required: true
+        type: string
+      publish:
+        description: Publish a release when every check passes
+        required: true
+        type: boolean
+      note:
+        description: Extra line for the release notes
+        required: false
+        type: string
+        default: ''
+      allow_key_change:
+        description: Accept a new signing certificate (users then reinstall once)
+        required: false
+        type: boolean
+        default: false
+    outputs:
+      build_number:
+        value: ${{ jobs.build.outputs.build_number }}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build and unit tests
+    runs-on: ubuntu-latest
+    outputs:
+      build_number: ${{ steps.number.outputs.build }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Build number
+        id: number
+        run: echo "build=$(bash .github/plus/next-build-number.sh)" >> "${GITHUB_OUTPUT}"
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Prepare signing and properties
+        env:
+          CUSTOM_KEYSTORE_BASE64: ${{ secrets.CUSTOM_KEYSTORE_BASE64 }}
+          CUSTOM_KEYSTORE_PASSWORD: ${{ secrets.CUSTOM_KEYSTORE_PASSWORD }}
+          CUSTOM_KEY_ALIAS: ${{ secrets.CUSTOM_KEY_ALIAS }}
+          CUSTOM_LOCAL_PROPERTIES: ${{ secrets.CUSTOM_LOCAL_PROPERTIES }}
+        run: bash .github/plus/prepare-build.sh "${{ steps.number.outputs.build }}"
+
+      - name: Build APKs
+        run: |
+          set -o pipefail
+          build="${{ steps.number.outputs.build }}"
+          version="$(sed -n 's/^MARKETING_VERSION=//p' iosApp/Configuration/Version.xcconfig | tr -d '[:space:]')"
+          ./gradlew :androidApp:assembleFullRelease \
+            -Pnuvio.android.distribution=full \
+            -Pnuvio.ios.distribution=appstore \
+            -Pnuvio.applicationIdSuffix=.plus \
+            -Pnuvio.customVersionCode=$((1000 + build)) \
+            -Pnuvio.customVersionName="${version}-plus.${build}" \
+            --stacktrace 2>&1 | tee build.log
+          echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${build}." > checks.md
+
+      - name: Unit tests (all of them)
+        run: |
+          set -o pipefail
+          ./gradlew :composeApp:testAndroidHostTest \
+            -Pnuvio.android.distribution=full \
+            -Pnuvio.ios.distribution=appstore \
+            --continue --stacktrace 2>&1 | tee tests.log
+          python3 - <<'PY' >> checks.md
+          import glob, xml.etree.ElementTree as ET
+          tests = failures = skipped = 0
+          for path in glob.glob("composeApp/build/test-results/**/*.xml", recursive=True):
+              suite = ET.parse(path).getroot()
+              tests += int(suite.get("tests", 0)); skipped += int(suite.get("skipped", 0))
+              failures += int(suite.get("failures", 0)) + int(suite.get("errors", 0))
+          print(f"- Unit tests: {tests - skipped - failures} passed, {failures} failed, {skipped} skipped.")
+          if tests == 0 or failures:
+              raise SystemExit("unit tests did not pass")
+          PY
+
+      - name: Name the APKs
+        run: |
+          mkdir -p dist
+          for apk in androidApp/build/outputs/apk/full/release/*.apk; do
+            abi="$(basename "${apk}" .apk | sed -E 's/^androidApp-full-//; s/-release$//')"
+            cp "${apk}" "dist/NuvioPlus-build${{ steps.number.outputs.build }}-${abi}.apk"
+          done
+          ls -l dist
+
+      - name: Update check (signature, package, version)
+        env:
+          ALLOW_KEY_CHANGE: ${{ inputs.allow_key_change }}
+        run: bash .github/plus/check-update-compat.sh dist/*arm64-v8a.apk
+
+      - name: Keep the APKs and checks
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuvio-plus-apk
+          path: |
+            dist/*.apk
+            checks.md
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Keep the logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuvio-plus-logs
+          path: |
+            build.log
+            tests.log
+            composeApp/build/reports/tests/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  emulator:
+    name: Install, update and launch on an emulator
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Get the new APKs
+        uses: actions/download-artifact@v8
+        with:
+          name: nuvio-plus-apk
+          path: dist
+
+      - name: Get the previous build
+        id: previous
+        run: |
+          tag="$(gh release list --repo "${GITHUB_REPOSITORY}" --exclude-drafts --exclude-pre-releases --limit 100 \
+            --json tagName --jq '[.[] | select(.tagName | test("^custom-[0-9]+$"))][0].tagName // empty')"
+          apk=""
+          if [[ -n "${tag}" && "${{ inputs.allow_key_change }}" != "true" ]]; then
+            gh release download "${tag}" --repo "${GITHUB_REPOSITORY}" --dir previous --pattern '*x86_64*.apk' --clobber
+            apk="$(ls previous/*.apk | head -n 1)"
+          fi
+          echo "apk=${apk}" >> "${GITHUB_OUTPUT}"
+          echo "new=$(ls dist/*x86_64*.apk | head -n 1)" >> "${GITHUB_OUTPUT}"
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Emulator test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: bash .github/plus/emulator-update-test.sh "${{ steps.previous.outputs.apk }}" "${{ steps.previous.outputs.new }}"
+
+      - name: Keep the emulator result
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuvio-plus-emulator
+          path: checks-emulator.md
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    name: Publish
+    needs: [build, emulator]
+    if: inputs.publish
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Get the tested APKs
+        uses: actions/download-artifact@v8
+        with:
+          pattern: nuvio-plus-{apk,emulator}
+          merge-multiple: true
+          path: dist
+
+      - name: Publish release
+        run: bash .github/plus/publish-release.sh "${{ needs.build.outputs.build_number }}" "$(git rev-parse HEAD)" dist "${{ inputs.note }}"
+
+  report-failure:
+    name: Report a failed build
+    needs: [build, emulator]
+    if: failure() && inputs.publish
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Get the logs
+        uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: nuvio-plus-logs
+          path: logs
+
+      - name: Publish the errors as a pre-release
+        run: |
+          build="${{ needs.build.outputs.build_number }}"
+          build="${build:-run${GITHUB_RUN_NUMBER}}"
+          sha="${{ inputs.ref }}"
+          {
+            echo "Build ${build} at \`${sha::7}\` did not pass its checks, so nothing was published. The previous build stays current."
+            echo
+            echo "Build: ${{ needs.build.result }} · Emulator: ${{ needs.emulator.result }} · Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo
+            echo '```'
+            cat logs/build.log logs/tests.log 2>/dev/null \
+              | grep -E "^e: |error:|What went wrong|Execution failed|Unresolved reference|FAILED|> Task .*FAILED|AssertionError" -A3 \
+              | head -c 60000 || true
+            echo '```'
+          } > errors.md
+          gh release delete "build-failed-${build}" --repo "${GITHUB_REPOSITORY}" --yes --cleanup-tag > /dev/null 2>&1 || true
+          gh release create "build-failed-${build}" --repo "${GITHUB_REPOSITORY}" --target "${sha}" \
+            --prerelease --title "Build ${build} failed its checks" --notes-file errors.md

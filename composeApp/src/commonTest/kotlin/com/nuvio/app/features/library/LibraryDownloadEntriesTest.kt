@@ -63,6 +63,39 @@ class LibraryDownloadEntriesTest {
         assertEquals("Show", entry.title)
     }
 
+    @Test
+    fun movieAndShowWithTheSameIdStaySeparate() {
+        val entries = buildLibraryDownloadEntries(
+            items = listOf(movie("same", DownloadStatus.Completed, updated = 1), episode("same", 1, DownloadStatus.Completed, updated = 2)),
+            queue = emptyList(),
+        )
+        assertEquals(2, entries.size)
+        assertEquals(setOf("movie:same", "series:same"), entries.map { it.key }.toSet())
+    }
+
+    @Test
+    fun finishedMoviePlaysWhileAnotherCopyDownloads() {
+        val finished = movie("m", DownloadStatus.Completed, updated = 1)
+        val running = movie("m", DownloadStatus.Downloading, updated = 2, downloaded = 1, total = 10).copy(id = "m-copy")
+        val entry = buildLibraryDownloadEntries(listOf(finished, running), emptyList()).single()
+        assertEquals(finished.id, entry.playableMovie?.id)
+        assertEquals(DownloadStatus.Downloading, entry.activeState)
+    }
+
+    @Test
+    fun failedEpisodeIsCountedNextToARunningOne() {
+        val entry = buildLibraryDownloadEntries(
+            items = listOf(
+                episode("show", 1, DownloadStatus.Failed, updated = 1),
+                episode("show", 2, DownloadStatus.Downloading, updated = 2),
+            ),
+            queue = emptyList(),
+        ).single()
+        assertEquals(DownloadStatus.Downloading, entry.activeState)
+        assertEquals(1, entry.failedCount)
+        assertNull(entry.playableMovie)
+    }
+
     private fun movie(id: String, status: DownloadStatus, updated: Long, downloaded: Long = 0, total: Long? = 1) =
         item(id, null, status, updated, downloaded, total)
 

@@ -1,6 +1,7 @@
 name: Build Custom APK
 
-# Builds a personal, signed release APK of this branch. Run it from the Actions tab.
+# Every push to the stable Nuvio Plus branch is built and checked; the APKs are published only
+# when every check passes (see plus-build.yml).
 on:
   push:
     branches: [custom-subtitles]
@@ -8,163 +9,24 @@ on:
       - '**.md'
       - 'docs/**'
   workflow_dispatch:
+    inputs:
+      allow_key_change:
+        description: Accept a new signing certificate (users then reinstall once)
+        type: boolean
+        default: false
+
+concurrency:
+  group: plus-release
+  cancel-in-progress: false
 
 permissions:
   contents: write
 
 jobs:
   build:
-    name: Build custom APK
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out source
-        uses: actions/checkout@v6
-
-      - name: Set up Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
-
-      - name: Prepare signing and properties
-        env:
-          # Optional secrets. Without CUSTOM_KEYSTORE_BASE64 the key in signing/ is used, so every
-          # build installs as an update over the previous one.
-          CUSTOM_KEYSTORE_BASE64: ${{ secrets.CUSTOM_KEYSTORE_BASE64 }}
-          CUSTOM_KEYSTORE_PASSWORD: ${{ secrets.CUSTOM_KEYSTORE_PASSWORD }}
-          CUSTOM_KEY_ALIAS: ${{ secrets.CUSTOM_KEY_ALIAS }}
-          # Optional extra local.properties lines (Trakt, Simkl, Supabase keys and so on).
-          CUSTOM_LOCAL_PROPERTIES: ${{ secrets.CUSTOM_LOCAL_PROPERTIES }}
-        run: |
-          if [[ -n "${CUSTOM_KEYSTORE_BASE64}" ]]; then
-            keystore="${RUNNER_TEMP}/custom-release.jks"
-            printf '%s' "${CUSTOM_KEYSTORE_BASE64}" | base64 --decode > "${keystore}"
-            password="${CUSTOM_KEYSTORE_PASSWORD}"
-            alias="${CUSTOM_KEY_ALIAS:-custom}"
-          else
-            keystore="${GITHUB_WORKSPACE}/signing/nuvio-plus.p12"
-            password="nuvio-plus-public"
-            alias="nuvio-plus"
-          fi
-          # Official Nuvio account server, as shipped in the official app (public client key).
-          # Lines in CUSTOM_LOCAL_PROPERTIES come later and win.
-          {
-            echo "NUVIO_SUPABASE_URL=https://api.nuvio.tv"
-            echo "NUVIO_SUPABASE_FALLBACK_URL=https://api-two.nuvioapp.space"
-            # The in-app updater follows this fork's releases.
-            echo "PLUS_UPDATE_REPO=${GITHUB_REPOSITORY}"
-            echo "PLUS_BUILD=${GITHUB_RUN_NUMBER}"
-            echo "NUVIO_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzgxNTIxMzQ2LCJleHAiOjE5MzkyMDEzNDZ9.tmQaj682pwzehpqlgCDMnySOqiUvpgRbrE43T4VJpDI"
-          } > local.properties
-          printf '%s\n' "${CUSTOM_LOCAL_PROPERTIES}" >> local.properties
-          {
-            echo "NUVIO_RELEASE_STORE_FILE=${keystore}"
-            echo "NUVIO_RELEASE_STORE_PASSWORD=${password}"
-            echo "NUVIO_RELEASE_KEY_ALIAS=${alias}"
-            echo "NUVIO_RELEASE_KEY_PASSWORD=${password}"
-          } >> local.properties
-
-      - name: Build APK
-        shell: bash
-        run: |
-          set -o pipefail
-          ./gradlew :androidApp:assembleFullRelease \
-            -Pnuvio.android.distribution=full \
-            -Pnuvio.ios.distribution=appstore \
-            -Pnuvio.applicationIdSuffix=.plus \
-            -Pnuvio.customVersionCode=$((1000 + GITHUB_RUN_NUMBER)) \
-            -Pnuvio.customVersionName="$(sed -n 's/^MARKETING_VERSION=//p' iosApp/Configuration/Version.xcconfig | tr -d '[:space:]')-plus.${GITHUB_RUN_NUMBER}" \
-            --stacktrace 2>&1 | tee build.log
-
-      - name: Run Nuvio Plus unit tests
-        id: tests
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          ./gradlew :composeApp:testAndroidHostTest \
-            -Pnuvio.android.distribution=full \
-            -Pnuvio.ios.distribution=appstore \
-            --tests 'com.nuvio.app.features.player.SubtitleAppearanceTest' \
-            --tests 'com.nuvio.app.features.library.LibraryDownloadEntriesTest' \
-            --tests 'com.nuvio.app.features.downloads.SeasonStreamMatcherTest' \
-            --tests 'com.nuvio.app.features.updater.PlusUpdatesTest' \
-            2>&1 | tee tests.log
-
-      - name: Publish build errors
-        if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          {
-            echo "Build ${GITHUB_RUN_NUMBER} failed at ${GITHUB_SHA}."
-            echo
-            echo '```'
-            grep -E "^e: |^w: .*error|error:|What went wrong|Execution failed|Unresolved reference|> Task .*FAILED" -A4 build.log | head -c 90000 || true
-            echo '```'
-            echo
-            echo '```'
-            tail -n 60 build.log | head -c 20000
-            echo '```'
-          } > errors.md
-          gh release create "build-failed-${GITHUB_RUN_NUMBER}" build.log \
-            --repo "${GITHUB_REPOSITORY}" \
-            --target "${GITHUB_SHA}" \
-            --prerelease \
-            --title "Build ${GITHUB_RUN_NUMBER} failed" \
-            --notes-file errors.md
-
-      - name: Name the APKs
-        run: |
-          mkdir -p dist
-          for apk in androidApp/build/outputs/apk/full/release/*.apk; do
-            abi="$(basename "${apk}" .apk | sed -E 's/^androidApp-full-//; s/-release$//')"
-            cp "${apk}" "dist/NuvioPlus-build${GITHUB_RUN_NUMBER}-${abi}.apk"
-          done
-          ls -l dist
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v7
-        with:
-          name: nuvio-plus-build${{ github.run_number }}
-          path: dist/*.apk
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Publish release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TESTS_OUTCOME: ${{ steps.tests.outcome }}
-        run: |
-          {
-            echo "Unofficial build of Nuvio Mobile with subtitle and download improvements."
-            echo
-            echo "**Install:** \`NuvioPlus-build${GITHUB_RUN_NUMBER}-arm64-v8a.apk\` fits most phones and tablets. It installs as an update over build 8 and newer; builds 1–6 have to be uninstalled once."
-            echo
-            # The newest section of the changelog.
-            awk '/^## /{n++} n==1' CHANGELOG.md | sed '1s/^## /### /'
-            echo
-            if [[ "${TESTS_OUTCOME}" == "success" ]]; then
-              echo "Unit tests: passed."
-            else
-              echo "Unit tests: did not pass (${TESTS_OUTCOME})."
-              echo
-              echo '<details><summary>Test log</summary>'
-              echo
-              echo '```'
-              grep -E "FAILED|Test.*>|error:|e: |What went wrong" tests.log | head -40 || true
-              echo '```'
-              echo '</details>'
-            fi
-            echo
-            echo "Full list: [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/CHANGELOG.md) · Commit: ${GITHUB_SHA::7}"
-          } > release-notes.md
-          gh release create "custom-${GITHUB_RUN_NUMBER}" dist/*.apk \
-            --repo "${GITHUB_REPOSITORY}" \
-            --target "${GITHUB_SHA}" \
-            --title "Nuvio Plus · build ${GITHUB_RUN_NUMBER}" \
-            --notes-file release-notes.md \
-            --latest
+    uses: ./.github/workflows/plus-build.yml
+    with:
+      ref: ${{ github.sha }}
+      publish: true
+      allow_key_change: ${{ inputs.allow_key_change || false }}
+    secrets: inherit

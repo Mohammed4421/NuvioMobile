@@ -1,0 +1,190 @@
+name: Nuvio Plus sync
+
+# Brings a Nuvio release into Nuvio Plus without touching the stable branch until it is proven:
+#   1. merge the newest Nuvio release (stable by default) into the plus-staging branch;
+#   2. stop on a Git conflict; flag code where Nuvio and Nuvio Plus overlap for review;
+#   3. build and run every check on plus-staging;
+#   4. only then move custom-subtitles to the tested commit and publish the tested APKs.
+# Anything that stops the run is reported as a pre-release; custom-subtitles stays as it was.
+on:
+  workflow_call:
+    inputs:
+      channel:
+        description: stable (default) or beta
+        type: string
+        default: stable
+      approve:
+        description: Promote even though Nuvio and Nuvio Plus overlap (after a review)
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  UPSTREAM: https://github.com/NuvioMedia/NuvioMobile.git
+  STABLE_BRANCH: custom-subtitles
+  STAGING_BRANCH: plus-staging
+
+jobs:
+  merge:
+    name: Merge the Nuvio release into staging
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.merge.outputs.status }}
+      tag: ${{ steps.merge.outputs.tag }}
+      sha: ${{ steps.merge.outputs.sha }}
+      review: ${{ steps.merge.outputs.review }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out stable Nuvio Plus
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.STABLE_BRANCH }}
+          fetch-depth: 0
+
+      - name: Merge
+        id: merge
+        run: |
+          set -euo pipefail
+          channel="${{ inputs.channel }}"
+          [[ "${channel}" == "beta" ]] || channel=stable
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config merge.ours.driver true
+          git remote add upstream "${UPSTREAM}"
+          tag="$(git ls-remote --tags upstream | python3 .github/plus/select-upstream-tag.py "${channel}")"
+          [[ -n "${tag}" ]] || { echo "No Nuvio ${channel} release found."; echo "status=current" >> "${GITHUB_OUTPUT}"; exit 0; }
+          git fetch --no-tags upstream "refs/tags/${tag}:refs/tags/${tag}"
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          if git merge-base --is-ancestor "${tag}^{commit}" HEAD; then
+            echo "Nuvio Plus already includes Nuvio ${tag}."
+            echo "status=current" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          # Where Nuvio and Nuvio Plus touch the same code or features.
+          review=false
+          bash .github/plus/upstream-overlap.sh HEAD "${tag}^{commit}" > overlap.md || review=true
+          echo "review=${review}" >> "${GITHUB_OUTPUT}"
+
+          git switch -C "${STAGING_BRANCH}"
+          if ! git merge --no-edit -m "Merge Nuvio ${tag}" "${tag}^{commit}"; then
+            git diff --name-only --diff-filter=U > conflicts.txt
+            git merge --abort
+            echo "status=conflict" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          # Nuvio's own CI files are not used here, and this token may not push workflow changes:
+          # keep the Nuvio Plus versions.
+          git checkout "${STABLE_BRANCH}" -- .github
+          git diff --name-only --diff-filter=A "${STABLE_BRANCH}" HEAD -- .github | xargs -r git rm -q
+          git commit --amend --no-edit
+          git push --force origin "HEAD:refs/heads/${STAGING_BRANCH}"
+          echo "sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+          echo "status=merged" >> "${GITHUB_OUTPUT}"
+
+      - name: Keep the reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sync-report
+          path: |
+            overlap.md
+            conflicts.txt
+          if-no-files-found: ignore
+
+  test:
+    name: Build and check staging
+    needs: merge
+    if: needs.merge.outputs.status == 'merged'
+    uses: Mohammed4421/NuvioMobile/.github/workflows/plus-build.yml@custom-subtitles
+    with:
+      ref: ${{ needs.merge.outputs.sha }}
+      publish: false
+    secrets: inherit
+
+  promote:
+    name: Move stable to the tested commit and publish
+    needs: [merge, test]
+    if: needs.test.result == 'success' && (needs.merge.outputs.review != 'true' || inputs.approve)
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SHA: ${{ needs.merge.outputs.sha }}
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.merge.outputs.sha }}
+          fetch-depth: 0
+
+      - name: Move stable forward
+        run: |
+          git fetch origin "${STABLE_BRANCH}"
+          # Only a fast-forward: if stable moved meanwhile, nothing is overwritten.
+          git merge-base --is-ancestor "origin/${STABLE_BRANCH}" "${SHA}"
+          git push origin "${SHA}:refs/heads/${STABLE_BRANCH}"
+
+      - name: Get the tested APKs
+        uses: actions/download-artifact@v8
+        with:
+          pattern: nuvio-plus-{apk,emulator}
+          merge-multiple: true
+          path: dist
+
+      - name: Publish release
+        run: |
+          bash .github/plus/publish-release.sh "${{ needs.test.outputs.build_number }}" "${SHA}" dist \
+            "Includes Nuvio ${{ needs.merge.outputs.tag }}."
+
+  report:
+    name: Report what stopped the update
+    needs: [merge, test]
+    if: |
+      always() && (
+        needs.merge.result == 'failure' ||
+        needs.merge.outputs.status == 'conflict' ||
+        (needs.merge.outputs.status == 'merged' && needs.test.result != 'success') ||
+        (needs.test.result == 'success' && needs.merge.outputs.review == 'true' && !inputs.approve)
+      )
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ needs.merge.outputs.tag }}
+      STATUS: ${{ needs.merge.outputs.status }}
+    steps:
+      - name: Get the reports
+        uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: sync-report
+          path: report
+
+      - name: Publish as a pre-release
+        run: |
+          if [[ "${STATUS}" == "conflict" ]]; then
+            kind=conflict; why="Git could not merge these files automatically:"
+          elif [[ "${{ needs.merge.result }}" == "failure" ]]; then
+            kind=error; why="The merge step failed; see the run log."
+          elif [[ "${{ needs.test.result }}" != "success" ]]; then
+            kind=checks-failed; why="The merged code did not pass the build, unit tests, update check or emulator test."
+          else
+            kind=review; why="All checks passed, but Nuvio changed code that Nuvio Plus also changed (or added a similar feature). Compare both versions, then run the pipeline with approve."
+          fi
+          tag="sync-${kind}-${TAG:-unknown}"
+          {
+            echo "Nuvio ${TAG:-release} was **not** brought into Nuvio Plus. The stable branch and the current build are unchanged."
+            echo
+            echo "${why}"
+            echo
+            [[ -s report/conflicts.txt ]] && sed 's/^/- `/; s/$/`/' report/conflicts.txt && echo
+            cat report/overlap.md 2>/dev/null || true
+            echo
+            echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          } > report.md
+          gh release delete "${tag}" --repo "${GITHUB_REPOSITORY}" --yes --cleanup-tag > /dev/null 2>&1 || true
+          gh release create "${tag}" --repo "${GITHUB_REPOSITORY}" --target "${STABLE_BRANCH}" \
+            --prerelease --title "Nuvio ${TAG:-update} needs attention (${kind})" --notes-file report.md
+          exit 1
