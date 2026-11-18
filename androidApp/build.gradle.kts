@@ -73,6 +73,7 @@ android {
         versionCode = releaseAppVersionCode
         versionName = releaseAppVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["appLabel"] = "@string/app_name"
     }
 
     flavorDimensions += "distribution"
@@ -159,10 +160,18 @@ android {
 val customApplicationIdSuffix = providers.gradleProperty("nuvio.applicationIdSuffix").orNull
     ?.trim()
     ?.takeIf { it.isNotEmpty() }
+val customAppLabel = providers.gradleProperty("nuvio.appLabel").orNull
+    ?.trim()
+    ?.takeIf { it.isNotEmpty() }
+    ?: "Nuvio Plus"
 
 androidComponents {
     onVariants(selector().withBuildType("release")) { variant ->
-        customApplicationIdSuffix?.let { suffix -> variant.applicationId.set("com.nuvio.app$suffix") }
+        customApplicationIdSuffix?.let { suffix ->
+            variant.applicationId.set("com.nuvio.app$suffix")
+            // A distinct launcher name so the build is easy to tell apart from the official app.
+            variant.manifestPlaceholders.put("appLabel", customAppLabel)
+        }
     }
     onVariants(selector().withBuildType("debug")) { variant ->
         variant.applicationId.set("com.nuviodebug.com")
