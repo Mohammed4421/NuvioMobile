@@ -136,7 +136,11 @@ jobs:
           version="$(sed -n 's/^MARKETING_VERSION=//p' iosApp/Configuration/Version.xcconfig | tr -d '[:space:]')"
           suffix=""
           [[ "${CHANNEL}" == beta ]] && suffix="-beta"
+          # The runner has 16 GB: the repository's settings (Gradle 12 GB + a separate 8 GB Kotlin
+          # daemon) can starve it while R8 runs after a full compile. Kotlin compiles inside Gradle here.
           ./gradlew :androidApp:assembleFullRelease \
+            -Dorg.gradle.jvmargs="-Xmx10g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m" \
+            -Pkotlin.compiler.execution.strategy=in-process \
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
             -Pnuvio.applicationIdSuffix=.plus \
@@ -145,6 +149,9 @@ jobs:
             --stacktrace 2>&1 | tee build.log || {
               { grep -E "^e: " build.log || true; } | head -n 20 | sed 's/^/::error::/'
               { grep -A6 "What went wrong" build.log || true; } | head -n 20 | sed 's/^/::error::/'
+              tail -n 8 build.log | sed 's/^/::error::log: /'
+              { sudo dmesg 2>/dev/null | grep -iE "out of memory|oom-kill|killed process" || true; } | tail -n 5 | sed 's/^/::error::kernel: /'
+              free -m | sed 's/^/::error::memory: /'
               exit 1
             }
           echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${BUILD} (${CHANNEL})." > checks-build.md
