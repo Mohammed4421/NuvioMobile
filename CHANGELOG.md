@@ -4,6 +4,22 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
+## Build 10 — review fixes
+
+### Fixed
+- **Downloads in a picked folder are only marked complete under their real name.** When the storage
+  provider does not rename files, the `.part` file is copied to the final name, checked for size and
+  then removed. If that also fails, the file stays as `.part` and still plays in the app.
+- **Season downloads keep the quality of the first episode.** Resolution and release type (HDR,
+  Dolby Vision, HEVC, remux, AV1) now have to match within a binge group too, so a 4K Dolby Vision
+  pick no longer continues with 1080p SDR episodes.
+
+### Added
+- A note under subtitle brightness, in the player and in settings, saying where it applies: text
+  subtitles and, in ExoPlayer, image subtitles; ASS subtitles drawn by libass keep their brightness.
+- Arabic translations for the 30 settings and player texts that were still in English in the
+  original app (audio delay, downmix, fallback sources, Continue Watching action and others).
+
 ## Build 8 — Downloads in the library, updates in place
 
 (Build 7 did not compile; its changes ship in build 8.)

@@ -304,7 +304,7 @@ internal class AndroidDownloadScheduler(val context: Context) {
         val partialName = DownloadDocuments.displayName(context, documentUri)
         val finalName = partialName?.removeSuffix(".part")?.takeIf { it.isNotBlank() }
             ?: DocumentDownloads.displayName(transfer.item)
-        val finalUri = DownloadDocuments.rename(context, Uri.parse(documentUri), finalName).toString()
+        val finalUri = finishDocumentName(transfer, documentUri, finalName)
         DocumentDownloads.finishSubtitles(context, transfer.item, internalAnchor, finalUri, finalName)
         val bytes = DownloadDocuments.size(context, finalUri)
         updateActive(transfer) { record ->
@@ -318,6 +318,37 @@ internal class AndroidDownloadScheduler(val context: Context) {
                     errorMessage = null,
                 ),
             )
+        }
+    }
+
+    /**
+     * Gives the finished document its final name and returns its URI. Some storage providers do not
+     * rename documents; the bytes are then copied into a new document with the final name and
+     * checked before the `.part` file is deleted. If even that fails, the `.part` document is kept:
+     * it still plays in the app.
+     */
+    private fun finishDocumentName(transfer: AndroidDownloadTransfer, documentUri: String, finalName: String): String {
+        val renamed = DownloadDocuments.rename(context, Uri.parse(documentUri), finalName).toString()
+        val currentName = DownloadDocuments.displayName(context, renamed)
+        if (currentName != null && !currentName.endsWith(".part")) return renamed
+        val expectedSize = DownloadDocuments.size(context, documentUri) ?: return renamed
+        var copy: Uri? = null
+        return try {
+            val folder = DocumentDownloads.folderFor(context, transfer.item)
+            val created = DownloadDocuments.createFile(context, folder, finalName, "application/octet-stream")
+            copy = created
+            val resolver = context.contentResolver
+            resolver.openInputStream(Uri.parse(documentUri)).use { input ->
+                resolver.openOutputStream(created, "wt").use { output ->
+                    checkNotNull(input).copyTo(checkNotNull(output), 256 * 1024)
+                }
+            }
+            check(DownloadDocuments.size(context, created.toString()) == expectedSize) { "Copy size mismatch" }
+            DownloadDocuments.delete(context, documentUri)
+            created.toString()
+        } catch (_: Exception) {
+            copy?.let { DownloadDocuments.delete(context, it.toString()) }
+            renamed
         }
     }
 

@@ -87,6 +87,7 @@ jobs:
             -Pnuvio.ios.distribution=appstore \
             --tests 'com.nuvio.app.features.player.SubtitleAppearanceTest' \
             --tests 'com.nuvio.app.features.library.LibraryDownloadEntriesTest' \
+            --tests 'com.nuvio.app.features.downloads.SeasonStreamMatcherTest' \
             2>&1 | tee tests.log
 
       - name: Publish build errors

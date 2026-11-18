@@ -92,6 +92,12 @@ internal fun SubtitleAppearanceSettings(
                 valueRange = SUBTITLE_BRIGHTNESS_MIN..SUBTITLE_BRIGHTNESS_MAX, step = 5, isTablet = isTablet, enabled = enabled,
                 onValueChange = { onStyleChanged(style.copy(appearance = style.appearance.copy(brightness = it))) },
             )
+            Text(
+                text = stringResource(Res.string.subtitle_brightness_scope),
+                modifier = Modifier.padding(start = if (isTablet) 20.dp else 16.dp, end = if (isTablet) 20.dp else 16.dp, bottom = 12.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         SettingsGroup(isTablet) {
             SettingsNavigationRow(

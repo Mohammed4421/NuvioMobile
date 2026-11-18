@@ -518,8 +518,8 @@ internal object SeasonStreamMatcher {
             .lowercase()
 
     /**
-     * Acceptable matches, best first. Streams of the same binge group lead; then streams with the
-     * same resolution and release type ordered by name similarity. Sources a debrid service
+     * Acceptable matches, best first. Only streams with the same resolution and release type count;
+     * among them, streams of the same binge group lead, then the rest by name similarity. Sources a debrid service
      * reported as not cached are left out, and cached ones are preferred.
      */
     fun rank(streams: List<StreamItem>, reference: SeasonQueueReference): List<StreamItem> {
@@ -532,15 +532,20 @@ internal object SeasonStreamMatcher {
         val referenceResolution = resolution(referenceText)
         val referenceFlags = flags(referenceText)
         val referenceTokens = tokens(referenceText)
+        // Resolution and release type (HDR, Dolby Vision, HEVC...) must match, even within a binge group.
+        fun sameQuality(stream: StreamItem): Boolean {
+            val text = describe(stream)
+            if (referenceResolution != null && resolution(text) != referenceResolution) return false
+            return flags(text) == referenceFlags
+        }
         val sameGroup = reference.bingeGroup?.let { group ->
-            downloadable.filter { it.behaviorHints.bingeGroup?.trim() == group }
+            downloadable.filter { it.behaviorHints.bingeGroup?.trim() == group && sameQuality(it) }
         }.orEmpty()
         val similar = downloadable
             .filterNot { it in sameGroup }
+            .filter(::sameQuality)
             .mapNotNull { stream ->
                 val text = describe(stream)
-                if (referenceResolution != null && resolution(text) != referenceResolution) return@mapNotNull null
-                if (flags(text) != referenceFlags) return@mapNotNull null
                 val score = similarity(referenceTokens, tokens(text)) +
                     (if (stream.addonId == reference.addonId) 0.1 else 0.0) +
                     (if (stream.debridCacheStatus?.state == StreamDebridCacheState.CACHED) 0.15 else 0.0)

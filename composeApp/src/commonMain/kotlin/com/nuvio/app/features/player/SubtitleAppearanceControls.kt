@@ -79,6 +79,11 @@ internal fun SubtitleAppearanceControls(
             SUBTITLE_BRIGHTNESS_MIN..SUBTITLE_BRIGHTNESS_MAX, 5,
             display = "${style.appearance.brightness}%",
         ) { onStyleChanged(style.copy(appearance = style.appearance.copy(brightness = it))) }
+        Text(
+            text = stringResource(Res.string.subtitle_brightness_scope),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         val textOpacity = (style.textColor.alpha * 100).roundToInt()
         SubtitleValueControl(stringResource(Res.string.compose_player_text_opacity), textOpacity, 0..100, 5, "$textOpacity%") {
             onStyleChanged(style.copy(textColor = style.textColor.copy(alpha = it / 100f)))
