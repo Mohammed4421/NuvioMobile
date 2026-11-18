@@ -135,9 +135,11 @@ jobs:
             || { echo "::error::The APK list does not match the sign job"; exit 1; }
           (cd dist && sha256sum --check --strict signed.sha256)
           [[ "$(ls dist/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; exit 1; }
+          [[ "${CERTIFICATE}" =~ ^[0-9a-f]{64}$ ]] || { echo "::error::No certificate from the sign job"; exit 1; }
           tools="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)"
           for apk in dist/*.apk; do
-            cert="$("${tools}/apksigner" verify --print-certs "${apk}" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')"
+            "${tools}/apksigner" verify "${apk}"
+            cert="$(python3 -I .github/plus/apk-certs.py --current "${apk}")"
             [[ "${cert}" == "${CERTIFICATE}" ]] || { echo "::error::${apk} is not signed with ${CERTIFICATE}"; exit 1; }
           done
 

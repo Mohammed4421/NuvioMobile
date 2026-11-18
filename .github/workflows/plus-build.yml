@@ -209,6 +209,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             .github/plus/sign-apks.sh
+            .github/plus/apk-certs.py
             signing/nuvio-plus.p12
 
       - name: Forget the checkout token
