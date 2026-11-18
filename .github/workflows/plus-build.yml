@@ -34,6 +34,7 @@ permissions:
 jobs:
   build:
     name: Build and unit tests
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     outputs:
       build_number: ${{ steps.number.outputs.build }}
@@ -87,11 +88,12 @@ jobs:
         run: |
           # Nuvio's own updater tests expect the official update source.
           sed -i '/^PLUS_/d' local.properties
-          JAVA_HOME="${JAVA_HOME_21_X64}" ./gradlew :composeApp:testAndroidHostTest \
+          JAVA_HOME="${JAVA_HOME_21_X64}" timeout 25m ./gradlew :composeApp:testAndroidHostTest \
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
             --continue > tests.log 2>&1 || true
           tail -n 30 tests.log
+          grep -q "BUILD SUCCESSFUL\|There were failing tests" tests.log || { echo "::error::Unit tests did not finish (timeout or build error)"; exit 1; }
           python3 .github/plus/test-results.py composeApp/build/test-results plus-tests.json
 
       - name: Name the APKs
@@ -140,6 +142,7 @@ jobs:
 
   nuvio-tests:
     name: Unit tests of the Nuvio release it is based on
+    timeout-minutes: 45
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.base.outputs.tag }}
@@ -176,7 +179,7 @@ jobs:
       - name: Unit tests
         run: |
           touch local.properties
-          JAVA_HOME="${JAVA_HOME_21_X64}" ./gradlew :composeApp:testAndroidHostTest \
+          JAVA_HOME="${JAVA_HOME_21_X64}" timeout 25m ./gradlew :composeApp:testAndroidHostTest \
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
             --continue > tests.log 2>&1 || true
@@ -193,6 +196,7 @@ jobs:
 
   test-gate:
     name: No test fails because of Nuvio Plus
+    timeout-minutes: 10
     needs: [build, nuvio-tests]
     runs-on: ubuntu-latest
     steps:
@@ -221,6 +225,7 @@ jobs:
 
   emulator:
     name: Install, update and launch on an emulator
+    timeout-minutes: 30
     needs: [build, test-gate]
     runs-on: ubuntu-latest
     env:
@@ -276,6 +281,7 @@ jobs:
 
   publish:
     name: Publish
+    timeout-minutes: 15
     needs: [build, test-gate, emulator]
     if: inputs.publish
     runs-on: ubuntu-latest
@@ -299,6 +305,7 @@ jobs:
 
   report-failure:
     name: Report a failed build
+    timeout-minutes: 10
     needs: [build, nuvio-tests, test-gate, emulator]
     if: failure() && inputs.publish
     runs-on: ubuntu-latest

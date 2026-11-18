@@ -147,12 +147,7 @@ object SeasonDownloadQueue {
      * Settles that episode, then looks up and hands over the next one so the job can keep
      * running it. Returns true when an episode was handed to the downloader.
      */
-    internal suspend fun continueInBackground(finishedDownloadId: String?): Boolean = withContext(Dispatchers.Main) {
-        continueInBackgroundOnMain(finishedDownloadId)
-    }
-
-    /** The queue state is only touched on the main thread. */
-    private suspend fun continueInBackgroundOnMain(finishedDownloadId: String?): Boolean {
+    internal suspend fun continueInBackground(finishedDownloadId: String?): Boolean {
         // Only a warm process has the add-ons, profile and downloads loaded; otherwise the queue
         // continues when the app is opened.
         if (!started || !DownloadsRepository.isLoaded) return false
