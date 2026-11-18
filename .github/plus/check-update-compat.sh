@@ -5,8 +5,7 @@
 set -euo pipefail
 new="$1"
 tools="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)"
-previous_tag="$(gh release list --repo "${GITHUB_REPOSITORY}" --exclude-drafts --exclude-pre-releases --limit 100 \
-  --json tagName --jq '[.[] | select(.tagName | test("^custom-[0-9]+$"))][0].tagName // empty')"
+previous_tag="$(bash "$(dirname "$0")/previous-release.sh")"
 if [[ -z "${previous_tag}" ]]; then
   echo "- Update check: skipped, no earlier build published." >> checks.md
   exit 0

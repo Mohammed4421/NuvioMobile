@@ -126,8 +126,10 @@ class AppUpdaterControllerTest {
         assertEquals(AppUpdaterUiState(updateChannel = UpdateChannel.BETA), controller.uiState.value)
     }
 
+    // These cases use the official version scheme; Nuvio Plus tags are covered by
+    // PlusAppUpdaterControllerTest, which runs against the same controller.
     private fun controller(fetch: suspend (UpdateChannel) -> Result<AppUpdate>) =
-        AppUpdaterController(scope, preferences, fetch)
+        AppUpdaterController(scope, preferences, fetch, UpdateVersionPolicy.Official)
 
     private fun update(tag: String) = AppUpdate(
         tag = tag,

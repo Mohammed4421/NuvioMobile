@@ -1,8 +1,9 @@
 name: Nuvio Plus build and checks
 
 # Builds a commit, runs every check and, when asked, publishes the APKs. Nothing is published
-# unless the build, the unit tests, the update check and the emulator test pass. A unit test may
-# fail only if it also fails in the Nuvio release the commit is based on (not caused by Nuvio Plus).
+# unless the build, every unit test, the update check and the emulator tests pass. The unit tests of
+# the Nuvio release the commit is based on also run, only to tell inherited failures apart in the
+# report; they never excuse a failing test.
 on:
   workflow_call:
     inputs:
@@ -24,6 +25,11 @@ on:
         required: false
         type: boolean
         default: false
+      channel:
+        description: stable (custom-N releases) or beta (custom-N-beta pre-releases)
+        required: false
+        type: string
+        default: stable
     outputs:
       build_number:
         value: ${{ jobs.build.outputs.build_number }}
@@ -33,7 +39,7 @@ permissions:
 
 jobs:
   build:
-    name: Build and unit tests
+    name: Build APKs
     timeout-minutes: 60
     runs-on: ubuntu-latest
     outputs:
@@ -65,6 +71,7 @@ jobs:
           CUSTOM_KEYSTORE_PASSWORD: ${{ secrets.CUSTOM_KEYSTORE_PASSWORD }}
           CUSTOM_KEY_ALIAS: ${{ secrets.CUSTOM_KEY_ALIAS }}
           CUSTOM_LOCAL_PROPERTIES: ${{ secrets.CUSTOM_LOCAL_PROPERTIES }}
+          PLUS_CHANNEL: ${{ inputs.channel }}
         run: bash .github/plus/prepare-build.sh "${{ steps.number.outputs.build }}"
 
       - name: Build APKs
@@ -77,9 +84,9 @@ jobs:
             -Pnuvio.ios.distribution=appstore \
             -Pnuvio.applicationIdSuffix=.plus \
             -Pnuvio.customVersionCode=$((1000 + build)) \
-            -Pnuvio.customVersionName="${version}-plus.${build}" \
+            -Pnuvio.customVersionName="${version}-plus.${build}$([[ "${{ inputs.channel }}" == beta ]] && echo -beta)" \
             --stacktrace 2>&1 | tee build.log
-          echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${build}." > checks.md
+          echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${build} (${{ inputs.channel }})." > checks.md
 
       - name: Name the APKs
         run: |
@@ -93,6 +100,7 @@ jobs:
       - name: Update check (signature, package, version)
         env:
           ALLOW_KEY_CHANGE: ${{ inputs.allow_key_change }}
+          PLUS_CHANNEL: ${{ inputs.channel }}
         run: bash .github/plus/check-update-compat.sh dist/*arm64-v8a.apk
 
       - name: Keep the APKs and checks
@@ -137,11 +145,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Unit tests (all of them)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLUS_CHANNEL: ${{ inputs.channel }}
         run: |
-          # Same settings as the published build, minus the fork update source: Nuvio's own
-          # updater tests expect the official one.
-          GITHUB_WORKSPACE="${GITHUB_WORKSPACE}" bash .github/plus/prepare-build.sh 0
-          sed -i '/^PLUS_/d' local.properties
+          # Exactly the settings of the published build, Nuvio Plus updater source included.
+          bash .github/plus/prepare-build.sh "$(bash .github/plus/next-build-number.sh)"
+          grep '^PLUS_' local.properties
           timeout 30m ./gradlew :composeApp:testAndroidHostTest \
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
@@ -222,7 +232,7 @@ jobs:
           retention-days: 14
 
   test-gate:
-    name: No test fails because of Nuvio Plus
+    name: All unit tests pass
     timeout-minutes: 10
     needs: [plus-tests, nuvio-tests]
     runs-on: ubuntu-latest
@@ -272,15 +282,17 @@ jobs:
       - name: Get the previous build
         id: previous
         run: |
-          tag="$(gh release list --repo "${GITHUB_REPOSITORY}" --exclude-drafts --exclude-pre-releases --limit 100 \
-            --json tagName --jq '[.[] | select(.tagName | test("^custom-[0-9]+$"))][0].tagName // empty')"
+          tag="$(PLUS_CHANNEL="${{ inputs.channel }}" bash .github/plus/previous-release.sh)"
           apk=""
           if [[ -n "${tag}" && "${{ inputs.allow_key_change }}" != "true" ]]; then
             gh release download "${tag}" --repo "${GITHUB_REPOSITORY}" --dir previous --pattern '*x86_64*.apk' --clobber
             apk="$(ls previous/*.apk | head -n 1)"
           fi
           echo "apk=${apk}" >> "${GITHUB_OUTPUT}"
-          echo "new=$(ls dist/*x86_64*.apk | head -n 1)" >> "${GITHUB_OUTPUT}"
+          # The artifact keeps its dist/ folder: the APKs land in dist/dist/.
+          new="$(find dist -name '*x86_64*.apk' | head -n 1)"
+          [[ -n "${new}" ]] || { echo "::error::No x86_64 APK in the build artifact"; ls -R dist; exit 1; }
+          echo "new=${new}" >> "${GITHUB_OUTPUT}"
 
       - name: Enable KVM
         run: |
@@ -314,6 +326,7 @@ jobs:
           path: |
             emulator.log
             crash.log
+            screens/
           if-no-files-found: ignore
           retention-days: 14
 
@@ -339,12 +352,18 @@ jobs:
           path: dist
 
       - name: Publish release
-        run: bash .github/plus/publish-release.sh "${{ needs.build.outputs.build_number }}" "$(git rev-parse HEAD)" dist "${{ inputs.note }}"
+        env:
+          PLUS_CHANNEL: ${{ inputs.channel }}
+        run: |
+          find dist -mindepth 2 -name '*.apk' -exec mv -t dist {} +
+          ls -l dist
+          [[ "$(ls dist/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; exit 1; }
+          bash .github/plus/publish-release.sh "${{ needs.build.outputs.build_number }}" "$(git rev-parse HEAD)" dist "${{ inputs.note }}"
 
   report-failure:
     name: Report a failed build
     timeout-minutes: 10
-    needs: [build, plus-tests, nuvio-tests, test-gate, emulator]
+    needs: [build, plus-tests, nuvio-tests, test-gate, emulator, review-gate]
     if: failure() && inputs.publish
     runs-on: ubuntu-latest
     env:
@@ -371,7 +390,7 @@ jobs:
           {
             echo "Build ${build} at \`${sha::7}\` did not pass its checks, so nothing was published. The previous build stays current."
             echo
-            echo "Build: ${{ needs.build.result }} · Nuvio Plus tests: ${{ needs.plus-tests.result }} · Nuvio tests: ${{ needs.nuvio-tests.result }} · Test gate: ${{ needs.test-gate.result }} · Emulator: ${{ needs.emulator.result }}"
+            echo "Build: ${{ needs.build.result }} · Nuvio Plus tests: ${{ needs.plus-tests.result }} · Nuvio tests: ${{ needs.nuvio-tests.result }} · Test gate: ${{ needs.test-gate.result }} · Emulator: ${{ needs.emulator.result }} · Reviews: ${{ needs.review-gate.result }}"
             echo
             echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo

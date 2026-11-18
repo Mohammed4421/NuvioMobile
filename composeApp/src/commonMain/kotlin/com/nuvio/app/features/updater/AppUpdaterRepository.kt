@@ -58,7 +58,7 @@ internal object AppUpdaterRepository {
         }
         val abis = AppUpdaterPlatform.getSupportedAbis()
         val update = if (PlusUpdates.enabled) {
-            selectPlusUpdate(response.body, abis)
+            selectPlusUpdate(response.body, channel, abis)
         } else {
             selectUpdate(response.body, channel, abis)
         }
@@ -95,9 +95,10 @@ internal object AppUpdaterRepository {
         }
     }
 
-    internal fun selectPlusUpdate(responseBody: String, supportedAbis: List<String>): AppUpdate? {
-        val release = PlusUpdates.latest(json.decodeFromString<List<GitHubReleaseDto>>(responseBody)) ?: return null
-        val asset = chooseBestApkAsset(release.assets, supportedAbis) ?: return null
+    internal fun selectPlusUpdate(responseBody: String, channel: UpdateChannel, supportedAbis: List<String>): AppUpdate? {
+        val release = PlusUpdates.latest(json.decodeFromString<List<GitHubReleaseDto>>(responseBody), channel) ?: return null
+        // Only an APK this device can run: its ABI, or a universal one. Never "any APK".
+        val asset = chooseCompatibleApkAsset(release.assets, supportedAbis) ?: return null
         val tag = release.tagName.orEmpty()
         return AppUpdate(
             tag = tag,
@@ -108,6 +109,17 @@ internal object AppUpdaterRepository {
             assetUrl = asset.browserDownloadUrl,
             assetSizeBytes = asset.size,
         )
+    }
+
+    internal fun chooseCompatibleApkAsset(
+        assets: List<GitHubAssetDto>,
+        supportedAbis: List<String>,
+    ): GitHubAssetDto? {
+        val apkAssets = assets.filter { it.name.endsWith(".apk", ignoreCase = true) }
+        for (abi in supportedAbis) {
+            apkAssets.firstOrNull { it.name.contains(abi, ignoreCase = true) }?.let { return it }
+        }
+        return apkAssets.firstOrNull { it.name.contains("universal", ignoreCase = true) }
     }
 
     private fun chooseBestApkAsset(

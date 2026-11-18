@@ -11,5 +11,9 @@ enum class UpdateChannel(val storedValue: String) {
 
         fun defaultForVersion(versionName: String): UpdateChannel =
             if (VersionUtils.isPrerelease(versionName)) BETA else STABLE
+
+        /** Nuvio Plus builds start on the channel they were made for. */
+        fun defaultForBuild(versionName: String): UpdateChannel =
+            if (PlusUpdates.enabled) PlusUpdates.buildChannel else defaultForVersion(versionName)
     }
 }

@@ -134,6 +134,8 @@ abstract class GenerateRuntimeConfigsTask : DefaultTask() {
                 |object PlusUpdateConfig {
                 |    const val REPO = "${props.getProperty("PLUS_UPDATE_REPO", "").trim()}"
                 |    const val BUILD = ${props.getProperty("PLUS_BUILD", "0").trim().toIntOrNull() ?: 0}
+                |    /** "stable" or "beta": which Nuvio Plus releases this build was made for. */
+                |    const val CHANNEL = "${props.getProperty("PLUS_CHANNEL", "stable").trim().lowercase()}"
                 |}
                 """.trimMargin()
             )

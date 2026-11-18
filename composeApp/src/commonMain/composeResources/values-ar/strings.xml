@@ -2600,4 +2600,8 @@
     <string name="settings_playback_remember_audio_delay">تذكّر تأخير الصوت لكل جهاز</string>
     <string name="settings_playback_remember_audio_delay_description">استعادة تأخير الصوت المضبوط في المشغّل كلما عاد الإخراج نفسه، مثل سماعة الهاتف أو السماعات السلكية أو كل جهاز بلوتوث</string>
     <string name="library_downloads_failed_count">فشل: %1$d</string>
+    <string name="updates_archive_unreadable">تعذّرت قراءة التحديث الذي نُزّل. حاول مرة أخرى.</string>
+    <string name="updates_archive_other_app">الملف الذي نُزّل ليس تحديثًا لهذا التطبيق.</string>
+    <string name="updates_archive_not_newer">التحديث الذي نُزّل ليس أحدث من النسخة المثبتة.</string>
+    <string name="updates_archive_other_signer">التحديث الذي نُزّل موقّع بمفتاح مختلف ولا يمكنه استبدال هذا التطبيق.</string>
 </resources>

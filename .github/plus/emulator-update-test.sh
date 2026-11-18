@@ -53,4 +53,48 @@ else
   run adb install "${new}" || fail "The new build could not be installed"
 fi
 launch_and_check "New build"
-echo "- Emulator (Android $(adb shell getprop ro.build.version.release | tr -d '\r')): ${summary}opened without a crash." >> checks-emulator.md
+
+# Beyond launching: the app draws its UI, survives Back, rotation (tablet-like landscape) and an
+# Arabic (right-to-left) start. Screenshots are kept for a person to look at.
+mkdir -p screens
+shot() { adb exec-out screencap -p > "screens/$1.png" || true; }
+ui_has_app() {
+  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 || return 1
+  adb shell cat /sdcard/ui.xml | tr -d '\r' > "screens/$1.xml"
+  grep -q "package=\"${package}\"" "screens/$1.xml"
+}
+alive() { [[ -n "$(adb shell pidof "${package}" | tr -d '\r')" ]]; }
+crashed() { adb logcat -d -b crash 2>/dev/null | grep -q "${package}"; }
+
+shot portrait
+ui_has_app portrait || fail "The new build shows no UI of its own after launch"
+
+adb logcat -c || true
+adb shell settings put system accelerometer_rotation 0
+adb shell settings put system user_rotation 1
+sleep 6
+shot landscape
+crashed && fail "The app crashed when rotated to landscape"
+alive || fail "The app closed when rotated to landscape"
+adb shell settings put system user_rotation 0
+
+adb shell input keyevent KEYCODE_BACK
+sleep 3
+crashed && fail "The app crashed on Back"
+
+rtl="skipped (needs Android 13+)"
+if (( $(adb shell getprop ro.build.version.sdk | tr -d '\r') >= 33 )); then
+  adb shell am force-stop "${package}"
+  adb shell cmd locale set-app-locales "${package}" --locales ar
+  launch_and_check "New build in Arabic"
+  shot arabic
+  ui_has_app arabic || fail "No UI in Arabic"
+  if grep -qP '[\x{0600}-\x{06FF}]' screens/arabic.xml 2>/dev/null || grep -q '&#x6' screens/arabic.xml; then
+    rtl="Arabic texts shown"
+  else
+    rtl="started in Arabic (no Arabic text found in the first screen)"
+  fi
+  adb shell cmd locale set-app-locales "${package}" --locales ""
+fi
+
+echo "- Emulator (Android $(adb shell getprop ro.build.version.release | tr -d '\r')): ${summary}opened without a crash; draws its UI; survives landscape rotation and Back; Arabic start: ${rtl}. Screenshots are in the run's emulator artifact." >> checks-emulator.md

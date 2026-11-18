@@ -4,6 +4,28 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
+## Next build (pending approval) — safe upstream sync v2, updater channels, strict tests
+
+### Changed
+- **Nuvio releases are prepared for review, never merged on their own.** Each release gets a
+  `plus-review/nuvio-<tag>` branch, a review record that maps Nuvio's changes to the Nuvio Plus
+  feature registry (`.github/plus/features.json`), checks, and a draft pull request. Stable Nuvio
+  releases target `custom-subtitles`, betas the separate `plus-beta` branch. Review branches are
+  never rewritten; Nuvio CI files are listed for review instead of being dropped silently.
+- **Publishing requires** a merged pull request, every unit test passing (with the real Nuvio Plus
+  settings), the update check, the emulator tests and every review record approved for a tested
+  commit. Nuvio's own test results are shown next to them for diagnosis only.
+- **In-app updates** respect the Stable and Beta channels for Nuvio Plus releases (`custom-N` and
+  `custom-N-beta`), offer only an APK built for the device's ABI, and check a downloaded update
+  (same app, same signing key, higher version) before the installer opens.
+- Emulator test: besides installing over the previous build and opening it, checks that the UI is
+  drawn, survives landscape rotation and Back, and starts in Arabic; screenshots are kept.
+
+### Fixed
+- The emulator test looked for the new APK in the wrong folder and never installed it.
+- A Nuvio test with a 1-second video (treated as a placeholder clip by a newer rule) is replaced by
+  Nuvio's own fix.
+
 ## Build 12 — gated updates and review fixes
 
 ### Changed

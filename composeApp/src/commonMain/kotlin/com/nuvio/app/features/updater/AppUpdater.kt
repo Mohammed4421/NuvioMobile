@@ -49,6 +49,7 @@ class AppUpdaterController internal constructor(
     private val scope: CoroutineScope,
     private val preferences: UpdatePreferences = UpdatePreferences.shared,
     private val fetchUpdate: suspend (UpdateChannel) -> Result<AppUpdate> = AppUpdaterRepository::getLatestChannelUpdate,
+    private val versionPolicy: UpdateVersionPolicy = UpdateVersionPolicy.forThisBuild(),
 ) {
     private val _uiState = MutableStateFlow(AppUpdaterUiState(updateChannel = preferences.channel.value))
     val uiState: StateFlow<AppUpdaterUiState> = _uiState.asStateFlow()
@@ -112,11 +113,7 @@ class AppUpdaterController internal constructor(
             if (channel != preferences.channel.value) return@launch
 
             result.onSuccess { update ->
-                val remoteNewer = if (PlusUpdates.enabled) {
-                    PlusUpdates.isNewer(update.tag)
-                } else {
-                    VersionUtils.isRemoteNewer(update.tag, AppVersionConfig.VERSION_NAME)
-                }
+                val remoteNewer = versionPolicy.isNewer(update.tag)
                 val ignored = ignoredTag != null && ignoredTag == update.tag
                 val shouldShowDialog = remoteNewer && (force || !ignored)
 
@@ -169,12 +166,16 @@ class AppUpdaterController internal constructor(
     }
 
     private suspend fun noUpdateMessage(channel: UpdateChannel): String = getString(
-        if (channel == UpdateChannel.STABLE && VersionUtils.isPrerelease(AppVersionConfig.VERSION_NAME)) {
+        if (channel == UpdateChannel.STABLE && installedIsPrerelease()) {
             Res.string.updates_waiting_for_stable
         } else {
             Res.string.updates_latest_version
         },
     )
+
+    private fun installedIsPrerelease(): Boolean =
+        if (PlusUpdates.enabled) PlusUpdates.buildChannel == UpdateChannel.BETA
+        else VersionUtils.isPrerelease(AppVersionConfig.VERSION_NAME)
 
     fun dismissDialog() {
         _uiState.update { state ->
