@@ -16,6 +16,8 @@ permissions:
 
 jobs:
   close_unlabeled:
+    # Issue housekeeping for the official repository only, not for forks such as Nuvio Plus.
+    if: github.repository == 'NuvioMedia/NuvioMobile'
     runs-on: ubuntu-latest
     steps:
       - name: Close open issues with no labels
