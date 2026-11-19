@@ -610,43 +610,104 @@ Matches the reference state of the directive. Phase 1 branch: `plus-fix/security
 
 ## Phase 1 results
 
-CI run on `3ecae669fb57e1b66db8bd140f9337142c2773f1` (branch `plus-fix/security-foundation`, push):
+### Passed on the latest commit of PR #3: `8a05a545` (pull request run, full validation)
 
 | Check | Result |
 |---|---|
-| Build (throwaway key, 4 ABIs) | PASS |
-| Sign (no Gradle; v2 only; certificate `40335e31…f48a`, same as custom-12) | PASS |
-| Update check over custom-12 (package, real certificate comparison, 1012 → 1013) | PASS |
-| Nuvio Plus unit tests | PASS 2154/2154 (2141 before + 13 new update-check tests) |
-| Nuvio 1.0.0 baseline tests | 2099/2100 (failure inherited from Nuvio, shown for diagnosis only) |
-| Policy tests (gate, workflows, certificate reader) | PASS 38/38 |
-| Review records (`records` mode) | PASS (no Nuvio release since custom-12) |
+| Build, 4 ABIs (throwaway key; Sentry plugin from Maven Central) | PASS, 10 min |
+| Sign: no Gradle, no secret; v2 only; certificate `40335e31…f48a` (custom-12) | PASS |
+| Update check over custom-12: package, real certificate comparison, 1012 → 1013 | PASS |
+| Nuvio Plus unit tests | PASS 2154/2154 |
+| Nuvio 1.0.0 baseline | Not run: no Nuvio Plus test failed (runs only on a failure, CI-4) |
+| Policy, gate, certificate-reader, retry and test-gate tests | PASS 64/64 |
+| Review records | PASS (no Nuvio release since custom-12) |
 | Emulator, Android 14: install over custom-12, launch, rotation, Back | PASS |
-| Commit statuses set by `github-actions[bot]` | `nuvio-plus/push/checks` success, `nuvio-plus/push/review` success |
+| `nuvio-plus/checks` / `nuvio-plus/review` (set by `github-actions[bot]`) | success / success |
 
-Not proven by this run:
-- Arabic start: inconclusive, as before.
-- Data kept: only 1 prefs file, as before (phase 3 · T2).
-- The `publish` path: nothing is published from a fix branch. The gate's publish logic is covered by
-  the 20 gate tests, not by a live publish.
-- The ruleset (owner setting).
-- The Android 9+ `SigningInfo` path of the update check (NEEDS PHYSICAL DEVICE).
+### Passed earlier only (superseded)
 
-Earlier failing runs of this branch, all explained and fixed:
-- `de53c765`: checkout with `persist-credentials: false` fails on Nuvio's `libass-android` gitlink.
-- `291736fd`: the Gradle plugin needs a key.
-- `c70685b0` and `a18a0c00`: memory.
-- `56cb197c` and `dc9d56aa`: the token step under `pipefail`.
-- `8fd7eba2`: certificate parsing (SEC-10).
-- `15f80e4f` and `99751263`: download failures.
+`3ecae669` (before the owner's review fixes) passed every check. Later commits changed the signing
+secrets, app settings, CI levels and cache, and are covered by the run on `8a05a545` above.
+
+### Could not be run, or not proven by CI
+
+- **Android 9+ `SigningInfo` path** of the in-app update check: NEEDS PHYSICAL DEVICE (SEC-7).
+- **A live publish:** not done on purpose. Nothing is published before the owner's decision (SEC-12).
+- **Ruleset and repository variable:** owner settings.
+- **Emulator checks:** the Arabic first screen is inconclusive, and data-kept counts only 1 prefs
+  file (phase 3 · T2).
+
+### Failing runs on the way, all explained
+
+| Run | Cause | Fixed by |
+|---|---|---|
+| `de53c765` | checkout with `persist-credentials: false` fails on Nuvio's gitlink | inline token removal |
+| `291736fd` | the Gradle plugin needs a key | throwaway build key |
+| `c70685b0`, `a18a0c00` | runner memory | in-process Kotlin, 10 GB heap (CI-1) |
+| `56cb197c`, `dc9d56aa` | token step under `pipefail` | fixed step |
+| `8fd7eba2` | certificate parsing | APK Signing Block reader (SEC-10) |
+| `15f80e4f`, `99751263`, `0913035f` (push), `121ecc4e`, `e46d0b8a` | Sentry plugin marker 404 on the plugin portal; one Robolectric download | plugin from Maven Central; download-only retries (CI-2) |
+| `0913035f` (pull request), `f089976e`, `2c289de2` | GitHub blocked Actions for the repository | owner re-enabled Actions (CI-3) |
+| `5b2ef16a` | emulator skipped below a skipped job (reported as failure, not success) | explicit condition plus policy test |
 
 ---
+
+## Phase 2 — Functional correctness
+
+### F1 · Pausing a season episode started the next one
+
+1. **ID:** F1
+2. **Severity:** High
+3. **Verification status:** Confirmed in code (audit): the old `pump` removed every Downloading entry
+   whose download was not running. The old logic was not a separate function, so the new tests encode
+   the scenarios but were not run against it.
+4. **Evidence:** `SeasonDownloadQueue.kt@28a3e4dd`:
+   - `pump()` (lines 286–312) dropped an entry whose download status was not `Downloading` (paused
+     included), then found the queue not busy and searched the next episode.
+   - `continueInBackground` counted only running downloads as busy.
+   - In Nuvio 1.1.0-beta, "Pause all" (`pauseActiveDownloads`) pauses the running download, so the
+     queue started the next one at once.
+5. **Root cause:** The queue was built before pausing existed, and treated "not running" as "done".
+6. **Selected solution:**
+   - A new state `SeasonQueueEntryState.Paused`. A paused episode keeps its place and its download id,
+     and holds the queue.
+   - When resumed it is Downloading again; the queue moves on only when it finishes, fails, is
+     deleted, or is removed from the queue (skip).
+   - The decisions live in `SeasonQueuePolicy` (`settle`, `busy`, `next`), free of the repositories.
+     `pump` and `continueInBackground` both use them.
+   - The downloads screen lists a paused queue episode as "Paused: the next episode waits until you
+     resume it" (English and Arabic), with its remove button.
+7. **Rejected alternatives:**
+   - A global "queue paused" flag: it mixes pausing one episode with pausing all, and needs UI that
+     stable does not have.
+   - A larger refactor of the singleton: the pure policy covers the decisions with a minimal change.
+8. **Modified files:** `SeasonDownloadQueue.kt`, `DownloadsScreen.kt`, `values/strings.xml`, `values-ar/strings.xml`.
+9. **Added tests:** `SeasonQueuePolicyTest` (9):
+   - pause does not start the next;
+   - resume continues the same episode, then the next;
+   - "Pause all" holds the queue, and "Resume all" keeps the order;
+   - deleted or failed paused episode leaves;
+   - removing a paused episode skips it;
+   - a paused queue survives a restart;
+   - a search holds the queue, and an interrupted search starts over;
+   - an episode without a source does not hold the queue;
+   - a Downloading entry without a download leaves.
+10. **Test results:** See the PR run.
+11. **Regression risk:** A queue whose episode stays paused waits indefinitely (intended). Stored
+    queues from build 12 contain no Paused entries and load as before.
+12. **Remaining risks:**
+    - A "Pause all" pressed while the next episode is still being searched (up to 90 s) lets that
+      episode start. Stable has no "Pause all" button; wiring beta's button to the queue belongs to
+      the beta merge (B1).
+    - 429/503 handling during the search is unchanged (it ends as NeedsChoice).
+13. **Commit / PR:** see the F1 pull request.
+14. **Final status:** Code and tests done; full validation pending.
 
 ## Later phases (planned, not started)
 
 | ID | Phase | Item | Status |
 |---|---|---|---|
-| F1 | 2 | Pausing a season episode starts the next; Pause all does not stop the queue | Planned |
+| F1 | 2 | Pausing a season episode starts the next; Pause all does not stop the queue | Done (see F1) |
 | F2 | 2 | Season queue shared across profiles | Planned |
 | F3 | 2 | Library recomposition during downloads (measure first) | Planned |
 | F4 | 2 | SAF and `.part` resume robustness | Planned |
