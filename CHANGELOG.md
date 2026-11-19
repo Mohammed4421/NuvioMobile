@@ -4,7 +4,27 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
-## Next build (pending approval) — safe upstream sync v2, updater channels, strict tests
+## Next build — safer updates and season downloads
+
+### Fixed
+- **Pausing a season download pauses the season.** Pausing an episode that came from "download
+  season" (or pausing all downloads) used to start the next episode at once. The paused episode now
+  keeps its place, and the season continues when you resume it. The downloads screen says why the
+  next episode waits; removing the paused episode from the queue skips it.
+- **Each profile has its own season queue.** Switching profiles while a season was downloading
+  could drop the running episode from the queue and download the next one into the other profile's
+  downloads. Every profile now keeps and continues only its own queue. Queues saved by earlier builds
+  are kept.
+
+### Changed
+- **The in-app updater refuses an update it cannot fully check.** A damaged or unsigned download, or
+  an update this app cannot compare with its own signature, is refused with a message (also in
+  Arabic) instead of being handed to the installer.
+- **Safer builds.** The signing key is never available to builds of code that has not been reviewed.
+  A release is published only for a reviewed pull request that passed every check, signed with the
+  same key as earlier builds. The update check now really compares signing certificates.
+
+## Build 12 — safe upstream sync v2, updater channels, strict tests
 
 ### Changed
 - **Nuvio releases are prepared for review, never merged on their own.** Each release gets a
