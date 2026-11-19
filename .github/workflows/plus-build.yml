@@ -443,12 +443,27 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Profile-race scenarios of the season queue
+        # r1-r8 (.github/plus/queue-race-harness): the real SeasonDownloadQueue.kt, compiled with the
+        # app's Kotlin and kotlinx-coroutines from the Gradle cache the unit tests filled, against test
+        # doubles of its dependencies. Any failing scenario fails this job.
+        run: |
+          set +e
+          bash .github/plus/queue-race-harness/run.sh > queue-race.log 2>&1
+          status=$?
+          set -e
+          cat queue-race.log
+          { echo "### Season queue: profile-race scenarios"; echo '```'; cat queue-race.log; echo '```'; } >> "${GITHUB_STEP_SUMMARY}"
+          if [[ "${status}" != 0 ]]; then echo "::error::Profile-race scenarios failed (queue-race.log)"; exit 1; fi
+
       - name: Keep the log
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: plus-tests-log
-          path: tests.log
+          path: |
+            tests.log
+            queue-race.log
           if-no-files-found: ignore
           retention-days: 14
 
