@@ -1,0 +1,71 @@
+name: Study - key rotation (throwaway keys)
+
+# Phase 5 study, never merged: runs only on pushes to plus-study/key-rotation. Uses throwaway keys
+# made inside the job (never signing/nuvio-plus.p12) and the custom-12 x86_64 APK as the app body.
+# Publishes nothing; read-only token; no secrets.
+on:
+  push:
+    branches: ['plus-study/key-rotation']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plus-study-key-rotation
+  cancel-in-progress: true
+
+jobs:
+  rotation:
+    name: Key rotation on Android ${{ matrix.api }}
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [26, 28, 34]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      API: ${{ matrix.api }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Forget the checkout token
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+
+      - name: Throwaway keys and test APKs
+        run: |
+          mkdir -p "${RUNNER_TEMP}/study"
+          gh release download custom-12 --repo "${GITHUB_REPOSITORY}" --pattern '*x86_64*.apk' --dir "${RUNNER_TEMP}/study"
+          mv "${RUNNER_TEMP}"/study/*x86_64*.apk "${RUNNER_TEMP}/study/base.apk"
+          bash .github/plus/study/key-rotation-study.sh prepare-keys "${RUNNER_TEMP}/study"
+          cat "${RUNNER_TEMP}/study/apks.txt"
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install and update scenarios
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: ${{ matrix.api }}
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: bash .github/plus/study/key-rotation-study.sh run "$RUNNER_TEMP/study" "$API"
+
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: key-rotation-api${{ matrix.api }}
+          path: |
+            ${{ runner.temp }}/study/results-api*.md
+            ${{ runner.temp }}/study/apks.txt
+          if-no-files-found: ignore
