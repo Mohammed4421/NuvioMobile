@@ -187,11 +187,21 @@ jobs:
             -Pnuvio.customVersionCode=$((1000 + BUILD)) \
             -Pnuvio.customVersionName="${version}-plus.${BUILD}${suffix}" \
             --stacktrace || {
-              { grep -E "^e: " build.log || true; } | head -n 20 | sed 's/^/::error::/'
-              { grep -A6 "What went wrong" build.log || true; } | head -n 20 | sed 's/^/::error::/'
-              tail -n 8 build.log | sed 's/^/::error::log: /'
+              # GitHub keeps at most 10 error annotations per step: the most telling lines come first.
+              { grep -E "^e: " build.log || true; } | head -n 5 | sed 's/^/::error::/'
+              { grep -oE "(Caused by|> Could not (GET|HEAD|resolve)|Received status code|status code [0-9]+|(Connect|Read) timed out|PKIX|SSLHandshake)[^\r]{0,200}" build.log || true; } \
+                | sort -u | head -n 4 | sed 's/^/::error::cause: /'
+              if grep -q "could not resolve plugin artifact\|Could not resolve\|Could not download" build.log; then
+                # Ask the repositories directly what they answer from this runner.
+                marker="io/sentry/android/gradle/io.sentry.android.gradle.gradle.plugin/6.14.0/io.sentry.android.gradle.gradle.plugin-6.14.0.pom"
+                for base in https://repo.maven.apache.org/maven2 https://plugins.gradle.org/m2; do
+                  code="$(curl -sS -o /dev/null -L -w '%{http_code} after %{time_total}s' "${base}/${marker}" 2>&1 || true)"
+                  echo "::error::repository ${base}: ${code}"
+                done
+              fi
+              { grep -A3 "What went wrong" build.log || true; } | head -n 2 | sed 's/^/::error::/'
               { sudo dmesg 2>/dev/null | grep -iE "out of memory|oom-kill|killed process" || true; } | tail -n 5 | sed 's/^/::error::kernel: /'
-              free -m | sed 's/^/::error::memory: /'
+              free -m | sed -n 2p | sed 's/^/::error::memory: /'
               exit 1
             }
           echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${BUILD} (${CHANNEL})." > checks-build.md
