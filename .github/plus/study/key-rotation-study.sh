@@ -29,13 +29,21 @@ if [[ "${cmd}" == prepare-keys ]]; then
     "${tools}/apksigner" sign $(signer k1) --next-signer $(signer k2) --lineage "${work}/lineage-${kind}" \
       --rotation-min-sdk-version 28 "${common[@]}" --out "${work}/B-${kind}.apk" "${base}"
   done
+  # F: the proposed release form: v2 AND v3 signed by the new key k2 only, the lineage in v3; the old
+  # key signs nothing but the lineage. Older Android sees only k2.
+  "${tools}/apksigner" sign $(signer k2) --lineage "${work}/lineage-strict" --min-sdk-version 24 \
+    "${common[@]}" --out "${work}/F-k2-lineage.apk" "${base}"
+  # G: an attacker's own move with the old key: lineage k1 -> k3, signed with k3.
+  "${tools}/apksigner" rotate --out "${work}/lineage-attacker" --old-signer $(signer k1) --set-rollback false --new-signer $(signer k3)
+  "${tools}/apksigner" sign $(signer k3) --lineage "${work}/lineage-attacker" --min-sdk-version 24 \
+    "${common[@]}" --out "${work}/G-k3-attacker-lineage.apk" "${base}"
   # C: the old (exposed) key alone, after the rotation: what an attacker holding it could make.
   cp "${work}/A-k1.apk" "${work}/C-k1-only.apk"
   # D: a stranger's key. E: the new key alone, without the lineage.
   "${tools}/apksigner" sign $(signer k3) "${common[@]}" --out "${work}/D-k3.apk" "${base}"
   "${tools}/apksigner" sign $(signer k2) "${common[@]}" --out "${work}/E-k2-only.apk" "${base}"
-  for apk in "${work}"/[A-E]-*.apk; do
-    echo "== $(basename "${apk}")"; "${tools}/apksigner" verify -v --print-certs "${apk}" | grep -E "Verified using|Signer|Number of signers" || true
+  for apk in "${work}"/[A-G]-*.apk; do
+    echo "== $(basename "${apk}")"; "${tools}/apksigner" verify -v --print-certs "${apk}" | grep -E "Verified using|Signer|Number of signers|certificate SHA-256" || true
   done > "${work}/apks.txt"
   exit 0
 fi
@@ -64,6 +72,21 @@ for kind in strict lenient; do
   c="$(install "${work}/C-k1-only.apk")"
   note "old key alone after rotation (${kind}): ${c}"
 done
+# Proposed release form (F): new key only, lineage from the old key.
+fresh
+before="$(first_install)"
+f="$(install "${work}/F-k2-lineage.apk")"
+kept="$(marker)"; after="$(first_install)"
+same_install=no; [[ -n "${before}" && "${before}" == "${after}" ]] && same_install=yes
+note "PROPOSED new-key-only + lineage over k1: ${f}; data kept: ${kept:-no}; same install: ${same_install}"
+echo "  signing after F: $(signers)" >> "${results}"
+if [[ "${f}" == Success* ]]; then
+  note "PROPOSED then old key alone: $(install "${work}/C-k1-only.apk")"
+  note "PROPOSED then attacker lineage k1->k3: $(install "${work}/G-k3-attacker-lineage.apk")"
+  note "PROPOSED then next build with the new key: $(install "${work}/F-k2-lineage.apk"); data kept: $(marker || echo no)"
+fi
+fresh
+note "attacker lineage k1->k3 over k1 (before any real move): $(install "${work}/G-k3-attacker-lineage.apk")"
 fresh
 note "stranger key over k1: $(install "${work}/D-k3.apk")"
 fresh
