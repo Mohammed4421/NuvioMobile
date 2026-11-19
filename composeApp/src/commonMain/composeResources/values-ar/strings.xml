@@ -2548,6 +2548,7 @@
     <string name="downloads_queue_searching">يبحث عن مصدر مطابق…</string>
     <string name="downloads_queue_downloading">قيد التنزيل</string>
     <string name="downloads_queue_needs_choice">لا يوجد مصدر مطابق. أعد المحاولة أو نزّلها يدويًا.</string>
+    <string name="downloads_queue_paused">متوقف مؤقتًا: الحلقة التالية تنتظر حتى تستأنفه</string>
     <string name="downloads_queue_clear">إفراغ الطابور</string>
     <string name="downloads_queue_retry">إعادة المحاولة</string>
     <string name="downloads_queue_remove">حذف</string>

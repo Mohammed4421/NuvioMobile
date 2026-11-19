@@ -47,11 +47,55 @@ enum class SeasonQueueEntryState {
     /** Looking for a source that matches the one picked for the first episode. */
     Searching,
 
-    /** Handed to the downloader; leaves the queue once that download stops running. */
+    /** Handed to the downloader; leaves the queue once that download finishes, fails or is deleted. */
     Downloading,
 
     /** No matching source was found; the user downloads it manually or retries. */
     NeedsChoice,
+
+    /**
+     * Its download was paused by the user (one episode, or "pause all"). It keeps its place and the
+     * next episode waits until it is resumed, removed from the queue, or deleted.
+     */
+    Paused,
+}
+
+/**
+ * The queue's decisions, kept free of the repositories it reads so they can be tested on their own.
+ */
+internal object SeasonQueuePolicy {
+    /**
+     * Brings the queue in line with the downloads. An episode handed to the downloader stays while its
+     * download runs (Downloading) or is paused (Paused), and leaves the queue once it is finished,
+     * failed or deleted. A search that is no longer running goes back to Waiting.
+     */
+    fun settle(
+        entries: List<SeasonQueueEntry>,
+        statusOf: (downloadId: String) -> DownloadStatus?,
+        searching: Set<String>,
+    ): List<SeasonQueueEntry> = entries.mapNotNull { entry ->
+        when (entry.state) {
+            SeasonQueueEntryState.Downloading, SeasonQueueEntryState.Paused ->
+                when (entry.downloadId?.let(statusOf)) {
+                    DownloadStatus.Downloading -> entry.copy(state = SeasonQueueEntryState.Downloading)
+                    DownloadStatus.Paused -> entry.copy(state = SeasonQueueEntryState.Paused)
+                    else -> null
+                }
+            SeasonQueueEntryState.Searching ->
+                if (entry.id in searching) entry else entry.copy(state = SeasonQueueEntryState.Waiting)
+            else -> entry
+        }
+    }
+
+    /** True while an episode is searched, downloading or paused: the next one waits for it. */
+    fun busy(entries: List<SeasonQueueEntry>, searching: Set<String>): Boolean =
+        searching.isNotEmpty() || entries.any {
+            it.state == SeasonQueueEntryState.Downloading || it.state == SeasonQueueEntryState.Paused
+        }
+
+    /** The next episode to look up, in queue order. */
+    fun next(entries: List<SeasonQueueEntry>): SeasonQueueEntry? =
+        entries.firstOrNull { it.state == SeasonQueueEntryState.Waiting }
 }
 
 /** The source the user picked for the first episode; later episodes look for the same release. */
@@ -160,14 +204,10 @@ object SeasonDownloadQueue {
             }
         }
         while (true) {
-            val downloads = DownloadsRepository.uiState.value.items.associateBy { it.id }
-            val current = _entries.value
-            val busy = searchJobs.isNotEmpty() || current.any {
-                it.state == SeasonQueueEntryState.Downloading &&
-                    it.downloadId?.let(downloads::get)?.status == DownloadStatus.Downloading
-            }
-            if (busy || isNetworkOffline()) return false
-            val next = current.firstOrNull { it.state == SeasonQueueEntryState.Waiting } ?: return false
+            val current = settleWithDownloads()
+            // A paused episode holds the queue here too, so pausing never starts the next one.
+            if (SeasonQueuePolicy.busy(current, searchJobs.keys) || isNetworkOffline()) return false
+            val next = SeasonQueuePolicy.next(current) ?: return false
             if (trackSearch(next.id) { startEntry(next) }) return true
         }
     }
@@ -275,37 +315,33 @@ object SeasonDownloadQueue {
         pump()
     }
 
-    /** Drops every episode that has not started; running downloads keep going. */
+    /** Drops every episode that has not started; running and paused downloads keep their place. */
     fun clear() {
         searchJobs.values.toList().forEach(Job::cancel)
         searchJobs.clear()
-        update { entries -> entries.filter { it.state == SeasonQueueEntryState.Downloading } }
+        update { entries ->
+            entries.filter { it.state == SeasonQueueEntryState.Downloading || it.state == SeasonQueueEntryState.Paused }
+        }
         pump()
+    }
+
+    /** Applies [SeasonQueuePolicy.settle] to the stored queue and returns the result. */
+    private fun settleWithDownloads(): List<SeasonQueueEntry> {
+        val downloads = DownloadsRepository.uiState.value.items.associateBy { it.id }
+        val settled = SeasonQueuePolicy.settle(_entries.value, { downloads[it]?.status }, searchJobs.keys)
+        if (settled != _entries.value) update { settled }
+        return settled
     }
 
     private fun pump() {
         if (!started) return
-        val downloads = DownloadsRepository.uiState.value.items.associateBy { it.id }
-        // Episodes whose download stopped running (finished, failed, paused or deleted) leave the queue.
-        val settled = _entries.value
-            .filterNot { entry ->
-                entry.state == SeasonQueueEntryState.Downloading &&
-                    entry.downloadId?.let(downloads::get)?.status != DownloadStatus.Downloading
-            }
-            // A search whose job is gone (cancelled or interrupted) goes back to waiting.
-            .map { entry ->
-                if (entry.state == SeasonQueueEntryState.Searching && entry.id !in searchJobs) {
-                    entry.copy(state = SeasonQueueEntryState.Waiting)
-                } else entry
-            }
-        if (settled != _entries.value) update { settled }
-
-        val busy = searchJobs.isNotEmpty() || settled.any { it.state == SeasonQueueEntryState.Downloading }
-        if (busy) return
+        val settled = settleWithDownloads()
+        // A search, a running download or a paused one holds the queue: pausing never starts the next.
+        if (SeasonQueuePolicy.busy(settled, searchJobs.keys)) return
         if (isNetworkOffline()) return
         // Android cannot start a download job from the background; the running job continues instead.
         if (!appVisible && !startsInBackground) return
-        val next = settled.firstOrNull { it.state == SeasonQueueEntryState.Waiting } ?: return
+        val next = SeasonQueuePolicy.next(settled) ?: return
         scope.launch {
             trackSearch(next.id) { startEntry(next) }
             pump()
