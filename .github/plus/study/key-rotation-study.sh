@@ -29,14 +29,16 @@ if [[ "${cmd}" == prepare-keys ]]; then
     "${tools}/apksigner" sign $(signer k1) --next-signer $(signer k2) --lineage "${work}/lineage-${kind}" \
       --rotation-min-sdk-version 28 "${common[@]}" --out "${work}/B-${kind}.apk" "${base}"
   done
-  # F: the proposed release form: v2 AND v3 signed by the new key k2 only, the lineage in v3; the old
-  # key signs nothing but the lineage. Older Android sees only k2.
-  "${tools}/apksigner" sign $(signer k2) --lineage "${work}/lineage-strict" --min-sdk-version 24 \
-    "${common[@]}" --out "${work}/F-k2-lineage.apk" "${base}"
-  # G: an attacker's own move with the old key: lineage k1 -> k3, signed with k3.
+  # F: the proposed release form. apksigner refuses a v2 block by the new key next to a lineage ("v2
+  # signing enabled but the oldest signer in the SigningCertificateLineage is missing"), so the APK
+  # carries v3 only (Android 9+), signed by the new key k2 with the lineage; the old key signs only
+  # the lineage. Android 7-8 cannot verify it at all.
+  "${tools}/apksigner" sign $(signer k2) --lineage "${work}/lineage-strict" --min-sdk-version 28 \
+    --v2-signing-enabled false --v3-signing-enabled true "${common[@]}" --out "${work}/F-k2-lineage.apk" "${base}"
+  # G: an attacker's own move with the old key: lineage k1 -> k3, signed with k3, same form.
   "${tools}/apksigner" rotate --out "${work}/lineage-attacker" --old-signer $(signer k1) --set-rollback false --new-signer $(signer k3)
-  "${tools}/apksigner" sign $(signer k3) --lineage "${work}/lineage-attacker" --min-sdk-version 24 \
-    "${common[@]}" --out "${work}/G-k3-attacker-lineage.apk" "${base}"
+  "${tools}/apksigner" sign $(signer k3) --lineage "${work}/lineage-attacker" --min-sdk-version 28 \
+    --v2-signing-enabled false --v3-signing-enabled true "${common[@]}" --out "${work}/G-k3-attacker-lineage.apk" "${base}"
   # C: the old (exposed) key alone, after the rotation: what an attacker holding it could make.
   cp "${work}/A-k1.apk" "${work}/C-k1-only.apk"
   # D: a stranger's key. E: the new key alone, without the lineage.
