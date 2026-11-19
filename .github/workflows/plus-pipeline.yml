@@ -2,7 +2,8 @@ name: Nuvio Plus pipeline
 
 # Looks for new Nuvio releases and prepares a review branch and pull request for each one
 # (plus-sync.yml). It never changes custom-subtitles or plus-beta and never publishes.
-# GitHub runs schedules only from the default branch, so this file also lives there.
+# GitHub runs schedules only from the default branch, so this file also lives there; keep both
+# copies the same. No secrets are passed: the sync builds unreviewed Nuvio code.
 on:
   schedule:
     - cron: '23 2 * * *'
@@ -14,9 +15,11 @@ on:
         options: [stable, beta]
         default: stable
 
+# The most the sync may use; each of its jobs asks for less (see plus-sync.yml).
 permissions:
   contents: write
   pull-requests: write
+  statuses: write
 
 jobs:
   sync:
@@ -25,4 +28,3 @@ jobs:
     with:
       # Scheduled runs prepare stable Nuvio releases only; betas only when chosen by hand.
       channel: ${{ github.event_name == 'workflow_dispatch' && inputs.channel || 'stable' }}
-    secrets: inherit

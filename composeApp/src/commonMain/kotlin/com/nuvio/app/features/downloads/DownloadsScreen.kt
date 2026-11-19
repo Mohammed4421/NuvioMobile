@@ -373,7 +373,8 @@ private fun LazyListScope.downloadsSettingsContent(
 }
 
 private fun LazyListScope.seasonQueueContent(entries: List<SeasonQueueEntry>) {
-    // Episodes already downloading are listed with the other active downloads.
+    // Episodes already downloading are listed with the other active downloads. A paused one stays
+    // here too, so it is clear why the next episode waits (and it can be removed to skip it).
     val pending = entries.filter { it.state != SeasonQueueEntryState.Downloading }
     if (pending.isEmpty()) return
     item(key = "season-queue-title") {
@@ -432,6 +433,7 @@ private fun LazyListScope.seasonQueueContent(entries: List<SeasonQueueEntry>) {
                                 SeasonQueueEntryState.Searching -> Res.string.downloads_queue_searching
                                 SeasonQueueEntryState.Downloading -> Res.string.downloads_queue_downloading
                                 SeasonQueueEntryState.NeedsChoice -> Res.string.downloads_queue_needs_choice
+                                SeasonQueueEntryState.Paused -> Res.string.downloads_queue_paused
                             },
                         ),
                         style = MaterialTheme.typography.bodySmall,

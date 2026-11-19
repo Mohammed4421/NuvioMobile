@@ -31,13 +31,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Serializable
 enum class SeasonQueueEntryState {
@@ -47,11 +46,73 @@ enum class SeasonQueueEntryState {
     /** Looking for a source that matches the one picked for the first episode. */
     Searching,
 
-    /** Handed to the downloader; leaves the queue once that download stops running. */
+    /** Handed to the downloader; leaves the queue once that download finishes, fails or is deleted. */
     Downloading,
 
     /** No matching source was found; the user downloads it manually or retries. */
     NeedsChoice,
+
+    /**
+     * Its download was paused by the user (one episode, or "pause all"). It keeps its place and the
+     * next episode waits until it is resumed, removed from the queue, or deleted.
+     */
+    Paused,
+}
+
+/**
+ * The queue's decisions, kept free of the repositories it reads so they can be tested on their own.
+ */
+internal object SeasonQueuePolicy {
+    /**
+     * Brings the queue in line with the downloads. An episode handed to the downloader stays while its
+     * download runs (Downloading) or is paused (Paused), and leaves the queue once it is finished,
+     * failed or deleted. A search that is no longer running goes back to Waiting.
+     */
+    fun settle(
+        entries: List<SeasonQueueEntry>,
+        profileId: Int,
+        statusOf: (downloadId: String) -> DownloadStatus?,
+        searching: Set<String>,
+    ): List<SeasonQueueEntry> = entries.mapNotNull { entry ->
+        when (entry.state) {
+            // Only the active profile's downloads are loaded: another profile's episodes keep their
+            // state untouched until that profile is active again.
+            SeasonQueueEntryState.Downloading, SeasonQueueEntryState.Paused -> if (entry.profileId != profileId) entry else
+                when (entry.downloadId?.let(statusOf)) {
+                    DownloadStatus.Downloading -> entry.copy(state = SeasonQueueEntryState.Downloading)
+                    DownloadStatus.Paused -> entry.copy(state = SeasonQueueEntryState.Paused)
+                    else -> null
+                }
+            SeasonQueueEntryState.Searching ->
+                if (entry.id in searching) entry else entry.copy(state = SeasonQueueEntryState.Waiting)
+            else -> entry
+        }
+    }
+
+    /**
+     * True while one of the profile's episodes is searched, downloading or paused: its next one waits.
+     * Every profile has its own queue order; another profile's episodes never hold or start it.
+     */
+    fun busy(entries: List<SeasonQueueEntry>, profileId: Int, searching: Set<String>): Boolean =
+        entries.any { entry ->
+            entry.profileId == profileId && (
+                entry.id in searching ||
+                    entry.state == SeasonQueueEntryState.Downloading ||
+                    entry.state == SeasonQueueEntryState.Paused
+                )
+        }
+
+    /** The profile's next episode to look up, in queue order. */
+    fun next(entries: List<SeasonQueueEntry>, profileId: Int): SeasonQueueEntry? =
+        entries.firstOrNull { it.profileId == profileId && it.state == SeasonQueueEntryState.Waiting }
+
+    /** The episodes shown to the profile (its own only). */
+    fun visible(entries: List<SeasonQueueEntry>, profileId: Int): List<SeasonQueueEntry> =
+        entries.filter { it.profileId == profileId }
+
+    /** Queues saved before build 13 have no profile: they belong to the profile active when loaded. */
+    fun migrate(entries: List<SeasonQueueEntry>, activeProfileId: Int): List<SeasonQueueEntry> =
+        entries.map { if (it.profileId == null) it.copy(profileId = activeProfileId) else it }
 }
 
 /** The source the user picked for the first episode; later episodes look for the same release. */
@@ -81,6 +142,11 @@ data class SeasonQueueEntry(
     val reference: SeasonQueueReference,
     val state: SeasonQueueEntryState = SeasonQueueEntryState.Waiting,
     val downloadId: String? = null,
+    /**
+     * The profile whose downloads this episode goes to (downloads are kept per profile). Null only in
+     * queues saved before build 13; those are given the profile active when they are loaded.
+     */
+    val profileId: Int? = null,
 )
 
 enum class SeasonDownloadScope {
@@ -91,8 +157,6 @@ enum class SeasonDownloadScope {
     WholeSeason,
 }
 
-@Serializable
-private data class StoredSeasonQueue(val entries: List<SeasonQueueEntry> = emptyList())
 
 /**
  * Downloads a season one episode at a time. Each episode's source is looked up right before its
@@ -101,12 +165,19 @@ private data class StoredSeasonQueue(val entries: List<SeasonQueueEntry> = empty
  */
 object SeasonDownloadQueue {
     private const val storageKey = "season_queue"
+    /** Stored queue data that could not be read, kept instead of being overwritten (see SeasonQueueStorage). */
+    private const val unreadableKey = "season_queue_unreadable"
     private const val searchTimeoutMs = 90_000L
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    /** Every profile's episodes, in queue order (stored together, device-wide). */
     private val _entries = MutableStateFlow<List<SeasonQueueEntry>>(emptyList())
-    val entries: StateFlow<List<SeasonQueueEntry>> = _entries.asStateFlow()
+
+    /** The active profile's episodes, for the screens. */
+    private val _visible = MutableStateFlow<List<SeasonQueueEntry>>(emptyList())
+    val entries: StateFlow<List<SeasonQueueEntry>> = _visible.asStateFlow()
+
+    private val activeProfile: Int get() = ProfileRepository.activeProfileId
 
     private var started = false
     /** Running source searches, one per queue entry, so removing an entry stops only its own. */
@@ -125,13 +196,27 @@ object SeasonDownloadQueue {
     fun ensureStarted() {
         if (started) return
         started = true
-        _entries.value = DownloadsStorage.loadExtra(storageKey)
-            ?.let { runCatching { json.decodeFromString<StoredSeasonQueue>(it).entries }.getOrNull() }
-            .orEmpty()
+        val decoded = SeasonQueueStorage.decode(DownloadsStorage.loadExtra(storageKey))
+        if (decoded.unreadable.isNotEmpty()) {
+            // Kept, not dropped: the queue below would otherwise overwrite them on its first save.
+            DownloadsStorage.saveExtra(
+                unreadableKey,
+                SeasonQueueStorage.keepUnreadable(DownloadsStorage.loadExtra(unreadableKey), decoded.unreadable),
+            )
+        }
+        val loaded = decoded.entries
             // A search cut short by the app closing starts over.
             .map { if (it.state == SeasonQueueEntryState.Searching) it.copy(state = SeasonQueueEntryState.Waiting) else it }
+        update { SeasonQueuePolicy.migrate(loaded, activeProfile) }
         scope.launch {
             DownloadsRepository.uiState.collect { pump() }
+        }
+        scope.launch {
+            // A profile switch shows that profile's queue and moves it on, even when both profiles'
+            // download lists are equal (then the downloads above do not change). This runs after
+            // ProfileRepository.selectProfile returns (Dispatchers.Main posts it), so the new profile's
+            // downloads are loaded by then.
+            ProfileRepository.state.map { it.activeProfile?.profileIndex }.distinctUntilChanged().collect { pump() }
         }
         scope.launch {
             AppForegroundMonitor.events().collect { visibility ->
@@ -160,14 +245,10 @@ object SeasonDownloadQueue {
             }
         }
         while (true) {
-            val downloads = DownloadsRepository.uiState.value.items.associateBy { it.id }
-            val current = _entries.value
-            val busy = searchJobs.isNotEmpty() || current.any {
-                it.state == SeasonQueueEntryState.Downloading &&
-                    it.downloadId?.let(downloads::get)?.status == DownloadStatus.Downloading
-            }
-            if (busy || isNetworkOffline()) return false
-            val next = current.firstOrNull { it.state == SeasonQueueEntryState.Waiting } ?: return false
+            val current = settleWithDownloads()
+            // A paused episode holds the queue here too, so pausing never starts the next one.
+            if (SeasonQueuePolicy.busy(current, activeProfile, searchJobs.keys) || isNetworkOffline()) return false
+            val next = SeasonQueuePolicy.next(current, activeProfile) ?: return false
             if (trackSearch(next.id) { startEntry(next) }) return true
         }
     }
@@ -194,6 +275,8 @@ object SeasonDownloadQueue {
     ): Int {
         ensureStarted()
         DownloadsRepository.ensureLoaded()
+        // The profile the season is asked for; the episode list below may arrive after a switch.
+        val requestedProfile = activeProfile
         val reference = SeasonQueueReference(
             addonId = referenceStream.addonId,
             addonName = referenceStream.addonName,
@@ -204,6 +287,9 @@ object SeasonDownloadQueue {
             ?: runCatching { MetaDetailsRepository.fetch(parentMetaType, parentMetaId) }
                 .onFailure { if (it is CancellationException) throw it }
                 .getOrNull()
+        // Switched while the episode list loaded: the loaded downloads are another profile's, so
+        // nothing is queued (never into the profile now active, never checked against its downloads).
+        if (activeProfile != requestedProfile) return 0
         val seasonEpisodes = meta?.videos.orEmpty()
             .filter { it.season == seasonNumber && it.episode != null && it.available }
             .distinctBy { it.episode }
@@ -275,38 +361,46 @@ object SeasonDownloadQueue {
         pump()
     }
 
-    /** Drops every episode that has not started; running downloads keep going. */
+    /**
+     * Drops every episode of the active profile that has not started; running and paused downloads
+     * keep their place, and other profiles' queues are left alone.
+     */
     fun clear() {
         searchJobs.values.toList().forEach(Job::cancel)
         searchJobs.clear()
-        update { entries -> entries.filter { it.state == SeasonQueueEntryState.Downloading } }
+        update { entries ->
+            entries.filter {
+                it.profileId != activeProfile ||
+                    it.state == SeasonQueueEntryState.Downloading || it.state == SeasonQueueEntryState.Paused
+            }
+        }
         pump()
+    }
+
+    /** Applies [SeasonQueuePolicy.settle] to the stored queue and returns the result. */
+    private fun settleWithDownloads(): List<SeasonQueueEntry> {
+        val downloads = DownloadsRepository.uiState.value.items.associateBy { it.id }
+        val settled = SeasonQueuePolicy.settle(_entries.value, activeProfile, { downloads[it]?.status }, searchJobs.keys)
+        if (settled != _entries.value) update { settled } else refreshVisible()
+        return settled
     }
 
     private fun pump() {
         if (!started) return
-        val downloads = DownloadsRepository.uiState.value.items.associateBy { it.id }
-        // Episodes whose download stopped running (finished, failed, paused or deleted) leave the queue.
-        val settled = _entries.value
-            .filterNot { entry ->
-                entry.state == SeasonQueueEntryState.Downloading &&
-                    entry.downloadId?.let(downloads::get)?.status != DownloadStatus.Downloading
-            }
-            // A search whose job is gone (cancelled or interrupted) goes back to waiting.
-            .map { entry ->
-                if (entry.state == SeasonQueueEntryState.Searching && entry.id !in searchJobs) {
-                    entry.copy(state = SeasonQueueEntryState.Waiting)
-                } else entry
-            }
-        if (settled != _entries.value) update { settled }
-
-        val busy = searchJobs.isNotEmpty() || settled.any { it.state == SeasonQueueEntryState.Downloading }
-        if (busy) return
+        // After a profile switch, a search for the other profile's episode stops; it goes back to
+        // waiting in that profile's queue instead of downloading into this profile.
+        _entries.value.filter { it.profileId != activeProfile }.forEach { searchJobs.remove(it.id)?.cancel() }
+        val settled = settleWithDownloads()
+        // A search, a running download or a paused one holds the queue: pausing never starts the next.
+        if (SeasonQueuePolicy.busy(settled, activeProfile, searchJobs.keys)) return
         if (isNetworkOffline()) return
         // Android cannot start a download job from the background; the running job continues instead.
         if (!appVisible && !startsInBackground) return
-        val next = settled.firstOrNull { it.state == SeasonQueueEntryState.Waiting } ?: return
-        scope.launch {
+        val next = SeasonQueuePolicy.next(settled, activeProfile) ?: return
+        // Undispatched: the search is registered (and the entry marked Searching) before this returns,
+        // so a second pump in the same main-thread turn (a profile switch wakes two collectors) sees
+        // the queue busy instead of starting the same episode again.
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
             trackSearch(next.id) { startEntry(next) }
             pump()
         }
@@ -326,8 +420,11 @@ object SeasonDownloadQueue {
             emptyList()
         }
         for (candidate in candidates) {
+            // The profile was switched while searching: the episode waits for its own profile.
+            if (entry.profileId != activeProfile) return false
             if (safeHandOff(entry, candidate)) return true
         }
+        if (entry.profileId != activeProfile) return false
         setState(entry.id, SeasonQueueEntryState.NeedsChoice)
         return false
     }
@@ -373,8 +470,9 @@ object SeasonDownloadQueue {
             else -> null
         }
         if (playable == null) return false
-        // The episode may have been removed from the queue while its source was being resolved.
-        if (_entries.value.none { it.id == entry.id }) return false
+        // The episode may have been removed from the queue, or the profile switched, while its source
+        // was being resolved: never download it into another profile.
+        if (_entries.value.none { it.id == entry.id } || entry.profileId != activeProfile) return false
         val result = DownloadsRepository.enqueueFromStream(
             contentType = entry.contentType,
             videoId = entry.videoId,
@@ -458,7 +556,8 @@ object SeasonDownloadQueue {
 
     private fun isQueued(entry: SeasonQueueEntry): Boolean =
         _entries.value.any {
-            it.parentMetaId == entry.parentMetaId &&
+            it.profileId == entry.profileId &&
+                it.parentMetaId == entry.parentMetaId &&
                 it.seasonNumber == entry.seasonNumber &&
                 it.episodeNumber == entry.episodeNumber
         }
@@ -494,6 +593,7 @@ object SeasonDownloadQueue {
             episodeTitle = episodeTitle,
             episodeThumbnail = episodeThumbnail,
             reference = reference,
+            profileId = activeProfile,
         )
     }
 
@@ -504,7 +604,13 @@ object SeasonDownloadQueue {
     private fun update(transform: (List<SeasonQueueEntry>) -> List<SeasonQueueEntry>) {
         val updated = transform(_entries.value)
         _entries.value = updated
-        DownloadsStorage.saveExtra(storageKey, json.encodeToString(StoredSeasonQueue(updated)))
+        refreshVisible()
+        DownloadsStorage.saveExtra(storageKey, SeasonQueueStorage.encode(updated))
+    }
+
+    private fun refreshVisible() {
+        val visible = SeasonQueuePolicy.visible(_entries.value, activeProfile)
+        if (visible != _visible.value) _visible.value = visible
     }
 }
 

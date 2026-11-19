@@ -16,12 +16,17 @@ old="$(ls previous/*.apk | head -n 1)"
 
 package_of() { "${tools}/aapt2" dump badging "$1" | sed -n "s/^package: name='\([^']*\)'.*/\1/p"; }
 code_of() { "${tools}/aapt2" dump badging "$1" | sed -n "s/^package: .*versionCode='\([0-9]*\)'.*/\1/p"; }
-cert_of() { "${tools}/apksigner" verify --print-certs "$1" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p'; }
+# Read from the APK Signing Block; an empty result fails the check instead of comparing two blanks.
+cert_of() { python3 -I "$(dirname "$0")/apk-certs.py" --current "$1"; }
 
 "${tools}/apksigner" verify "${new}"
 new_package="$(package_of "${new}")"; old_package="$(package_of "${old}")"
 new_code="$(code_of "${new}")"; old_code="$(code_of "${old}")"
 new_cert="$(cert_of "${new}")"; old_cert="$(cert_of "${old}")"
+[[ "${new_cert}" =~ ^[0-9a-f]{64}$ && "${old_cert}" =~ ^[0-9a-f]{64}$ ]] \
+  || { echo "::error::Could not read the signing certificates (new '${new_cert}', previous '${old_cert}')"; exit 1; }
+[[ -n "${new_package}" && -n "${old_package}" && -n "${new_code}" && -n "${old_code}" ]] \
+  || { echo "::error::Could not read the package or version code of the APKs"; exit 1; }
 echo "previous ${previous_tag}: ${old_package} ${old_code} ${old_cert}"
 echo "new: ${new_package} ${new_code} ${new_cert}"
 
@@ -37,7 +42,7 @@ if [[ "${new_cert}" != "${old_cert}" ]]; then
   fi
 fi
 if (( status == 0 )); then
-  echo "- Update over ${previous_tag}: same package and signature, version code ${old_code} → ${new_code}." >> checks.md
+  echo "- Update over ${previous_tag}: same package and signing certificate (SHA-256 ${new_cert::16}…), version code ${old_code} → ${new_code}." >> checks.md
   echo "::notice::Update over ${previous_tag}: same package and signature, version code ${old_code} → ${new_code}."
 fi
 exit "${status}"

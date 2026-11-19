@@ -202,7 +202,7 @@
     {
       "id": "updater",
       "title": "In-app updates from the fork: stable/beta channels, ABI and signature checks",
-      "since": "Build 11 (channels and checks Build 13)",
+      "since": "Build 11 (channels and checks Build 12)",
       "files": [
         "commonMain/kotlin/com/nuvio/app/features/updater/PlusUpdates.kt",
         "commonMain/kotlin/com/nuvio/app/features/updater/AppUpdater.kt",
@@ -222,7 +222,8 @@
         "PlusUpdateChannelsTest",
         "PlusAppUpdaterControllerTest",
         "AppUpdaterControllerTest",
-        "UpdateArchiveCheckTest"
+        "UpdateArchiveCheckTest",
+        "UpdateArchiveCheckPackageManagerTest"
       ],
       "keywords": [
         "releases/latest",
@@ -239,12 +240,14 @@
       "files": [
         "androidApp/build.gradle.kts",
         "androidApp/src/main/AndroidManifest.xml",
-        "signing/nuvio-plus.p12"
+        "signing/nuvio-plus.p12",
+        ".github/plus/sign-apks.sh"
       ],
       "depends": [],
       "data": "everything: changing package or key means a reinstall",
       "tests": [
         "CI update check (package, certificate, version code)",
+        "CI sign job (same certificate as the previous build, v2 scheme)",
         "CI emulator update test"
       ],
       "keywords": [

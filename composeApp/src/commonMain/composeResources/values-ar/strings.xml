@@ -2548,6 +2548,7 @@
     <string name="downloads_queue_searching">يبحث عن مصدر مطابق…</string>
     <string name="downloads_queue_downloading">قيد التنزيل</string>
     <string name="downloads_queue_needs_choice">لا يوجد مصدر مطابق. أعد المحاولة أو نزّلها يدويًا.</string>
+    <string name="downloads_queue_paused">متوقف مؤقتًا: الحلقة التالية تنتظر حتى تستأنفه</string>
     <string name="downloads_queue_clear">إفراغ الطابور</string>
     <string name="downloads_queue_retry">إعادة المحاولة</string>
     <string name="downloads_queue_remove">حذف</string>
@@ -2604,4 +2605,6 @@
     <string name="updates_archive_other_app">الملف الذي نُزّل ليس تحديثًا لهذا التطبيق.</string>
     <string name="updates_archive_not_newer">التحديث الذي نُزّل ليس أحدث من النسخة المثبتة.</string>
     <string name="updates_archive_other_signer">التحديث الذي نُزّل موقّع بمفتاح مختلف ولا يمكنه استبدال هذا التطبيق.</string>
+    <string name="updates_archive_unsigned">التحديث الذي نُزّل لا يحمل توقيعًا يمكن قراءته، لذلك لم يُثبَّت.</string>
+    <string name="updates_archive_installed_unreadable">تعذّر على التطبيق قراءة توقيعه، لذلك لم يُثبَّت التحديث. ثبّته من صفحة الإصدار بدلًا من ذلك.</string>
 </resources>

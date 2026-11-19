@@ -2595,6 +2595,7 @@
     <string name="downloads_queue_searching">Finding a matching source…</string>
     <string name="downloads_queue_downloading">Downloading</string>
     <string name="downloads_queue_needs_choice">No matching source. Retry or download it manually.</string>
+    <string name="downloads_queue_paused">Paused: the next episode waits until you resume it</string>
     <string name="downloads_queue_clear">Clear queue</string>
     <string name="downloads_queue_retry">Retry</string>
     <string name="downloads_queue_remove">Remove</string>
@@ -2621,4 +2622,6 @@
     <string name="updates_archive_other_app">The downloaded file is not an update of this app.</string>
     <string name="updates_archive_not_newer">The downloaded update is not newer than the installed version.</string>
     <string name="updates_archive_other_signer">The downloaded update is signed with a different key and cannot replace this app.</string>
+    <string name="updates_archive_unsigned">The downloaded update carries no readable signature, so it was not installed.</string>
+    <string name="updates_archive_installed_unreadable">This app could not read its own signature, so the update was not installed. Install it from the release page instead.</string>
 </resources>

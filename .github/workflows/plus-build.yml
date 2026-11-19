@@ -1,9 +1,20 @@
 name: Nuvio Plus build and checks
 
-# Builds a commit, runs every check and, when asked, publishes the APKs. Nothing is published
-# unless the build, every unit test, the update check and the emulator tests pass. The unit tests of
-# the Nuvio release the commit is based on also run, only to tell inherited failures apart in the
-# report; they never excuse a failing test.
+# Builds a commit and runs every check on it. It never publishes: publishing is a separate job of
+# custom-android-build.yml that consumes the APKs signed and tested here.
+#
+# Trust boundaries:
+#   * Jobs that run Gradle or other code of the commit (build, plus-tests, nuvio-tests) get a
+#     read-only token, no stored Git credentials and no signing key.
+#   * Gradle signs with a throwaway key made in the build job. The sign job replaces that signature
+#     with the current public identity (signing/nuvio-plus.p12) without running Gradle. No job here
+#     receives a signing secret, because every job runs files of the commit being built.
+#   * The extra app settings (CUSTOM_LOCAL_PROPERTIES) are checked against a list of public setting
+#     names in the first step of the build job, before any code of the commit runs.
+#   * The SHA-256 manifest of the APKs travels in job outputs, which no other job can change, and is
+#     checked when the APKs are signed and again before they are published.
+#   * The result is reported as commit statuses (<status_prefix>/checks and /review), which only this
+#     repository's workflows can set; branch protection and the publish gate rely on them.
 on:
   workflow_call:
     inputs:
@@ -11,15 +22,6 @@ on:
         description: Commit to build
         required: true
         type: string
-      publish:
-        description: Publish a release when every check passes
-        required: true
-        type: boolean
-      note:
-        description: Extra line for the release notes
-        required: false
-        type: string
-        default: ''
       allow_key_change:
         description: Accept a new signing certificate (users then reinstall once)
         required: false
@@ -30,113 +32,368 @@ on:
         required: false
         type: string
         default: stable
+      full:
+        description: >-
+          Full validation (build, signing, update check, all unit tests, emulator). false runs only the
+          fast checks (policy and review records) and reports <prefix>/checks as pending, never success.
+        required: false
+        type: boolean
+        default: true
+      status_sha:
+        description: Commit to report the result on (the pull request head); empty reports nothing
+        required: false
+        type: string
+        default: ''
+      status_prefix:
+        description: Context prefix of the reported statuses
+        required: false
+        type: string
+        default: nuvio-plus
+    # No signing secret is accepted: every job here runs files of the commit being built.
+    secrets:
+      CUSTOM_LOCAL_PROPERTIES:
+        required: false
     outputs:
       build_number:
         value: ${{ jobs.build.outputs.build_number }}
+      manifest:
+        description: SHA-256 of signed.sha256, the digest list of the signed APKs
+        value: ${{ jobs.sign.outputs.manifest }}
+      certificate:
+        description: SHA-256 of the signing certificate
+        value: ${{ jobs.sign.outputs.certificate }}
 
 permissions:
-  contents: write
+  contents: read
+
+env:
+  CHANNEL: ${{ inputs.channel == 'beta' && 'beta' || 'stable' }}
 
 jobs:
   build:
     name: Build APKs
+    if: inputs.full
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     outputs:
       build_number: ${{ steps.number.outputs.build }}
+      manifest: ${{ steps.name.outputs.manifest }}
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Check the extra properties (before any code of the commit runs)
+        # First step on purpose: nothing of the commit has run, so nothing can have changed this
+        # step's environment. Only names of public app settings pass (all of them are compiled into
+        # the APK, so their values are public by nature). Anything else, signing settings or server
+        # secrets included, stops the build without printing a value. The secret goes no further:
+        # later steps get only the checked file.
+        env:
+          EXTRA: ${{ secrets.CUSTOM_LOCAL_PROPERTIES }}
+        run: |
+          allowed=" TRAKT_CLIENT_ID TRAKT_CLIENT_SECRET TRAKT_REDIRECT_URI SIMKL_CLIENT_ID SIMKL_REDIRECT_URI SIMKL_APP_NAME MDBLIST_CLIENT_ID PREMIUMIZE_CLIENT_ID TMDB_API_KEY SENTRY_DSN INTRODB_API_URL IMDB_RATINGS_API_BASE_URL IMDB_TAPFRAME_API_BASE_URL CONTRIBUTIONS_URL SUPPORTERS_WALL_URL DONATIONS_BASE_URL DONATIONS_DONATE_URL "
+          out="${RUNNER_TEMP}/extra.properties"
+          : > "${out}"
+          bad=""
+          while IFS= read -r line || [[ -n "${line}" ]]; do
+            line="${line%$'\r'}"
+            [[ -z "${line//[[:space:]]/}" || "${line}" =~ ^[[:space:]]*# ]] && continue
+            name="${line%%=*}"
+            name="${name//[[:space:]]/}"
+            if [[ "${line}" == *=* && "${name}" =~ ^[A-Z0-9_]+$ && "${allowed}" == *" ${name} "* ]]; then
+              printf '%s\n' "${line}" >> "${out}"
+            else
+              bad="${bad} ${name:-<unnamed>}"
+            fi
+          done <<< "${EXTRA}"
+          if [[ -n "${bad}" ]]; then
+            echo "::error::CUSTOM_LOCAL_PROPERTIES holds settings that must not reach the build:${bad}"
+            exit 1
+          fi
+          echo "Extra properties: $(cut -d= -f1 "${out}" | paste -sd' ' -)"
+
       - name: Check out
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ inputs.ref }}
+
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Build number
         id: number
         run: echo "build=$(bash .github/plus/next-build-number.sh)" >> "${GITHUB_OUTPUT}"
 
       - name: Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
           java-version: 17
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # Only publishing runs (pushes to custom-subtitles or plus-beta, reviewed code) write the Gradle
+          # cache. Pull requests and the sync (which builds unreviewed Nuvio code on the default branch)
+          # only read it, so they cannot plant anything a publishing build would reuse.
+          cache-read-only: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/custom-subtitles' || github.ref == 'refs/heads/plus-beta')) }}
 
-      - name: Prepare signing and properties
+      - name: Take the Sentry plugin from Maven Central
+        run: |
+          mkdir -p "${HOME}/.gradle/init.d"
+          cp ".github/plus/plugins-from-central.init.gradle" "${HOME}/.gradle/init.d/"
+
+      - name: Prepare properties (no signing settings)
         env:
-          CUSTOM_KEYSTORE_BASE64: ${{ secrets.CUSTOM_KEYSTORE_BASE64 }}
-          CUSTOM_KEYSTORE_PASSWORD: ${{ secrets.CUSTOM_KEYSTORE_PASSWORD }}
-          CUSTOM_KEY_ALIAS: ${{ secrets.CUSTOM_KEY_ALIAS }}
-          CUSTOM_LOCAL_PROPERTIES: ${{ secrets.CUSTOM_LOCAL_PROPERTIES }}
-          PLUS_CHANNEL: ${{ inputs.channel }}
-        run: bash .github/plus/prepare-build.sh "${{ steps.number.outputs.build }}"
+          BUILD: ${{ steps.number.outputs.build }}
+        run: PLUS_EXTRA_PROPERTIES="${RUNNER_TEMP}/extra.properties" bash .github/plus/prepare-build.sh "${BUILD}"
+
+      - name: Throwaway build key (not the release identity)
+        # Android's Gradle plugin refuses to package a release build without a key. Gradle gets a key
+        # made here and discarded with the job; the sign job replaces its signature with the release
+        # key, so the release key never meets Gradle.
+        run: |
+          password="$(openssl rand -hex 24)"
+          keytool -genkeypair -noprompt -storetype PKCS12 -keystore "${RUNNER_TEMP}/build-only.p12" \
+            -storepass "${password}" -keypass "${password}" -alias build-only -keyalg RSA -keysize 2048 \
+            -validity 2 -dname "CN=Nuvio Plus build-only key (replaced before publishing)"
+          {
+            echo "NUVIO_RELEASE_STORE_FILE=${RUNNER_TEMP}/build-only.p12"
+            echo "NUVIO_RELEASE_STORE_PASSWORD=${password}"
+            echo "NUVIO_RELEASE_KEY_ALIAS=build-only"
+            echo "NUVIO_RELEASE_KEY_PASSWORD=${password}"
+          } >> local.properties
 
       - name: Build APKs
+        env:
+          BUILD: ${{ steps.number.outputs.build }}
         run: |
           set -o pipefail
-          build="${{ steps.number.outputs.build }}"
           version="$(sed -n 's/^MARKETING_VERSION=//p' iosApp/Configuration/Version.xcconfig | tr -d '[:space:]')"
-          ./gradlew :androidApp:assembleFullRelease \
+          suffix=""
+          [[ "${CHANNEL}" == beta ]] && suffix="-beta"
+          # The runner has 16 GB: the repository's settings (Gradle 12 GB + a separate 8 GB Kotlin
+          # daemon) can starve it while R8 runs after a full compile. Kotlin compiles inside Gradle here.
+          bash .github/plus/gradle-retry.sh build.log ./gradlew :androidApp:assembleFullRelease \
+            -Dorg.gradle.jvmargs="-Xmx10g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m" \
+            -Pkotlin.compiler.execution.strategy=in-process \
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
             -Pnuvio.applicationIdSuffix=.plus \
-            -Pnuvio.customVersionCode=$((1000 + build)) \
-            -Pnuvio.customVersionName="${version}-plus.${build}$([[ "${{ inputs.channel }}" == beta ]] && echo -beta)" \
-            --stacktrace 2>&1 | tee build.log || {
-              grep -E "^e: " build.log | head -n 20 | sed 's/^/::error::/'
+            -Pnuvio.customVersionCode=$((1000 + BUILD)) \
+            -Pnuvio.customVersionName="${version}-plus.${BUILD}${suffix}" \
+            --stacktrace || {
+              # GitHub keeps at most 10 error annotations per step: the most telling lines come first.
+              { grep -E "^e: " build.log || true; } | head -n 5 | sed 's/^/::error::/'
+              { grep -oE "(Caused by|> Could not (GET|HEAD|resolve)|Received status code|status code [0-9]+|(Connect|Read) timed out|PKIX|SSLHandshake)[^\r]{0,200}" build.log || true; } \
+                | sort -u | head -n 4 | sed 's/^/::error::cause: /'
+              if grep -q "could not resolve plugin artifact\|Could not resolve\|Could not download" build.log; then
+                # Ask the repositories directly what they answer from this runner.
+                marker="io/sentry/android/gradle/io.sentry.android.gradle.gradle.plugin/6.14.0/io.sentry.android.gradle.gradle.plugin-6.14.0.pom"
+                for base in https://repo.maven.apache.org/maven2 https://plugins.gradle.org/m2; do
+                  code="$(curl -sS -o /dev/null -L -w '%{http_code} after %{time_total}s' "${base}/${marker}" 2>&1 || true)"
+                  echo "::error::repository ${base}: ${code}"
+                done
+              fi
+              { grep -A3 "What went wrong" build.log || true; } | head -n 2 | sed 's/^/::error::/'
+              { sudo dmesg 2>/dev/null | grep -iE "out of memory|oom-kill|killed process" || true; } | tail -n 5 | sed 's/^/::error::kernel: /'
+              free -m | sed -n 2p | sed 's/^/::error::memory: /'
               exit 1
             }
-          echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${build} (${{ inputs.channel }})." > checks.md
+          echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${BUILD} (${CHANNEL})." > checks-build.md
 
-      - name: Name the APKs
-        run: |
-          mkdir -p dist
-          for apk in androidApp/build/outputs/apk/full/release/*.apk; do
-            abi="$(basename "${apk}" .apk | sed -E 's/^androidApp-full-//; s/-release$//')"
-            cp "${apk}" "dist/NuvioPlus-build${{ steps.number.outputs.build }}-${abi}.apk"
-          done
-          ls -l dist
-
-      - name: Update check (signature, package, version)
+      - name: Name the APKs and list their digests
+        id: name
         env:
-          ALLOW_KEY_CHANGE: ${{ inputs.allow_key_change }}
-          PLUS_CHANNEL: ${{ inputs.channel }}
-        run: bash .github/plus/check-update-compat.sh dist/*arm64-v8a.apk
+          BUILD: ${{ steps.number.outputs.build }}
+        run: |
+          mkdir -p out
+          for apk in androidApp/build/outputs/apk/full/release/*.apk; do
+            abi="$(basename "${apk}" .apk | sed -E 's/^androidApp-full-//; s/-release(-unsigned)?$//')"
+            cp "${apk}" "out/NuvioPlus-build${BUILD}-${abi}.apk"
+          done
+          [[ "$(ls out/*.apk | wc -l)" -eq 4 ]] || {
+            echo "::error::Expected 4 APKs, found: $(ls androidApp/build/outputs/apk/full/release/ | tr '\n' ' ')"; exit 1; }
+          cp checks-build.md out/
+          (cd out && sha256sum *.apk > built.sha256)
+          cat out/built.sha256
+          echo "manifest=$(sha256sum out/built.sha256 | cut -c1-64)" >> "${GITHUB_OUTPUT}"
 
-      - name: Keep the APKs and checks
-        uses: actions/upload-artifact@v7
+      - name: Keep the APKs to sign
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: nuvio-plus-apk
-          path: |
-            dist/*.apk
-            checks.md
+          name: nuvio-plus-built
+          path: out
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 3
 
       - name: Keep the logs
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: nuvio-plus-logs
           path: build.log
           if-no-files-found: ignore
           retention-days: 14
 
-  plus-tests:
-    name: Unit tests of Nuvio Plus
-    timeout-minutes: 45
-    runs-on: ubuntu-latest
+  sign:
+    name: Sign APKs (no Gradle, no secret)
+    needs: build
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      manifest: ${{ steps.sign.outputs.manifest }}
+      certificate: ${{ steps.sign.outputs.certificate }}
+    steps:
+      - name: Check out the signing script and public key only
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ inputs.ref }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            .github/plus/sign-apks.sh
+            .github/plus/apk-certs.py
+            signing/nuvio-plus.p12
+
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          trap 'echo "::error::Failed (line ${LINENO}): ${BASH_COMMAND}"' ERR
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Get the APKs to sign
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuvio-plus-built
+          path: built
+
+      - name: Check they are the APKs the build made
+        env:
+          EXPECTED: ${{ needs.build.outputs.manifest }}
+        run: |
+          trap 'echo "::error::Failed (line ${LINENO}): ${BASH_COMMAND}"' ERR
+          [[ "$(sha256sum built/built.sha256 | cut -c1-64)" == "${EXPECTED}" ]] \
+            || { echo "::error::The APK list does not match the build output"; exit 1; }
+          (cd built && sha256sum --check --strict built.sha256)
+          [[ "$(ls built/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; exit 1; }
+
+      - name: Sign with the current public identity (no secret)
+        id: sign
+        run: |
+          trap 'echo "::error::Failed (line ${LINENO}): ${BASH_COMMAND}"' ERR
+          certificate="$(bash .github/plus/sign-apks.sh built signed signing/nuvio-plus.p12 2> sign.log)" || {
+            tail -n 40 sign.log | sed 's/^/::error::/'; exit 1; }
+          cat sign.log
+          [[ "${certificate}" =~ ^[0-9a-f]{64}$ ]] || { echo "::error::No signing certificate"; exit 1; }
+          cp built/checks-build.md signed/
+          (cd signed && sha256sum *.apk > signed.sha256)
+          cat signed/signed.sha256
+          echo "Signing certificate SHA-256: ${certificate}"
+          echo "certificate=${certificate}" >> "${GITHUB_OUTPUT}"
+          echo "manifest=$(sha256sum signed/signed.sha256 | cut -c1-64)" >> "${GITHUB_OUTPUT}"
+
+      - name: Keep the signed APKs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuvio-plus-apk
+          path: signed
+          if-no-files-found: error
+          retention-days: 14
+
+  update-check:
+    name: Update check (signature, package, version)
+    needs: sign
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check out
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ inputs.ref }}
 
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Get the signed APKs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuvio-plus-apk
+          path: dist
+
+      - name: Compare with the latest published build
+        env:
+          ALLOW_KEY_CHANGE: ${{ inputs.allow_key_change }}
+          PLUS_CHANNEL: ${{ env.CHANNEL }}
+        run: |
+          mkdir -p result && cd result
+          bash ../.github/plus/check-update-compat.sh ../dist/*arm64-v8a.apk
+          mv checks.md checks-update.md
+
+      - name: Keep the result
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuvio-plus-update-check
+          path: result/checks-update.md
+          if-no-files-found: error
+          retention-days: 14
+
+  plus-tests:
+    name: Unit tests of Nuvio Plus
+    if: inputs.full
+    timeout-minutes: 45
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      failed: ${{ steps.tests.outputs.failed }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
       - name: Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
           # Robolectric needs Java 21 for its Android 15 and 16 tests.
@@ -145,71 +402,114 @@ jobs:
             21
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # Only publishing runs (pushes to custom-subtitles or plus-beta, reviewed code) write the Gradle
+          # cache. Pull requests and the sync (which builds unreviewed Nuvio code on the default branch)
+          # only read it, so they cannot plant anything a publishing build would reuse.
+          cache-read-only: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/custom-subtitles' || github.ref == 'refs/heads/plus-beta')) }}
+
+      - name: Take the Sentry plugin from Maven Central
+        run: |
+          mkdir -p "${HOME}/.gradle/init.d"
+          cp ".github/plus/plugins-from-central.init.gradle" "${HOME}/.gradle/init.d/"
 
       - name: Unit tests (all of them)
+        id: tests
         env:
           GH_TOKEN: ${{ github.token }}
-          PLUS_CHANNEL: ${{ inputs.channel }}
+          PLUS_CHANNEL: ${{ env.CHANNEL }}
         run: |
-          # Exactly the settings of the published build, Nuvio Plus updater source included.
+          # The settings of the published build, Nuvio Plus updater source included (no secrets).
           bash .github/plus/prepare-build.sh "$(bash .github/plus/next-build-number.sh)"
           grep '^PLUS_' local.properties
-          timeout 30m ./gradlew :composeApp:testAndroidHostTest \
+          bash .github/plus/gradle-retry.sh tests.log timeout 30m ./gradlew :composeApp:testAndroidHostTest \
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
-            --continue > tests.log 2>&1 || true
+            --continue > /dev/null || true
           tail -n 30 tests.log
           grep -q "BUILD SUCCESSFUL\|There were failing tests" tests.log || {
             grep -E "^e: |What went wrong" -A2 tests.log | head -n 20 | sed 's/^/::error::/'
             echo "::error::Unit tests did not finish (timeout or build error)"; exit 1
           }
           python3 .github/plus/test-results.py composeApp/build/test-results plus-tests.json
+          echo "failed=$(python3 -c 'import json; print(len(json.load(open("plus-tests.json"))["failed"]))')" >> "${GITHUB_OUTPUT}"
 
       - name: Keep the results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: plus-tests
           path: plus-tests.json
           if-no-files-found: error
           retention-days: 14
 
+      - name: Profile-race scenarios of the season queue
+        # r1-r8 (.github/plus/queue-race-harness): the real SeasonDownloadQueue.kt, compiled with the
+        # app's Kotlin and kotlinx-coroutines from the Gradle cache the unit tests filled, against test
+        # doubles of its dependencies. Any failing scenario fails this job.
+        run: |
+          set +e
+          bash .github/plus/queue-race-harness/run.sh > queue-race.log 2>&1
+          status=$?
+          set -e
+          cat queue-race.log
+          { echo "### Season queue: profile-race scenarios"; echo '```'; cat queue-race.log; echo '```'; } >> "${GITHUB_STEP_SUMMARY}"
+          if [[ "${status}" != 0 ]]; then echo "::error::Profile-race scenarios failed (queue-race.log)"; exit 1; fi
+
       - name: Keep the log
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: plus-tests-log
-          path: tests.log
+          path: |
+            tests.log
+            queue-race.log
           if-no-files-found: ignore
           retention-days: 14
 
   nuvio-tests:
     name: Unit tests of the Nuvio release it is based on
+    # Diagnosis only: labels each failing Nuvio Plus test as inherited from Nuvio or new. It runs only
+    # when a Nuvio Plus test fails; either way every Nuvio Plus test must pass.
+    needs: plus-tests
+    if: needs.plus-tests.result == 'success' && needs.plus-tests.outputs.failed != '0'
     timeout-minutes: 45
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     outputs:
       tag: ${{ steps.base.outputs.tag }}
     steps:
       - name: Check out
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ inputs.ref }}
           fetch-depth: 0
+
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
 
       - name: Find the Nuvio release
         id: base
         run: |
           git remote add upstream https://github.com/NuvioMedia/NuvioMobile.git
           git fetch --quiet --tags upstream
-          cp .github/plus/select-upstream-tag.py "${RUNNER_TEMP}/"
+          cp .github/plus/select-upstream-tag.py .github/plus/test-results.py .github/plus/gradle-retry.sh .github/plus/plugins-from-central.init.gradle "${RUNNER_TEMP}/"
           tag="$(git tag --merged HEAD | python3 "${RUNNER_TEMP}/select-upstream-tag.py" beta)"
           [[ -n "${tag}" ]] || { echo "::error::No Nuvio release found in this commit"; exit 1; }
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
-          cp .github/plus/test-results.py "${RUNNER_TEMP}/"
           git checkout --quiet "${tag}"
 
       - name: Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
           java-version: |
@@ -217,20 +517,30 @@ jobs:
             21
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # Only publishing runs (pushes to custom-subtitles or plus-beta, reviewed code) write the Gradle
+          # cache. Pull requests and the sync (which builds unreviewed Nuvio code on the default branch)
+          # only read it, so they cannot plant anything a publishing build would reuse.
+          cache-read-only: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/custom-subtitles' || github.ref == 'refs/heads/plus-beta')) }}
+
+      - name: Take the Sentry plugin from Maven Central
+        run: |
+          mkdir -p "${HOME}/.gradle/init.d"
+          cp "${RUNNER_TEMP}/plugins-from-central.init.gradle" "${HOME}/.gradle/init.d/"
 
       - name: Unit tests
         run: |
           touch local.properties
-          timeout 30m ./gradlew :composeApp:testAndroidHostTest \
+          bash "${RUNNER_TEMP}/gradle-retry.sh" tests.log timeout 30m ./gradlew :composeApp:testAndroidHostTest \
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
-            --continue > tests.log 2>&1 || true
+            --continue > /dev/null || true
           tail -n 30 tests.log
           python3 "${RUNNER_TEMP}/test-results.py" composeApp/build/test-results nuvio-tests.json
 
       - name: Keep the results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: nuvio-tests
           path: nuvio-tests.json
@@ -241,61 +551,157 @@ jobs:
     name: All unit tests pass
     timeout-minutes: 10
     needs: [plus-tests, nuvio-tests]
-    runs-on: ubuntu-latest
+    # The Nuvio baseline is skipped when no Nuvio Plus test failed; anything else stops here.
+    if: >-
+      always() && needs.plus-tests.result == 'success'
+      && (needs.nuvio-tests.result == 'success' || (needs.nuvio-tests.result == 'skipped' && needs.plus-tests.outputs.failed == '0'))
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     steps:
       - name: Check out
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ inputs.ref }}
 
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
       - name: Get the results
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: '*-tests'
           merge-multiple: true
           path: results
 
       - name: Compare
-        run: python3 .github/plus/test-gate.py results/plus-tests.json results/nuvio-tests.json "${{ needs.nuvio-tests.outputs.tag }}"
+        env:
+          NUVIO_TAG: ${{ needs.nuvio-tests.outputs.tag }}
+        run: python3 .github/plus/test-gate.py results/plus-tests.json results/nuvio-tests.json "${NUVIO_TAG}"
 
       - name: Keep the summary
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: nuvio-plus-gate
           path: checks-tests.md
           if-no-files-found: error
           retention-days: 14
 
+  policy-tests:
+    name: Tests of the review gate and release scripts
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Run
+        run: |
+          python3 -I -c "import yaml" 2>/dev/null || sudo apt-get install -y -qq python3-yaml
+          python3 -I -m unittest discover -s .github/plus/tests -v
+
+  review-records:
+    name: Nuvio merge reviews complete
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Check the review records
+        run: |
+          git fetch --quiet --no-tags https://github.com/NuvioMedia/NuvioMobile.git '+refs/tags/*:refs/tags/*'
+          python3 .github/plus/review-gate.py records
+
   emulator:
     name: Install, update and launch on an emulator
     timeout-minutes: 30
-    needs: [build, test-gate]
-    runs-on: ubuntu-latest
+    needs: [sign, update-check, test-gate]
+    # Explicit: the Nuvio baseline (an ancestor through test-gate) is skipped when no test fails, and
+    # GitHub skips every job below a skipped one unless its condition says otherwise.
+    if: >-
+      always() && needs.sign.result == 'success' && needs.update-check.result == 'success'
+      && needs.test-gate.result == 'success'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check out
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ inputs.ref }}
 
-      - name: Get the new APKs
-        uses: actions/download-artifact@v8
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Get the signed APKs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: nuvio-plus-apk
           path: dist
 
       - name: Get the previous build
         id: previous
+        env:
+          PLUS_CHANNEL: ${{ env.CHANNEL }}
+          ALLOW_KEY_CHANGE: ${{ inputs.allow_key_change }}
         run: |
-          tag="$(PLUS_CHANNEL="${{ inputs.channel }}" bash .github/plus/previous-release.sh)"
+          tag="$(bash .github/plus/previous-release.sh)"
           apk=""
-          if [[ -n "${tag}" && "${{ inputs.allow_key_change }}" != "true" ]]; then
+          if [[ -n "${tag}" && "${ALLOW_KEY_CHANGE}" != "true" ]]; then
             gh release download "${tag}" --repo "${GITHUB_REPOSITORY}" --dir previous --pattern '*x86_64*.apk' --clobber
             apk="$(ls previous/*.apk | head -n 1)"
           fi
           echo "apk=${apk}" >> "${GITHUB_OUTPUT}"
-          # The artifact keeps its dist/ folder: the APKs land in dist/dist/.
           new="$(find dist -name '*x86_64*.apk' | head -n 1)"
           [[ -n "${new}" ]] || { echo "::error::No x86_64 APK in the build artifact"; ls -R dist; exit 1; }
           echo "new=${new}" >> "${GITHUB_OUTPUT}"
@@ -307,17 +713,20 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Emulator test
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          PREVIOUS_APK: ${{ steps.previous.outputs.apk }}
+          NEW_APK: ${{ steps.previous.outputs.new }}
         with:
           api-level: 34
           arch: x86_64
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
-          script: bash .github/plus/emulator-update-test.sh "${{ steps.previous.outputs.apk }}" "${{ steps.previous.outputs.new }}"
+          script: bash .github/plus/emulator-update-test.sh "$PREVIOUS_APK" "$NEW_APK"
 
       - name: Keep the emulator result
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: nuvio-plus-emulator
           path: checks-emulator.md
@@ -326,7 +735,7 @@ jobs:
 
       - name: Keep the emulator log
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: emulator-log
           path: |
@@ -336,98 +745,43 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  review-gate:
-    name: Nuvio merge reviews approved
-    if: inputs.publish
-    runs-on: ubuntu-latest
+  report:
+    name: Report the result on the commit
+    needs: [build, sign, update-check, plus-tests, nuvio-tests, test-gate, policy-tests, review-records, emulator]
+    if: always() && inputs.status_sha != ''
     timeout-minutes: 5
-    steps:
-      - name: Check out
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ inputs.ref }}
-          fetch-depth: 0
-
-      - name: Check the review records
-        run: python3 .github/plus/review-gate.py
-
-  publish:
-    name: Publish
-    timeout-minutes: 15
-    needs: [build, test-gate, emulator, review-gate]
-    if: inputs.publish
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    permissions:
+      statuses: write
     env:
       GH_TOKEN: ${{ github.token }}
+      NEEDS: ${{ toJSON(needs) }}
+      FULL: ${{ inputs.full }}
+      SHA: ${{ inputs.status_sha }}
+      PREFIX: ${{ inputs.status_prefix }}
     steps:
-      - name: Check out
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ inputs.ref }}
-
-      - name: Get the tested APKs
-        uses: actions/download-artifact@v8
-        with:
-          pattern: nuvio-plus-{apk,emulator,gate}
-          merge-multiple: true
-          path: dist
-
-      - name: Publish release
-        env:
-          PLUS_CHANNEL: ${{ inputs.channel }}
+      - name: Set the commit statuses
         run: |
-          find dist -mindepth 2 -name '*.apk' -exec mv -t dist {} +
-          ls -l dist
-          [[ "$(ls dist/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; exit 1; }
-          bash .github/plus/publish-release.sh "${{ needs.build.outputs.build_number }}" "$(git rev-parse HEAD)" dist "${{ inputs.note }}"
-
-  report-failure:
-    name: Report a failed build
-    timeout-minutes: 10
-    needs: [build, plus-tests, nuvio-tests, test-gate, emulator, review-gate]
-    if: failure() && inputs.publish
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - name: Check out
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ inputs.ref }}
-
-      - name: Get the logs
-        uses: actions/download-artifact@v8
-        continue-on-error: true
-        with:
-          pattern: '*log*'
-          merge-multiple: true
-          path: logs
-
-      - name: Publish the errors as a pre-release
-        run: |
-          build="${{ needs.build.outputs.build_number }}"
-          build="${build:-run${GITHUB_RUN_NUMBER}}"
-          sha="${{ inputs.ref }}"
-          {
-            echo "Build ${build} at \`${sha::7}\` did not pass its checks, so nothing was published. The previous build stays current."
-            echo
-            echo "Build: ${{ needs.build.result }} · Nuvio Plus tests: ${{ needs.plus-tests.result }} · Nuvio tests: ${{ needs.nuvio-tests.result }} · Test gate: ${{ needs.test-gate.result }} · Emulator: ${{ needs.emulator.result }} · Reviews: ${{ needs.review-gate.result }}"
-            echo
-            echo "Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-            echo
-            echo '```'
-            cat logs/build.log logs/tests.log 2>/dev/null \
-              | grep -E "^e: |error:|What went wrong|Execution failed|Unresolved reference|FAILED|> Task .*FAILED|AssertionError" -A3 \
-              | head -c 60000 || true
-            echo '```'
-            if [[ -f logs/emulator.log ]]; then
-              echo
-              echo "Emulator log (end):"
-              echo '```'
-              tail -n 80 logs/emulator.log
-              echo '```'
-            fi
-          } > errors.md
-          gh release delete "build-failed-${build}" --repo "${GITHUB_REPOSITORY}" --yes --cleanup-tag > /dev/null 2>&1 || true
-          gh release create "build-failed-${build}" --repo "${GITHUB_REPOSITORY}" --target "${sha}" \
-            --prerelease --title "Build ${build} failed its checks" --notes-file errors.md
+          [[ "${SHA}" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::status_sha is not a commit id"; exit 1; }
+          url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          review="$(jq -r '."review-records".result' <<< "${NEEDS}")"
+          if [[ "${FULL}" == true ]]; then
+            # Every check must pass; the Nuvio baseline may be skipped only because no Nuvio Plus test failed
+            # (test-gate then passes on its own conditions).
+            failed="$(jq -r 'to_entries[] | select(.key != "review-records")
+              | select(.value.result != "success" and (.key != "nuvio-tests" or .value.result != "skipped")) | .key' <<< "${NEEDS}" | paste -sd, -)"
+            checks_state=success; checks_text="Build, signing, update check, all tests and emulator passed"
+            [[ -z "${failed}" ]] || { checks_state=failure; checks_text="Not passed: ${failed}"; }
+          else
+            # Fast checks only: never success, so a pull request cannot be merged on them.
+            fast="$(jq -r '."policy-tests".result' <<< "${NEEDS}")"
+            checks_state=pending; checks_text="Fast checks passed; full validation runs when the pull request is ready for review"
+            [[ "${fast}" == success ]] || { checks_state=failure; checks_text="Fast checks failed (policy tests: ${fast})"; }
+          fi
+          review_state=success; review_text="Nuvio merge reviews complete"
+          [[ "${review}" == success ]] || { review_state=failure; review_text="Nuvio merge review not complete (${review})"; }
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/statuses/${SHA}" -f state="${checks_state}" \
+            -f context="${PREFIX}/checks" -f description="${checks_text:0:140}" -f target_url="${url}" > /dev/null
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/statuses/${SHA}" -f state="${review_state}" \
+            -f context="${PREFIX}/review" -f description="${review_text:0:140}" -f target_url="${url}" > /dev/null
+          echo "${PREFIX}/checks: ${checks_state} · ${PREFIX}/review: ${review_state} on ${SHA::8}"

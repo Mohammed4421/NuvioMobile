@@ -37,11 +37,11 @@ lines = [
     f"# Review: Nuvio {tag} into `{target}`",
     "",
     "status: pending",
-    "tested_commit: ",
-    "approved_by: ",
     "",
-    "<!-- Approve by setting status: approved, the commit whose checks passed, your name, and ticking",
-    "every box with the decision written after it. Publishing is blocked while any box is open. -->",
+    "<!-- Review in the pull request: write each decision after its box and tick it, then set",
+    "status: approved (or rejected). The approval counts only when the owner merges the pull request",
+    "with the nuvio-plus/checks and nuvio-plus/review statuses green; the publish gate confirms that",
+    "with GitHub. Deleting this file does not skip the review. -->",
     "",
     f"Nuvio `{git('rev-parse', '--short', nuvio_ref).strip()}` · common base `{base[:8]}` · "
     f"{len(nuvio_files)} files changed by Nuvio, {len(plus_files & nuvio_files)} of them also by Nuvio Plus.",
@@ -81,7 +81,8 @@ for feature in features:
 if feature_lines:
     lines += ["## Nuvio Plus features touched by this release", "", *feature_lines]
 
-ci = sorted(p for p in nuvio_files if p.startswith(".github/"))
+# Not applied by the sync: Nuvio code must not change Nuvio Plus CI, the review gate or signing.
+ci = sorted(p for p in nuvio_files if p.startswith((".github/", "signing/")))
 build = sorted(p for p in nuvio_files if re.search(r"(\.gradle\.kts|gradle/libs\.versions\.toml|gradle\.properties)$", p))
 if ci or build:
     lines += ["## Nuvio CI and build files", ""]
@@ -98,7 +99,7 @@ if gaps:
     lines += ["## Registry gaps (Plus files without a feature entry)", "", *[f"- `{p}`" for p in gaps], ""]
 
 if not items:
-    lines += ["No overlap with Nuvio Plus. Tick nothing; set status and tested_commit after the checks pass.", ""]
+    lines += ["No overlap with Nuvio Plus. Nothing to tick; set status: approved once the checks pass.", ""]
 
 open(out, "w").write("\n".join(lines))
 print("\n".join(lines))

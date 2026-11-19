@@ -1,23 +1,39 @@
 name: Nuvio Plus checks
 
-# Every check of a publishing build, on fix and review branches, without publishing anything.
+# Checks of pull requests into custom-subtitles and plus-beta, reported on the pull request head as
+# nuvio-plus/checks and nuvio-plus/review (the statuses branch protection and the publish gate require).
+#   * Draft pull request: fast validation only (policy, security and review-record tests, seconds).
+#     nuvio-plus/checks stays pending, never success, so a draft cannot be merged on it.
+#   * Ready for review (and every later push), or a manual run: full validation, every check of a
+#     publishing build (build, signing, update check, all unit tests, emulator), nothing published.
+# Pushes alone start nothing (a branch with an open pull request would run everything twice), and a
+# newer commit cancels the run of the older one. Review pull requests opened by the sync are checked by
+# the sync itself.
+# No secrets are passed and the token cannot write code: a pull request from a review branch with
+# unreviewed Nuvio code cannot reach the signing key or the repository. pull_request_target is not
+# used on purpose.
 on:
-  push:
-    branches: ['plus-fix/**', 'plus-review/**']
+  pull_request:
+    branches: [custom-subtitles, plus-beta]
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 concurrency:
-  group: plus-ci-${{ github.ref }}
+  group: plus-ci-${{ github.event_name }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   checks:
+    permissions:
+      contents: read
+      statuses: write
     uses: ./.github/workflows/plus-build.yml
     with:
       ref: ${{ github.sha }}
-      publish: false
-      channel: ${{ contains(github.ref_name, 'beta') && 'beta' || 'stable' }}
-    secrets: inherit
+      channel: ${{ (github.base_ref == 'plus-beta' || (github.event_name != 'pull_request' && contains(github.ref_name, 'beta'))) && 'beta' || 'stable' }}
+      full: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
+      status_sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      status_prefix: ${{ github.event_name == 'pull_request' && 'nuvio-plus' || 'nuvio-plus/push' }}
