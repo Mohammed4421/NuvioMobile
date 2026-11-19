@@ -14,7 +14,9 @@ Newest first.
 - **Each profile has its own season queue.** Switching profiles while a season was downloading
   could drop the running episode from the queue and download the next one into the other profile's
   downloads. Every profile now keeps and continues only its own queue. Queues saved by earlier builds
-  are kept.
+  are kept. Switching profiles while "download season" is still loading the episode list queues
+  nothing (it used to queue the season into the profile switched to), and a profile switch no longer
+  starts the same episode twice, which restarted its download.
 - **The season queue is no longer lost by a damaged entry.** It is read entry by entry, and anything
   unreadable is kept aside instead of erasing the queue. The queue is also stored so that earlier
   builds can still read it.
