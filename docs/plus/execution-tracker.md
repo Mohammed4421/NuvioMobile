@@ -903,5 +903,7 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   14-…-10818077-i7, 9-…-4913185-2-i7, 8.0.0_r4-…-r1-i7), while pull request runs of the same code
   passed. Robolectric's own downloader has no retry and its failure cause is not shown.
 - **Change:** `composeApp/build.gradle.kts` resolves those jars with Gradle and hands them to
-  Robolectric through `robolectric-deps.properties`; other versions still use Robolectric's
-  downloader. No test is skipped or made optional.
+  Robolectric through `robolectric-deps.properties`, one Gradle configuration per version (in one
+  configuration Gradle keeps only the highest version). With that file Robolectric uses nothing else,
+  so it lists every version the tests use (SDK 26, 28, 34, 36; checked when the file is written).
+  No test is skipped or made optional.

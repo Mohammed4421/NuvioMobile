@@ -586,22 +586,26 @@ composeCompiler {
 
 // Nuvio Plus: Robolectric's Android jars through Gradle (its repositories, cache and retries) rather
 // than Robolectric's own downloader, which failed on the publishing runs ("Failed to fetch maven
-// artifact org.robolectric:android-all-instrumented:…", 73 test classes, run 44537630817). Robolectric
-// reads robolectric-deps.properties first and falls back to its downloader for any other version.
-val robolectricAndroidJars: Configuration by configurations.creating {
-    isCanBeConsumed = false
-    isTransitive = false
-}
-dependencies {
-    listOf(
-        "8.0.0_r4-robolectric-r1-i7",
-        "9-robolectric-4913185-2-i7",
-        "14-robolectric-10818077-i7",
-    ).forEach { version -> robolectricAndroidJars("org.robolectric:android-all-instrumented:$version") }
+// artifact org.robolectric:android-all-instrumented:…", 73 test classes, run 44537630817). With
+// robolectric-deps.properties present Robolectric uses only it, so it lists every Android version the
+// tests run on: @Config(sdk = 26, 28, 34, 36), 36 also being the default. One configuration per
+// version: in a single one Gradle would keep only the highest version of the same module.
+val robolectricAndroidVersions = mapOf(
+    26 to "8.0.0_r4-robolectric-r1-i7",
+    28 to "9-robolectric-4913185-2-i7",
+    34 to "14-robolectric-10818077-i7",
+    36 to "16-robolectric-13921718-i7",
+)
+val robolectricAndroidJars: List<Configuration> = robolectricAndroidVersions.map { (sdk, version) ->
+    configurations.create("robolectricAndroidJar$sdk") {
+        isCanBeConsumed = false
+        isTransitive = false
+    }.also { dependencies.add(it.name, "org.robolectric:android-all-instrumented:$version") }
 }
 val robolectricDepsFile = layout.buildDirectory.file("robolectric/robolectric-deps.properties")
 val writeRobolectricDeps = tasks.register("writeRobolectricDeps") {
-    val jars: FileCollection = robolectricAndroidJars
+    val jars: FileCollection = files(robolectricAndroidJars)
+    val expected = robolectricAndroidVersions.values.sorted()
     val output = robolectricDepsFile
     inputs.files(jars).withPropertyName("jars")
     outputs.file(output)
@@ -611,6 +615,8 @@ val writeRobolectricDeps = tasks.register("writeRobolectricDeps") {
             val version = jar.name.removePrefix("android-all-instrumented-").removeSuffix(".jar")
             properties.setProperty("org.robolectric:android-all-instrumented:$version", jar.absolutePath)
         }
+        val found = properties.stringPropertyNames().map { it.substringAfterLast(':') }.sorted()
+        check(found == expected) { "Robolectric jars: expected $expected, resolved $found" }
         val file = output.get().asFile
         file.parentFile.mkdirs()
         file.outputStream().use { properties.store(it, "Robolectric Android jars resolved by Gradle") }
