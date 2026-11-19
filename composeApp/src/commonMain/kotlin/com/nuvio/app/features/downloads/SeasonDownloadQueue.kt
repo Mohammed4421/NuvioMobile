@@ -37,9 +37,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Serializable
 enum class SeasonQueueEntryState {
@@ -160,8 +157,6 @@ enum class SeasonDownloadScope {
     WholeSeason,
 }
 
-@Serializable
-private data class StoredSeasonQueue(val entries: List<SeasonQueueEntry> = emptyList())
 
 /**
  * Downloads a season one episode at a time. Each episode's source is looked up right before its
@@ -170,8 +165,9 @@ private data class StoredSeasonQueue(val entries: List<SeasonQueueEntry> = empty
  */
 object SeasonDownloadQueue {
     private const val storageKey = "season_queue"
+    /** Stored queue data that could not be read, kept instead of being overwritten (see SeasonQueueStorage). */
+    private const val unreadableKey = "season_queue_unreadable"
     private const val searchTimeoutMs = 90_000L
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     /** Every profile's episodes, in queue order (stored together, device-wide). */
@@ -200,9 +196,15 @@ object SeasonDownloadQueue {
     fun ensureStarted() {
         if (started) return
         started = true
-        val loaded = DownloadsStorage.loadExtra(storageKey)
-            ?.let { runCatching { json.decodeFromString<StoredSeasonQueue>(it).entries }.getOrNull() }
-            .orEmpty()
+        val decoded = SeasonQueueStorage.decode(DownloadsStorage.loadExtra(storageKey))
+        if (decoded.unreadable.isNotEmpty()) {
+            // Kept, not dropped: the queue below would otherwise overwrite them on its first save.
+            DownloadsStorage.saveExtra(
+                unreadableKey,
+                SeasonQueueStorage.keepUnreadable(DownloadsStorage.loadExtra(unreadableKey), decoded.unreadable),
+            )
+        }
+        val loaded = decoded.entries
             // A search cut short by the app closing starts over.
             .map { if (it.state == SeasonQueueEntryState.Searching) it.copy(state = SeasonQueueEntryState.Waiting) else it }
         update { SeasonQueuePolicy.migrate(loaded, activeProfile) }
@@ -595,7 +597,7 @@ object SeasonDownloadQueue {
         val updated = transform(_entries.value)
         _entries.value = updated
         refreshVisible()
-        DownloadsStorage.saveExtra(storageKey, json.encodeToString(StoredSeasonQueue(updated)))
+        DownloadsStorage.saveExtra(storageKey, SeasonQueueStorage.encode(updated))
     }
 
     private fun refreshVisible() {
