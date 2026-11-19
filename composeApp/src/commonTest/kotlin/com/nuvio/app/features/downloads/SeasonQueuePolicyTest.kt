@@ -13,9 +13,14 @@ import kotlin.test.assertTrue
 class SeasonQueuePolicyTest {
     private val reference = SeasonQueueReference(addonId = "addon", addonName = "Addon", text = "Show 1080p")
 
-    private fun entry(episode: Int, state: SeasonQueueEntryState = SeasonQueueEntryState.Waiting, downloadId: String? = null) =
+    private fun entry(
+        episode: Int,
+        state: SeasonQueueEntryState = SeasonQueueEntryState.Waiting,
+        downloadId: String? = null,
+        profile: Int? = 1,
+    ) =
         SeasonQueueEntry(
-            id = "e$episode",
+            id = if (profile == 1) "e$episode" else "p${profile}e$episode",
             contentType = "series",
             parentMetaId = "tt1",
             parentMetaType = "series",
@@ -26,18 +31,28 @@ class SeasonQueuePolicyTest {
             reference = reference,
             state = state,
             downloadId = downloadId,
+            profileId = profile,
         )
 
     private val downloading = SeasonQueueEntryState.Downloading
     private val paused = SeasonQueueEntryState.Paused
 
-    private fun settle(entries: List<SeasonQueueEntry>, vararg statuses: Pair<String, DownloadStatus>, searching: Set<String> = emptySet()) =
-        SeasonQueuePolicy.settle(entries, statuses.toMap()::get, searching)
+    private fun settle(
+        entries: List<SeasonQueueEntry>,
+        vararg statuses: Pair<String, DownloadStatus>,
+        searching: Set<String> = emptySet(),
+        profile: Int = 1,
+    ) = SeasonQueuePolicy.settle(entries, profile, statuses.toMap()::get, searching)
 
     /** What the queue would start next after settling, or null when it waits. */
-    private fun nextAfter(entries: List<SeasonQueueEntry>, vararg statuses: Pair<String, DownloadStatus>, searching: Set<String> = emptySet()): String? {
-        val settled = settle(entries, *statuses, searching = searching)
-        return if (SeasonQueuePolicy.busy(settled, searching)) null else SeasonQueuePolicy.next(settled)?.id
+    private fun nextAfter(
+        entries: List<SeasonQueueEntry>,
+        vararg statuses: Pair<String, DownloadStatus>,
+        searching: Set<String> = emptySet(),
+        profile: Int = 1,
+    ): String? {
+        val settled = settle(entries, *statuses, searching = searching, profile = profile)
+        return if (SeasonQueuePolicy.busy(settled, profile, searching)) null else SeasonQueuePolicy.next(settled, profile)?.id
     }
 
     private val season = listOf(entry(1, downloading, "d1"), entry(2), entry(3))
@@ -47,7 +62,7 @@ class SeasonQueuePolicyTest {
         val settled = settle(season, "d1" to DownloadStatus.Paused)
         assertEquals(listOf(paused, SeasonQueueEntryState.Waiting, SeasonQueueEntryState.Waiting), settled.map { it.state })
         assertEquals("d1", settled.first().downloadId)
-        assertTrue(SeasonQueuePolicy.busy(settled, emptySet()))
+        assertTrue(SeasonQueuePolicy.busy(settled, 1, emptySet()))
         assertNull(nextAfter(season, "d1" to DownloadStatus.Paused))
     }
 
@@ -68,7 +83,7 @@ class SeasonQueuePolicyTest {
         // "Resume all": the paused episode runs again; episode 2 starts only after it.
         assertNull(nextAfter(held, "d1" to DownloadStatus.Downloading))
         val afterFirst = settle(held, "d1" to DownloadStatus.Completed)
-        assertEquals("e2", SeasonQueuePolicy.next(afterFirst)?.id)
+        assertEquals("e2", SeasonQueuePolicy.next(afterFirst, 1)?.id)
         val secondRunning = afterFirst.map { if (it.id == "e2") it.copy(state = downloading, downloadId = "d2") else it }
         assertNull(nextAfter(secondRunning, "d2" to DownloadStatus.Downloading))
         assertEquals("e3", nextAfter(secondRunning, "d2" to DownloadStatus.Completed))
@@ -109,11 +124,56 @@ class SeasonQueuePolicyTest {
     fun anEpisodeWithoutASourceDoesNotHoldTheQueue() {
         val queue = listOf(entry(1, SeasonQueueEntryState.NeedsChoice), entry(2))
         assertEquals("e2", nextAfter(queue))
-        assertFalse(SeasonQueuePolicy.busy(queue, emptySet()))
+        assertFalse(SeasonQueuePolicy.busy(queue, 1, emptySet()))
     }
 
     @Test
     fun aDownloadingEntryWithoutADownloadLeaves() {
         assertEquals(listOf("e2"), settle(listOf(entry(1, downloading, null), entry(2))).map { it.id })
+    }
+
+    // F2: every profile has its own queue; downloads are loaded for the active profile only.
+
+    private val profileA = listOf(entry(1, downloading, "a1", profile = 1), entry(2, profile = 1))
+    private val profileB = listOf(entry(1, profile = 2), entry(2, profile = 2))
+
+    @Test
+    fun switchingProfilesKeepsTheOtherQueueUntouched() {
+        val both = profileA + profileB
+        // Profile B is active: A's running episode is not in B's downloads, but it stays as it is.
+        val inB = settle(both, profile = 2)
+        assertEquals(both, inB)
+        // B's own queue moves on independently; A's episodes never start in B.
+        assertEquals("p2e1", nextAfter(both, profile = 2))
+        assertEquals(listOf("p2e1", "p2e2"), SeasonQueuePolicy.visible(inB, 2).map { it.id })
+    }
+
+    @Test
+    fun aToBToAContinuesProfileAWithoutLossOrDuplicates() {
+        val both = profileA + profileB
+        val inB = settle(both, profile = 2)
+        // Back to A while its download still runs: nothing changes, nothing new starts.
+        val backInA = settle(inB, "a1" to DownloadStatus.Downloading, profile = 1)
+        assertEquals(both, backInA)
+        assertNull(nextAfter(inB, "a1" to DownloadStatus.Downloading, profile = 1))
+        // A's episode finished while B was active: A continues with its own next episode.
+        assertEquals("e2", nextAfter(inB, "a1" to DownloadStatus.Completed, profile = 1))
+        assertEquals(listOf("e2", "p2e1", "p2e2"), settle(inB, "a1" to DownloadStatus.Completed, profile = 1).map { it.id })
+    }
+
+    @Test
+    fun anotherProfilesSearchOrDownloadDoesNotHoldThisQueue() {
+        val both = profileA + profileB
+        assertEquals("p2e1", nextAfter(both, searching = setOf("e2"), profile = 2))
+        assertNull(nextAfter(both, searching = setOf("p2e1"), profile = 2))
+    }
+
+    @Test
+    fun queuesSavedBeforeProfilesAreKeptForTheActiveProfile() {
+        val old = listOf(entry(1, paused, "d1", profile = null), entry(2, profile = null), entry(3, profile = 2))
+        val migrated = SeasonQueuePolicy.migrate(old, activeProfileId = 1)
+        assertEquals(listOf(1, 1, 2), migrated.map { it.profileId })
+        assertEquals(3, migrated.size)
+        assertEquals(old.map { it.copy(profileId = null) }, migrated.map { it.copy(profileId = null) })
     }
 }
