@@ -895,3 +895,13 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   and `UpdateArchiveCheck.trustedRotationTargets`. The lineage is made in `release-sign` from the old
   public key and the release key, and must name exactly those two certificates. Publishing waits for a
   second owner approval after release-verify and the emulator move tests.
+
+## CI-ROBO-1: Robolectric's Android jars through Gradle (2026-11-19)
+
+- **Finding:** every publishing run since #7 (runs 44527216109 ×3, 44537630817) failed 73 test
+  classes with `Failed to fetch maven artifact org.robolectric:android-all-instrumented:…` (versions
+  14-…-10818077-i7, 9-…-4913185-2-i7, 8.0.0_r4-…-r1-i7), while pull request runs of the same code
+  passed. Robolectric's own downloader has no retry and its failure cause is not shown.
+- **Change:** `composeApp/build.gradle.kts` resolves those jars with Gradle and hands them to
+  Robolectric through `robolectric-deps.properties`; other versions still use Robolectric's
+  downloader. No test is skipped or made optional.

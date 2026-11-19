@@ -582,3 +582,40 @@ composeCompiler {
         reportsDestination = layout.buildDirectory.dir("compose_reports")
     }
 }
+
+// Nuvio Plus: Robolectric's Android jars through Gradle (its repositories, cache and retries) rather
+// than Robolectric's own downloader, which failed on the publishing runs ("Failed to fetch maven
+// artifact org.robolectric:android-all-instrumented:…", 73 test classes, run 44537630817). Robolectric
+// reads robolectric-deps.properties first and falls back to its downloader for any other version.
+val robolectricAndroidJars: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isTransitive = false
+}
+dependencies {
+    listOf(
+        "8.0.0_r4-robolectric-r1-i7",
+        "9-robolectric-4913185-2-i7",
+        "14-robolectric-10818077-i7",
+    ).forEach { version -> robolectricAndroidJars("org.robolectric:android-all-instrumented:$version") }
+}
+val robolectricDepsFile = layout.buildDirectory.file("robolectric/robolectric-deps.properties")
+val writeRobolectricDeps = tasks.register("writeRobolectricDeps") {
+    val jars: FileCollection = robolectricAndroidJars
+    val output = robolectricDepsFile
+    inputs.files(jars).withPropertyName("jars")
+    outputs.file(output)
+    doLast {
+        val properties = java.util.Properties()
+        jars.files.forEach { jar ->
+            val version = jar.name.removePrefix("android-all-instrumented-").removeSuffix(".jar")
+            properties.setProperty("org.robolectric:android-all-instrumented:$version", jar.absolutePath)
+        }
+        val file = output.get().asFile
+        file.parentFile.mkdirs()
+        file.outputStream().use { properties.store(it, "Robolectric Android jars resolved by Gradle") }
+    }
+}
+tasks.withType<Test>().configureEach {
+    dependsOn(writeRobolectricDeps)
+    systemProperty("robolectric-deps.properties", robolectricDepsFile.get().asFile.absolutePath)
+}
