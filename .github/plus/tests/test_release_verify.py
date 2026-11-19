@@ -113,7 +113,7 @@ class ReleaseVerifyTest(unittest.TestCase):
         tested_manifest = self.manifest(self.tested, "signed.sha256")
         return subprocess.run([sys.executable, "-I", str(SCRIPT), "--release", str(self.release), "--tested", str(self.tested),
                                "--release-manifest", release_manifest, "--tested-manifest", tested_manifest,
-                               "--identity", identity, "--old", old, "--lineage", str(self.lineage)],
+                               "--identity", identity, "--old", old],
                               env=self.env, capture_output=True, text=True)
 
     def test_a_correct_release_passes(self):
@@ -162,7 +162,7 @@ class ReleaseVerifyTest(unittest.TestCase):
         tested_manifest = self.manifest(self.tested, "signed.sha256")
         result = subprocess.run([sys.executable, "-I", str(SCRIPT), "--release", str(self.release), "--tested", str(self.tested),
                                  "--release-manifest", "ab" * 32, "--tested-manifest", tested_manifest,
-                                 "--identity", NEW, "--old", OLD, "--lineage", str(self.lineage)],
+                                 "--identity", NEW, "--old", OLD],
                                 env=self.env, capture_output=True, text=True)
         self.assertNotEqual(0, result.returncode)
 

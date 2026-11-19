@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class UpdateArchiveCheckTest {
     private val pkg = "com.nuvio.app.plus"
@@ -80,8 +79,36 @@ class UpdateArchiveCheckTest {
         assertNull(UpdateArchiveCheck.checkWith(readInstalled = { installed }, readArchive = { archive() }))
     }
 
+    private val publicKey = "40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a"
+    private val releaseKey = "99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35"
+
     @Test
-    fun noKeyRotationIsTrustedInThisBuild() = assertTrue(UpdateArchiveCheck.trustedRotationTargets.isEmpty())
+    fun onlyTheReleaseKeyIsTrustedAsARotation() =
+        assertEquals(setOf(releaseKey), UpdateArchiveCheck.trustedRotationTargets)
+
+    /** The real move: build 12 (public key) -> build 13 (release key, lineage) -> later builds. */
+    @Test
+    fun theMoveToTheReleaseKeyAndTheBuildsAfterIt() {
+        val pinned = UpdateArchiveCheck.trustedRotationTargets
+        val build12 = PackageSnapshot(pkg, 1012, identity(publicKey))
+        val build13 = PackageSnapshot(pkg, 1013, identity(publicKey, releaseKey))
+        assertNull(UpdateArchiveCheck.evaluate(build12, build13, pinned))
+        assertNull(UpdateArchiveCheck.evaluate(build13, PackageSnapshot(pkg, 1014, identity(publicKey, releaseKey)), pinned))
+        // What the holder of the public key can make, offered to a moved app: refused.
+        assertEquals(
+            UpdateArchiveProblem.OtherSigner,
+            UpdateArchiveCheck.evaluate(build13, PackageSnapshot(pkg, 1014, identity(publicKey)), pinned),
+        )
+        assertEquals(
+            UpdateArchiveProblem.OtherSigner,
+            UpdateArchiveCheck.evaluate(build13, PackageSnapshot(pkg, 1014, identity(publicKey, "cc")), pinned),
+        )
+        // And offered to build 12 with a made-up lineage to another key: refused, that key is not pinned.
+        assertEquals(
+            UpdateArchiveProblem.OtherSigner,
+            UpdateArchiveCheck.evaluate(build12, PackageSnapshot(pkg, 1013, identity(publicKey, "cc")), pinned),
+        )
+    }
 
     @Test
     fun aRotatedKeyIsRefusedUnlessItsNewCertificateIsPinned() {

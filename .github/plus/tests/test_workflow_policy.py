@@ -148,15 +148,20 @@ class WorkflowPolicyTest(unittest.TestCase):
             return result, output.read_text() if output.exists() else ""
 
     def test_the_public_key_never_publishes(self):
-        result, output = self.run_identity_check(self.PUBLIC, "false")
+        # Without a pinned release key: checked, not published, and not a failure.
+        result, output = self.run_identity_check(self.PUBLIC, "false", "")
         self.assertEqual(0, result.returncode, "a tested build without a release key is not a failure")
         self.assertEqual("publish=false\n", output)
         self.assertIn("never publishes", result.stdout)
         # Not even if the public key's certificate were entered as the release identity.
         self.assertEqual("publish=false\n", self.run_identity_check(self.PUBLIC, "false", self.PUBLIC)[1])
 
-    def test_no_release_key_is_pinned_yet(self):
-        self.assertEqual("", self.workflows["custom-android-build.yml"]["jobs"]["release-identity"]["env"]["RELEASE_IDENTITY"])
+    def test_the_release_key_is_pinned(self):
+        self.assertEqual("99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35",
+                         self.workflows["custom-android-build.yml"]["jobs"]["release-identity"]["env"]["RELEASE_IDENTITY"])
+        result, output = self.run_identity_check(self.PUBLIC, "false")
+        self.assertEqual(0, result.returncode, result.stdout)
+        self.assertIn("publish=true", output)
 
     def test_a_pinned_release_key_moves_on_to_release_signing(self):
         result, output = self.run_identity_check(self.PUBLIC, "false", "cd" * 32)
@@ -196,12 +201,17 @@ class WorkflowPolicyTest(unittest.TestCase):
                 if step.get("uses", "").startswith("actions/checkout@"):
                     self.assertIn("sparse-checkout", step.get("with", {}), "only the files it needs")
 
+    def test_publishing_waits_for_the_owner_after_every_test(self):
+        publish = self.workflows["custom-android-build.yml"]["jobs"]["publish"]
+        self.assertEqual("plus-release", publish["environment"])
+        self.assertNotIn("secrets.", yaml.safe_dump(publish), "publishing reads no secret of the environment")
+
     def test_release_signing_needs_the_review_gate_and_signs_v3_only(self):
         job = self.workflows["custom-android-build.yml"]["jobs"]["release-sign"]
         self.assertEqual({"checks", "review-gate", "release-identity"}, set(job["needs"]))
         sign = next(s for s in steps(job) if "secrets." in yaml.safe_dump(s))["run"]
         for flag in ("--v1-signing-enabled false", "--v2-signing-enabled false", "--v3-signing-enabled true",
-                     "--lineage signing/release-lineage.bin", "--min-sdk-version 28", "--rotation-min-sdk-version 28"):
+                     "--lineage \"${lineage}\"", "--set-rollback false", "--min-sdk-version 28", "--rotation-min-sdk-version 28"):
             self.assertIn(flag, sign)
         self.assertIn("built_manifest", yaml.safe_dump(job), "it signs only the APKs the checks built")
 

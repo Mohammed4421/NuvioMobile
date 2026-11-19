@@ -890,3 +890,8 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   compare with `custom-12`; release notes explain the one manual install.
 - **Tests:** `test_workflow_policy.py` (who sees the key, v3-only flags, ordering), `test_release_verify.py`.
 - **Not yet:** the key itself (owner steps), then the pins.
+- **Key made (2026-11-19, run 44534502910, approved by the owner):** certificate
+  `99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35`, pinned in `release-identity`
+  and `UpdateArchiveCheck.trustedRotationTargets`. The lineage is made in `release-sign` from the old
+  public key and the release key, and must name exactly those two certificates. Publishing waits for a
+  second owner approval after release-verify and the emulator move tests.

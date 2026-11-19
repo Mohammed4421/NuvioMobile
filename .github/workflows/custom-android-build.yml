@@ -110,9 +110,9 @@ jobs:
       # password, so it is treated as compromised: the checks sign test builds with it, and an APK
       # signed with it alone is never published.
       COMPROMISED: 40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a
-      # Certificate of the release key (docs/plus/signing-migration.md). Empty: no release key yet, so
-      # nothing is signed for release and nothing is published.
-      RELEASE_IDENTITY: ""
+      # Certificate of the release key (docs/plus/signing-migration.md), made on 2026-11-19 by
+      # plus-release-key.yml (run 44534502910). Only APKs signed with it are published.
+      RELEASE_IDENTITY: 99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35
     steps:
       - name: Tested with the public test key; a release key is pinned
         id: decide
@@ -137,7 +137,7 @@ jobs:
     name: Release signing (protected key, owner's approval)
     # The only job that can read the release key: the plus-release environment holds it, allows only
     # the publishing branches and waits for the owner's approval. It runs no file of the commit: the
-    # checkout holds only the public lineage file, and every command is written here.
+    # checkout holds only the old public key (for the lineage), and every command is written here.
     needs: [checks, review-gate, release-identity]
     if: needs.release-identity.outputs.publish == 'true'
     environment: plus-release
@@ -148,13 +148,13 @@ jobs:
     outputs:
       manifest: ${{ steps.sign.outputs.manifest }}
     steps:
-      - name: Check out the public lineage file only
+      - name: Check out the old public key only (for the lineage)
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ github.sha }}
           sparse-checkout-cone-mode: false
           sparse-checkout: |
-            signing/release-lineage.bin
+            signing/nuvio-plus.p12
 
       - name: Forget the checkout token
         run: |
@@ -174,6 +174,9 @@ jobs:
         id: sign
         env:
           EXPECTED: ${{ needs.checks.outputs.built_manifest }}
+          IDENTITY: ${{ needs.release-identity.outputs.identity }}
+          OLD: ${{ needs.release-identity.outputs.compromised }}
+          OLD_PASSWORD: nuvio-plus-public
           RELEASE_KEYSTORE: ${{ secrets.RELEASE_KEYSTORE }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
@@ -182,7 +185,7 @@ jobs:
             || { echo "::error::The unsigned APKs are not the ones the checks built"; exit 1; }
           (cd built && sha256sum --check --strict built.sha256)
           [[ "$(ls built/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; exit 1; }
-          [[ -s signing/release-lineage.bin ]] || { echo "::error::signing/release-lineage.bin is missing"; exit 1; }
+          [[ -s signing/nuvio-plus.p12 ]] || { echo "::error::signing/nuvio-plus.p12 is missing"; exit 1; }
           [[ -n "${RELEASE_KEYSTORE}" && -n "${RELEASE_KEY_PASSWORD}" ]] \
             || { echo "::error::The plus-release environment has no release key"; exit 1; }
           tools="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)"
@@ -191,6 +194,16 @@ jobs:
           trap 'rm -rf "$(dirname "${key}")"' EXIT
           printf '%s' "${RELEASE_KEYSTORE}" | base64 -d > "${key}"
           unset RELEASE_KEYSTORE
+          # The lineage: the old key's signature handing over to the release key (old key: rollback
+          # off). The old key signs only this, never an APK.
+          lineage="$(dirname "${key}")/lineage.bin"
+          "${tools}/apksigner" rotate --out "${lineage}" \
+            --old-signer --ks signing/nuvio-plus.p12 --ks-key-alias nuvio-plus --ks-pass env:OLD_PASSWORD --key-pass env:OLD_PASSWORD \
+            --set-rollback false \
+            --new-signer --ks "${key}" --ks-type PKCS12 --ks-key-alias nuvio-plus-release --ks-pass env:RELEASE_KEY_PASSWORD
+          chain="$("${tools}/apksigner" lineage --in "${lineage}" --print-certs | sed -n 's/.*certificate SHA-256 digest: \([0-9a-f]\{64\}\).*/\1/p' | paste -sd' ')"
+          [[ "${chain}" == "${OLD} ${IDENTITY}" ]] \
+            || { echo "::error::The release key is not the pinned one (lineage: ${chain})"; exit 1; }
           mkdir -p release
           for apk in built/*.apk; do
             if unzip -Z1 "${apk}" | grep -qiE '^META-INF/[^/]+\.(SF|RSA|DSA|EC)$'; then
@@ -199,7 +212,7 @@ jobs:
             aligned="$(dirname "${key}")/$(basename "${apk}")"
             if "${tools}/zipalign" -c 4 "${apk}" > /dev/null; then cp "${apk}" "${aligned}"; else "${tools}/zipalign" -f 4 "${apk}" "${aligned}"; fi
             "${tools}/apksigner" sign --ks "${key}" --ks-type PKCS12 --ks-pass env:RELEASE_KEY_PASSWORD \
-              --lineage signing/release-lineage.bin --min-sdk-version 28 --rotation-min-sdk-version 28 \
+              --ks-key-alias nuvio-plus-release --lineage "${lineage}" --min-sdk-version 28 --rotation-min-sdk-version 28 \
               --v1-signing-enabled false --v2-signing-enabled false --v3-signing-enabled true --v4-signing-enabled false \
               --out "release/$(basename "${apk}")" "${aligned}" > /dev/null
             rm -f "${aligned}"
@@ -257,7 +270,7 @@ jobs:
           set -o pipefail
           python3 -I .github/plus/release-verify.py --release apks/nuvio-plus-release --tested apks/nuvio-plus-apk \
             --release-manifest "${RELEASE_MANIFEST}" --tested-manifest "${TESTED_MANIFEST}" \
-            --identity "${IDENTITY}" --old "${OLD}" --lineage signing/release-lineage.bin | tee checks-release.md
+            --identity "${IDENTITY}" --old "${OLD}" | tee checks-release.md
 
       - name: Keep the result
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -340,6 +353,9 @@ jobs:
     needs: [checks, review-gate, release-identity, release-sign, release-verify, release-upgrade]
     # Only APKs signed with the pinned release key, verified, and moved from build 12 on emulators.
     if: needs.release-identity.outputs.publish == 'true'
+    # A second approval by the owner, after every test above passed. It reads no secret of the
+    # environment (none is referenced here); the environment only makes it wait for the owner.
+    environment: plus-release
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:

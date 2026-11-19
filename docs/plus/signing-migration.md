@@ -1,7 +1,9 @@
 # Moving Nuvio Plus to a new signing key
 
-Status: **approved by the owner on 2026-11-19** (new key, Android 9 or later). The release key does
-not exist yet; it is made once by the owner-approved workflow below.
+Status: **approved by the owner on 2026-11-19** (new key, Android 9 or later). The release key was
+made on 2026-11-19 (run 44534502910): certificate
+`99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35`, pinned in `release-identity`
+and in the app's updater.
 
 ## Facts
 
@@ -50,9 +52,11 @@ the release page and install it over the old app; Android keeps the data. Releas
   and pastes the key text into `RELEASE_KEYSTORE`.
 - **Signing a release** (`custom-android-build.yml`, job `release-sign`): only after every check and
   the review gate, only on the publishing branches, only after the owner approves the deployment.
-  No file of the commit runs in it (the checkout holds only `signing/release-lineage.bin`); it takes
-  the unsigned APKs whose digests the checks recorded, signs them v3-only with the lineage, deletes
-  the key file and keeps the signed APKs.
+  No file of the commit runs in it (the checkout holds only the old public key); it makes the lineage
+  (old key → release key, rollback off) and checks that it names exactly the pinned certificates,
+  takes the unsigned APKs whose digests the checks recorded, signs them v3-only with that lineage,
+  deletes the key files and keeps the signed APKs. The lineage is the same every time; the old key
+  signs only it.
 - **Before publishing:** `release-verify` (v3 only, the pinned certificate, the lineage, contents
   identical to the tested APKs) and `release-upgrade` (emulators: build 12 with data → release on
   Android 9 and 14 keeps the data and then refuses an old-key APK; Android 8 refuses the release and
@@ -67,6 +71,7 @@ the release page and install it over the old app; Android keeps the data. Releas
 3. Owner: add `RELEASE_KEY_PASSWORD`.
 4. Push `plus-release/key-ceremony`; owner approves the run.
 5. Owner: keep the artifact and the password; paste the key text into `RELEASE_KEYSTORE`.
-6. Pull request: commit the lineage, pin the certificate (workflow and app). Merge.
-7. The publish run waits for the owner's approval of `release-sign`, then verifies, tests the move on
-   emulators and publishes Build 13 only if all of it passes.
+6. Pull request: pin the certificate (workflow and app). Merge.
+7. The publish run waits for the owner's approval of `release-sign`, then verifies and tests the move
+   on emulators; only if all of it passes does `publish` ask the owner a second time, and only then is
+   Build 13 published.

@@ -6,13 +6,13 @@ For every release APK:
 - `apksigner verify --min-sdk-version 28` passes, with APK Signature Scheme v3 only (no v1, no v2:
   nothing in it is signed with the old, public key);
 - its one signing certificate is the pinned release identity;
-- its v3 lineage is exactly old key -> release key, the same as signing/release-lineage.bin;
+- its v3 lineage is exactly old key -> release key;
 - its contents (every ZIP entry) equal the tested APK of the same ABI, the one the checks signed
   with the test key and tested; only the signature differs.
 Prints a Markdown summary line; exits non-zero on the first failure.
 
 Usage: release-verify.py --release <dir> --tested <dir> --release-manifest <sha256>
-       --tested-manifest <sha256> --identity <sha256> --old <sha256> --lineage <file>
+       --tested-manifest <sha256> --identity <sha256> --old <sha256>
 """
 import argparse
 import glob
@@ -90,8 +90,6 @@ def verify(args):
     release = check_manifest(args.release, "release.sha256", args.release_manifest)
     tested = check_manifest(args.tested, "signed.sha256", args.tested_manifest)
     expected_lineage = [args.old, args.identity]
-    if lineage_certs(signer, args.lineage) != expected_lineage:
-        raise Failure(f"{args.lineage} is not the lineage old key -> release key")
     for name, path in sorted(release.items()):
         out = subprocess.run([signer, "verify", "--min-sdk-version", "28", "--verbose", path], capture_output=True, text=True)
         if out.returncode != 0:
@@ -114,7 +112,7 @@ def verify(args):
 
 def main(argv):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    for option in ("--release", "--tested", "--release-manifest", "--tested-manifest", "--identity", "--old", "--lineage"):
+    for option in ("--release", "--tested", "--release-manifest", "--tested-manifest", "--identity", "--old"):
         parser.add_argument(option, required=True)
     args = parser.parse_args(argv)
     try:
