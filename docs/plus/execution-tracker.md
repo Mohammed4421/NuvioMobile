@@ -371,6 +371,130 @@ Matches the reference state of the directive. Phase 1 branch: `plus-fix/security
 13. **Commit / PR:** `56cb197c`.
 14. **Final status:** Done.
 
+### SEC-11 · The sign job ran files of the commit while holding the signing secrets (owner review of PR #3)
+
+1. **ID:** SEC-11
+2. **Severity:** High (for any future private key; no private key exists today)
+3. **Verification status:** Confirmed in PR #3 at `cf140746`.
+4. **Evidence:** `plus-build.yml` job `sign` set `CUSTOM_KEYSTORE_BASE64/PASSWORD/KEY_ALIAS` in its
+   environment and ran `.github/plus/sign-apks.sh` and `apk-certs.py` from the commit being
+   published. A change to either file would have reached the key. "No Gradle" was not a trust
+   boundary.
+5. **Root cause:** Trusting that the commit is reviewed, while the files that see the key are in it.
+6. **Selected solution:**
+   - No signing secret reaches `plus-build.yml` at all: its `secrets:` accepts only
+     `CUSTOM_LOCAL_PROPERTIES`, and `sign-apks.sh` only knows the public key.
+   - A new job, `release-identity`, in the publishing workflow runs no file of the commit: no
+     checkout, no actions, `permissions: {}`. It receives only whether a private key exists
+     (`secrets.CUSTOM_KEYSTORE_BASE64 != ''`, a true/false value, never the key).
+   - Signing with a private key is impossible until phase 5. The plan for then is a job in a
+     protected GitHub Environment (allowed branches only, approval by the owner) that runs no file of
+     the commit.
+7. **Rejected alternatives:**
+   - Pinning the signing script by SHA from the same workflow: the pin lives in the commit too.
+   - Implementing private-key signing now: it means a key change, which is forbidden.
+8. **Modified files:** `plus-build.yml`, `sign-apks.sh`, `custom-android-build.yml`.
+9. **Added tests:** `test_no_signing_secret_reaches_files_of_the_commit`,
+   `test_the_signing_key_secret_is_only_tested_for_presence`,
+   `test_the_release_identity_check_runs_no_code_of_the_commit`.
+10. **Test results:** PASS on the fix. On PR #3 (`cf140746`) these and the tests of SEC-12 and
+    SEC-13 give 4 failures and 3 errors.
+11. **Regression risk:** none for today's builds (they never had a private key).
+12. **Remaining risks:** The workflow files themselves come from the commit on the publishing branch.
+    Only the ruleset (reviewed pull requests) and, in phase 5, an Environment approval protect them.
+13. **Commit / PR:** see PR #3.
+14. **Final status:** Done.
+
+### SEC-12 · Publishing silently fell back to the public key (owner review of PR #3)
+
+1. **ID:** SEC-12
+2. **Severity:** High (risk accepted without a decision)
+3. **Verification status:** Confirmed.
+4. **Evidence:** `sign-apks.sh@cf140746`: "the private key in CUSTOM_KEYSTORE_BASE64 when the
+   publishing workflow passes one, otherwise the public key". Merging PR #3 would have published
+   build 13 with the public key automatically. Adding a private key would have changed the identity
+   at once; the update check would have stopped that, unless `allow_key_change` was set.
+5. **Root cause:** A fallback chosen for convenience in build 8.
+6. **Selected solution:** `release-identity` stops publishing unless **all** of these hold:
+   - The certificate is the pinned one of builds 8–12, `40335e31…f48a`. Any other certificate stops
+     publishing, `allow_key_change` included, until phase 5.
+   - No private key secret exists.
+   - The owner has set the repository variable `PLUS_PUBLIC_KEY_RELEASES=allowed`, a deliberate
+     decision documented in `github-settings.md` §4.
+
+   Build 12 users keep receiving updates (same key, no data loss) once the owner decides. Without
+   the decision nothing is published.
+7. **Rejected alternatives:**
+   - A new key now: users would reinstall and lose data.
+   - Blocking all publishing until phase 5: the owner may prefer updates with a known risk.
+8. **Modified files:** `custom-android-build.yml`, `docs/plus/github-settings.md`.
+9. **Added tests:** `test_publishing_with_the_public_key_needs_the_owners_decision`. It runs the job's
+   script for five cases: allowed; no decision; private key present; other certificate; no
+   certificate.
+10. **Test results:** PASS.
+11. **Regression risk:** Merging PR #3 no longer publishes build 13 by itself (intended).
+12. **Remaining risks:** As long as the public key is used, anyone can make an APK Android accepts as
+    an update. That ends only in phase 5.
+13. **Commit / PR:** see PR #3.
+14. **Final status:** Done; **OWNER DECISION** on the variable.
+
+### SEC-13 · Unchecked `CUSTOM_LOCAL_PROPERTIES` reached Gradle (owner review of PR #3)
+
+1. **ID:** SEC-13
+2. **Severity:** Medium
+3. **Verification status:** Confirmed: the value is passed whole. The secret is most likely empty today.
+4. **Evidence:**
+   - `prepare-build.sh@cf140746` appended the secret as it was, with any names.
+   - The build reads 17 names from it (`composeApp/build.gradle.kts`: Trakt, Simkl, MDBList,
+     Premiumize, TMDB, Sentry, links). Every one is compiled into the APK as a constant.
+   - Build 12's code has no 64-character Trakt id and no Sentry address, so the secret was most
+     likely not set.
+   - Any other name (for example `NUVIO_RELEASE_*` or a server key) would have reached Gradle, and
+     the signing names would have changed the build key.
+5. **Root cause:** No list of accepted names.
+6. **Selected solution:**
+   - The **first step** of the build job, before the checkout, so no code of the commit has run,
+     checks every line against the list of the 17 public setting names. It writes only accepted
+     lines to a file and stops the build, naming the setting but never its value, for anything else.
+   - Account-server settings (`NUVIO_SUPABASE_*`) cannot be overridden.
+   - Only the publishing workflow passes the secret.
+   - Documentation says every value is public once in the APK, `TRAKT_CLIENT_SECRET` included (as in
+     Nuvio's official app).
+7. **Rejected alternatives:** Filtering inside `prepare-build.sh`: it is a file of the commit and runs
+   after other code of the commit.
+8. **Modified files:** `plus-build.yml`, `prepare-build.sh`, `custom-android-build.yml`, `github-settings.md`.
+9. **Added tests:**
+   - `test_the_extra_properties_are_checked_before_any_code_of_the_commit`: first step, and no later
+     step sees the secret.
+   - `test_only_public_app_settings_pass`: accepted lines kept; `NUVIO_RELEASE_*`, a service key,
+     `NUVIO_SUPABASE_URL`, lowercase, no `=`, and an empty name all rejected; a value is never printed.
+10. **Test results:** PASS.
+11. **Regression risk:** A secret with an unexpected name stops the publishing build with a clear message.
+12. **Remaining risks:** Accepted values are public by design. If the owner ever puts a private value
+    under an accepted name, it ends up in the APK.
+13. **Commit / PR:** see PR #3.
+14. **Final status:** Done.
+
+### PR-4 · Dependency of PR #4 on PR #3 and merge order
+
+- **PR #4** changes only the copy of `plus-pipeline.yml` on `cmp-rewrite`: it adds `statuses: write`
+  and removes `secrets: inherit`.
+- **#4 first, then #3 (correct).**
+  - The current sync (`plus-sync@custom-subtitles`) asks for less than PR #4 grants, and passing no
+    secrets changes nothing, since it signs with the public key anyway.
+  - After #3, the new sync's checks need `statuses: write`, which #4 grants.
+- **#3 alone (breaks).** GitHub refuses to start the scheduled sync, because the called jobs would
+  ask for more than the caller grants. `test_callers_grant_what_the_called_jobs_ask` covers the
+  `custom-subtitles` copy.
+- **Merging #4 triggers nothing:** no workflow on `cmp-rewrite` starts on push. On the pull request
+  itself, Nuvio's own debug build ran with no Plus secrets and posted a comment. That is harmless.
+- **After both are merged:**
+  - Pull requests into `custom-subtitles` get `nuvio-plus/checks` and `nuvio-plus/review` (proved on
+    PR #3).
+  - Merging runs every check, the review gate and `release-identity`.
+  - Nothing is published until the owner sets `PLUS_PUBLIC_KEY_RELEASES`.
+- **Not provable before merging:** a live publish and a scheduled sync run on the new files.
+
 ---
 
 ## Phase 1 results

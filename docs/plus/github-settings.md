@@ -52,12 +52,41 @@ use tags and would stop running, so turn it on only after deciding about them.
 1. A push straight to `custom-subtitles` is refused.
 2. A pull request into `custom-subtitles` shows `nuvio-plus/checks` and `nuvio-plus/review` and
    cannot be merged before both are green.
-3. Merging a green pull request publishes the next build (the publish run shows "Reviewed and
+3. Merging a green pull request publishes the next build only once section 4 is decided (the publish run shows "Reviewed and
    tested pull request" passing).
+
+## 4. Publishing with the public key: your decision
+
+Every Nuvio Plus build since build 8 is signed with the key in `signing/nuvio-plus.p12`, which is
+public. Users of builds 8–12 can only update to APKs signed with that key, so changing it now would
+cut them off (phase 5 studies a safe move). Until then, the publishing workflow stops unless you
+decide, knowingly, to keep publishing with the public key:
+
+Settings → Secrets and variables → Actions → Variables → New repository variable
+
+| Name | Value |
+|---|---|
+| `PLUS_PUBLIC_KEY_RELEASES` | `allowed` |
+
+Without it, merging into `custom-subtitles` builds and checks everything but publishes nothing (the
+"Release signing identity" job explains why). Deleting the variable stops publishing again.
+
+What the public key means: anyone can build an APK that Android accepts as an update of Nuvio
+Plus. Install updates only through the app's own updater or this repository's release page.
+
+The workflow also refuses to publish if the APKs carry any other certificate, or if a private key
+secret (`CUSTOM_KEYSTORE_BASE64`) exists before the key migration is approved, so the identity
+cannot change by accident.
 
 ## Secrets
 
-None are needed today: builds are signed with the public key in `signing/` (the identity of every
-build since build 8). `CUSTOM_KEYSTORE_*` are read only by the sign job of the publishing workflow
-and must not be added before the signing-key plan (phase 5) is approved, because a new key means
-users reinstall.
+- `CUSTOM_KEYSTORE_*`: do not add them. No job uses them for signing; their presence alone stops
+  publishing until phase 5 is approved.
+- `CUSTOM_LOCAL_PROPERTIES` (optional): app settings compiled into the APK, one `NAME=value` per
+  line. Every value ends up inside the APK, where anyone can read it, so put nothing private there.
+  Only these names are accepted; any other name stops the build without printing its value:
+  `TRAKT_CLIENT_ID`, `TRAKT_CLIENT_SECRET`, `TRAKT_REDIRECT_URI`, `SIMKL_CLIENT_ID`,
+  `SIMKL_REDIRECT_URI`, `SIMKL_APP_NAME`, `MDBLIST_CLIENT_ID`, `PREMIUMIZE_CLIENT_ID`, `TMDB_API_KEY`,
+  `SENTRY_DSN`, `INTRODB_API_URL`, `IMDB_RATINGS_API_BASE_URL`, `IMDB_TAPFRAME_API_BASE_URL`,
+  `CONTRIBUTIONS_URL`, `SUPPORTERS_WALL_URL`, `DONATIONS_BASE_URL`, `DONATIONS_DONATE_URL`.
+  Build 12 contains no Trakt id and no Sentry address, so this secret is most likely not set today.
