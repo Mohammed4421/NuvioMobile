@@ -758,6 +758,57 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
 13. **Commit / PR:** `70ba30d9`, F2 pull request.
 14. **Final status:** Code and tests done; full validation pending.
 
+### COMPAT-1 · A way back to Build 12 would have erased the season queue
+
+1. **ID:** COMPAT-1
+2. **Severity:** High (silent, permanent data loss on a rollback). Found in the Decision Gate review.
+3. **Verification status:** Confirmed in code and reproduced in a test with Build 12's exact model.
+4. **Evidence:**
+   - `SeasonDownloadQueue.kt@28a3e4dd` lines 105 and 128–129 decode the whole stored queue at once,
+     with `ignoreUnknownKeys` and without `coerceInputValues`. Any unknown enum value or one damaged
+     entry fails the whole decode; `runCatching … getOrNull() … orEmpty()` turns that into an empty
+     queue, and the next `update()` (line 507) overwrites the store.
+   - The F1 change (#5, #6 at `399047bc`) stored the literal state `Paused`.
+5. **Root cause:** A storage format tied to the in-memory enum, and an all-or-nothing reader.
+6. **Selected solution:** `SeasonQueueStorage`.
+   - **Write:** only Build 12's four state names. A paused episode is stored as `Downloading` plus
+     `"paused": true`; `profileId` and `paused` are fields Build 12 ignores.
+   - **Read:** entry by entry.
+     - A damaged entry, or one missing required fields, is set aside; the other entries are kept.
+     - An unknown future state becomes `Downloading` if the entry has a download (the queue then
+       matches it with its real download), otherwise `Waiting`.
+     - The literal `Paused` of the earlier test builds is still read.
+   - **Unreadable data:** an unreadable payload or entries are kept under `season_queue_unreadable`
+     (the newest 20), never overwritten silently.
+   - **Limit:** Build 12 itself cannot be changed. After a way back, its old behaviour applies: the
+     paused episode leaves the queue, and profiles share the queue. Nothing is erased.
+7. **Rejected alternatives:**
+   - `coerceInputValues` only: it maps an unknown state to Waiting and loses `downloadId`'s meaning
+     (duplicate downloads).
+   - A preparatory release that teaches Build 12 the new state: impossible for users already on 12.
+8. **Modified files:** new `SeasonQueueStorage.kt`; `SeasonDownloadQueue.kt` (load and save);
+   `docs/plus/rollback.md`.
+9. **Added tests:** `SeasonQueueStorageTest` (12):
+   - every state survives a round trip;
+   - paused is stored in Build 12's form;
+   - **Build 12 (exact copy of its model and decoder) reads build 13's queue completely**;
+   - the literal Paused erases Build 12's queue (the cause, kept as a guard);
+   - Build 12's saved queue loads;
+   - a damaged entry is set aside;
+   - a missing required field is set aside;
+   - unreadable payloads are returned whole;
+   - empty stores;
+   - newer states;
+   - the literal Paused is still read;
+   - leftovers are kept and capped.
+10. **Test results:** CI: see PR #6 (pending at the time of writing).
+11. **Regression risk:** none for Build 12 queues (the same fields); the queue now saves the
+    paused-flag format.
+12. **Remaining risks:** Downloads, settings and other stores were not changed by #3, #5 or #6. A
+    later change to them needs the same old-build test.
+13. **Commit / PR:** `b450bce2`, PR #6.
+14. **Final status:** Done locally; CI pending.
+
 ## Later phases (planned, not started)
 
 | ID | Phase | Item | Status |

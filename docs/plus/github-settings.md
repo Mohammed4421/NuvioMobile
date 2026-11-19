@@ -30,6 +30,49 @@ request whose head has not passed every check or whose Nuvio review record is no
 
 `plus-beta` does not exist yet; the pattern applies as soon as it is created.
 
+### Checks to require (verified names)
+
+The statuses that every pull request into `custom-subtitles` actually gets (PR #3, #5 and #6 heads,
+set by `github-actions[bot]` from `plus-ci.yml`):
+
+- `nuvio-plus/checks`: build, signing, update check, all tests, emulator. A **draft** gets
+  `pending` (fast checks only), so a draft can never be merged.
+- `nuvio-plus/review`: Nuvio review records.
+
+Do **not** require job names such as "checks / Build APKs": they are check runs of one workflow
+event and are missing on review pull requests opened by the sync (those get the two statuses from the
+sync itself), so they would leave such pull requests waiting forever. Dependabot pull requests get the
+statuses only if their workflows may write statuses; if not they stay waiting (nothing is merged by
+mistake).
+
+### The same rules as an API request (prepared, not applied)
+
+`POST /repos/Mohammed4421/NuvioMobile/rulesets` with:
+
+```json
+{
+  "name": "Nuvio Plus publishing branches",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": { "ref_name": { "include": ["refs/heads/custom-subtitles", "refs/heads/plus-beta"], "exclude": [] } },
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    { "type": "pull_request", "parameters": {
+        "required_approving_review_count": 0, "dismiss_stale_reviews_on_push": true,
+        "require_code_owner_review": false, "require_last_push_approval": false,
+        "required_review_thread_resolution": false } },
+    { "type": "required_status_checks", "parameters": {
+        "strict_required_status_checks_policy": true,
+        "required_status_checks": [ { "context": "nuvio-plus/checks" }, { "context": "nuvio-plus/review" } ] } }
+  ]
+}
+```
+
+With an empty bypass list, the publish gate cannot be skipped: there is no "admin may bypass" path.
+The owner can still change the ruleset itself in the settings, which is a visible, deliberate act.
+
 ## 2. Actions permissions
 
 Settings → Actions → General
@@ -77,6 +120,20 @@ Plus. Install updates only through the app's own updater or this repository's re
 The workflow also refuses to publish if the APKs carry any other certificate, or if a private key
 secret (`CUSTOM_KEYSTORE_BASE64`) exists before the key migration is approved, so the identity
 cannot change by accident.
+
+## 5. Four separate approvals
+
+Each is a separate act, and none implies another:
+
+| Approval | What it allows | How it is given | What the system checks |
+|---|---|---|---|
+| Code change | Code enters a branch for review | A pull request with its checks | `nuvio-plus/checks`, `nuvio-plus/review` |
+| Merge | The change enters `custom-subtitles` | The owner merges the pull request | Ruleset (above); `review-gate.py publish` asks GitHub who merged it |
+| Signing identity | Which certificate users' phones must trust | The certificate is pinned in the workflow (`IDENTITY`); a change needs the phase 5 plan | `release-identity`: refuses any other certificate and any private key secret |
+| Publishing | A merged, checked build is released to users | The repository variable `PLUS_PUBLIC_KEY_RELEASES=allowed`, set by the owner in the settings (admins only) | `release-identity`: refuses without it |
+
+Nothing written in a conversation, a commit, a document or a file in the repository counts as the
+publishing approval. Only the repository variable does, because only the owner can set it.
 
 ## Secrets
 
