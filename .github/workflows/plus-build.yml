@@ -440,6 +440,10 @@ jobs:
           }
           python3 .github/plus/test-results.py composeApp/build/test-results plus-tests.json
           echo "failed=$(python3 -c 'import json; print(len(json.load(open("plus-tests.json"))["failed"]))')" >> "${GITHUB_OUTPUT}"
+          # The most common failure messages, so a failure that is not the code's (a download, the
+          # environment) can be told apart from the job log alone.
+          { grep -rhoE '<failure message="[^"]{0,400}' composeApp/build/test-results || true; } \
+            | sed 's/^<failure message="//' | sort | uniq -c | sort -rn | head -n 5 | sed 's/^/::warning::failure: /'
 
       - name: Keep the results
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
