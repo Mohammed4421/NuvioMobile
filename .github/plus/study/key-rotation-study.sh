@@ -44,7 +44,8 @@ api="$3"
 results="${work}/results-api${api}.md"
 : > "${results}"
 note() { echo "$1" | tee -a "${results}"; echo "::notice::API ${api}: $1"; }
-install() { adb install -r "$1" 2>&1 | tail -n 1; }
+# The installer's own verdict ("Success" or "Failure [INSTALL_FAILED_…: reason]"), never a blank line.
+install() { adb install -r "$1" 2>&1 | tr -d '\r' | grep -E "Success|Failure|failed|Error" | tail -n 1 | cut -c1-220; }
 first_install() { adb shell dumpsys package "${pkg}" | sed -n 's/.*firstInstallTime=//p' | head -n 1; }
 signers() { adb shell dumpsys package "${pkg}" | grep -iE "signatures=|apkSigningVersion|PackageSignatures" | head -n 3 | tr -s ' ' | tr '\n' ' '; }
 fresh() { adb uninstall "${pkg}" > /dev/null 2>&1 || true; install "${work}/A-k1.apk" > /dev/null; adb root > /dev/null 2>&1; sleep 2
