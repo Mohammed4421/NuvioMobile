@@ -147,6 +147,11 @@ jobs:
           # only read it, so they cannot plant anything a publishing build would reuse.
           cache-read-only: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/custom-subtitles' || github.ref == 'refs/heads/plus-beta')) }}
 
+      - name: Take the Sentry plugin from Maven Central
+        run: |
+          mkdir -p "${HOME}/.gradle/init.d"
+          cp ".github/plus/plugins-from-central.init.gradle" "${HOME}/.gradle/init.d/"
+
       - name: Prepare properties (no signing settings)
         env:
           BUILD: ${{ steps.number.outputs.build }}
@@ -404,6 +409,11 @@ jobs:
           # only read it, so they cannot plant anything a publishing build would reuse.
           cache-read-only: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/custom-subtitles' || github.ref == 'refs/heads/plus-beta')) }}
 
+      - name: Take the Sentry plugin from Maven Central
+        run: |
+          mkdir -p "${HOME}/.gradle/init.d"
+          cp ".github/plus/plugins-from-central.init.gradle" "${HOME}/.gradle/init.d/"
+
       - name: Unit tests (all of them)
         id: tests
         env:
@@ -477,7 +487,7 @@ jobs:
         run: |
           git remote add upstream https://github.com/NuvioMedia/NuvioMobile.git
           git fetch --quiet --tags upstream
-          cp .github/plus/select-upstream-tag.py .github/plus/test-results.py .github/plus/gradle-retry.sh "${RUNNER_TEMP}/"
+          cp .github/plus/select-upstream-tag.py .github/plus/test-results.py .github/plus/gradle-retry.sh .github/plus/plugins-from-central.init.gradle "${RUNNER_TEMP}/"
           tag="$(git tag --merged HEAD | python3 "${RUNNER_TEMP}/select-upstream-tag.py" beta)"
           [[ -n "${tag}" ]] || { echo "::error::No Nuvio release found in this commit"; exit 1; }
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
@@ -498,6 +508,11 @@ jobs:
           # cache. Pull requests and the sync (which builds unreviewed Nuvio code on the default branch)
           # only read it, so they cannot plant anything a publishing build would reuse.
           cache-read-only: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/custom-subtitles' || github.ref == 'refs/heads/plus-beta')) }}
+
+      - name: Take the Sentry plugin from Maven Central
+        run: |
+          mkdir -p "${HOME}/.gradle/init.d"
+          cp "${RUNNER_TEMP}/plugins-from-central.init.gradle" "${HOME}/.gradle/init.d/"
 
       - name: Unit tests
         run: |

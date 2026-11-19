@@ -328,6 +328,17 @@ class WorkflowPolicyTest(unittest.TestCase):
                         if need not in optional:
                             self.assertIn(f"needs.{need}.result == 'success'", condition, f"{job_id} must require {need}")
 
+    def test_every_gradle_job_takes_the_sentry_plugin_from_maven_central(self):
+        for job_id, job in self.workflows["plus-build.yml"]["jobs"].items():
+            scripts = [step.get("run", "") for step in steps(job)]
+            if any("./gradlew " in script for script in scripts):
+                gradle_at = next(i for i, script in enumerate(scripts) if "./gradlew " in script)
+                installed = [i for i, script in enumerate(scripts) if "plugins-from-central.init.gradle" in script
+                             and ".gradle/init.d" in script]
+                self.assertTrue(installed and installed[0] < gradle_at, f"{job_id} runs Gradle without the init script")
+        init = (ROOT / ".github/plus/plugins-from-central.init.gradle").read_text()
+        self.assertIn("useModule(\"io.sentry:sentry-android-gradle-plugin:${requested.version}\")", init)
+
     def test_the_build_writes_no_signing_settings(self):
         script = (ROOT / ".github/plus/prepare-build.sh").read_text()
         self.assertNotIn("echo \"NUVIO_RELEASE_", script)

@@ -1,0 +1,12 @@
+// CI only. Resolves the Sentry Gradle plugin directly from Maven Central under its real coordinates,
+// io.sentry:sentry-android-gradle-plugin:<same version>, instead of through its plugin marker on the
+// Gradle plugin portal. That marker answered 404 for 6.14.0 from the CI runners on 18-19 November 2026
+// (both checked with curl in the failing run of e46d0b8a), while Maven Central has the plugin itself.
+// The plugin and its version are unchanged: the marker only points to this same module.
+beforeSettings { settings ->
+    settings.pluginManagement.resolutionStrategy.eachPlugin {
+        if (requested.id.id == 'io.sentry.android.gradle') {
+            useModule("io.sentry:sentry-android-gradle-plugin:${requested.version}")
+        }
+    }
+}
