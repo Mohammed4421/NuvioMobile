@@ -15,6 +15,9 @@ Newest first.
   could drop the running episode from the queue and download the next one into the other profile's
   downloads. Every profile now keeps and continues only its own queue. Queues saved by earlier builds
   are kept.
+- **The season queue is no longer lost by a damaged entry.** It is read entry by entry, and anything
+  unreadable is kept aside instead of erasing the queue. The queue is also stored so that earlier
+  builds can still read it.
 
 ### Changed
 - **The in-app updater refuses an update it cannot fully check.** A damaged or unsigned download, or
