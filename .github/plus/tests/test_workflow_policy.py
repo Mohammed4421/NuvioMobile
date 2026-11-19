@@ -236,6 +236,19 @@ class WorkflowPolicyTest(unittest.TestCase):
         report = set(build["report"]["needs"])
         self.assertEqual(set(build) - {"report"}, report, "every check must count in the reported status")
 
+    def test_checks_run_once_per_change(self):
+        # A push to a branch with an open pull request must not start a second full run.
+        triggers = self.workflows["plus-ci.yml"]["on"]
+        self.assertEqual({"pull_request", "workflow_dispatch"}, set(triggers))
+
+    def test_every_gradle_run_retries_only_failed_downloads(self):
+        build = self.workflows["plus-build.yml"]["jobs"]
+        for job_id, job in build.items():
+            for step in steps(job):
+                for line in step.get("run", "").splitlines():
+                    if "./gradlew " in line:
+                        self.assertIn("gradle-retry.sh", line, f"{job_id}: {line.strip()}")
+
     def test_the_build_writes_no_signing_settings(self):
         script = (ROOT / ".github/plus/prepare-build.sh").read_text()
         self.assertNotIn("echo \"NUVIO_RELEASE_", script)

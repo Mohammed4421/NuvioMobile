@@ -165,7 +165,7 @@ jobs:
           [[ "${CHANNEL}" == beta ]] && suffix="-beta"
           # The runner has 16 GB: the repository's settings (Gradle 12 GB + a separate 8 GB Kotlin
           # daemon) can starve it while R8 runs after a full compile. Kotlin compiles inside Gradle here.
-          ./gradlew :androidApp:assembleFullRelease \
+          bash .github/plus/gradle-retry.sh build.log ./gradlew :androidApp:assembleFullRelease \
             -Dorg.gradle.jvmargs="-Xmx10g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m" \
             -Pkotlin.compiler.execution.strategy=in-process \
             -Pnuvio.android.distribution=full \
@@ -173,7 +173,7 @@ jobs:
             -Pnuvio.applicationIdSuffix=.plus \
             -Pnuvio.customVersionCode=$((1000 + BUILD)) \
             -Pnuvio.customVersionName="${version}-plus.${BUILD}${suffix}" \
-            --stacktrace 2>&1 | tee build.log || {
+            --stacktrace || {
               { grep -E "^e: " build.log || true; } | head -n 20 | sed 's/^/::error::/'
               { grep -A6 "What went wrong" build.log || true; } | head -n 20 | sed 's/^/::error::/'
               tail -n 8 build.log | sed 's/^/::error::log: /'
@@ -381,10 +381,10 @@ jobs:
           # The settings of the published build, Nuvio Plus updater source included (no secrets).
           bash .github/plus/prepare-build.sh "$(bash .github/plus/next-build-number.sh)"
           grep '^PLUS_' local.properties
-          timeout 30m ./gradlew :composeApp:testAndroidHostTest \
+          bash .github/plus/gradle-retry.sh tests.log timeout 30m ./gradlew :composeApp:testAndroidHostTest \
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
-            --continue > tests.log 2>&1 || true
+            --continue > /dev/null || true
           tail -n 30 tests.log
           grep -q "BUILD SUCCESSFUL\|There were failing tests" tests.log || {
             grep -E "^e: |What went wrong" -A2 tests.log | head -n 20 | sed 's/^/::error::/'
@@ -440,7 +440,7 @@ jobs:
         run: |
           git remote add upstream https://github.com/NuvioMedia/NuvioMobile.git
           git fetch --quiet --tags upstream
-          cp .github/plus/select-upstream-tag.py .github/plus/test-results.py "${RUNNER_TEMP}/"
+          cp .github/plus/select-upstream-tag.py .github/plus/test-results.py .github/plus/gradle-retry.sh "${RUNNER_TEMP}/"
           tag="$(git tag --merged HEAD | python3 "${RUNNER_TEMP}/select-upstream-tag.py" beta)"
           [[ -n "${tag}" ]] || { echo "::error::No Nuvio release found in this commit"; exit 1; }
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
@@ -460,10 +460,10 @@ jobs:
       - name: Unit tests
         run: |
           touch local.properties
-          timeout 30m ./gradlew :composeApp:testAndroidHostTest \
+          bash "${RUNNER_TEMP}/gradle-retry.sh" tests.log timeout 30m ./gradlew :composeApp:testAndroidHostTest \
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
-            --continue > tests.log 2>&1 || true
+            --continue > /dev/null || true
           tail -n 30 tests.log
           python3 "${RUNNER_TEMP}/test-results.py" composeApp/build/test-results nuvio-tests.json
 

@@ -1,17 +1,17 @@
 name: Nuvio Plus checks
 
-# Every check of a publishing build, without publishing anything:
-#   * on pull requests into custom-subtitles and plus-beta: reports nuvio-plus/checks and
-#     nuvio-plus/review on the pull request head (the statuses branch protection requires);
-#   * on pushes to fix and review branches: the same checks, reported as nuvio-plus/push/*.
+# Every check of a publishing build, without publishing anything, on pull requests into
+# custom-subtitles and plus-beta: reports nuvio-plus/checks and nuvio-plus/review on the pull request
+# head (the statuses branch protection and the publish gate require). Pushes alone start nothing:
+# a branch with an open pull request would otherwise run everything twice. Open a (draft) pull
+# request to get checks, or start this workflow by hand. Review pull requests opened by the sync are
+# checked by the sync itself.
 # No secrets are passed and the token cannot write code: a pull request from a review branch with
 # unreviewed Nuvio code cannot reach the signing key or the repository. pull_request_target is not
 # used on purpose.
 on:
   pull_request:
     branches: [custom-subtitles, plus-beta]
-  push:
-    branches: ['plus-fix/**', 'plus-review/**']
   workflow_dispatch:
 
 concurrency:
