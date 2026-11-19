@@ -3,6 +3,7 @@
 These keep later edits (or a Nuvio merge) from quietly undoing the isolation of secrets and write
 access. Run: python3 -m unittest discover -s .github/plus/tests
 """
+import json
 import re
 import subprocess
 import tempfile
@@ -248,6 +249,59 @@ class WorkflowPolicyTest(unittest.TestCase):
                 for line in step.get("run", "").splitlines():
                     if "./gradlew " in line:
                         self.assertIn("gradle-retry.sh", line, f"{job_id}: {line.strip()}")
+
+    def test_ready_pull_requests_get_the_full_validation(self):
+        ci = self.workflows["plus-ci.yml"]
+        self.assertEqual({"opened", "synchronize", "reopened", "ready_for_review"}, set(ci["on"]["pull_request"]["types"]))
+        self.assertEqual("${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}",
+                         ci["jobs"]["checks"]["with"]["full"])
+        # Publishing and the sync always run everything.
+        self.assertNotIn("full", self.workflows["custom-android-build.yml"]["jobs"]["checks"]["with"])
+        self.assertNotIn("full", self.workflows["plus-sync.yml"]["jobs"]["checks"]["with"])
+        self.assertIs(True, self.workflows["plus-build.yml"]["on"]["workflow_call"]["inputs"]["full"]["default"])
+
+    def run_report(self, results, full):
+        report = self.workflows["plus-build.yml"]["jobs"]["report"]
+        script = steps(report)[0]["run"]
+        with tempfile.TemporaryDirectory() as temp:
+            calls = Path(temp, "calls")
+            fake = Path(temp, "gh")
+            fake.write_text(f'#!/usr/bin/env bash\nprintf "%s\\n" "$*" >> "{calls}"\n')
+            fake.chmod(0o755)
+            needs = {job: {"result": result} for job, result in results.items()}
+            env = {"PATH": f"{temp}:/usr/bin:/bin", "NEEDS": json.dumps(needs), "FULL": full, "SHA": "a" * 40,
+                   "PREFIX": "nuvio-plus", "GITHUB_SERVER_URL": "https://github.com", "GITHUB_REPOSITORY": "o/r",
+                   "GITHUB_RUN_ID": "1"}
+            subprocess.run(["bash", "-e", "-o", "pipefail", "-c", script], env=env, check=True, capture_output=True)
+            text = calls.read_text()
+        return {context: state for state, context in re.findall(r"state=(\w+) -f context=nuvio-plus/(\w+)", text)}
+
+    def all_jobs(self, result="success", **overrides):
+        jobs = [j for j in self.workflows["plus-build.yml"]["jobs"] if j != "report"]
+        return {**{job: result for job in jobs}, **overrides}
+
+    def test_the_reported_statuses_follow_the_results(self):
+        self.assertEqual({"checks": "success", "review": "success"}, self.run_report(self.all_jobs(), "true"))
+        skipped_baseline = self.all_jobs(**{"nuvio-tests": "skipped"})
+        self.assertEqual("success", self.run_report(skipped_baseline, "true")["checks"])
+        for job in ("build", "sign", "update-check", "plus-tests", "test-gate", "emulator", "policy-tests"):
+            self.assertEqual("failure", self.run_report(self.all_jobs(**{job: "failure"}), "true")["checks"], job)
+            self.assertEqual("failure", self.run_report(self.all_jobs(**{job: "skipped"}), "true")["checks"], job)
+        self.assertEqual("failure", self.run_report(self.all_jobs(**{"review-records": "failure"}), "true")["review"])
+
+    def test_fast_validation_never_reports_success(self):
+        fast = self.all_jobs("skipped", **{"policy-tests": "success", "review-records": "success"})
+        self.assertEqual({"checks": "pending", "review": "success"}, self.run_report(fast, "false"))
+        fast_failed = self.all_jobs("skipped", **{"policy-tests": "failure", "review-records": "success"})
+        self.assertEqual("failure", self.run_report(fast_failed, "false")["checks"])
+
+    def test_only_publishing_runs_write_the_gradle_cache(self):
+        expected = ("${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/custom-subtitles'"
+                    " || github.ref == 'refs/heads/plus-beta')) }}")
+        for name, _, job_id, job in self.each_job():
+            for step in steps(job):
+                if str(step.get("uses", "")).startswith("gradle/actions/setup-gradle@"):
+                    self.assertEqual(expected, (step.get("with") or {}).get("cache-read-only"), f"{name}/{job_id}")
 
     def test_the_build_writes_no_signing_settings(self):
         script = (ROOT / ".github/plus/prepare-build.sh").read_text()

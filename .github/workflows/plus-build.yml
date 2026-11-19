@@ -32,6 +32,13 @@ on:
         required: false
         type: string
         default: stable
+      full:
+        description: >-
+          Full validation (build, signing, update check, all unit tests, emulator). false runs only the
+          fast checks (policy and review records) and reports <prefix>/checks as pending, never success.
+        required: false
+        type: boolean
+        default: true
       status_sha:
         description: Commit to report the result on (the pull request head); empty reports nothing
         required: false
@@ -65,6 +72,7 @@ env:
 jobs:
   build:
     name: Build APKs
+    if: inputs.full
     timeout-minutes: 60
     runs-on: ubuntu-24.04
     permissions:
@@ -133,6 +141,11 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # Only publishing runs (pushes to custom-subtitles or plus-beta, reviewed code) write the Gradle
+          # cache. Pull requests and the sync (which builds unreviewed Nuvio code on the default branch)
+          # only read it, so they cannot plant anything a publishing build would reuse.
+          cache-read-only: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/custom-subtitles' || github.ref == 'refs/heads/plus-beta')) }}
 
       - name: Prepare properties (no signing settings)
         env:
@@ -340,10 +353,13 @@ jobs:
 
   plus-tests:
     name: Unit tests of Nuvio Plus
+    if: inputs.full
     timeout-minutes: 45
     runs-on: ubuntu-24.04
     permissions:
       contents: read
+    outputs:
+      failed: ${{ steps.tests.outputs.failed }}
     steps:
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -372,8 +388,14 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # Only publishing runs (pushes to custom-subtitles or plus-beta, reviewed code) write the Gradle
+          # cache. Pull requests and the sync (which builds unreviewed Nuvio code on the default branch)
+          # only read it, so they cannot plant anything a publishing build would reuse.
+          cache-read-only: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/custom-subtitles' || github.ref == 'refs/heads/plus-beta')) }}
 
       - name: Unit tests (all of them)
+        id: tests
         env:
           GH_TOKEN: ${{ github.token }}
           PLUS_CHANNEL: ${{ env.CHANNEL }}
@@ -391,6 +413,7 @@ jobs:
             echo "::error::Unit tests did not finish (timeout or build error)"; exit 1
           }
           python3 .github/plus/test-results.py composeApp/build/test-results plus-tests.json
+          echo "failed=$(python3 -c 'import json; print(len(json.load(open("plus-tests.json"))["failed"]))')" >> "${GITHUB_OUTPUT}"
 
       - name: Keep the results
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -411,6 +434,10 @@ jobs:
 
   nuvio-tests:
     name: Unit tests of the Nuvio release it is based on
+    # Diagnosis only: labels each failing Nuvio Plus test as inherited from Nuvio or new. It runs only
+    # when a Nuvio Plus test fails; either way every Nuvio Plus test must pass.
+    needs: plus-tests
+    if: needs.plus-tests.result == 'success' && needs.plus-tests.outputs.failed != '0'
     timeout-minutes: 45
     runs-on: ubuntu-24.04
     permissions:
@@ -456,6 +483,11 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          # Only publishing runs (pushes to custom-subtitles or plus-beta, reviewed code) write the Gradle
+          # cache. Pull requests and the sync (which builds unreviewed Nuvio code on the default branch)
+          # only read it, so they cannot plant anything a publishing build would reuse.
+          cache-read-only: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/custom-subtitles' || github.ref == 'refs/heads/plus-beta')) }}
 
       - name: Unit tests
         run: |
@@ -479,6 +511,10 @@ jobs:
     name: All unit tests pass
     timeout-minutes: 10
     needs: [plus-tests, nuvio-tests]
+    # The Nuvio baseline is skipped when no Nuvio Plus test failed; anything else stops here.
+    if: >-
+      always() && needs.plus-tests.result == 'success'
+      && (needs.nuvio-tests.result == 'success' || (needs.nuvio-tests.result == 'skipped' && needs.plus-tests.outputs.failed == '0'))
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -675,6 +711,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       NEEDS: ${{ toJSON(needs) }}
+      FULL: ${{ inputs.full }}
       SHA: ${{ inputs.status_sha }}
       PREFIX: ${{ inputs.status_prefix }}
     steps:
@@ -682,10 +719,20 @@ jobs:
         run: |
           [[ "${SHA}" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::status_sha is not a commit id"; exit 1; }
           url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          failed="$(jq -r 'to_entries[] | select(.key != "review-records" and .value.result != "success") | .key' <<< "${NEEDS}" | paste -sd, -)"
           review="$(jq -r '."review-records".result' <<< "${NEEDS}")"
-          checks_state=success; checks_text="Build, signing, update check, all tests and emulator passed"
-          [[ -z "${failed}" ]] || { checks_state=failure; checks_text="Not passed: ${failed}"; }
+          if [[ "${FULL}" == true ]]; then
+            # Every check must pass; the Nuvio baseline may be skipped only because no Nuvio Plus test failed
+            # (test-gate then passes on its own conditions).
+            failed="$(jq -r 'to_entries[] | select(.key != "review-records")
+              | select(.value.result != "success" and (.key != "nuvio-tests" or .value.result != "skipped")) | .key' <<< "${NEEDS}" | paste -sd, -)"
+            checks_state=success; checks_text="Build, signing, update check, all tests and emulator passed"
+            [[ -z "${failed}" ]] || { checks_state=failure; checks_text="Not passed: ${failed}"; }
+          else
+            # Fast checks only: never success, so a pull request cannot be merged on them.
+            fast="$(jq -r '."policy-tests".result' <<< "${NEEDS}")"
+            checks_state=pending; checks_text="Fast checks passed; full validation runs when the pull request is ready for review"
+            [[ "${fast}" == success ]] || { checks_state=failure; checks_text="Fast checks failed (policy tests: ${fast})"; }
+          fi
           review_state=success; review_text="Nuvio merge reviews complete"
           [[ "${review}" == success ]] || { review_state=failure; review_text="Nuvio merge review not complete (${review})"; }
           gh api -X POST "repos/${GITHUB_REPOSITORY}/statuses/${SHA}" -f state="${checks_state}" \

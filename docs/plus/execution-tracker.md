@@ -552,6 +552,60 @@ Matches the reference state of the directive. Phase 1 branch: `plus-fix/security
 13. **Commit / PR:** —
 14. **Final status:** **OWNER ACTION**.
 
+### CI-4 · Economical CI without weaker checks (owner's request after Actions was re-enabled)
+
+1. **ID:** CI-4
+2. **Severity:** High for the cache point; Medium for the rest
+3. **Verification status:** Confirmed in the files.
+4. **Evidence:**
+   - **Cache poisoning path.** `setup-gradle` writes its cache by default on the default branch. The
+     scheduled sync runs there (`plus-pipeline.yml` on `cmp-rewrite`) and builds Nuvio code nobody has
+     reviewed yet. Caches of the default branch are readable by every branch, so they were readable
+     by the publishing runs too.
+   - **Retries could outlast the time limit.** `gradle-retry.sh` could run a timed-out command
+     (`timeout 30m`, exit 124) again when its log mentioned a download, three times past the job's
+     time limit.
+   - **Every change ran everything.** Each change to a draft pull request ran a full build and the
+     emulator, and the Nuvio baseline ran every time, although it only labels failures.
+5. **Root cause:** Defaults; one validation level.
+6. **Selected solution:**
+   - **Cache:** Every `setup-gradle` sets `cache-read-only` unless the run is a push to
+     `custom-subtitles` or `plus-beta` (reviewed code). Pull requests and the sync only read.
+   - **Retries:** Exits 124, 126, 127, 137 and 143 are never retried.
+   - **Two levels:**
+     - Draft pull request: **fast validation** (policy, security, gate and script tests, review
+       records, in seconds). `nuvio-plus/checks` is set to **pending, never success**.
+     - Ready for review, every later push, a manual run, publishing, the sync: **full validation**.
+   - **Baseline:** The Nuvio baseline runs only when a Nuvio Plus test fails. Every Nuvio Plus test
+     must still pass, and without the baseline a failure blocks as "not compared".
+   - **One run per change:** Pushes start nothing and a newer commit cancels the older run (pull
+     requests only). Publishing runs are never cancelled.
+7. **Rejected alternatives:**
+   - Path filters on the required check: they would leave it missing on some commits.
+   - Running only changed modules' tests: no reliable module map.
+   - Overlapping syncs (concurrency): changing the default-branch copy would start Nuvio's heavy
+     debug build on PR #4 for little gain.
+8. **Modified files:** `plus-build.yml`, `plus-ci.yml`, `gradle-retry.sh`, `test-gate.py`.
+9. **Added tests:**
+   - `test_gradle_retry.py`: timeout or kill after a download error, missing command, unrecognised
+     message. All are returned at once.
+   - `test_test_gate.py` (4): passes without the baseline when nothing fails; blocks a failure with
+     or without the baseline; blocks when no tests ran.
+   - Policy tests:
+     - Statuses follow the job results: every heavy job failed or skipped means failure; a skipped
+       baseline is fine.
+     - Fast validation never reports success.
+     - The cache is read-only outside publishing runs.
+     - Ready pull requests, publishing and the sync always get full validation.
+10. **Test results:** Local 62/62. Against `2c289de2`, 8 of the new tests fail or error. CI: see Phase 1 results.
+11. **Regression risk:**
+    - A draft pull request can no longer show a green `nuvio-plus/checks` (intended).
+    - The first runs after this have no Gradle cache until a publishing run writes one.
+12. **Remaining risks:** The cache is written by publishing runs. They run reviewed code, but Gradle
+    plugins downloaded during them are trusted as before.
+13. **Commit / PR:** see PR #3.
+14. **Final status:** Done locally; CI below.
+
 ---
 
 ## Phase 1 results

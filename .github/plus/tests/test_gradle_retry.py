@@ -43,6 +43,16 @@ class GradleRetryTest(unittest.TestCase):
     def test_a_failing_test_is_not_retried(self):
         self.assertEqual((1, 1), self.run_with([("There were failing tests. Could not download", 1)])[:2])
 
+    def test_a_timeout_or_kill_is_not_retried_even_after_a_download_error(self):
+        for status in (124, 137, 143):
+            self.assertEqual((status, 1), self.run_with([("Could not download x.jar", status)])[:2], status)
+
+    def test_a_missing_command_is_not_retried(self):
+        self.assertEqual((127, 1), self.run_with([("Could not resolve x", 127)])[:2])
+
+    def test_an_unrecognised_message_is_not_retried(self):
+        self.assertEqual((1, 1), self.run_with([("FAILURE: Build failed with an exception.\nboom", 1)])[:2])
+
     def test_any_other_failure_is_not_retried(self):
         self.assertEqual((7, 1), self.run_with([("Something else broke", 7)])[:2])
 
