@@ -692,7 +692,10 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
    - a search holds the queue, and an interrupted search starts over;
    - an episode without a source does not hold the queue;
    - a Downloading entry without a download leaves.
-10. **Test results:** See the PR run.
+10. **Test results:** PR #5 run on `85748af4`: PASS.
+    - 2163/2163 unit tests (2154 + 9 new).
+    - Build, signing, update check over custom-12, emulator.
+    - `nuvio-plus/checks` success.
 11. **Regression risk:** A queue whose episode stays paused waits indefinitely (intended). Stored
     queues from build 12 contain no Paused entries and load as before.
 12. **Remaining risks:**
@@ -700,7 +703,59 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
       episode start. Stable has no "Pause all" button; wiring beta's button to the queue belongs to
       the beta merge (B1).
     - 429/503 handling during the search is unchanged (it ends as NeedsChoice).
-13. **Commit / PR:** see the F1 pull request.
+13. **Commit / PR:** `13b651dd`, PR #5.
+14. **Final status:** Done; full validation PASS. A device test is pending: pause a queue episode
+    from the notification and from the screen.
+
+### F2 · The season queue mixed profiles
+
+1. **ID:** F2
+2. **Severity:** High for multi-profile users (worse than the audit said)
+3. **Verification status:** Confirmed in code.
+4. **Evidence:**
+   - `DownloadsStorage.android.kt`: the download list uses `ProfileScopedKey`, while the queue is in
+     the device-wide `extra_season_queue`.
+   - `ProfileRepository.selectProfile` calls `DownloadsRepository.onProfileChanged()`, which loads
+     profile B's downloads.
+   - The queue's next `pump()` did not find profile A's running episode in B's list and dropped it as
+     finished.
+   - It then started A's next episode and `enqueueFromStream` stored it in **B's** downloads.
+5. **Root cause:** A queue without a profile, in front of per-profile downloads.
+6. **Selected solution:**
+   - `SeasonQueueEntry.profileId`.
+   - `SeasonQueuePolicy.settle/busy/next` take the active profile: other profiles' episodes are left
+     exactly as they are, and never hold or start this profile's queue.
+   - Screens get only the active profile's episodes (`visible`). `clear()` and the duplicate check
+     work per profile.
+   - On a switch, a running search for another profile's episode stops (it waits as Waiting), and
+     `startEntry` and `handOff` never hand an episode to the downloader under another profile.
+   - The queue also listens to `ProfileRepository.state`, so a switch shows the right queue even when
+     both download lists are equal.
+   - Migration: entries saved before have no profile and are given the active profile when they load.
+     Nothing is dropped.
+   - Download location and Wi-Fi settings stay device-wide (intended).
+7. **Rejected alternatives:**
+   - One stored queue per profile key: this moves data and needs migration of the existing key; one
+     list with a profile field keeps everything in place.
+   - Guessing the owner of old entries from the downloads: unreliable.
+8. **Modified files:** `SeasonDownloadQueue.kt`, `SeasonQueuePolicyTest.kt`.
+9. **Added tests:** four in `SeasonQueuePolicyTest`:
+   - a profile switch leaves the other queue untouched, and B's queue moves on alone;
+   - A → B → A without loss or duplicates (running and finished cases);
+   - another profile's search does not hold this queue;
+   - old queues are kept for the active profile.
+
+   The F1 tests now run with a profile.
+10. **Test results:** See the F2 pull request.
+11. **Regression risk:**
+    - A download already running when the profile is switched keeps running as before (Nuvio's
+      behaviour); the queue no longer drops it.
+    - Old queue entries from another profile (saved before this) are given the active profile at the
+      first start.
+12. **Remaining risks:** What happens to a running download's own record on a profile switch is
+    Nuvio's download code, unchanged. NEEDS PHYSICAL DEVICE: two profiles, a season queued in A,
+    switch to B and back.
+13. **Commit / PR:** `70ba30d9`, F2 pull request.
 14. **Final status:** Code and tests done; full validation pending.
 
 ## Later phases (planned, not started)
@@ -708,7 +763,7 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
 | ID | Phase | Item | Status |
 |---|---|---|---|
 | F1 | 2 | Pausing a season episode starts the next; Pause all does not stop the queue | Done (see F1) |
-| F2 | 2 | Season queue shared across profiles | Planned |
+| F2 | 2 | Season queue shared across profiles | Done (see F2) |
 | F3 | 2 | Library recomposition during downloads (measure first) | Planned |
 | F4 | 2 | SAF and `.part` resume robustness | Planned |
 | F5 | 2 | Large-download performance (Nuvio #1604; measure first) | Planned |
