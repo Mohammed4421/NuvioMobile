@@ -98,28 +98,23 @@ use tags and would stop running, so turn it on only after deciding about them.
 3. Merging a green pull request publishes the next build only once section 4 is decided (the publish run shows "Reviewed and
    tested pull request" passing).
 
-## 4. Publishing with the public key: your decision
+## 4. The public key never publishes
 
-Every Nuvio Plus build since build 8 is signed with the key in `signing/nuvio-plus.p12`, which is
-public. Users of builds 8–12 can only update to APKs signed with that key, so changing it now would
-cut them off (phase 5 studies a safe move). Until then, the publishing workflow stops unless you
-decide, knowingly, to keep publishing with the public key:
+Every Nuvio Plus build from 8 to 12 is signed with the key in `signing/nuvio-plus.p12`, whose
+password is in the repository too. That key is treated as **compromised**: anyone can sign an APK
+that Android accepts as an update of those builds.
 
-Settings → Secrets and variables → Actions → Variables → New repository variable
+- The checks still sign test builds with it (so the update over build 12 can be tested), but the
+  publishing workflow **never publishes** a build carrying its certificate. The "Release signing
+  identity" job says so and the run ends without a release. No setting or variable changes this;
+  the old `PLUS_PUBLIC_KEY_RELEASES` variable is no longer read (delete it if it exists).
+- Publishing needs the new release key and its certificate pinned in the workflow
+  (`RELEASE_IDENTITY`, empty today). How the move to it works, and what the owner does once, is in
+  [signing-migration.md](signing-migration.md).
+- The workflow also stops if a private key secret (`CUSTOM_KEYSTORE_BASE64`) exists, so the identity
+  cannot change outside that plan.
 
-| Name | Value |
-|---|---|
-| `PLUS_PUBLIC_KEY_RELEASES` | `allowed` |
-
-Without it, merging into `custom-subtitles` builds and checks everything but publishes nothing (the
-"Release signing identity" job explains why). Deleting the variable stops publishing again.
-
-What the public key means: anyone can build an APK that Android accepts as an update of Nuvio
-Plus. Install updates only through the app's own updater or this repository's release page.
-
-The workflow also refuses to publish if the APKs carry any other certificate, or if a private key
-secret (`CUSTOM_KEYSTORE_BASE64`) exists before the key migration is approved, so the identity
-cannot change by accident.
+Until then: install updates only from this repository's release page or the app's updater.
 
 ## 5. Four separate approvals
 
@@ -129,11 +124,12 @@ Each is a separate act, and none implies another:
 |---|---|---|---|
 | Code change | Code enters a branch for review | A pull request with its checks | `nuvio-plus/checks`, `nuvio-plus/review` |
 | Merge | The change enters `custom-subtitles` | The owner merges the pull request | Ruleset (above); `review-gate.py publish` asks GitHub who merged it |
-| Signing identity | Which certificate users' phones must trust | The certificate is pinned in the workflow (`IDENTITY`); a change needs the phase 5 plan | `release-identity`: refuses any other certificate and any private key secret |
-| Publishing | A merged, checked build is released to users | The repository variable `PLUS_PUBLIC_KEY_RELEASES=allowed`, set by the owner in the settings (admins only) | `release-identity`: refuses without it |
+| Signing identity | Which certificate users' phones must trust | The new certificate is pinned in the workflow (`RELEASE_IDENTITY`) by a reviewed change, after the owner approves the migration | `release-identity`: the public key's certificate never publishes; any other unpinned one fails |
+| Publishing | A merged, checked build is released to users | Only a build signed with the pinned release key | `release-identity`, then the publish job |
 
-Nothing written in a conversation, a commit, a document or a file in the repository counts as the
-publishing approval. Only the repository variable does, because only the owner can set it.
+Nothing written in a conversation, a commit or a document counts as approval of the key migration;
+the owner gives it explicitly, and the key itself can only be created with the owner (see
+signing-migration.md).
 
 ## Secrets
 

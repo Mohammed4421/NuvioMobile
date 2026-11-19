@@ -829,3 +829,15 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
 | P1-iOS | 3 | iOS sources never built in CI | Planned |
 | X1 | 3 | `usesCleartextTraffic`, deep links, damaged local files, SAF permissions, crash-log privacy, per-ABI APK integrity, release-notes correctness, schedule auto-disable after 60 days, rollback and recovery docs | Planned |
 | X2 | 6 | `update-store-source.yml` (Nuvio) runs on published releases of the default branch; releases made by `GITHUB_TOKEN` do not trigger it. Re-check if releases are ever published another way | Recorded |
+
+## SEC-KEY-1: the public key never publishes (2026-11-19)
+
+- **Finding:** publishing with the key of builds 8–12 depended on a repository variable that cannot
+  be read from review sessions; if set, a merge would publish a build signed with a compromised key.
+- **Change:** `release-identity` treats that certificate as compromised: a build signed with it is
+  checked but never published (`publish=false`, the publish job is skipped, no failure release). Any
+  other certificate must equal `RELEASE_IDENTITY`, empty until the key migration is approved. The
+  variable `PLUS_PUBLIC_KEY_RELEASES` is no longer read.
+- **Tests:** `test_workflow_policy.py` runs the job's script for the public key, an unknown key, the
+  pinned key and a configured private key.
+- **Next:** the migration plan in `signing-migration.md`, waiting for the owner's approval.
