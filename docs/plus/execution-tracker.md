@@ -495,6 +495,63 @@ Matches the reference state of the directive. Phase 1 branch: `plus-fix/security
   - Nothing is published until the owner sets `PLUS_PUBLIC_KEY_RELEASES`.
 - **Not provable before merging:** a live publish and a scheduled sync run on the new files.
 
+### CI-2 · Failed downloads and duplicate runs (owner's request, 2026-11-19)
+
+1. **ID:** CI-2
+2. **Severity:** Medium
+3. **Verification status:** Confirmed.
+4. **Evidence:**
+   - Run `0913035f` (push): `could not resolve plugin artifact 'io.sentry.android.gradle…:6.14.0'`.
+     It also failed earlier in `15f80e4f`; a Robolectric jar failed in `99751263`. Every other run
+     downloaded the same files.
+   - `setup-gradle` writes its cache only on the default branch, where nothing is built, so every run
+     downloads everything.
+   - Every push to a branch with an open pull request started two full runs (push and pull request).
+5. **Root cause:** Unreliable downloads with no retry; a duplicate trigger.
+6. **Selected solution:**
+   - `.github/plus/gradle-retry.sh` runs Gradle again, at most three times, only when the log shows a
+     failed download and no compile error or failing test.
+   - It is used by all three Gradle calls.
+   - `plus-ci` runs only on pull requests and by hand.
+7. **Rejected alternatives:**
+   - Writing the Gradle cache on review branches: more moving parts.
+   - Changing Nuvio's `settings.gradle.kts`: conflicts on every sync, and Maven Central is already listed there.
+8. **Modified files:** `gradle-retry.sh`, `plus-build.yml`, `plus-ci.yml`.
+9. **Added tests:** `test_gradle_retry.py` (6), and policy tests: every Gradle call uses the retry;
+   `plus-ci` has no push trigger.
+10. **Test results:** PASS locally (51/51). CI: BLOCKED, see CI-3.
+11. **Regression risk:** A run whose downloads keep failing takes up to 2 minutes longer before failing.
+12. **Remaining risks:** none known.
+13. **Commit / PR:** `f089976e`, PR #3.
+14. **Final status:** Done; CI result pending CI-3.
+
+### CI-3 · GitHub stopped running Actions for the repository (2026-11-19, from 00:16 UTC)
+
+1. **ID:** CI-3
+2. **Severity:** Blocking
+3. **Verification status:** Confirmed by behaviour; the cause is not visible to me.
+4. **Evidence:**
+   - The pull request run of `0913035f` was cancelled after 12 minutes with the annotation
+     `repository invocation blocked`.
+   - For `f089976e`, pushed at 00:26 UTC, GitHub created no Actions check suite in 8 minutes; before,
+     jobs appeared within seconds.
+   - Other repositories report the same message when GitHub blocks Actions for a repository: runs stay
+     queued and are cancelled after about 11 minutes, and support lifts the block.
+   - The earlier exit 143 (`a18a0c00`) was a cancellation and may have the same cause.
+5. **Root cause:** Unknown (GitHub side). The many runs of this branch on 18–19 November may have
+   contributed; CI-2 halves the runs per change.
+6. **Selected solution:** None possible from here; only the owner can see GitHub's notice and
+   contact support.
+7. **Rejected alternatives:** Pushing again to "retry" (adds load and changes nothing while blocked).
+8. **Modified files:** none.
+9. **Added tests:** none.
+10. **Test results:** BLOCKED. Build, signing, update check and emulator of `f089976e` have not run.
+    The last complete green run is `3ecae669`, from before the owner's review fixes.
+11. **Regression risk:** —
+12. **Remaining risks:** Phase 1 is not complete until a full green run on the PR #3 head.
+13. **Commit / PR:** —
+14. **Final status:** **OWNER ACTION**.
+
 ---
 
 ## Phase 1 results
