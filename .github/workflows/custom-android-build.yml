@@ -94,38 +94,51 @@ jobs:
   release-identity:
     name: Release signing identity
     # Runs no file of the commit (no checkout) and holds no secret: only whether a private key is
-    # configured (true/false) and the owner's repository variable reach it.
+    # configured (true/false) reaches it.
     needs: checks
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}
+    outputs:
+      publish: ${{ steps.decide.outputs.publish }}
     env:
       CERTIFICATE: ${{ needs.checks.outputs.certificate }}
       PRIVATE_KEY_CONFIGURED: ${{ secrets.CUSTOM_KEYSTORE_BASE64 != '' }}
-      PUBLIC_KEY_RELEASES: ${{ vars.PLUS_PUBLIC_KEY_RELEASES }}
-      # Certificate of build 8 to 12 (signing/nuvio-plus.p12). Users of those builds can only update to
-      # APKs carrying it until a key migration (phase 5) is approved.
-      IDENTITY: 40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a
+      # Certificate of builds 8-12. Their key (signing/nuvio-plus.p12) is in the repository with its
+      # password, so it is treated as compromised: builds signed with it are checked, never published.
+      COMPROMISED: 40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a
+      # Certificate of the release key that replaces it (docs/plus/signing-migration.md). Empty until
+      # the owner approves the migration and the key exists, so nothing can be published.
+      RELEASE_IDENTITY: ""
     steps:
-      - name: Same identity as the published builds, and the owner's decision
+      - name: Signed with the approved release key, never the public one
+        id: decide
         run: |
-          if [[ "${CERTIFICATE}" != "${IDENTITY}" ]]; then
-            echo "::error::The APKs are signed with ${CERTIFICATE:-nothing}, not the certificate of the published builds. Changing the signing key needs the approved phase 5 plan; nothing is published."
+          if [[ ! "${CERTIFICATE}" =~ ^[0-9a-f]{64}$ ]]; then
+            echo "::error::No signing certificate from the checks; nothing is published."
             exit 1
           fi
           if [[ "${PRIVATE_KEY_CONFIGURED}" != false ]]; then
-            echo "::error::A private signing key (CUSTOM_KEYSTORE_BASE64) is configured, but moving to it is phase 5 and not approved. Nothing is published, so no user is cut off from updates."
+            echo "::error::A private signing key (CUSTOM_KEYSTORE_BASE64) is configured, but the key migration is not set up (docs/plus/signing-migration.md). Nothing is published."
             exit 1
           fi
-          if [[ "${PUBLIC_KEY_RELEASES}" != allowed ]]; then
-            echo "::error::Builds are signed with the public key in the repository. Publishing them needs the owner's decision: set the repository variable PLUS_PUBLIC_KEY_RELEASES to allowed (docs/plus/github-settings.md). Nothing is published."
+          if [[ "${CERTIFICATE}" == "${COMPROMISED}" ]]; then
+            echo "::warning::Built and checked, not published: signed with the key of builds 8-12, which is public and treated as compromised. Publishing needs the new release key (docs/plus/signing-migration.md)."
+            echo "publish=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          if [[ -z "${RELEASE_IDENTITY}" || "${CERTIFICATE}" != "${RELEASE_IDENTITY}" ]]; then
+            echo "::error::The APKs are signed with ${CERTIFICATE}, not the approved release key. Nothing is published."
             exit 1
           fi
-          echo "Signed with the key of builds 8–12 (public); the owner allowed publishing with it."
+          echo "Signed with the approved release key."
+          echo "publish=true" >> "${GITHUB_OUTPUT}"
 
   publish:
     name: Publish
     needs: [checks, review-gate, release-identity]
+    # Only a build signed with the approved release key; a build signed with the public key stops here.
+    if: needs.release-identity.outputs.publish == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
