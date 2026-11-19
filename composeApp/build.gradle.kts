@@ -1,3 +1,4 @@
+import java.util.Properties as JavaProperties
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
@@ -605,7 +606,7 @@ val writeRobolectricDeps = tasks.register("writeRobolectricDeps") {
     inputs.files(jars).withPropertyName("jars")
     outputs.file(output)
     doLast {
-        val properties = java.util.Properties()
+        val properties = JavaProperties()
         jars.files.forEach { jar ->
             val version = jar.name.removePrefix("android-all-instrumented-").removeSuffix(".jar")
             properties.setProperty("org.robolectric:android-all-instrumented:$version", jar.absolutePath)
