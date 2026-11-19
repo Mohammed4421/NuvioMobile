@@ -35,4 +35,5 @@ fun main(args: Array<String>) {
         }
     }
     println(if (failed == 0) "ALL PASS" else "$failed FAILED")
+    if (failed != 0) kotlin.system.exitProcess(1)
 }
