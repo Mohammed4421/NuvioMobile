@@ -807,6 +807,42 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
 12. **Remaining risks:** Downloads, settings and other stores were not changed by #3, #5 or #6. A
     later change to them needs the same old-build test.
 13. **Commit / PR:** `b450bce2`, PR #6.
+### R1 · Release notes: wrong heading, and a stale section could be published again
+
+1. **ID:** R1
+2. **Severity:** Medium (wrong information to users)
+3. **Verification status:** Confirmed.
+4. **Evidence:**
+   - Build 12's release notes start with "Next build (pending approval)". `publish-release.sh@28a3e4dd`
+     copied the top `CHANGELOG.md` section with its heading.
+   - That top section still described build 12, so build 13 would have repeated build 12's changes
+     as new.
+5. **Root cause:** No link between the changelog section and the build being published.
+6. **Selected solution:**
+   - The top section must be `## Next build …`; it is published as `### Build <N> …`, without any
+     "(pending approval)" label.
+   - Every release keeps a SHA-256 fingerprint of its section (`<!-- changelog-section: … -->`).
+     Publishing is refused when the section equals the previous release's, when it has no
+     "Next build" section, or when the release list cannot be read.
+   - The changelog: build 12's section is renamed, and a new "Next build" section describes the
+     user-visible changes of #3, #5 and #6.
+7. **Rejected alternatives:** Writing the changelog automatically (the token cannot push, and the
+   notes need a person).
+8. **Modified files:** `publish-release.sh`, `CHANGELOG.md`.
+9. **Added tests:** `test_publish_release.py` (8):
+   - the section is published as this build;
+   - a pending label is dropped;
+   - no Next build section means nothing is published;
+   - the previous release's notes are not published again;
+   - new notes after a release are published;
+   - an unreadable release list blocks;
+   - an already published build is left alone;
+   - beta is a pre-release.
+10. **Test results:** Local 72/72; CI: see the R1 pull request.
+11. **Regression risk:** A release is refused until the changelog is updated (intended).
+12. **Remaining risks:** After each release someone must rename the section and start a new one. The
+    refusal makes that visible.
+13. **Commit / PR:** R1 pull request.
 14. **Final status:** Done locally; CI pending.
 
 ## Later phases (planned, not started)
@@ -822,7 +858,7 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
 | B1–B3 | 4 | `plus-beta`, PR #2 retarget, build numbers, channel switching | Planned |
 | S4, S5 | 5 | Exposed key, rotation study (API 26/28/34) | Planned; SEC-8 has the first evidence |
 | A1–A4 | 6 | End-to-end sync test, rerere, smaller conflict surface, automation levels | Planned |
-| R1 | 2 | Build 12 release notes show the heading "Next build (pending approval)" | Planned |
+| R1 | 2 | Build 12 release notes show the heading "Next build (pending approval)" | Done (see R1) |
 | R2 | 0/owner | Repository description says "Official Nuvio Mobile Repository" | OWNER DECISION |
 | U1 | 4 | Beta → Stable policy (no downgrade) | Planned |
 | H1 | 3 | ASS dimming limits with libass | Planned |
