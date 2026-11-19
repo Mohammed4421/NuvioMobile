@@ -56,9 +56,14 @@ internal object UpdateArchiveCheck {
      * Certificates an announced signing-key rotation may move to (SHA-256, lowercase hex). An update
      * signed with a rotated key is accepted only when the installed certificate is in its v3 lineage
      * AND its new certificate is listed here, so a key rotation cannot be made up by whoever holds
-     * the old key. Empty: no rotation is accepted.
+     * the old key.
+     *
+     * The Nuvio Plus release key (docs/plus/signing-migration.md), which replaced the public key of
+     * builds 8-12 (40335e31...f48a) through a v3 lineage.
      */
-    val trustedRotationTargets: Set<String> = emptySet()
+    val trustedRotationTargets: Set<String> = setOf(
+        "99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35",
+    )
 
     fun evaluate(
         installed: PackageSnapshot?,

@@ -1,0 +1,91 @@
+name: Release key (one time, owner approval)
+
+# Makes the Nuvio Plus release key once (docs/plus/signing-migration.md). Runs only on a push to the
+# branch plus-release/key-ceremony, in the plus-release environment, which waits for the owner's
+# approval and holds the key's password (RELEASE_KEY_PASSWORD, chosen by the owner).
+#
+# The job writes the new key only in its temporary folder, encrypted with that password (PKCS12,
+# AES-256), and keeps three files for one day as the artifact nuvio-plus-release-key:
+#   release-keystore.p12.base64.txt  the encrypted key: the owner's backup, and the text the owner
+#                                    pastes into the plus-release secret RELEASE_KEYSTORE
+#   release-lineage.bin              public: the old key's signature handing over to the new key
+#   release-certificate-sha256.txt   public: the new certificate, pinned in the workflows and the app
+# It prints only the certificate. It stops if the environment already has a RELEASE_KEYSTORE, so a
+# second key cannot replace the first by accident. It runs no file of the commit.
+on:
+  push:
+    branches: ['plus-release/key-ceremony']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plus-release-key
+  cancel-in-progress: false
+
+jobs:
+  make-key:
+    name: Make the release key
+    environment: plus-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the old public key only (for the lineage)
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            signing/nuvio-plus.p12
+
+      - name: Forget the checkout token
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Make the key, the lineage and the certificate
+        env:
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          KEY_EXISTS: ${{ secrets.RELEASE_KEYSTORE != '' }}
+          OLD_PASSWORD: nuvio-plus-public
+        run: |
+          set -euo pipefail
+          if [[ "${KEY_EXISTS}" != false ]]; then
+            echo "::error::The plus-release environment already has a RELEASE_KEYSTORE; no second key is made."; exit 1
+          fi
+          if (( ${#RELEASE_KEY_PASSWORD} < 24 )); then
+            echo "::error::RELEASE_KEY_PASSWORD is missing or shorter than 24 characters; no key is made."; exit 1
+          fi
+          tools="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)"
+          umask 077
+          work="$(mktemp -d)"
+          trap 'rm -rf "${work}"' EXIT
+          keytool -genkeypair -noprompt -storetype PKCS12 -keystore "${work}/release.p12" \
+            -storepass:env RELEASE_KEY_PASSWORD -alias nuvio-plus-release \
+            -keyalg EC -groupname secp256r1 -sigalg SHA256withECDSA -validity 18250 \
+            -dname "CN=Nuvio Plus release, O=Nuvio Plus" > /dev/null 2>&1
+          "${tools}/apksigner" rotate --out "${work}/release-lineage.bin" \
+            --old-signer --ks signing/nuvio-plus.p12 --ks-key-alias nuvio-plus --ks-pass env:OLD_PASSWORD --key-pass env:OLD_PASSWORD \
+            --set-rollback false \
+            --new-signer --ks "${work}/release.p12" --ks-key-alias nuvio-plus-release --ks-pass env:RELEASE_KEY_PASSWORD
+          certificate="$(keytool -exportcert -keystore "${work}/release.p12" -storepass:env RELEASE_KEY_PASSWORD \
+            -alias nuvio-plus-release 2> /dev/null | sha256sum | cut -c1-64)"
+          [[ "${certificate}" =~ ^[0-9a-f]{64}$ ]] || { echo "::error::Could not read the new certificate"; exit 1; }
+          lineage="$("${tools}/apksigner" lineage --in "${work}/release-lineage.bin" --print-certs | sed -n 's/.*certificate SHA-256 digest: \([0-9a-f]\{64\}\).*/\1/p' | paste -sd' ')"
+          [[ "${lineage}" == "40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a ${certificate}" ]] \
+            || { echo "::error::The lineage is not old key -> new key: ${lineage}"; exit 1; }
+          mkdir -p "${RUNNER_TEMP}/out"
+          base64 -w 0 "${work}/release.p12" > "${RUNNER_TEMP}/out/release-keystore.p12.base64.txt"
+          cp "${work}/release-lineage.bin" "${RUNNER_TEMP}/out/"
+          echo "${certificate}" > "${RUNNER_TEMP}/out/release-certificate-sha256.txt"
+          echo "::notice::New release certificate SHA-256: ${certificate}"
+
+      - name: Keep the encrypted key, the lineage and the certificate (one day)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuvio-plus-release-key
+          path: ${{ runner.temp }}/out
+          if-no-files-found: error
+          retention-days: 1

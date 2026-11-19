@@ -93,52 +93,269 @@ jobs:
 
   release-identity:
     name: Release signing identity
-    # Runs no file of the commit (no checkout) and holds no secret: only whether a private key is
-    # configured (true/false) reaches it.
+    # Runs no file of the commit (no checkout) and holds no secret: only whether a legacy private key
+    # secret exists (true/false) reaches it. Decides whether this build moves on to release signing.
     needs: checks
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: {}
     outputs:
       publish: ${{ steps.decide.outputs.publish }}
+      identity: ${{ steps.decide.outputs.identity }}
+      compromised: ${{ steps.decide.outputs.compromised }}
     env:
       CERTIFICATE: ${{ needs.checks.outputs.certificate }}
       PRIVATE_KEY_CONFIGURED: ${{ secrets.CUSTOM_KEYSTORE_BASE64 != '' }}
       # Certificate of builds 8-12. Their key (signing/nuvio-plus.p12) is in the repository with its
-      # password, so it is treated as compromised: builds signed with it are checked, never published.
+      # password, so it is treated as compromised: the checks sign test builds with it, and an APK
+      # signed with it alone is never published.
       COMPROMISED: 40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a
-      # Certificate of the release key that replaces it (docs/plus/signing-migration.md). Empty until
-      # the owner approves the migration and the key exists, so nothing can be published.
-      RELEASE_IDENTITY: ""
+      # Certificate of the release key (docs/plus/signing-migration.md), made on 2026-11-19 by
+      # plus-release-key.yml (run 44534502910). Only APKs signed with it are published.
+      RELEASE_IDENTITY: 99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35
     steps:
-      - name: Signed with the approved release key, never the public one
+      - name: Tested with the public test key; a release key is pinned
         id: decide
         run: |
-          if [[ ! "${CERTIFICATE}" =~ ^[0-9a-f]{64}$ ]]; then
-            echo "::error::No signing certificate from the checks; nothing is published."
+          if [[ "${CERTIFICATE}" != "${COMPROMISED}" ]]; then
+            echo "::error::The checks signed with ${CERTIFICATE:-nothing}, not the test key. Nothing is published."
             exit 1
           fi
           if [[ "${PRIVATE_KEY_CONFIGURED}" != false ]]; then
-            echo "::error::A private signing key (CUSTOM_KEYSTORE_BASE64) is configured, but the key migration is not set up (docs/plus/signing-migration.md). Nothing is published."
+            echo "::error::A legacy private key secret (CUSTOM_KEYSTORE_BASE64) is configured. The release key lives only in the plus-release environment (docs/plus/signing-migration.md). Nothing is published."
             exit 1
           fi
-          if [[ "${CERTIFICATE}" == "${COMPROMISED}" ]]; then
-            echo "::warning::Built and checked, not published: signed with the key of builds 8-12, which is public and treated as compromised. Publishing needs the new release key (docs/plus/signing-migration.md)."
+          if [[ ! "${RELEASE_IDENTITY}" =~ ^[0-9a-f]{64}$ || "${RELEASE_IDENTITY}" == "${COMPROMISED}" ]]; then
+            echo "::warning::Built and checked, not published: no release key is set up yet, and the public key never publishes (docs/plus/signing-migration.md)."
             echo "publish=false" >> "${GITHUB_OUTPUT}"
             exit 0
           fi
-          if [[ -z "${RELEASE_IDENTITY}" || "${CERTIFICATE}" != "${RELEASE_IDENTITY}" ]]; then
-            echo "::error::The APKs are signed with ${CERTIFICATE}, not the approved release key. Nothing is published."
-            exit 1
-          fi
-          echo "Signed with the approved release key."
-          echo "publish=true" >> "${GITHUB_OUTPUT}"
+          echo "Tested; moving on to release signing with ${RELEASE_IDENTITY}."
+          { echo "publish=true"; echo "identity=${RELEASE_IDENTITY}"; echo "compromised=${COMPROMISED}"; } >> "${GITHUB_OUTPUT}"
+
+  release-sign:
+    name: Release signing (protected key, owner's approval)
+    # The only job that can read the release key: the plus-release environment holds it, allows only
+    # the publishing branches and waits for the owner's approval. It runs no file of the commit: the
+    # checkout holds only the old public key (for the lineage), and every command is written here.
+    needs: [checks, review-gate, release-identity]
+    if: needs.release-identity.outputs.publish == 'true'
+    environment: plus-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      manifest: ${{ steps.sign.outputs.manifest }}
+    steps:
+      - name: Check out the old public key only (for the lineage)
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.sha }}
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            signing/nuvio-plus.p12
+
+      - name: Forget the checkout token
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Get the unsigned APKs the checks built
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuvio-plus-built
+          path: built
+
+      - name: Sign for release (v3 with the lineage; Android 9+)
+        id: sign
+        env:
+          EXPECTED: ${{ needs.checks.outputs.built_manifest }}
+          IDENTITY: ${{ needs.release-identity.outputs.identity }}
+          OLD: ${{ needs.release-identity.outputs.compromised }}
+          OLD_PASSWORD: nuvio-plus-public
+          RELEASE_KEYSTORE: ${{ secrets.RELEASE_KEYSTORE }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          [[ -n "${EXPECTED}" && "$(sha256sum built/built.sha256 | cut -c1-64)" == "${EXPECTED}" ]] \
+            || { echo "::error::The unsigned APKs are not the ones the checks built"; exit 1; }
+          (cd built && sha256sum --check --strict built.sha256)
+          [[ "$(ls built/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; exit 1; }
+          [[ -s signing/nuvio-plus.p12 ]] || { echo "::error::signing/nuvio-plus.p12 is missing"; exit 1; }
+          [[ -n "${RELEASE_KEYSTORE}" && -n "${RELEASE_KEY_PASSWORD}" ]] \
+            || { echo "::error::The plus-release environment has no release key"; exit 1; }
+          tools="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)"
+          umask 077
+          key="$(mktemp -d)/release.p12"
+          trap 'rm -rf "$(dirname "${key}")"' EXIT
+          printf '%s' "${RELEASE_KEYSTORE}" | base64 -d > "${key}"
+          unset RELEASE_KEYSTORE
+          # The lineage: the old key's signature handing over to the release key (old key: rollback
+          # off). The old key signs only this, never an APK.
+          lineage="$(dirname "${key}")/lineage.bin"
+          "${tools}/apksigner" rotate --out "${lineage}" \
+            --old-signer --ks signing/nuvio-plus.p12 --ks-key-alias nuvio-plus --ks-pass env:OLD_PASSWORD --key-pass env:OLD_PASSWORD \
+            --set-rollback false \
+            --new-signer --ks "${key}" --ks-type PKCS12 --ks-key-alias nuvio-plus-release --ks-pass env:RELEASE_KEY_PASSWORD
+          chain="$("${tools}/apksigner" lineage --in "${lineage}" --print-certs | sed -n 's/.*certificate SHA-256 digest: \([0-9a-f]\{64\}\).*/\1/p' | paste -sd' ')"
+          [[ "${chain}" == "${OLD} ${IDENTITY}" ]] \
+            || { echo "::error::The release key is not the pinned one (lineage: ${chain})"; exit 1; }
+          mkdir -p release
+          for apk in built/*.apk; do
+            if unzip -Z1 "${apk}" | grep -qiE '^META-INF/[^/]+\.(SF|RSA|DSA|EC)$'; then
+              echo "::error::$(basename "${apk}") carries a v1 (JAR) signature; refusing to sign it"; exit 1
+            fi
+            aligned="$(dirname "${key}")/$(basename "${apk}")"
+            if "${tools}/zipalign" -c 4 "${apk}" > /dev/null; then cp "${apk}" "${aligned}"; else "${tools}/zipalign" -f 4 "${apk}" "${aligned}"; fi
+            "${tools}/apksigner" sign --ks "${key}" --ks-type PKCS12 --ks-pass env:RELEASE_KEY_PASSWORD \
+              --ks-key-alias nuvio-plus-release --lineage "${lineage}" --min-sdk-version 28 --rotation-min-sdk-version 28 \
+              --v1-signing-enabled false --v2-signing-enabled false --v3-signing-enabled true --v4-signing-enabled false \
+              --out "release/$(basename "${apk}")" "${aligned}" > /dev/null
+            rm -f "${aligned}"
+          done
+          rm -f "${key}"
+          cp built/checks-build.md release/
+          (cd release && sha256sum *.apk > release.sha256)
+          cat release/release.sha256
+          echo "manifest=$(sha256sum release/release.sha256 | cut -c1-64)" >> "${GITHUB_OUTPUT}"
+
+      - name: Keep the release APKs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuvio-plus-release
+          path: release
+          if-no-files-found: error
+          retention-days: 14
+
+  release-verify:
+    name: Release APKs (certificate, lineage, same contents as tested)
+    needs: [checks, release-identity, release-sign]
+    if: needs.release-identity.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      RELEASE_MANIFEST: ${{ needs.release-sign.outputs.manifest }}
+      TESTED_MANIFEST: ${{ needs.checks.outputs.manifest }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Forget the checkout token
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Get the release and the tested APKs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: nuvio-plus-{release,apk}
+          path: apks
+
+      - name: Verify
+        env:
+          IDENTITY: ${{ needs.release-identity.outputs.identity }}
+          OLD: ${{ needs.release-identity.outputs.compromised }}
+        run: |
+          set -o pipefail
+          python3 -I .github/plus/release-verify.py --release apks/nuvio-plus-release --tested apks/nuvio-plus-apk \
+            --release-manifest "${RELEASE_MANIFEST}" --tested-manifest "${TESTED_MANIFEST}" \
+            --identity "${IDENTITY}" --old "${OLD}" | tee checks-release.md
+
+      - name: Keep the result
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuvio-plus-release-verify
+          path: checks-release.md
+          if-no-files-found: error
+          retention-days: 14
+
+  release-upgrade:
+    name: Move from build 12 on Android ${{ matrix.api }}
+    needs: [checks, release-identity, release-verify]
+    if: needs.release-identity.outputs.publish == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [26, 28, 34]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Forget the checkout token
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Get the release and the tested APKs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: nuvio-plus-{release,apk}
+          path: apks
+
+      - name: Get build 12
+        run: |
+          gh release download custom-12 --repo "${GITHUB_REPOSITORY}" --dir previous --pattern '*x86_64*.apk' --clobber
+          echo "PREVIOUS_APK=$(ls previous/*x86_64*.apk)" >> "${GITHUB_ENV}"
+          echo "RELEASE_APK=$(ls apks/nuvio-plus-release/*x86_64*.apk)" >> "${GITHUB_ENV}"
+          echo "OLD_KEY_APK=$(ls apks/nuvio-plus-apk/*x86_64*.apk)" >> "${GITHUB_ENV}"
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Move build 12 to the release
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: ${{ matrix.api }}
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: bash .github/plus/release-upgrade-test.sh "$PREVIOUS_APK" "$RELEASE_APK" "$OLD_KEY_APK"
+
+      - name: Keep the result
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuvio-plus-release-upgrade-api${{ matrix.api }}
+          path: |
+            checks-release-upgrade-api*.md
+            release-upgrade.log
+          if-no-files-found: ignore
+          retention-days: 14
 
   publish:
     name: Publish
-    needs: [checks, review-gate, release-identity]
-    # Only a build signed with the approved release key; a build signed with the public key stops here.
+    needs: [checks, review-gate, release-identity, release-sign, release-verify, release-upgrade]
+    # Only APKs signed with the pinned release key, verified, and moved from build 12 on emulators.
     if: needs.release-identity.outputs.publish == 'true'
+    # A second approval by the owner, after every test above passed. It reads no secret of the
+    # environment (none is referenced here); the environment only makes it wait for the owner.
+    environment: plus-release
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -162,28 +379,28 @@ jobs:
           left="$(git config --list --includes | grep -ci 'authorization' || true)"
           if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
 
-      - name: Get the signed and tested APKs
+      - name: Get the release APKs and the check results
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: nuvio-plus-{apk,update-check,emulator,gate}
+          pattern: nuvio-plus-{release,update-check,emulator,gate,release-verify,release-upgrade-api*}
           merge-multiple: true
           path: dist
 
-      - name: Check they are the APKs that were signed and tested
+      - name: Check they are the APKs that were signed for release and verified
         env:
-          EXPECTED: ${{ needs.checks.outputs.manifest }}
-          CERTIFICATE: ${{ needs.checks.outputs.certificate }}
+          EXPECTED: ${{ needs.release-sign.outputs.manifest }}
+          identity: ${{ needs.release-identity.outputs.identity }}
         run: |
-          [[ -n "${EXPECTED}" && "$(sha256sum dist/signed.sha256 | cut -c1-64)" == "${EXPECTED}" ]] \
-            || { echo "::error::The APK list does not match the sign job"; exit 1; }
-          (cd dist && sha256sum --check --strict signed.sha256)
+          [[ -n "${EXPECTED}" && "$(sha256sum dist/release.sha256 | cut -c1-64)" == "${EXPECTED}" ]] \
+            || { echo "::error::The APK list does not match the release signing job"; exit 1; }
+          (cd dist && sha256sum --check --strict release.sha256)
           [[ "$(ls dist/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; exit 1; }
-          [[ "${CERTIFICATE}" =~ ^[0-9a-f]{64}$ ]] || { echo "::error::No certificate from the sign job"; exit 1; }
+          [[ "${identity}" =~ ^[0-9a-f]{64}$ ]] || { echo "::error::No release identity pinned"; exit 1; }
           tools="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)"
           for apk in dist/*.apk; do
-            "${tools}/apksigner" verify "${apk}"
+            "${tools}/apksigner" verify --min-sdk-version 28 "${apk}"
             cert="$(python3 -I .github/plus/apk-certs.py --current "${apk}")"
-            [[ "${cert}" == "${CERTIFICATE}" ]] || { echo "::error::${apk} is not signed with ${CERTIFICATE}"; exit 1; }
+            [[ "${cert}" == "${identity}" ]] || { echo "::error::${apk} is not signed with the release key"; exit 1; }
           done
 
       - name: Publish release
@@ -194,7 +411,7 @@ jobs:
 
   report-failure:
     name: Report a failed build
-    needs: [branch, checks, review-gate, release-identity, publish]
+    needs: [branch, checks, review-gate, release-identity, release-sign, release-verify, release-upgrade, publish]
     if: failure() && needs.branch.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 10

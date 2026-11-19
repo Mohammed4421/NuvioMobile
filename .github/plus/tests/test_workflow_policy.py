@@ -14,7 +14,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 WORKFLOWS = ROOT / ".github" / "workflows"
-PLUS = ["plus-build.yml", "plus-ci.yml", "plus-sync.yml", "plus-pipeline.yml", "custom-android-build.yml"]
+PLUS = ["plus-build.yml", "plus-ci.yml", "plus-sync.yml", "plus-pipeline.yml", "custom-android-build.yml",
+        "plus-release-key.yml"]
 PINNED = re.compile(r"^[\w.-]+/[\w./-]+@[0-9a-f]{40}$")
 OWN_REUSABLE = re.compile(r"^(\./\.github/workflows/[\w-]+\.yml|Mohammed4421/NuvioMobile/\.github/workflows/[\w-]+\.yml@custom-subtitles)$")
 # Jobs allowed to write, and why.
@@ -133,6 +134,8 @@ class WorkflowPolicyTest(unittest.TestCase):
             self.assertNotRegex(step.get("run", ""), r"\.github/|bash |python", "it must not run files")
         self.assertEqual("40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a", job["env"]["COMPROMISED"])
 
+    PUBLIC = "40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a"
+
     def run_identity_check(self, certificate, private_key, release_identity=None):
         job = self.workflows["custom-android-build.yml"]["jobs"]["release-identity"]
         with tempfile.TemporaryDirectory() as temp:
@@ -144,32 +147,84 @@ class WorkflowPolicyTest(unittest.TestCase):
             result = subprocess.run(["bash", "-e", "-c", steps(job)[0]["run"]], env=env, capture_output=True, text=True)
             return result, output.read_text() if output.exists() else ""
 
-    def test_nothing_signed_with_the_public_key_is_ever_published(self):
-        public = "40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a"
-        result, output = self.run_identity_check(public, "false")
-        self.assertEqual(0, result.returncode, "a build with the public key is checked, not failed")
+    def test_the_public_key_never_publishes(self):
+        # Without a pinned release key: checked, not published, and not a failure.
+        result, output = self.run_identity_check(self.PUBLIC, "false", "")
+        self.assertEqual(0, result.returncode, "a tested build without a release key is not a failure")
         self.assertEqual("publish=false\n", output)
-        self.assertIn("compromised", result.stdout)
+        self.assertIn("never publishes", result.stdout)
         # Not even if the public key's certificate were entered as the release identity.
-        self.assertEqual("publish=false\n", self.run_identity_check(public, "false", public)[1])
+        self.assertEqual("publish=false\n", self.run_identity_check(self.PUBLIC, "false", self.PUBLIC)[1])
 
-    def test_no_release_key_is_approved_yet(self):
-        self.assertEqual("", self.workflows["custom-android-build.yml"]["jobs"]["release-identity"]["env"]["RELEASE_IDENTITY"])
-        result, output = self.run_identity_check("ab" * 32, "false")
+    def test_the_release_key_is_pinned(self):
+        self.assertEqual("99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35",
+                         self.workflows["custom-android-build.yml"]["jobs"]["release-identity"]["env"]["RELEASE_IDENTITY"])
+        result, output = self.run_identity_check(self.PUBLIC, "false")
+        self.assertEqual(0, result.returncode, result.stdout)
+        self.assertIn("publish=true", output)
+
+    def test_a_pinned_release_key_moves_on_to_release_signing(self):
+        result, output = self.run_identity_check(self.PUBLIC, "false", "cd" * 32)
+        self.assertEqual(0, result.returncode, result.stdout)
+        self.assertIn("publish=true", output)
+        self.assertIn("identity=" + "cd" * 32, output)
+        self.assertIn("compromised=" + self.PUBLIC, output)
+
+    def test_the_checks_must_have_used_the_test_key(self):
+        for certificate in ("ab" * 32, ""):
+            result, output = self.run_identity_check(certificate, "false", "cd" * 32)
+            self.assertNotEqual(0, result.returncode)
+            self.assertNotIn("publish=true", output)
+        result, _ = self.run_identity_check(self.PUBLIC, "true", "cd" * 32)
         self.assertNotEqual(0, result.returncode)
-        self.assertNotIn("publish=true", output)
+        self.assertIn("legacy private key", result.stdout)
 
-    def test_only_the_approved_release_key_publishes(self):
-        self.assertEqual("publish=true\n", self.run_identity_check("cd" * 32, "false", "cd" * 32)[1])
-        result, output = self.run_identity_check("ab" * 32, "false", "cd" * 32)
-        self.assertNotEqual(0, result.returncode)
-        self.assertNotIn("publish=true", output)
-        self.assertNotEqual(0, self.run_identity_check("", "false", "cd" * 32)[0].returncode)
-        self.assertIn("migration", self.run_identity_check("cd" * 32, "true", "cd" * 32)[0].stdout)
+    def test_every_release_job_waits_for_the_identity_decision(self):
+        jobs = self.workflows["custom-android-build.yml"]["jobs"]
+        for job_id in ("release-sign", "release-verify", "release-upgrade", "publish"):
+            self.assertEqual("needs.release-identity.outputs.publish == 'true'", jobs[job_id]["if"], job_id)
 
-    def test_publishing_waits_for_the_identity_decision(self):
+    def test_only_release_signing_reads_the_release_key(self):
+        for name, _, job_id, job in self.each_job():
+            text = yaml.safe_dump(job)
+            if not re.search(r"secrets\.RELEASE_KEY(STORE|_PASSWORD)\b", text):
+                continue
+            self.assertIn((name, job_id), {("custom-android-build.yml", "release-sign"), ("plus-release-key.yml", "make-key")})
+            self.assertEqual("plus-release", job["environment"], f"{name}/{job_id} must use the protected environment")
+            self.assertFalse(writes(permissions(self.workflows[name], job)), f"{name}/{job_id} must not write")
+            with_secrets = [s for s in steps(job) if "secrets." in yaml.safe_dump(s)]
+            self.assertEqual(1, len(with_secrets), f"{name}/{job_id}: exactly one step sees the key")
+            for step in steps(job):
+                run = step.get("run", "")
+                self.assertNotRegex(run, r"\.github/|bash |python|\./gradlew", f"{name}/{job_id} must run no file of the commit")
+                self.assertNotRegex(run, r"set -x|echo [^\n]*\$\{?RELEASE_KEY|printenv|cat [^|\n]*\.p12", f"{name}/{job_id} must not print the key")
+                if step.get("uses", "").startswith("actions/checkout@"):
+                    self.assertIn("sparse-checkout", step.get("with", {}), "only the files it needs")
+
+    def test_publishing_waits_for_the_owner_after_every_test(self):
         publish = self.workflows["custom-android-build.yml"]["jobs"]["publish"]
-        self.assertEqual("needs.release-identity.outputs.publish == 'true'", publish["if"])
+        self.assertEqual("plus-release", publish["environment"])
+        self.assertNotIn("secrets.", yaml.safe_dump(publish), "publishing reads no secret of the environment")
+
+    def test_release_signing_needs_the_review_gate_and_signs_v3_only(self):
+        job = self.workflows["custom-android-build.yml"]["jobs"]["release-sign"]
+        self.assertEqual({"checks", "review-gate", "release-identity"}, set(job["needs"]))
+        sign = next(s for s in steps(job) if "secrets." in yaml.safe_dump(s))["run"]
+        for flag in ("--v1-signing-enabled false", "--v2-signing-enabled false", "--v3-signing-enabled true",
+                     "--lineage \"${lineage}\"", "--set-rollback false", "--min-sdk-version 28", "--rotation-min-sdk-version 28"):
+            self.assertIn(flag, sign)
+        self.assertIn("built_manifest", yaml.safe_dump(job), "it signs only the APKs the checks built")
+
+    def test_the_key_ceremony_runs_once_with_the_owners_approval(self):
+        workflow = self.workflows["plus-release-key.yml"]
+        self.assertEqual({"push": {"branches": ["plus-release/key-ceremony"]}}, workflow["on"])
+        job = workflow["jobs"]["make-key"]
+        run = next(s for s in steps(job) if "secrets." in yaml.safe_dump(s))["run"]
+        self.assertIn("already has a RELEASE_KEYSTORE", run)
+        self.assertIn("shorter than 24 characters", run)
+        self.assertIn("--set-rollback false", run)
+        upload = next(s for s in steps(job) if s.get("uses", "").startswith("actions/upload-artifact@"))
+        self.assertEqual(1, upload["with"]["retention-days"])
 
     def test_no_workflow_reads_the_old_publishing_variable(self):
         for path in (ROOT / ".github/workflows").glob("*.yml"):
@@ -256,7 +311,12 @@ class WorkflowPolicyTest(unittest.TestCase):
 
     def test_publishing_needs_every_check_and_the_review_gate(self):
         publish = self.workflows["custom-android-build.yml"]["jobs"]["publish"]
-        self.assertEqual({"checks", "review-gate", "release-identity"}, set(publish["needs"]))
+        self.assertEqual({"checks", "review-gate", "release-identity", "release-sign", "release-verify", "release-upgrade"},
+                         set(publish["needs"]))
+        upgrade = self.workflows["custom-android-build.yml"]["jobs"]["release-upgrade"]
+        self.assertEqual([26, 28, 34], upgrade["strategy"]["matrix"]["api"], "Android 8 refused; 9 and 14 keep data")
+        report = set(self.workflows["custom-android-build.yml"]["jobs"]["report-failure"]["needs"])
+        self.assertTrue({"release-sign", "release-verify", "release-upgrade", "publish"} <= report)
         gate = self.workflows["custom-android-build.yml"]["jobs"]["review-gate"]
         self.assertIn("review-gate.py publish", "\n".join(s.get("run", "") for s in steps(gate)))
         build = self.workflows["plus-build.yml"]["jobs"]

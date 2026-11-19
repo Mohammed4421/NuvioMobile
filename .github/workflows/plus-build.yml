@@ -56,6 +56,9 @@ on:
     outputs:
       build_number:
         value: ${{ jobs.build.outputs.build_number }}
+      built_manifest:
+        description: SHA-256 of built.sha256, the digest list of the unsigned APKs (nuvio-plus-built)
+        value: ${{ jobs.build.outputs.manifest }}
       manifest:
         description: SHA-256 of signed.sha256, the digest list of the signed APKs
         value: ${{ jobs.sign.outputs.manifest }}
@@ -189,6 +192,7 @@ jobs:
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
             -Pnuvio.applicationIdSuffix=.plus \
+            -Pnuvio.minSdk=28 \
             -Pnuvio.customVersionCode=$((1000 + BUILD)) \
             -Pnuvio.customVersionName="${version}-plus.${BUILD}${suffix}" \
             --stacktrace || {
@@ -326,6 +330,8 @@ jobs:
       contents: read
     env:
       GH_TOKEN: ${{ github.token }}
+      # Test builds carry the old public key: compare with the last release signed with it.
+      PLUS_PREVIOUS_TAG: custom-12
     steps:
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -434,6 +440,10 @@ jobs:
           }
           python3 .github/plus/test-results.py composeApp/build/test-results plus-tests.json
           echo "failed=$(python3 -c 'import json; print(len(json.load(open("plus-tests.json"))["failed"]))')" >> "${GITHUB_OUTPUT}"
+          # The most common failure messages, so a failure that is not the code's (a download, the
+          # environment) can be told apart from the job log alone.
+          { grep -rhoE '<failure message="[^"]{0,400}' composeApp/build/test-results || true; } \
+            | sed 's/^<failure message="//' | sort | uniq -c | sort -rn | head -n 5 | sed 's/^/::warning::failure: /'
 
       - name: Keep the results
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -666,6 +676,8 @@ jobs:
       contents: read
     env:
       GH_TOKEN: ${{ github.token }}
+      # Test builds carry the old public key: compare with the last release signed with it.
+      PLUS_PREVIOUS_TAG: custom-12
     steps:
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0

@@ -877,3 +877,21 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
 - **Tests:** `test_workflow_policy.py` runs the job's script for the public key, an unknown key, the
   pinned key and a configured private key.
 - **Next:** the migration plan in `signing-migration.md`, waiting for the owner's approval.
+
+## SEC-KEY-2: release signing with a protected new key (2026-11-19, approved by the owner)
+
+- **Decision:** new key, v3 lineage from the old key, Android 9 or later (`signing-migration.md`).
+- **Evidence:** study run 44521306430 (Android 8, 9, 13, 14): the new-key-only APK with the lineage
+  updates build 12 with data kept on 9/13/14, then old-key and attacker-lineage APKs are refused;
+  Android 8 cannot install it. `apksigner` refuses a new-key v2 block next to a lineage.
+- **Change:** `-Pnuvio.minSdk=28` for release builds; `release-identity` → `release-sign` (environment
+  `plus-release`, owner approval, no file of the commit) → `release-verify.py` → `release-upgrade`
+  (emulators 26/28/34 from build 12) → `publish`; the one-time `plus-release-key.yml`; test builds
+  compare with `custom-12`; release notes explain the one manual install.
+- **Tests:** `test_workflow_policy.py` (who sees the key, v3-only flags, ordering), `test_release_verify.py`.
+- **Not yet:** the key itself (owner steps), then the pins.
+- **Key made (2026-11-19, run 44534502910, approved by the owner):** certificate
+  `99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35`, pinned in `release-identity`
+  and `UpdateArchiveCheck.trustedRotationTargets`. The lineage is made in `release-sign` from the old
+  public key and the release key, and must name exactly those two certificates. Publishing waits for a
+  second owner approval after release-verify and the emulator move tests.
