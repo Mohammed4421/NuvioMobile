@@ -275,6 +275,8 @@ object SeasonDownloadQueue {
     ): Int {
         ensureStarted()
         DownloadsRepository.ensureLoaded()
+        // The profile the season is asked for; the episode list below may arrive after a switch.
+        val requestedProfile = activeProfile
         val reference = SeasonQueueReference(
             addonId = referenceStream.addonId,
             addonName = referenceStream.addonName,
@@ -285,6 +287,9 @@ object SeasonDownloadQueue {
             ?: runCatching { MetaDetailsRepository.fetch(parentMetaType, parentMetaId) }
                 .onFailure { if (it is CancellationException) throw it }
                 .getOrNull()
+        // Switched while the episode list loaded: the loaded downloads are another profile's, so
+        // nothing is queued (never into the profile now active, never checked against its downloads).
+        if (activeProfile != requestedProfile) return 0
         val seasonEpisodes = meta?.videos.orEmpty()
             .filter { it.season == seasonNumber && it.episode != null && it.available }
             .distinctBy { it.episode }
@@ -392,7 +397,10 @@ object SeasonDownloadQueue {
         // Android cannot start a download job from the background; the running job continues instead.
         if (!appVisible && !startsInBackground) return
         val next = SeasonQueuePolicy.next(settled, activeProfile) ?: return
-        scope.launch {
+        // Undispatched: the search is registered (and the entry marked Searching) before this returns,
+        // so a second pump in the same main-thread turn (a profile switch wakes two collectors) sees
+        // the queue busy instead of starting the same episode again.
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
             trackSearch(next.id) { startEntry(next) }
             pump()
         }
