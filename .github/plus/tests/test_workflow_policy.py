@@ -303,6 +303,31 @@ class WorkflowPolicyTest(unittest.TestCase):
                 if str(step.get("uses", "")).startswith("gradle/actions/setup-gradle@"):
                     self.assertEqual(expected, (step.get("with") or {}).get("cache-read-only"), f"{name}/{job_id}")
 
+    def test_jobs_below_an_optional_job_state_their_own_condition(self):
+        # GitHub skips a job when any job it depends on, directly or not, was skipped, unless the job's
+        # condition starts with always(). The Nuvio baseline is skipped whenever no test fails.
+        jobs = self.workflows["plus-build.yml"]["jobs"]
+        optional = {job_id for job_id, job in jobs.items() if "needs." in str(job.get("if", ""))
+                    and "always()" not in str(job.get("if", ""))}
+        self.assertEqual({"nuvio-tests"}, optional)
+
+        def ancestors(job_id):
+            needs = jobs[job_id].get("needs", [])
+            needs = [needs] if isinstance(needs, str) else needs
+            found = set(needs)
+            for need in needs:
+                found |= ancestors(need)
+            return found
+
+        for job_id, job in jobs.items():
+            if ancestors(job_id) & optional:
+                condition = str(job.get("if", ""))
+                self.assertTrue(condition.startswith("always()"), f"{job_id} would be skipped with the baseline")
+                if job_id != "report":
+                    for need in ([job["needs"]] if isinstance(job["needs"], str) else job["needs"]):
+                        if need not in optional:
+                            self.assertIn(f"needs.{need}.result == 'success'", condition, f"{job_id} must require {need}")
+
     def test_the_build_writes_no_signing_settings(self):
         script = (ROOT / ".github/plus/prepare-build.sh").read_text()
         self.assertNotIn("echo \"NUVIO_RELEASE_", script)

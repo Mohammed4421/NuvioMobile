@@ -616,6 +616,11 @@ jobs:
     name: Install, update and launch on an emulator
     timeout-minutes: 30
     needs: [sign, update-check, test-gate]
+    # Explicit: the Nuvio baseline (an ancestor through test-gate) is skipped when no test fails, and
+    # GitHub skips every job below a skipped one unless its condition says otherwise.
+    if: >-
+      always() && needs.sign.result == 'success' && needs.update-check.result == 'success'
+      && needs.test-gate.result == 'success'
     runs-on: ubuntu-24.04
     permissions:
       contents: read
