@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Writes local.properties for a Nuvio Plus build: account server, updater source and, for publishing
-# builds only, the extra properties passed in CUSTOM_LOCAL_PROPERTIES.
+# builds only, the extra properties in the file PLUS_EXTRA_PROPERTIES. That file is written by the
+# first step of the build job from the CUSTOM_LOCAL_PROPERTIES secret, after checking every name
+# against the list of public app settings; this script never sees the secret itself.
 # It writes no signing settings: Gradle builds unsigned APKs, and sign-apks.sh signs them in a
 # separate job that never runs Gradle or code from the commit being built.
 # Usage: prepare-build.sh <build-number>
@@ -16,8 +18,11 @@ build="$1"
   echo "PLUS_UPDATE_REPO=${GITHUB_REPOSITORY}"
   echo "PLUS_BUILD=${build}"
 } > local.properties
-# Extra lines (Trakt, Simkl keys and so on) come later and win. They are compiled into the APK.
-printf '%s\n' "${CUSTOM_LOCAL_PROPERTIES:-}" >> local.properties
+# Extra lines (Trakt, Simkl client ids and so on) come later and win. They are compiled into the APK,
+# so they are public by nature.
+if [[ -n "${PLUS_EXTRA_PROPERTIES:-}" ]]; then
+  cat "${PLUS_EXTRA_PROPERTIES}" >> local.properties
+fi
 if grep -q '^NUVIO_RELEASE_' local.properties; then
   echo "::error::Signing settings must not reach the Gradle build"; exit 1
 fi

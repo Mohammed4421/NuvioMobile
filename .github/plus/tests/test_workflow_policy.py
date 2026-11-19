@@ -4,6 +4,8 @@ These keep later edits (or a Nuvio merge) from quietly undoing the isolation of 
 access. Run: python3 -m unittest discover -s .github/plus/tests
 """
 import re
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -105,11 +107,74 @@ class WorkflowPolicyTest(unittest.TestCase):
             env = "\n".join(str(step.get("env", "")) for step in steps(job)) + str(job.get("env", ""))
             self.assertNotIn("KEYSTORE", env, f"{name}/{job_id} runs Gradle next to the signing key")
 
-    def test_the_key_is_only_in_the_sign_job(self):
+    def test_no_signing_secret_reaches_files_of_the_commit(self):
+        # Every job of plus-build.yml runs files of the commit (sign-apks.sh, apk-certs.py, Gradle):
+        # no signing secret may reach that workflow or the scripts it runs.
+        for path in (".github/workflows/plus-build.yml", ".github/plus/sign-apks.sh", ".github/plus/prepare-build.sh"):
+            text = (ROOT / path).read_text()
+            for secret in ("CUSTOM_KEYSTORE", "CUSTOM_KEY_ALIAS", "KEYSTORE_PASSWORD"):
+                self.assertNotIn(secret, text, f"{path} mentions {secret}")
+        passed = self.workflows["custom-android-build.yml"]["jobs"]["checks"]["secrets"]
+        self.assertEqual({"CUSTOM_LOCAL_PROPERTIES"}, set(passed))
+
+    def test_the_signing_key_secret_is_only_tested_for_presence(self):
         for name, _, job_id, job in self.each_job():
             text = yaml.safe_dump(job)
-            if "CUSTOM_KEYSTORE_BASE64" in text and "uses" not in job:
-                self.assertEqual(("plus-build.yml", "sign"), (name, job_id))
+            if "CUSTOM_KEYSTORE" in text:
+                self.assertEqual(("custom-android-build.yml", "release-identity"), (name, job_id))
+                self.assertIn("${{ secrets.CUSTOM_KEYSTORE_BASE64 != '' }}", text)
+
+    def test_the_release_identity_check_runs_no_code_of_the_commit(self):
+        job = self.workflows["custom-android-build.yml"]["jobs"]["release-identity"]
+        self.assertEqual({}, job["permissions"])
+        for step in steps(job):
+            self.assertNotIn("uses", step, "the identity check must not check out or run actions")
+            self.assertNotRegex(step.get("run", ""), r"\.github/|bash |python", "it must not run files")
+        self.assertEqual("40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a", job["env"]["IDENTITY"])
+        self.assertEqual("${{ vars.PLUS_PUBLIC_KEY_RELEASES }}", job["env"]["PUBLIC_KEY_RELEASES"])
+
+    def run_identity_check(self, certificate, private_key, decision):
+        job = self.workflows["custom-android-build.yml"]["jobs"]["release-identity"]
+        env = {"CERTIFICATE": certificate, "PRIVATE_KEY_CONFIGURED": private_key, "PUBLIC_KEY_RELEASES": decision,
+               "IDENTITY": job["env"]["IDENTITY"], "PATH": "/usr/bin:/bin"}
+        return subprocess.run(["bash", "-e", "-c", steps(job)[0]["run"]], env=env, capture_output=True, text=True)
+
+    def test_publishing_with_the_public_key_needs_the_owners_decision(self):
+        identity = "40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a"
+        self.assertEqual(0, self.run_identity_check(identity, "false", "allowed").returncode)
+        self.assertIn("owner's decision", self.run_identity_check(identity, "false", "").stdout)
+        self.assertIn("phase 5", self.run_identity_check(identity, "true", "allowed").stdout)
+        self.assertIn("not the certificate", self.run_identity_check("ab" * 32, "false", "allowed").stdout)
+        self.assertNotEqual(0, self.run_identity_check("", "false", "allowed").returncode)
+
+    def run_properties_check(self, extra):
+        build = self.workflows["plus-build.yml"]["jobs"]["build"]
+        step = steps(build)[0]
+        with tempfile.TemporaryDirectory() as temp:
+            result = subprocess.run(["bash", "-e", "-o", "pipefail", "-c", step["run"]], capture_output=True, text=True,
+                                    env={"EXTRA": extra, "RUNNER_TEMP": temp, "PATH": "/usr/bin:/bin"})
+            written = Path(temp, "extra.properties").read_text() if Path(temp, "extra.properties").exists() else ""
+        return result, written
+
+    def test_the_extra_properties_are_checked_before_any_code_of_the_commit(self):
+        build = self.workflows["plus-build.yml"]["jobs"]["build"]
+        first = steps(build)[0]
+        self.assertNotIn("uses", first)
+        self.assertEqual({"EXTRA": "${{ secrets.CUSTOM_LOCAL_PROPERTIES }}"}, first["env"])
+        for later in steps(build)[1:]:
+            self.assertNotIn("CUSTOM_LOCAL_PROPERTIES", yaml.safe_dump(later), "only the first step sees the secret")
+
+    def test_only_public_app_settings_pass(self):
+        result, written = self.run_properties_check("TRAKT_CLIENT_ID=abc\n# note\n\nSENTRY_DSN=https://k@o.ingest/1\r\n")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual("TRAKT_CLIENT_ID=abc\nSENTRY_DSN=https://k@o.ingest/1\n", written)
+        self.assertEqual(0, self.run_properties_check("")[0].returncode)
+        for bad in ("NUVIO_RELEASE_STORE_PASSWORD=hunter2", "SUPABASE_SERVICE_ROLE_KEY=secret",
+                    "NUVIO_SUPABASE_URL=https://evil", "lowercase=x", "NO_EQUALS_SIGN", "=value"):
+            result, _ = self.run_properties_check("TRAKT_CLIENT_ID=abc\n" + bad)
+            self.assertEqual(1, result.returncode, bad)
+            self.assertNotIn("hunter2", result.stdout + result.stderr, "values must never be printed")
+            self.assertNotIn("secret\n", result.stdout)
 
     def test_checkouts_keep_no_credentials_unless_the_job_pushes(self):
         # Every checkout is followed at once by an inline step that removes the stored token and
@@ -163,7 +228,7 @@ class WorkflowPolicyTest(unittest.TestCase):
 
     def test_publishing_needs_every_check_and_the_review_gate(self):
         publish = self.workflows["custom-android-build.yml"]["jobs"]["publish"]
-        self.assertEqual({"checks", "review-gate"}, set(publish["needs"]))
+        self.assertEqual({"checks", "review-gate", "release-identity"}, set(publish["needs"]))
         gate = self.workflows["custom-android-build.yml"]["jobs"]["review-gate"]
         self.assertIn("review-gate.py publish", "\n".join(s.get("run", "") for s in steps(gate)))
         build = self.workflows["plus-build.yml"]["jobs"]

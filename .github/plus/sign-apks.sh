@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Signs the APKs built by Gradle (which signs them with a throwaway build-only key) with the release
-# key, without running Gradle or any code of the commit being built. apksigner replaces the APK
-# Signing Block, so only the release signature remains; APKs with v1 (JAR) signatures are refused,
-# since a stale v1 signature would survive re-signing with v1 disabled. The certificate stays the one every Nuvio Plus build since build 8 carries (APK Signature
-# Scheme v2 only, as the earlier builds), so the result installs as an update.
+# Signs the APKs built by Gradle (which signs them with a throwaway build-only key) with the current
+# Nuvio Plus identity: the public key kept in the repository (signing/nuvio-plus.p12), the
+# certificate of every build since build 8, APK Signature Scheme v2 only, so the result installs as
+# an update. apksigner replaces the APK Signing Block; APKs with v1 (JAR) signatures are refused,
+# since a stale v1 signature would survive re-signing with v1 disabled.
 #
-# Key: the private key in CUSTOM_KEYSTORE_BASE64 when the publishing workflow passes one, otherwise
-# the public key kept in the repository (signing/nuvio-plus.p12, the current identity).
+# This script is part of the commit being built, so it must never receive a secret: it only knows the
+# public key. Signing with a private key is not possible today (phase 5 decides how, in a protected
+# job that runs no file of the commit).
 # Usage: sign-apks.sh <built-dir> <signed-dir> <public-keystore>
 # Prints the SHA-256 digest of the signing certificate.
 set -euo pipefail
@@ -16,16 +17,9 @@ tools="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)"
 mkdir -p "${out}"
 key_dir="$(mktemp -d)"
 trap 'rm -rf "${key_dir}"' EXIT
-if [[ -n "${CUSTOM_KEYSTORE_BASE64:-}" ]]; then
-  keystore="${key_dir}/release.keystore"
-  printf '%s' "${CUSTOM_KEYSTORE_BASE64}" | base64 --decode > "${keystore}"
-  export SIGNING_PASSWORD="${CUSTOM_KEYSTORE_PASSWORD:?CUSTOM_KEYSTORE_PASSWORD is missing}"
-  alias="${CUSTOM_KEY_ALIAS:-custom}"
-else
-  keystore="${public_keystore}"
-  export SIGNING_PASSWORD="nuvio-plus-public"
-  alias="nuvio-plus"
-fi
+keystore="${public_keystore}"
+export SIGNING_PASSWORD="nuvio-plus-public"
+alias="nuvio-plus"
 shopt -s nullglob
 apks=("${in}"/*.apk)
 (( ${#apks[@]} > 0 )) || { echo "::error::No APKs to sign in ${in}" >&2; exit 1; }

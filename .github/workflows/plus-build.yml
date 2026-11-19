@@ -7,8 +7,10 @@ name: Nuvio Plus build and checks
 #   * Jobs that run Gradle or other code of the commit (build, plus-tests, nuvio-tests) get a
 #     read-only token, no stored Git credentials and no signing key.
 #   * Gradle signs with a throwaway key made in the build job. The sign job replaces that signature
-#     without running Gradle or the commit's build code, and is the only job that can see the release
-#     key (a private one is passed only by the publishing workflow).
+#     with the current public identity (signing/nuvio-plus.p12) without running Gradle. No job here
+#     receives a signing secret, because every job runs files of the commit being built.
+#   * The extra app settings (CUSTOM_LOCAL_PROPERTIES) are checked against a list of public setting
+#     names in the first step of the build job, before any code of the commit runs.
 #   * The SHA-256 manifest of the APKs travels in job outputs, which no other job can change, and is
 #     checked when the APKs are signed and again before they are published.
 #   * The result is reported as commit statuses (<status_prefix>/checks and /review), which only this
@@ -40,13 +42,8 @@ on:
         required: false
         type: string
         default: nuvio-plus
+    # No signing secret is accepted: every job here runs files of the commit being built.
     secrets:
-      CUSTOM_KEYSTORE_BASE64:
-        required: false
-      CUSTOM_KEYSTORE_PASSWORD:
-        required: false
-      CUSTOM_KEY_ALIAS:
-        required: false
       CUSTOM_LOCAL_PROPERTIES:
         required: false
     outputs:
@@ -78,6 +75,36 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Check the extra properties (before any code of the commit runs)
+        # First step on purpose: nothing of the commit has run, so nothing can have changed this
+        # step's environment. Only names of public app settings pass (all of them are compiled into
+        # the APK, so their values are public by nature). Anything else, signing settings or server
+        # secrets included, stops the build without printing a value. The secret goes no further:
+        # later steps get only the checked file.
+        env:
+          EXTRA: ${{ secrets.CUSTOM_LOCAL_PROPERTIES }}
+        run: |
+          allowed=" TRAKT_CLIENT_ID TRAKT_CLIENT_SECRET TRAKT_REDIRECT_URI SIMKL_CLIENT_ID SIMKL_REDIRECT_URI SIMKL_APP_NAME MDBLIST_CLIENT_ID PREMIUMIZE_CLIENT_ID TMDB_API_KEY SENTRY_DSN INTRODB_API_URL IMDB_RATINGS_API_BASE_URL IMDB_TAPFRAME_API_BASE_URL CONTRIBUTIONS_URL SUPPORTERS_WALL_URL DONATIONS_BASE_URL DONATIONS_DONATE_URL "
+          out="${RUNNER_TEMP}/extra.properties"
+          : > "${out}"
+          bad=""
+          while IFS= read -r line || [[ -n "${line}" ]]; do
+            line="${line%$'\r'}"
+            [[ -z "${line//[[:space:]]/}" || "${line}" =~ ^[[:space:]]*# ]] && continue
+            name="${line%%=*}"
+            name="${name//[[:space:]]/}"
+            if [[ "${line}" == *=* && "${name}" =~ ^[A-Z0-9_]+$ && "${allowed}" == *" ${name} "* ]]; then
+              printf '%s\n' "${line}" >> "${out}"
+            else
+              bad="${bad} ${name:-<unnamed>}"
+            fi
+          done <<< "${EXTRA}"
+          if [[ -n "${bad}" ]]; then
+            echo "::error::CUSTOM_LOCAL_PROPERTIES holds settings that must not reach the build:${bad}"
+            exit 1
+          fi
+          echo "Extra properties: $(cut -d= -f1 "${out}" | paste -sd' ' -)"
+
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
@@ -109,9 +136,8 @@ jobs:
 
       - name: Prepare properties (no signing settings)
         env:
-          CUSTOM_LOCAL_PROPERTIES: ${{ secrets.CUSTOM_LOCAL_PROPERTIES }}
           BUILD: ${{ steps.number.outputs.build }}
-        run: bash .github/plus/prepare-build.sh "${BUILD}"
+        run: PLUS_EXTRA_PROPERTIES="${RUNNER_TEMP}/extra.properties" bash .github/plus/prepare-build.sh "${BUILD}"
 
       - name: Throwaway build key (not the release identity)
         # Android's Gradle plugin refuses to package a release build without a key. Gradle gets a key
@@ -192,7 +218,7 @@ jobs:
           retention-days: 14
 
   sign:
-    name: Sign APKs (no Gradle, no code of the commit)
+    name: Sign APKs (no Gradle, no secret)
     needs: build
     timeout-minutes: 10
     runs-on: ubuntu-24.04
@@ -240,12 +266,8 @@ jobs:
           (cd built && sha256sum --check --strict built.sha256)
           [[ "$(ls built/*.apk | wc -l)" -eq 4 ]] || { echo "::error::Expected 4 APKs"; exit 1; }
 
-      - name: Sign
+      - name: Sign with the current public identity (no secret)
         id: sign
-        env:
-          CUSTOM_KEYSTORE_BASE64: ${{ secrets.CUSTOM_KEYSTORE_BASE64 }}
-          CUSTOM_KEYSTORE_PASSWORD: ${{ secrets.CUSTOM_KEYSTORE_PASSWORD }}
-          CUSTOM_KEY_ALIAS: ${{ secrets.CUSTOM_KEY_ALIAS }}
         run: |
           trap 'echo "::error::Failed (line ${LINENO}): ${BASH_COMMAND}"' ERR
           certificate="$(bash .github/plus/sign-apks.sh built signed signing/nuvio-plus.p12 2> sign.log)" || {

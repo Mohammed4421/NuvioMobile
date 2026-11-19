@@ -28,7 +28,8 @@ def prefixed(data, offset):
 
 
 def certificates(path):
-    data = open(path, "rb").read()
+    with open(path, "rb") as file:
+        data = file.read()
     eocd = data.rfind(b"PK\x05\x06")
     if eocd < 0:
         raise ValueError("not a ZIP file")
