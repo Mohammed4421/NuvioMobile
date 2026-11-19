@@ -56,6 +56,9 @@ on:
     outputs:
       build_number:
         value: ${{ jobs.build.outputs.build_number }}
+      built_manifest:
+        description: SHA-256 of built.sha256, the digest list of the unsigned APKs (nuvio-plus-built)
+        value: ${{ jobs.build.outputs.manifest }}
       manifest:
         description: SHA-256 of signed.sha256, the digest list of the signed APKs
         value: ${{ jobs.sign.outputs.manifest }}
@@ -189,6 +192,7 @@ jobs:
             -Pnuvio.android.distribution=full \
             -Pnuvio.ios.distribution=appstore \
             -Pnuvio.applicationIdSuffix=.plus \
+            -Pnuvio.minSdk=28 \
             -Pnuvio.customVersionCode=$((1000 + BUILD)) \
             -Pnuvio.customVersionName="${version}-plus.${BUILD}${suffix}" \
             --stacktrace || {
@@ -326,6 +330,8 @@ jobs:
       contents: read
     env:
       GH_TOKEN: ${{ github.token }}
+      # Test builds carry the old public key: compare with the last release signed with it.
+      PLUS_PREVIOUS_TAG: custom-12
     steps:
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -666,6 +672,8 @@ jobs:
       contents: read
     env:
       GH_TOKEN: ${{ github.token }}
+      # Test builds carry the old public key: compare with the last release signed with it.
+      PLUS_PREVIOUS_TAG: custom-12
     steps:
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0

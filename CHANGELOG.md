@@ -22,6 +22,12 @@ Newest first.
   builds can still read it.
 
 ### Changed
+- **New signing key; Android 9 or later.** The key that signed builds 8–12 was public, so anyone
+  could make an "update" of the app. This build is signed with a new, protected key and carries
+  Android's proof that the old key handed over to it. Install it once from the release page over the
+  old app: on Android 9 and later your data is kept, and from then on the phone refuses anything
+  signed with the old key. The old app's updater cannot install it. Android 7 and 8 cannot install
+  this build and stay on build 12.
 - **The in-app updater refuses an update it cannot fully check.** A damaged or unsigned download, or
   an update this app cannot compare with its own signature, is refused with a message (also in
   Arabic) instead of being handed to the installer.

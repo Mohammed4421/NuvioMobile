@@ -111,6 +111,10 @@ that Android accepts as an update of those builds.
 - Publishing needs the new release key and its certificate pinned in the workflow
   (`RELEASE_IDENTITY`, empty today). How the move to it works, and what the owner does once, is in
   [signing-migration.md](signing-migration.md).
+- The release key lives only in the Environment `plus-release` (Settings → Environments):
+  required reviewer the owner, deployment branches `custom-subtitles`, `plus-beta` and
+  `plus-release/key-ceremony`, secrets `RELEASE_KEY_PASSWORD` and `RELEASE_KEYSTORE`. Every release
+  waits for the owner's approval there.
 - The workflow also stops if a private key secret (`CUSTOM_KEYSTORE_BASE64`) exists, so the identity
   cannot change outside that plan.
 

@@ -34,7 +34,9 @@ fi
 {
   echo "Unofficial build of Nuvio Mobile with subtitle and download improvements."
   echo
-  echo "**Install:** \`NuvioPlus-build${build}-arm64-v8a.apk\` fits most phones and tablets and installs as an update over the previous build (build 8 or newer)."
+  echo "**Install:** \`NuvioPlus-build${build}-arm64-v8a.apk\` fits most phones and tablets. Needs Android 9 or later."
+  echo
+  echo "**Coming from build 12 or earlier:** the signing key changed (the old one was public). The old app's updater cannot install this build: download the APK here once and install it over the old app. On Android 9 and later your data is kept, and the app's updater works again from then on. Android 7 and 8 cannot install this build."
   [[ "${channel}" == beta ]] && echo && echo "**Beta:** built from the \`plus-beta\` branch with a Nuvio beta. Offered in the app only on the Beta update channel."
   if [[ -n "${note}" ]]; then echo; echo "${note}"; fi
   echo

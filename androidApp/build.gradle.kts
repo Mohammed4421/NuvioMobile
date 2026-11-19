@@ -68,7 +68,10 @@ android {
 
     defaultConfig {
         applicationId = "com.nuvio.app"
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        // Nuvio Plus release builds pass -Pnuvio.minSdk=28: they are signed with APK Signature Scheme v3
+        // only (docs/plus/signing-migration.md), which Android 8 and older cannot verify.
+        minSdk = providers.gradleProperty("nuvio.minSdk").orNull?.trim()?.toIntOrNull()
+            ?: libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = releaseAppVersionCode
         versionName = releaseAppVersionName
