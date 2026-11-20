@@ -23,7 +23,6 @@ WRITERS = {
     ("plus-sync.yml", "prepare"): "pushes the review branch; runs no Nuvio code",
     ("plus-sync.yml", "pull-request"): "opens the review pull request",
     ("custom-android-build.yml", "publish"): "publishes the signed, tested APKs",
-    ("custom-android-build.yml", "report-failure"): "publishes the failure report",
 }
 LEVEL = {"none": 0, "read": 1, "write": 2}
 
@@ -209,6 +208,48 @@ class WorkflowPolicyTest(unittest.TestCase):
         group = workflow["concurrency"]["group"]
         self.assertIn("'nuvio-plus-publish'", group)
         self.assertIn("workflow_dispatch", group)
+
+    def run_head_check(self, job_id, head, gh_fails=False):
+        """Runs the branch-head step of job_id with a fake gh that reports `head` as the branch head."""
+        job = self.workflows["custom-android-build.yml"]["jobs"][job_id]
+        step = next(s for s in steps(job) if s.get("name") == "The branch head is still this commit")
+        with tempfile.TemporaryDirectory() as temp:
+            fake = Path(temp, "gh")
+            fake.write_text("#!/bin/sh\n" + ("exit 1\n" if gh_fails else f'[ "$2" = "repos/o/r/git/ref/heads/custom-subtitles" ] && echo {head}\n'))
+            fake.chmod(0o755)
+            env = {"PATH": f"{temp}:/usr/bin:/bin", "GITHUB_REPOSITORY": "o/r", "GITHUB_REF_NAME": "custom-subtitles",
+                   "GITHUB_SHA": self.HEAD, "GH_TOKEN": "x"}
+            return subprocess.run(["bash", "-e", "-c", step["run"]], env=env, capture_output=True, text=True)
+
+    def test_a_branch_that_moved_is_neither_signed_nor_published(self):
+        # The branch moves after the run started (checks running) or while an approval is pending:
+        # release signing (after approval 1) and publishing (after approval 2) read the head again.
+        for job_id in ("release-sign", "publish"):
+            self.assertEqual(0, self.run_head_check(job_id, self.HEAD).returncode, job_id)
+            moved = self.run_head_check(job_id, "f" * 40)
+            self.assertNotEqual(0, moved.returncode, job_id)
+            self.assertIn("moved after this run started", moved.stdout)
+            self.assertNotEqual(0, self.run_head_check(job_id, "").returncode, job_id)
+            self.assertNotEqual(0, self.run_head_check(job_id, self.HEAD, gh_fails=True).returncode, job_id)
+
+    def test_the_head_is_read_again_right_before_signing_and_publishing(self):
+        jobs = self.workflows["custom-android-build.yml"]["jobs"]
+        sign = [s.get("name") for s in steps(jobs["release-sign"])]
+        self.assertEqual("The branch head is still this commit", sign[0], "before the key is used")
+        publish = [s.get("name") for s in steps(jobs["publish"])]
+        self.assertEqual("The branch head is still this commit", publish[publish.index("Publish release") - 1])
+
+    def test_failures_are_reported_in_the_run_never_as_a_release(self):
+        report = self.workflows["custom-android-build.yml"]["jobs"]["report-failure"]
+        self.assertEqual({}, report["permissions"])
+        self.assertIn("nuvio-plus-failure-report", yaml.safe_dump(report))
+        # The only way the publishing workflow makes a GitHub release is publish-release.sh in the publish job.
+        for job_id, job in self.workflows["custom-android-build.yml"]["jobs"].items():
+            name = "custom-android-build.yml"
+            for step in steps(job):
+                self.assertNotRegex(step.get("run", ""), r"gh release (create|edit|upload)|/releases", f"{name}/{job_id}")
+        publish = "\n".join(s.get("run", "") for s in steps(self.workflows["custom-android-build.yml"]["jobs"]["publish"]))
+        self.assertIn("publish-release.sh", publish)
 
     def test_every_release_job_waits_for_the_identity_decision(self):
         jobs = self.workflows["custom-android-build.yml"]["jobs"]

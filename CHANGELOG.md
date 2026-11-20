@@ -9,7 +9,10 @@ Newest first.
 ### Changed
 - **A merge never publishes a release.** Merged pull requests are built and checked only; a release
   is started by hand for the exact commit and still needs every check and both of the owner's
-  approvals, so merging the parts of a build one by one cannot release a partial build.
+  approvals, so merging the parts of a build one by one cannot release a partial build. Signing and
+  publishing each read the branch head again and refuse a commit the branch has moved past.
+- **Failed builds are reported in their run, not as releases.** The report and logs are kept as a
+  run artifact; the Releases page lists only published builds (older failure pages stay).
 - **Release notes say how to update from build 13 and from build 12**, in English and Arabic.
 - **Project documentation describes the new signing key.** The README, the rollback rules and the
   feature list no longer present the old public key as the release key; a rescue build is always
