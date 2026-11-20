@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 
 enum class DownloadStatus { Downloading, Paused, Completed, Failed }
-enum class DownloadEnqueueResult { Started, Replaced, MissingUrl, UnsupportedFormat }
+enum class DownloadEnqueueResult { Started, Replaced, Held, MissingUrl, UnsupportedFormat }
 
 data class DownloadItem(val id: String, val parentMetaId: String, val seasonNumber: Int?, val episodeNumber: Int?, val status: DownloadStatus)
 data class DownloadsUiState(val items: List<DownloadItem> = emptyList())
@@ -71,10 +71,17 @@ object DownloadsRepository {
         log += "P$profile:$parentMetaId:S${seasonNumber}E$episodeNumber"
         val current = _uiState.value.items
         val existing = current.firstOrNull { it.parentMetaId == parentMetaId && it.seasonNumber == seasonNumber && it.episodeNumber == episodeNumber }
-        val item = DownloadItem("d${log.size}_P$profile", parentMetaId, seasonNumber, episodeNumber, DownloadStatus.Downloading)
+        // Like the real one: during "pause all" a new download is added paused, for "resume all".
+        val held = SeasonDownloadQueue.holdsNewDownloads()
+        val item = DownloadItem("d${log.size}_P$profile", parentMetaId, seasonNumber, episodeNumber,
+            if (held) DownloadStatus.Paused else DownloadStatus.Downloading)
         val updated = current.filterNot { it === existing } + item
         write(profile, updated)
         _uiState.value = DownloadsUiState(updated)
+        if (held) {
+            SeasonDownloadQueue.holdUntilResumeAll(item.id)
+            return DownloadEnqueueResult.Held
+        }
         return if (existing != null) DownloadEnqueueResult.Replaced else DownloadEnqueueResult.Started
     }
 
@@ -107,6 +114,17 @@ object DownloadsRepository {
         val item = _uiState.value.items.firstOrNull { it.id == downloadId } ?: return
         if (item.status != DownloadStatus.Paused && item.status != DownloadStatus.Failed) return
         if (!fromQueue && item.status == DownloadStatus.Paused && SeasonDownloadQueue.holdResume(downloadId)) return
+        if (!fromQueue) SeasonDownloadQueue.releaseFromPauseAll(downloadId)
+        resumed += downloadId
+        setStatus(downloadId, DownloadStatus.Downloading)
+    }
+
+    /** Like DownloadsNotificationActionReceiver's resume action (test helper). */
+    fun notificationResume(downloadId: String) {
+        val item = _uiState.value.items.firstOrNull { it.id == downloadId } ?: return
+        if (item.status != DownloadStatus.Paused && item.status != DownloadStatus.Failed) return
+        if (item.status == DownloadStatus.Paused && SeasonDownloadQueue.holdResume(downloadId)) return
+        SeasonDownloadQueue.releaseFromPauseAll(downloadId)
         resumed += downloadId
         setStatus(downloadId, DownloadStatus.Downloading)
     }

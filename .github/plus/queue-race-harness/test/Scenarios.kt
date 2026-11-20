@@ -4,6 +4,7 @@ import com.nuvio.app.features.debrid.DirectDebridPlaybackResolver as Resolver
 import com.nuvio.app.features.details.MetaDetailsRepository as Meta
 import com.nuvio.app.features.details.season
 import com.nuvio.app.features.downloads.DownloadsRepository as Downloads
+import com.nuvio.app.features.downloads.DownloadEnqueueResult
 import com.nuvio.app.features.downloads.DownloadStatus
 import com.nuvio.app.features.downloads.DownloadsStorage
 import com.nuvio.app.features.downloads.SeasonDownloadQueue as Queue
@@ -403,5 +404,72 @@ object Scenarios {
         Queue.resumeAll(); TestMain.drain()
         check(running(A).size == 1, "A did not resume: ${eps(A)}")
         return result("pause all in A, B goes on, A waits until resume all") { "A=${eps(A)} B dl=${dl(B)}" }
+    }
+
+    // ---- Build 15: the owner's rule for "pause all" (2026-11-20): it holds every download of the
+    // active profile (season episodes, films, single episodes), starts nothing new until "resume all",
+    // keeps partial files, and never resumes a download the user paused on its own.
+
+    /** A download asked for from a stream screen, outside any season queue (a film). */
+    private fun newFilm(meta: String) = Downloads.enqueueFromStream(
+        "movie", meta, meta, "movie", "Film", null, null, null, null, null, null, null,
+        StreamItem(name = "Film 1080p WEB", addonId = "addon", playableDirectUrl = "https://x/$meta.mkv"),
+    )
+    private fun statusOf(id: String) = Downloads.storedFor(A).first { it.id == id }.status
+
+    @JvmStatic fun r19_newDownloadsWaitForResumeAll(): String {
+        boot()
+        Meta.cached = season(2)
+        Downloads.addManual("movie", "tt9"); TestMain.drain()
+        Queue.pauseAll(); TestMain.drain()
+        val film = newFilm("tt8"); TestMain.drain()
+        val filmId = Downloads.storedFor(A).first { it.parentMetaId == "tt8" }.id
+        check(film == DownloadEnqueueResult.Held, "a new film during pause all returned $film, not Held")
+        check(statusOf(filmId) == DownloadStatus.Paused, "the new film started during pause all")
+        startSeason(); TestMain.drain()
+        check(running(A).isEmpty(), "a new season started during pause all: ${running(A)}")
+        check(eps(A) == listOf("E1:Paused", "E2:Waiting"), "new season during pause all: ${eps(A)}")
+        check(all().first { it.episodeNumber == 1 }.pausedBy.name == "All", "the chosen episode is not held by pause all")
+        check(lastResult is SeasonStartResult.Queued, "the season was not queued: $lastResult")
+        Queue.resumeAll(); TestMain.drain()
+        val e1 = all().first { it.episodeNumber == 1 }.downloadId!!
+        check(Downloads.resumed.toSet() == setOf("movie", filmId, e1), "resume all resumed ${Downloads.resumed}")
+        check(eps(A) == listOf("E1:Downloading", "E2:Waiting"), "queue after resume all: ${eps(A)}")
+        Downloads.finish(e1); TestMain.drain()
+        check(eps(A) == listOf("E2:Downloading"), "E2 did not follow: ${eps(A)}")
+        return result("new film and new season during pause all wait for resume all") { "A=${eps(A)} resumed=${Downloads.resumed}" }
+    }
+
+    @JvmStatic fun r20_singlePauseDuringPauseAllIsKept(): String {
+        boot()
+        Downloads.addManual("app", "tt8")
+        Downloads.addManual("notif", "tt9"); TestMain.drain()
+        Queue.pauseAll(); TestMain.drain()
+        // The user resumes each one on its own (in the app, from the notification), then pauses it again.
+        Downloads.resumeDownload("app"); TestMain.drain()
+        Downloads.notificationResume("notif"); TestMain.drain()
+        check(running(A).size == 2, "a resume of one download was refused: ${running(A)}")
+        Downloads.pauseDownload("app"); Downloads.pauseDownload("notif"); TestMain.drain()
+        Queue.resumeAll(); TestMain.drain()
+        check(statusOf("app") == DownloadStatus.Paused && statusOf("notif") == DownloadStatus.Paused,
+            "resume all resumed a download paused on its own: ${running(A)}")
+        check(Downloads.resumed == listOf("app", "notif"), "resumes: ${Downloads.resumed}")
+        return result("a download paused on its own after pause all stays paused") { "resumed=${Downloads.resumed}" }
+    }
+
+    @JvmStatic fun r21_backgroundJobStartsNothingDuringPauseAll(): String {
+        boot()
+        Meta.cached = season(3)
+        startSeason(); TestMain.drain()
+        val e1 = Downloads.storedFor(A).single()
+        Queue.pauseAll(); TestMain.drain()
+        // The download job that ran E1 asks the queue for the next episode after the pause.
+        var next: Boolean? = null
+        Queue.launch { next = Queue.continueInBackground(finishedDownloadId = null, pausedDownloadId = e1.id) }
+        TestMain.drain()
+        check(next == false, "the background job was handed another episode: $next")
+        check(running(A).isEmpty() && Downloads.log.size == 1, "something started in the background: ${Downloads.log}")
+        check(statusOf(e1.id) == DownloadStatus.Paused, "E1 lost its pause")
+        return result("a download job continues nothing during pause all") { "A=${eps(A)} log=${Downloads.log}" }
     }
 }

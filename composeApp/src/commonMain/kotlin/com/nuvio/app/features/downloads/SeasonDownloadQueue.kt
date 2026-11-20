@@ -572,6 +572,29 @@ object SeasonDownloadQueue {
         pump()
     }
 
+    /**
+     * True while "pause all" holds the active profile: a download asked for now (a film, an episode,
+     * a season's chosen episode) is added paused and starts with [resumeAll] (owner's rule, 2026-11-20).
+     */
+    fun holdsNewDownloads(): Boolean = started && _holds.value.allPaused(activeProfile)
+
+    /** Records [downloadId], added paused during "pause all", as one [resumeAll] continues. */
+    fun holdUntilResumeAll(downloadId: String) {
+        val profile = activeProfile
+        updateHolds { it.copy(pausedByAll = it.pausedByAll + (profile to (it.pausedByAll[profile].orEmpty() + downloadId))) }
+    }
+
+    /**
+     * The user resumed [downloadId] on its own (the app or its notification): from now on it is theirs,
+     * so if they pause it again on its own, [resumeAll] leaves it paused.
+     */
+    fun releaseFromPauseAll(downloadId: String) {
+        val profile = activeProfile
+        val held = _holds.value.pausedByAll[profile] ?: return
+        if (downloadId !in held) return
+        updateHolds { it.copy(pausedByAll = it.pausedByAll + (profile to (held - downloadId))) }
+    }
+
     /** Pauses the matching episodes as [scope]: searches stop, running downloads pause. */
     private fun pauseEntries(scope: SeasonPauseScope, inScope: (SeasonQueueEntry) -> Boolean) {
         _entries.value.filter(inScope).forEach { searchJobs.remove(it.id)?.cancel() }
@@ -723,6 +746,22 @@ object SeasonDownloadQueue {
             stream = playable,
         )
         val download = DownloadsRepository.findDownload(entry.parentMetaId, entry.seasonNumber, entry.episodeNumber)
+        if (result == DownloadEnqueueResult.Held && download != null) {
+            // Added paused during "pause all": the queue entry carries that pause, so resume all
+            // continues it in queue order (not also as one of the downloads outside the queue).
+            val profile = activeProfile
+            updateHolds { holds ->
+                holds.copy(pausedByAll = holds.pausedByAll + (profile to (holds.pausedByAll[profile].orEmpty() - download.id)))
+            }
+            update { entries ->
+                entries.map {
+                    if (it.id == entry.id) {
+                        it.copy(state = SeasonQueueEntryState.Paused, pausedBy = SeasonPauseScope.All, downloadId = download.id)
+                    } else it
+                }
+            }
+            return true
+        }
         if (
             (result == DownloadEnqueueResult.Started || result == DownloadEnqueueResult.Replaced) &&
             download != null

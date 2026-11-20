@@ -27,6 +27,9 @@ fun main(args: Array<String>) {
         listOf("r16_resumeAll"),
         listOf("r17_restartPhase1", "r17_restartPhase2"),
         listOf("r18_pauseAllIsPerProfile"),
+        listOf("r19_newDownloadsWaitForResumeAll"),
+        listOf("r20_singlePauseDuringPauseAllIsKept"),
+        listOf("r21_backgroundJobStartsNothingDuringPauseAll"),
     )
     var failed = 0
     for (steps in plan) {

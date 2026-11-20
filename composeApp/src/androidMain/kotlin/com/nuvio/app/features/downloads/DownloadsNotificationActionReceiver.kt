@@ -21,6 +21,7 @@ class DownloadsNotificationActionReceiver : BroadcastReceiver() {
                     // A season episode resumed while another queue episode downloads waits for its
                     // turn instead of running next to it (only when the queue runs in this process).
                     if (transfer.item.status == DownloadStatus.Paused && SeasonDownloadQueue.holdResume(downloadId)) return
+                    SeasonDownloadQueue.releaseFromPauseAll(downloadId)
                     scheduler.enqueue(transfer.item)
                     DownloadsRepository.reattachBackgroundDownload(downloadId)
                 }

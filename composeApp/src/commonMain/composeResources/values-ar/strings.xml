@@ -1933,6 +1933,7 @@
     <string name="details_episode_badge_file">الملف</string>
     <string name="downloads_enqueue_missing_url">لا يتوفر رابط بث مباشر</string>
     <string name="downloads_enqueue_replaced">تم استبدال التنزيل السابق</string>
+    <string name="downloads_enqueue_held">أُضيف التنزيل. التنزيلات متوقفة: يبدأ عند الضغط على «استئناف الكل»</string>
     <string name="downloads_enqueue_started">بدأ التنزيل</string>
     <string name="downloads_enqueue_unsupported_format">تنسيق البث غير مدعوم للتنزيل</string>
     <string name="downloads_error_empty_body">استجابة الشبكة فارغة</string>
