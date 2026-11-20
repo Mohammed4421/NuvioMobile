@@ -81,7 +81,7 @@
 | **#23** | PortKit 5/5: الأدلة، اختبار نقل أدق، مصفوفة التوافق | مفتوح. كل الفحوص نجحت على `9519b3c8`، وهو قابل للدمج دون تعارض. محاكاة محلية لدمج #26 ثم #23: أدلة PortKit سليمة. **جاهز للدمج** |
 | **#26** | الترجمة المحلية تُحفظ بصيغتها الحقيقية ويُرفض غير الترجمة (B15-SUB-06) | مفتوح، `913af1c9` بعد تحديثه بحل تعارض. «PortKit transfer tests» **فشل بخطأ شبكة عابر** (Maven: `Could not find guava-33.3.1-android.jar`، [التشغيل](https://github.com/Mohammed4421/NuvioMobile/actions/runs/44778091764)): يحتاج إعادة تشغيل. «Nuvio Plus checks» كان قيد التشغيل |
 | **#27** | اختبارات تزامن طابور المواسم r9–r13 (لم يثبت خلل؛ اختبارات فقط) | مفتوح، كل الفحوص نجحت على `300cd3d7`. **جاهز للدمج** |
-| **#28** | إيقاف حلقات الموسم (انظر §5) | مفتوح، `6b4ed2f6`. PortKit نجح. «Nuvio Plus checks» كان قيد التشغيل. **لا يُدمج قبل موافقة المالك**. مبني فوق #27 |
+| **#28** | إيقاف حلقات الموسم (انظر §5) | مفتوح، `6b4ed2f6`. PortKit نجح. «Nuvio Plus checks» **فشل** ([التشغيل](https://github.com/Mohammed4421/NuvioMobile/actions/runs/44777867317)): اختباران من الاختبار الجديد `SeasonPauseAndroidTest` (انظر §5)، فلم يعمل المحاكي. **لا يُدمج قبل إصلاحهما وموافقة المالك**. مبني فوق #27 |
 | #2 | تجربة دمج Nuvio 1.1.0-beta.2 | مسودة قديمة. **لا يُدمج آليًا** |
 | — | البند C: فرع `plus-fix/build15-device-subtitle-cache` (`62a0f4b0`) | **لا PR بعد**. مبني فوق #26. افتحه بعد دمج #26 (دمج `custom-subtitles` فيه، مع تعارض متوقع في `CHANGELOG`) |
 
@@ -125,7 +125,12 @@
 - [ ] نجاح «Nuvio Plus checks» كاملًا:
   - `SeasonQueuePolicyTest`.
   - `SeasonQueueStorageTest`.
-  - `SeasonPauseAndroidTest` على Robolectric 28 و34. لم يُشغَّل بعد؛ وأحد اختباراته يعتمد على `JobScheduler.forNamespace` في Robolectric.
+  - `SeasonPauseAndroidTest` على Robolectric 28 و34. **فشل منه اختباران في CI (خلل في إعداد الاختبار، لا في منطق الميزة)**:
+    - `pausingKeepsThePartialFileAndResumingContinuesTheSameTransfer[28]`: `WorkManager is not initialized` على Android 9 لأن `scheduler.enqueue` يستخدم WorkManager هناك. الحل: تهيئة WorkManager للاختبار (`WorkManagerTestInitHelper`)، أو الاكتفاء بـ`store.begin` على 28.
+    - `pausingAnEpisodeThatRunsInsideAnotherJobLeavesThatJobScheduled`: `the host job was not scheduled: []`، لأن JobScheduler الوهمي في Robolectric لا يعرض مهام الـnamespace. الحل: فحص `cancel` بطريقة أخرى أو حذف هذا التحقق من الاختبار مع توثيق السبب، **دون إضعاف بقية الاختبار**.
+    - بقية الاختبارات الجديدة (السياسة والتخزين) نجحت في CI، و2214 اختبار وحدة نُفّذت، فشل منها هذان فقط.
+    - ملاحظة: اختبار Nuvio الأصلي `WatchProgressIdentityTest` فشل في وظيفة «Unit tests of the Nuvio release it is based on»، لكن تلك الوظيفة نجحت. هذا فشل معروف في كود Nuvio نفسه، وتحقق منه قبل أي استنتاج.
+  - المحاكي لم يعمل بعد (تخطّته بوابة الاختبارات).
   - المحاكي، مع اختبار الترقية الجديد: تُزرع بيانات Build 14 (موسم فيه حلقة متوقفة بملف جزئي + تنزيل مكتمل) ويُتحقق أنها لم تُفقد ولم يُعَد تنزيلها، عبر `.github/plus/seed-season-queue.py`.
 - [ ] مراجعة المالك لتقرير الحالات **وقراره**: هل «إيقاف الكل» خاص بالملف الشخصي الحالي (المطبّق الآن) أم يشمل كل الملفات؟
 - [ ] غير مختبر بعد على جهاز أو محاكي: الإيقاف من الإشعار والتطبيق في الخلفية على Android 14+.
@@ -168,8 +173,9 @@
 - لا ادعاء لاختبار جهاز أو حالة لم تُختبر. «نجح» تُقال فقط في حدود ما اختُبر فعلًا.
 
 ## 8) المهمة التالية
-1. **تحقق من GitHub أولًا**: نتيجة «Nuvio Plus checks» لـ#26 (`913af1c9`) ولـ#28 (`6b4ed2f6`)، وتشغيل «Build Custom APK» لرأس `custom-subtitles`.
-2. أعد تشغيل «PortKit transfer tests» لـ#26 (الفشل شبكي). عند نجاح كل شيء ادمج حسب الترتيب في §4: #23 ← #26 ← #27. بعد كل دمج تحقق من تشغيل ما بعد الدمج.
-3. افتح PR للبند C بعد #26.
-4. أرسل للمالك نتيجة CI لـ#28 واطلب قراره بشأن نطاق «إيقاف الكل»؛ لا تدمج #28 قبل موافقته.
-5. بعدها: إصلاح متانة اختبار نقل PortKit، ثم استكمال Build 15 (P4/P3/P6).
+1. **أصلح اختباري `SeasonPauseAndroidTest` في #28** (§5)، وادفع، وانتظر الفحص الكامل مع المحاكي.
+2. **تحقق من GitHub**: نتيجة «Nuvio Plus checks» لـ#26 (`913af1c9`) ولـ#28 (`6b4ed2f6`)، وتشغيل «Build Custom APK» لرأس `custom-subtitles`.
+3. أعد تشغيل «PortKit transfer tests» لـ#26 (الفشل شبكي). عند نجاح كل شيء ادمج حسب الترتيب في §4: #23 ← #26 ← #27. بعد كل دمج تحقق من تشغيل ما بعد الدمج.
+4. افتح PR للبند C بعد #26.
+5. أرسل للمالك نتيجة CI لـ#28 واطلب قراره بشأن نطاق «إيقاف الكل»؛ لا تدمج #28 قبل موافقته.
+6. بعدها: إصلاح متانة اختبار نقل PortKit، ثم استكمال Build 15 (P4/P3/P6).
