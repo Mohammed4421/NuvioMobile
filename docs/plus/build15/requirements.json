@@ -1,0 +1,637 @@
+{
+  "schema": 1,
+  "scope": "Nuvio Plus Build 15",
+  "note": "Technical restatement of the Build 15 requirements and the owner's decisions. Statuses describe this branch: work in open pull requests is IN PROGRESS here. Progress counts ACCEPTED items only. Checked by .github/plus/check-requirements.py.",
+  "items": [
+    {
+      "id": "P0-01",
+      "phase": "P0",
+      "mandatory": true,
+      "requirement": "Baseline record of the published Build 14: commit, toolchain, certificates, APK sizes, tests.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [
+        "docs/plus/build15/baseline.json"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44735486746,
+          "commit": "37999b3d71903ba21efe21d41084131ceff39942",
+          "what": "PR #16 checks",
+          "result": "success"
+        }
+      ],
+      "untested": [
+        "Performance is recorded as not measured."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Every field has a repeatable source.",
+      "next": "Add P5 measurements when they exist."
+    },
+    {
+      "id": "P0-02",
+      "phase": "P0",
+      "mandatory": true,
+      "requirement": "Known issues before Build 15, so none is attributed to Build 15.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [
+        "docs/plus/build15/known-issues.md"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44735486746,
+          "commit": "37999b3d71903ba21efe21d41084131ceff39942",
+          "what": "PR #16 checks",
+          "result": "success"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44749841046,
+          "commit": "8e0876ddf07e7d7c647bdca1ebd361efa8982adc",
+          "what": "PR #17 checks (updated the known issues)",
+          "result": "success"
+        }
+      ],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Every pre-existing issue listed with its source.",
+      "next": "Owner review."
+    },
+    {
+      "id": "P1-01",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Full inventory of the project by area, owner (Nuvio or Plus) and review state.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15-audit-phase1.md",
+          "what": "file counts only"
+        }
+      ],
+      "untested": [
+        "No area-by-area inventory yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "A table of every area with owner, reviewed or not, and evidence.",
+      "next": "Generate the inventory and link it to the audit register."
+    },
+    {
+      "id": "P1-02",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Deep audit of the critical Plus areas: updater, downloads, subtitles, profiles, players.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "Players, HDR and gestures not audited."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Each area has an audit row with evidence.",
+      "next": "Audit players, settings and library."
+    },
+    {
+      "id": "P1-03",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Audit register with an ID, evidence, decision and status per finding.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [
+        "docs/plus/build15/audit.md"
+      ],
+      "status": "IN PROGRESS",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/audit.md",
+          "what": "register exists"
+        }
+      ],
+      "untested": [
+        "Rows of PR #24-#30 are not on this branch."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Every Build 15 change has a row.",
+      "next": "Add the missing rows."
+    },
+    {
+      "id": "P1-04",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Fix proven defects only, each with a test that fails before the fix.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "B15-SUB-06 (#26) and B15-DL-03 (#28) open; device subtitle cache has no PR."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Every fix has a failing-before test and passing CI.",
+      "next": "Finish #28 and the device subtitle cache."
+    },
+    {
+      "id": "P1-05",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Deferred findings (B15-SUB-03, DL-01, CI-02, UI-03) need a fix or the owner's documented exception.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [
+        "docs/plus/build15/audit.md"
+      ],
+      "status": "BLOCKED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Each is fixed or excepted by the owner.",
+      "next": "Present the exceptions to the owner."
+    },
+    {
+      "id": "P1-06",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "External claims are judged against the code, with evidence.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "Recorded in PR #27, not on this branch."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Each claim has a verdict with evidence.",
+      "next": "Owner decision on #27."
+    },
+    {
+      "id": "P2-01",
+      "phase": "P2",
+      "mandatory": true,
+      "requirement": "Refactoring decisions only where the audit proves the need; no refactoring of sound parts.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Every KEEP/REFACTOR decision is linked to a defect or a measurement.",
+      "next": "After P1-01."
+    },
+    {
+      "id": "P2-02",
+      "phase": "P2",
+      "mandatory": true,
+      "requirement": "Avoid conflicts with future Nuvio updates.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [
+        ".github/plus/features.json"
+      ],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "No transfer onto a newer Nuvio release."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "A transfer onto the newest stable Nuvio release succeeds or each conflict is documented.",
+      "next": "With P7-02."
+    },
+    {
+      "id": "P3-01",
+      "phase": "P3",
+      "mandatory": true,
+      "requirement": "User-journey matrix covering every screen, tested end to end.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Every journey has steps, expected result, actual result and evidence.",
+      "next": "Write the matrix after P1-01."
+    },
+    {
+      "id": "P3-02",
+      "phase": "P3",
+      "mandatory": true,
+      "requirement": "Exceptional paths: network failure, restart, state restore, partial downloads.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "Only the season download queue is covered (harness, emulator update)."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Each journey has its exceptional paths tested.",
+      "next": "Extend after P3-01."
+    },
+    {
+      "id": "P3-03",
+      "phase": "P3",
+      "mandatory": true,
+      "requirement": "Phone and tablet, both orientations.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Screenshots and checks on defined sizes and orientations.",
+      "next": "Phone and tablet emulators."
+    },
+    {
+      "id": "P4-01",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Reference screenshots before any visual change, Arabic and English.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "One screenshot per screen x language x device x orientation.",
+      "next": "Capture automatically on emulators."
+    },
+    {
+      "id": "P4-02",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Consistency, spacing, alignment and interactions on every screen.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Per-screen review with before/after screenshots.",
+      "next": "After P4-01."
+    },
+    {
+      "id": "P4-03",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Arabic and RTL issues.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "No clipping or wrong mirroring on any screen.",
+      "next": "With P4-01."
+    },
+    {
+      "id": "P4-04",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Accessibility.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Touch sizes, contrast and descriptions checked.",
+      "next": "After P4-01."
+    },
+    {
+      "id": "P4-05",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Keep Nuvio's identity.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "No change to Nuvio's colours, logo or base type.",
+      "next": "Constraint on P4."
+    },
+    {
+      "id": "P5-01",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Repeated real measurements before and after.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [
+        "Only the subtitle parser was measured (#17)."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "At least 5 runs before and after on a fixed device.",
+      "next": "Relative emulator measurements and a physical-device protocol."
+    },
+    {
+      "id": "P5-02",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Smoothness, jank and resource use.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": true,
+      "acceptance": "Slow-frame counts and memory in numbers.",
+      "next": "With P5-01."
+    },
+    {
+      "id": "P6-01",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "No systematic review yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "A completed security checklist with evidence.",
+      "next": "Write the checklist."
+    },
+    {
+      "id": "P6-02",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Upgrade matrix 14->15 keeping user data, on Android 9 and 14.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "14->15 and 13->15 on Android 9 and 14 with seeded data.",
+      "next": "On the release candidate."
+    },
+    {
+      "id": "P6-03",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Storage stays readable by Builds 12-14.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "Covered in PR #28, not on this branch."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Build 14 reads what Build 15 writes.",
+      "next": "Owner decision on #28."
+    },
+    {
+      "id": "P6-04",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Identity, signing and update stay protected.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [
+        "androidApp/build.gradle.kts",
+        ".github/plus/check-update-compat.sh",
+        ".github/workflows/custom-android-build.yml"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44783639944,
+          "commit": "8c8098a8ca79043616b34df738945dfe2cb7e14e",
+          "what": "stable build with update check (attempt 2)",
+          "result": "success"
+        }
+      ],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "The release certificate 99c0a98c... and package com.nuvio.app.plus in the output.",
+      "next": "Check again in P8."
+    },
+    {
+      "id": "P7-01",
+      "phase": "P7",
+      "mandatory": true,
+      "requirement": "PortKit transfer tool that actually works (validate, plan, apply, rollback).",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [
+        "portkit/"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44770118786,
+          "commit": "9519b3c8c4e806f2c93428c6336ed4123ca81be2",
+          "what": "PR #23 checks",
+          "result": "success"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_portkit.py",
+          "name": "test_identity_and_signing_are_never_portable",
+          "result": "pass"
+        }
+      ],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Each command proven by tests and a transfer build.",
+      "next": "-"
+    },
+    {
+      "id": "P7-02",
+      "phase": "P7",
+      "mandatory": true,
+      "requirement": "Prove the transfer of every portable feature onto truly compatible targets.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [
+        "portkit/compatibility.json"
+      ],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "12 of 14 features have no evidence; no newer Nuvio target."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Every feature classified with evidence or a reason it cannot move.",
+      "next": "Classify the 12 remaining features."
+    },
+    {
+      "id": "P7-03",
+      "phase": "P7",
+      "mandatory": true,
+      "requirement": "Transfer tests do not fail on transient network errors.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "Fixed in PR #29, not on this branch."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "No transient Maven error fails a check.",
+      "next": "Owner decision on #29."
+    },
+    {
+      "id": "P8-01",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Regression, function and update tests on emulators on the candidate.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "All checks on the exact candidate commit.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P8-02",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Physical-device tests: players, HDR, gestures, SD card, pause from notification in background on Android 14+.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "NOT STARTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": true,
+      "acceptance": "Owner's results or screenshots per row.",
+      "next": "Send the owner a short list."
+    },
+    {
+      "id": "P9-01",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release with the owner's two approvals.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "BLOCKED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Every mandatory item ACCEPTED or excepted by the owner.",
+      "next": "After P8."
+    },
+    {
+      "id": "D-01",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "Pause all: current profile only; every download type; nothing new starts until resume all; partial files kept; downloads paused on their own are not resumed.",
+      "source": "Owner decision",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "Implemented in PR #28; pause from the notification in the background on Android 14+ needs a device."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "A test per condition that fails without the change; full CI; device check.",
+      "next": "CI of #28, then owner review."
+    },
+    {
+      "id": "D-02",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "No merge and no release without the owner's new approval.",
+      "source": "Owner decision",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "No merge after the directive.",
+      "next": "Ongoing."
+    },
+    {
+      "id": "G-01",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "No merge with a failing check; no test disabled.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Ongoing.",
+      "next": "Ongoing."
+    },
+    {
+      "id": "G-02",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "custom-subtitles accepts changes only through pull requests with required checks.",
+      "source": "Build 15 specification (summary; original text pending)",
+      "paths": [],
+      "status": "BLOCKED",
+      "evidence": [],
+      "untested": [
+        "The ruleset blocks deletion and force push only."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "The ruleset requires a pull request and the required checks.",
+      "next": "Owner sets the ruleset (the session cannot change settings)."
+    },
+    {
+      "id": "G-05",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "A sanitized requirements register with automated checks, proposed as a required check.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [
+        "docs/plus/build15/requirements.json",
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "This change."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "The gate rejects every false claim its tests describe.",
+      "next": "CI of this pull request."
+    },
+    {
+      "id": "G-06",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Traceability kept current at the end of every stage.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Updated each stage.",
+      "next": "Ongoing."
+    },
+    {
+      "id": "G-07",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "The stable branch's checks are green and do not fail on GitHub's anonymous rate limit.",
+      "source": "Owner directive 2026-11-20, section 3",
+      "paths": [],
+      "status": "IN PROGRESS",
+      "evidence": [],
+      "untested": [
+        "Durable fix in PR #30, not on this branch."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "The evidence step never fails on a rate limit.",
+      "next": "Owner decision on #30."
+    }
+  ]
+}
