@@ -7,6 +7,9 @@ Newest first.
 ## Next build — stability: updates, downloads, project safety
 
 ### Changed
+- **A merge never publishes a release.** Merged pull requests are built and checked only; a release
+  is started by hand for the exact commit and still needs every check and both of the owner's
+  approvals, so merging the parts of a build one by one cannot release a partial build.
 - **Release notes say how to update from build 13 and from build 12**, in English and Arabic.
 - **Project documentation describes the new signing key.** The README, the rollback rules and the
   feature list no longer present the old public key as the release key; a rescue build is always

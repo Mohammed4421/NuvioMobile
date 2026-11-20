@@ -1,8 +1,11 @@
 name: Build Custom APK
 
-# Publishing builds. A push to custom-subtitles publishes a stable release, a push to plus-beta a
-# beta pre-release, and only when every check passes (plus-build.yml) and the review gate confirms
-# with GitHub that the commit came through a tested pull request merged by the owner.
+# Publishing builds. A push to custom-subtitles or plus-beta (a merged pull request) builds and checks
+# the branch and is never published, so merging a series of pull requests cannot release a partial
+# build. A release is published only by running this workflow by hand on the branch with
+# release_commit set to the branch head (docs/plus/release.md): then every check passes
+# (plus-build.yml), the review gate confirms with GitHub that the commit came through a tested pull
+# request merged by the owner, and the owner approves signing and publishing.
 #
 # Only the publish and report-failure jobs can write to the repository; they run no Gradle and use
 # the APKs the checks signed, verified against the digest list from the sign job.
@@ -13,9 +16,16 @@ on:
       - '**.md'
       - 'docs/**'
   workflow_dispatch:
+    inputs:
+      release_commit:
+        description: "Publish: the full commit of the branch head (40 hex). Any other value publishes nothing."
+        required: true
+        type: string
 
+# Releases queue one after another. Checks after a merge have their own queue, so a release waiting
+# for the owner's approval never holds them up (and they never publish).
 concurrency:
-  group: nuvio-plus-publish
+  group: ${{ github.event_name == 'workflow_dispatch' && 'nuvio-plus-publish' || format('nuvio-plus-verify-{0}', github.ref_name) }}
   cancel-in-progress: false
 
 permissions:
@@ -107,6 +117,9 @@ jobs:
       # Certificate of the release key (docs/plus/signing-migration.md), made on 2026-11-19 by
       # plus-release-key.yml (run 44534502910). Only APKs signed with it are published.
       RELEASE_IDENTITY: 99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35
+      # Only a hand-started run that names the exact commit it publishes goes on to release signing.
+      EVENT: ${{ github.event_name }}
+      RELEASE_COMMIT: ${{ inputs.release_commit }}
     steps:
       - name: Tested with the public test key; a release key is pinned
         id: decide
@@ -124,7 +137,16 @@ jobs:
             echo "publish=false" >> "${GITHUB_OUTPUT}"
             exit 0
           fi
-          echo "Tested; moving on to release signing with ${RELEASE_IDENTITY}."
+          if [[ "${EVENT}" != workflow_dispatch ]]; then
+            echo "::notice::Built and checked after the merge; not published. To publish this commit, run this workflow by hand on ${GITHUB_REF_NAME} with release_commit=${GITHUB_SHA} (docs/plus/release.md)."
+            echo "publish=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          if [[ ! "${RELEASE_COMMIT}" =~ ^[0-9a-f]{40}$ || "${RELEASE_COMMIT}" != "${GITHUB_SHA}" ]]; then
+            echo "::error::release_commit (${RELEASE_COMMIT:-empty}) is not the branch head ${GITHUB_SHA}. Nothing is published."
+            exit 1
+          fi
+          echo "Tested; moving on to release signing of ${GITHUB_SHA} with ${RELEASE_IDENTITY}."
           { echo "publish=true"; echo "identity=${RELEASE_IDENTITY}"; echo "compromised=${COMPROMISED}"; } >> "${GITHUB_OUTPUT}"
 
   release-sign:
