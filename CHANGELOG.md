@@ -7,6 +7,10 @@ Newest first.
 ## Next build — Build 15: audit and polish
 
 ### Fixed
+- **A subtitle file with another extension is read in its real format.** A file picked from the
+  device as `.txt` (or with no extension) was always treated as SRT, so an ASS or VTT file showed
+  nothing. Its format is now read from the text, and a file that is no subtitle is refused with a
+  message.
 - **A malformed subtitle could freeze a download or the subtitle list.** Subtitles from add-ons are
   read when a download is prepared and in the player. A file with an unclosed tag, brace or paragraph
   repeated made the reader rescan the rest of the file from every position: 60 KB took 5 seconds,
