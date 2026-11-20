@@ -1,5 +1,5 @@
 {
-  "_about": "Registry of Nuvio Plus features. The upstream review maps every Nuvio change to the features it touches. Keep it current when a feature changes. Paths are relative to composeApp/src unless they start with a top-level folder.",
+  "_about": "Registry of Nuvio Plus features. The upstream review maps every Nuvio change to the features it touches. Keep it current when a feature changes. Paths are relative to composeApp/src unless they start with a top-level folder. \"test_files\" lists the test sources of a feature (PortKit transfers and runs them). \"removed_files\" lists upstream files a feature deletes.",
   "features": [
     {
       "id": "subtitle-style",
@@ -28,6 +28,10 @@
         "SUBTITLE_BOTTOM_OFFSET",
         "outlineWidth",
         "subtitleOutlineWidthRange"
+      ],
+      "test_files": [
+        "commonTest/kotlin/com/nuvio/app/features/player/PlusSubtitleMigrationTest.kt",
+        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleAppearanceTest.kt"
       ]
     },
     {
@@ -147,6 +151,9 @@
         "NETWORK_TYPE_UNMETERED",
         "StatFs",
         "renameDocument"
+      ],
+      "test_files": [
+        "commonTest/kotlin/com/nuvio/app/features/downloads/PlusDownloadsMigrationTest.kt"
       ]
     },
     {
@@ -157,7 +164,8 @@
         "commonMain/kotlin/com/nuvio/app/features/downloads/SeasonDownloadQueue.kt",
         "commonMain/kotlin/com/nuvio/app/features/streams/StreamsScreen.kt",
         "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsTransferJobService.kt",
-        "androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt"
+        "androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt",
+        "commonMain/kotlin/com/nuvio/app/features/downloads/SeasonQueueStorage.kt"
       ],
       "depends": [
         "download-location"
@@ -172,6 +180,11 @@
         "downloadSeason",
         "SeasonDownload",
         "bingeGroup"
+      ],
+      "test_files": [
+        "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonQueuePolicyTest.kt",
+        "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonQueueStorageTest.kt",
+        "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonStreamMatcherTest.kt"
       ]
     },
     {
@@ -197,6 +210,12 @@
         "library_source_downloads",
         "LibraryDownloadsButton",
         "DownloadShowRoute"
+      ],
+      "test_files": [
+        "commonTest/kotlin/com/nuvio/app/features/library/LibraryDownloadEntriesTest.kt"
+      ],
+      "removed_files": [
+        "commonMain/kotlin/com/nuvio/app/features/library/LibraryDownloadsButton.kt"
       ]
     },
     {
@@ -231,6 +250,15 @@
         "AppUpdaterRepository",
         "UpdateChannel",
         "VersionUtils"
+      ],
+      "test_files": [
+        "androidFullHostTest/kotlin/com/nuvio/app/features/updater/AppUpdaterControllerTest.kt",
+        "androidFullHostTest/kotlin/com/nuvio/app/features/updater/PlusAppUpdaterControllerTest.kt",
+        "androidFullHostTest/kotlin/com/nuvio/app/features/updater/UpdateArchiveCheckPackageManagerTest.kt",
+        "androidFullHostTest/kotlin/com/nuvio/app/features/updater/UpdateArchiveCheckTest.kt",
+        "commonTest/kotlin/com/nuvio/app/features/updater/PlusUpdatesTest.kt",
+        "androidApp/src/androidTest/kotlin/com/nuvio/android/UpdateArchiveDeviceTest.kt",
+        "androidApp/src/debug/AndroidManifest.xml"
       ]
     },
     {
@@ -318,6 +346,9 @@
         "addAddon",
         "stremio://",
         "deep link"
+      ],
+      "test_files": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/addons/AddonLinkConfirmationTest.kt"
       ]
     },
     {
@@ -336,6 +367,9 @@
         "withDuplicateSafeLazyKeys",
         "DuplicateSafeLazyEntry",
         "lazyKey"
+      ],
+      "test_files": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeysTest.kt"
       ]
     },
     {
@@ -355,6 +389,9 @@
         "ttmlParagraphs",
         "[^<>]*",
         "[^{}]*"
+      ],
+      "test_files": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserWorstCaseTest.kt"
       ]
     }
   ]

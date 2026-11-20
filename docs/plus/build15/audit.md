@@ -26,4 +26,4 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | Player engines, HDR, gestures | NEEDS PHYSICAL DEVICE |
 | UI polish, RTL screenshots | Not started (P4) |
 | Performance | Not measured (P5) |
-| PortKit | Not started (P7) |
+| PortKit | P7 step 1: foundation (registry, levels, policy, inventory) |
