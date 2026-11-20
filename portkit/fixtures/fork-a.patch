@@ -1,0 +1,34 @@
+diff --git a/composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt b/composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt
+index cc3755e..04e40d3 100644
+--- a/composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt
++++ b/composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt
+@@ -1,5 +1,7 @@
+ package com.nuvio.app.core.ui
+ 
++// Fork A keeps its own note here; PortKit must keep it.
++
+ internal data class DuplicateSafeLazyEntry<T>(
+     val value: T,
+     val lazyKey: Any,
+diff --git a/composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt b/composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt
+index b1c3c06..0d559e1 100644
+--- a/composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt
++++ b/composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt
+@@ -2,6 +2,7 @@ package com.nuvio.app.features.player
+ 
+ import kotlin.math.max
+ 
++/** Fork A: subtitle cues for its player. */
+ object PlayerSubtitleCueParser {
+     private val timestampRegex = Regex("""(?:(\d+):)?(\d{1,2}):(\d{2})([.,](\d+))?""")
+ 
+diff --git a/composeApp/src/commonMain/kotlin/com/nuvio/app/fork/ForkA.kt b/composeApp/src/commonMain/kotlin/com/nuvio/app/fork/ForkA.kt
+new file mode 100644
+index 0000000..466b2fb
+--- /dev/null
++++ b/composeApp/src/commonMain/kotlin/com/nuvio/app/fork/ForkA.kt
+@@ -0,0 +1,4 @@
++package com.nuvio.app.fork
++
++/** A file only fork A has. */
++internal const val FORK_A_NAME = "Fork A"
