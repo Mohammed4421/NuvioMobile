@@ -5,6 +5,7 @@ import com.nuvio.app.features.streams.StreamSubtitle
 import kotlinx.serialization.Serializable
 import kotlinx.coroutines.runBlocking
 import nuvio.composeapp.generated.resources.Res
+import nuvio.composeapp.generated.resources.downloads_enqueue_held
 import nuvio.composeapp.generated.resources.downloads_enqueue_missing_url
 import nuvio.composeapp.generated.resources.downloads_enqueue_replaced
 import nuvio.composeapp.generated.resources.downloads_enqueue_started
