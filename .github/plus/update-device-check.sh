@@ -16,6 +16,13 @@ adb shell run-as "${host}" mkdir -p files/update-check > /dev/null
 adb exec-in run-as "${host}" sh -c "cat > files/update-check/${name}" < "${apk}" \
   || { echo "::error::${label}: could not copy the APK for the check"; exit 1; }
 path="/data/data/${host}/files/update-check/${name}"
+# The copy must be complete before the verdict means anything.
+size="$(stat -c %s "${apk}")"
+copied="$(adb shell run-as "${host}" stat -c %s "files/update-check/${name}" 2>/dev/null | tr -d '\r')"
+if [[ "${copied}" != "${size}" ]]; then
+  echo "::error::${label}: the APK was not copied completely to the device (${copied:-nothing} of ${size} bytes)"
+  exit 1
+fi
 adb logcat -c > /dev/null 2>&1 || true
 # adb shell joins its arguments into one command for the device's shell, where "|" would be a pipe:
 # every value goes in single quotes (they contain none; checked above).
@@ -23,10 +30,14 @@ out="$(adb shell "am instrument -w -r -e class com.nuvio.android.UpdateArchiveDe
 -e installedPackage com.nuvio.app.plus -e apk '${path}' -e expect '${expect}' '${runner}'" 2>&1 | tr -d '\r')"
 adb shell run-as "${host}" rm -f "files/update-check/${name}" > /dev/null 2>&1 || true
 verdict="$(adb logcat -d -s UpdateArchiveDeviceTest:I | tr -d '\r' | sed -n "s/.*verdict=\([A-Za-z]*\) .*apk=${path//\//\\/}$/\1/p" | tail -n 1)"
+detail="$(adb logcat -d -s UpdateArchiveDeviceTest:I | tr -d '\r' | sed -n 's/.*detail //p' | tail -n 1)"
+echo "  ${label} (Android parser): ${detail:-no detail}"
 if grep -q "^OK (1 test)" <<< "${out}" && [[ -n "${verdict}" ]]; then
   echo "${label}: ${verdict} (expected ${expect})"
   exit 0
 fi
 echo "::error::${label}: the app's update check said ${verdict:-nothing}, expected ${expect}"
 grep -E "INSTRUMENTATION_|Error|Exception|assumption|OK \(|FAILURES" <<< "${out}" | head -n 8
+adb logcat -d 2>/dev/null | tr -d '\r' | grep -iE "PackageParser|PackageManager.*(fail|error)|apk.*(invalid|corrupt)" | tail -n 10 | sed 's/^/  logcat: /'
+
 exit 1

@@ -396,6 +396,13 @@ class WorkflowPolicyTest(unittest.TestCase):
         report = set(build["report"]["needs"])
         self.assertEqual(set(build) - {"report"}, report, "every check must count in the reported status")
 
+    def test_pull_requests_check_the_in_app_update_check_on_android_9(self):
+        emulator = self.workflows["plus-build.yml"]["jobs"]["emulator"]
+        levels = {str(step.get("with", {}).get("api-level")): step.get("with", {}).get("script", "")
+                  for step in steps(emulator) if "android-emulator-runner" in step.get("uses", "")}
+        self.assertIn("28", levels)
+        self.assertIn("update-check-device-test.sh", levels["28"])
+
     def test_every_release_is_tested_as_an_update_with_the_apps_own_check(self):
         upgrade = self.workflows["custom-android-build.yml"]["jobs"]["release-upgrade"]
         script = next(s for s in steps(upgrade) if "release-upgrade-test.sh" in str(s.get("with", {}).get("script", "")))["with"]["script"]

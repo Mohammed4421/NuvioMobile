@@ -1010,3 +1010,13 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   (`maven-central.storage-download.googleapis.com`, HTTPS, releases only) **after** Google and Maven
   Central, so it is only asked for what both report missing; checked with Gradle 8.14.3 that it comes
   last. Retry warnings now name a "Could not find" too. Guava stays 33.7.2; OSV unchanged.
+
+## B14-5: first release run (2026-11-20)
+
+- Run 44713566037 (dispatch, `a74f18ba`): checks, review gate, identity, release signing (owner's
+  approval), `release-verify`, update tests on Android 8 and 14 passed; **Android 9 failed**: the
+  app's check read the signed release as `Unreadable` (expected accepted) on the previous-release
+  step. Publish skipped; no release made (the gate worked).
+- Cause not yet known: the copy to the device or Android 9's archive parser. Added: the copy size is
+  checked before any verdict; the device test logs what Android's parser reads with each flag; the
+  pull request emulator job runs the in-app check on Android 9 too.

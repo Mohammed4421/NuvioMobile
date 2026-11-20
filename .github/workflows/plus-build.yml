@@ -746,7 +746,7 @@ jobs:
 
   emulator:
     name: Install, update and launch on an emulator
-    timeout-minutes: 30
+    timeout-minutes: 50
     needs: [sign, update-check, test-gate, device-test-build]
     # Explicit: the Nuvio baseline (an ancestor through test-gate) is skipped when no test fails, and
     # GitHub skips every job below a skipped one unless its condition says otherwise.
@@ -832,6 +832,22 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: bash .github/plus/emulator-update-test.sh "$PREVIOUS_APK" "$NEW_APK" && bash .github/plus/update-check-device-test.sh "$RELEASE_APK" "$NEW_APK" device-test/debug-app.apk device-test/debug-test.apk
+
+      - name: In-app update check on Android 9 (the oldest Android the release supports)
+        # Android 9 parses and verifies APKs differently from 14; the release-upgrade job found the
+        # app's check reading a release as Unreadable there (run 44713566037). Checked here on every
+        # pull request, before any release.
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          NEW_APK: ${{ steps.previous.outputs.new }}
+          RELEASE_APK: ${{ steps.release.outputs.apk }}
+        with:
+          api-level: 28
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: bash .github/plus/update-check-device-test.sh "$RELEASE_APK" "$NEW_APK" device-test/debug-app.apk device-test/debug-test.apk
 
       - name: Keep the emulator result
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
