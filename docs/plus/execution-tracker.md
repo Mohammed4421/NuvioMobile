@@ -960,3 +960,15 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
 - **S2 first finding (CI run 44656038835):** HIGH `GHSA-xxph-c9ww-hj94` in
   `com.google.guava:guava:33.3.1-android` (declared by Nuvio in `composeApp`), fixed in 33.7.2.
   Fixed by updating to `33.7.2-android`, not by a review entry.
+
+## B14-4: app security review (S5, 2026-11-20)
+
+| Area | Evidence | Severity | Result |
+|---|---|---|---|
+| Add-on deep links | `MainAppContent` installed `AppDeepLink.AddonInstall` from any `stremio://` / `nuvio://<host>` link at once (`AddonRepository.addAddon`), no confirmation; the activity is exported with these schemes | Medium (any page or app could add an add-on that sees viewing and supplies streams) | Fixed: `AddonLinkConfirmation` + dialog showing the host only; `AddonLinkConfirmationTest` (no install without confirm, once on confirm, host not path/token) |
+| Cleartext traffic | `usesCleartextTraffic=true`, `network_security_config` base-config permits cleartext | Low, accepted | Needed for http add-ons, debrid/local media servers; the updater checks every APK's signature with the pinned key (`UpdateArchiveCheck`) so a tampered http download is refused |
+| Exported components | Only launcher aliases and the main activity; services/receivers/FileProvider `exported=false` | — | No change |
+| File sharing | FileProvider paths: cache `updates/`, `subtitles/`, files `downloads/` | — | No change; no root or external paths |
+| Backups | `allowBackup=false` | — | Profile data and tokens are not in device backups |
+| APK integrity | `UpdateArchiveCheck` (package, version, certificate or pinned rotation); device tests in B14-2 | — | Covered |
+| Malformed subtitles/media | Parsers already covered by Build 13 tests (encodings, ASS/TTML); players are Media3/mpv | NEEDS PHYSICAL DEVICE for a fuzz run | No change without a reproduced defect |

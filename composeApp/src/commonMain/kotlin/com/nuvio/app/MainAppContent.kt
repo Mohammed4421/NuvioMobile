@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -87,6 +88,7 @@ import com.nuvio.app.core.ui.localizedContinueWatchingSubtitle
 import com.nuvio.app.core.ui.nuvio
 import com.nuvio.app.core.ui.platformExitApp
 import com.nuvio.app.features.addons.AddAddonResult
+import com.nuvio.app.features.addons.AddonLinkConfirmation
 import com.nuvio.app.features.addons.AddonRepository
 import com.nuvio.app.features.addons.enabledAddons
 import com.nuvio.app.features.addons.isWaitingForFirstEnabledManifest
@@ -280,6 +282,8 @@ internal fun MainAppContent(
         }.collectAsStateWithLifecycle()
         val liquidGlassNativeTabBarSupported = remember { isLiquidGlassNativeTabBarSupported() }
         var showExitConfirmation by rememberSaveable { mutableStateOf(false) }
+        val addonLinkConfirmation = remember { AddonLinkConfirmation() }
+        val pendingAddonLink by addonLinkConfirmation.manifestUrl.collectAsState()
         var selectedPosterActionTarget by remember { mutableStateOf<PosterActionTarget?>(null) }
         var selectedPosterAnchor by remember { mutableStateOf<PosterZoomAnchor?>(null) }
         val posterOverlayHazeState = rememberHazeState()
@@ -750,19 +754,8 @@ internal fun MainAppContent(
                         navController.navigate(AddonsSettingsRoute(addonsSettingsTitle)) {
                             launchSingleTop = true
                         }
-                        NuvioToastController.show(getString(Res.string.addons_modal_checking_title))
-                        AddonRepository.initialize()
-                        when (val result = AddonRepository.addAddon(deepLink.manifestUrl)) {
-                            is AddAddonResult.Success -> {
-                                NuvioToastController.show(
-                                    getString(Res.string.addons_modal_success_message, result.manifest.name),
-                                )
-                            }
-
-                            is AddAddonResult.Error -> {
-                                NuvioToastController.show(result.message)
-                            }
-                        }
+                        // Installed only after the user confirms (AddonLinkConfirmation).
+                        addonLinkConfirmation.request(deepLink.manifestUrl)
                         AppDeepLinkRepository.markConsumed(deepLink)
                     }
 
@@ -2084,6 +2077,32 @@ internal fun MainAppContent(
             TrackingMembershipRemovalConfirmationHost(
                 pending = pendingTrackingRemoval,
                 onPendingChange = { pendingTrackingRemoval = it },
+            )
+
+            NuvioStatusModal(
+                title = stringResource(Res.string.addons_link_confirm_title),
+                message = stringResource(
+                    Res.string.addons_link_confirm_message,
+                    pendingAddonLink?.let(AddonLinkConfirmation::displayAddress).orEmpty(),
+                ),
+                isVisible = pendingAddonLink != null,
+                confirmText = stringResource(Res.string.addons_link_confirm_install),
+                dismissText = stringResource(Res.string.action_cancel),
+                onConfirm = {
+                    coroutineScope.launch {
+                        addonLinkConfirmation.confirm { manifestUrl ->
+                            NuvioToastController.show(getString(Res.string.addons_modal_checking_title))
+                            AddonRepository.initialize()
+                            when (val result = AddonRepository.addAddon(manifestUrl)) {
+                                is AddAddonResult.Success -> NuvioToastController.show(
+                                    getString(Res.string.addons_modal_success_message, result.manifest.name),
+                                )
+                                is AddAddonResult.Error -> NuvioToastController.show(result.message)
+                            }
+                        }
+                    }
+                },
+                onDismiss = { addonLinkConfirmation.dismiss() },
             )
 
             NuvioStatusModal(

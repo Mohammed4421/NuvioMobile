@@ -33,6 +33,10 @@ Newest first.
   reading crafted serialized data could use up memory (GHSA-xxph-c9ww-hj94). Found by the new
   vulnerability check.
 
+- **Add-on links ask before installing.** A stremio:// or nuvio:// link from a web page or another
+  app used to add the add-on at once, without asking. Now the app shows where the add-on comes from
+  and adds it only if you confirm, because an add-on sees what you watch and supplies the streams.
+
 ### Removed
 - **The "accept a new signing certificate" switch of the build workflows.** It belonged to the key
   change of build 13; another key change would need its own reviewed plan.
