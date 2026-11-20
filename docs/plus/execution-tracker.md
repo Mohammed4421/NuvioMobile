@@ -939,6 +939,16 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   against the test build (refused: other key), the release itself (not newer) and a damaged download.
 - **Code:** `UpdateArchiveCheck.checkAgainst` (the app's `check` uses it), `UpdateArchiveDeviceCheck`
   for the device test; debug-only `<queries>` for `com.nuvio.app.plus`.
+- **First emulator run failed (run 44657320619), root cause fixed:** `update-device-check.sh` used
+  the host `com.nuvio.app`, but the debug app's id is `com.nuviodebug.com` (`androidApp/build.gradle.kts`),
+  so `run-as` and the instrumentation were not found; and `adb shell` handed `Unreadable|Unsigned`
+  to the device's shell, where `|` became a pipe. Now `device-test-host.sh` reads the host and runner
+  from the APKs (aapt2, `apk-instrumentation.py`), checks them against `pm list instrumentation` and
+  `run-as`; every value given to `am instrument` is single-quoted. Tests: `test_device_test_host.py`
+  (fails on the old script).
+- **S2 first finding (CI run 44656038835):** HIGH `GHSA-xxph-c9ww-hj94` in
+  `com.google.guava:guava:33.3.1-android` (declared by Nuvio in `composeApp`), fixed in 33.7.2.
+  Fixed by updating to `33.7.2-android`, not by a review entry.
 
 ## B14-3: downloads (2026-11-20)
 
@@ -957,9 +967,6 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   counts the old progress (the download then fails on a full disk instead of before it; no data
   loss). Needs a SAF-provider test before changing.
 - **NEEDS PHYSICAL DEVICE:** SD-card providers and vendor file managers.
-- **S2 first finding (CI run 44656038835):** HIGH `GHSA-xxph-c9ww-hj94` in
-  `com.google.guava:guava:33.3.1-android` (declared by Nuvio in `composeApp`), fixed in 33.7.2.
-  Fixed by updating to `33.7.2-android`, not by a review entry.
 
 ## B14-4: app security review (S5, 2026-11-20)
 
