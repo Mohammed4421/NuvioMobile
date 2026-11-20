@@ -337,6 +337,25 @@
         "DuplicateSafeLazyEntry",
         "lazyKey"
       ]
+    },
+    {
+      "id": "subtitle-parser-worst-case",
+      "title": "Subtitle parsers stay fast on malformed files",
+      "since": "Build 15",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/autosync/AutoSyncSubtitleCueParser.kt"
+      ],
+      "depends": [],
+      "data": "none",
+      "tests": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserWorstCaseTest.kt"
+      ],
+      "keywords": [
+        "ttmlParagraphs",
+        "[^<>]*",
+        "[^{}]*"
+      ]
     }
   ]
 }
