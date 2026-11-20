@@ -987,3 +987,10 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   makes five attempts with growing waits and jitter (45/90/180/360 s + up to half the base), names the
   reason, still never retries compile errors, failing tests, timeouts or kills; PR runs are started
   one at a time. Guava stays at the fixed 33.7.2; the OSV check is unchanged.
+- **Release gate (owner's request, 2026-11-20):** a push to a publishing branch no longer goes on to
+  release signing; `release-identity` gives `publish=false` unless the run was started by hand with
+  `release_commit` equal to `GITHUB_SHA`. review-gate (HEAD = merge commit of a tested PR merged by
+  the owner), the pinned identities, `release-sign` (environment `plus-release`, branch policy),
+  `release-verify`, `release-upgrade` and `publish` are unchanged. Merge runs and releases have
+  separate queues (`cancel-in-progress: false` for both). Tests: `test_a_merge_never_publishes`,
+  `test_a_release_names_the_exact_commit_it_publishes`, `test_merges_and_releases_queue_separately_and_never_cancel`.

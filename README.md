@@ -105,8 +105,9 @@ Nuvio releases reach Nuvio Plus only through review (`.github/workflows/plus-pip
    (stable releases) or `plus-beta` (betas, never automatic) and the release is merged there only.
 2. A review record lists conflicts, touched Nuvio Plus features and possible duplicates; the branch is
    built and checked (never published) and a pull request is opened.
-3. Nothing reaches `custom-subtitles` until the owner merges that pull request, and nothing is
-   published without the signing and publishing approvals described under *Build*.
+3. Nothing reaches `custom-subtitles` until the owner merges that pull request. A merge never
+   publishes: a release is started by hand for the exact branch head and needs the signing and
+   publishing approvals described under *Build* (`docs/plus/release.md`).
 
 The in-app update check follows this fork's releases.
 
