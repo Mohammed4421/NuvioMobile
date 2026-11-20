@@ -5,6 +5,7 @@ This file holds the checks every later step relies on. Standard library only.
 
   portkit.py validate  [--repo DIR]                 registry, overlay and policy are consistent
   portkit.py inventory [--repo DIR] [--base SHA]    what each feature changes against upstream
+  portkit.py plan --target DIR FEATURE...           dry run: what a transfer would do, changes nothing
 
 The feature registry is .github/plus/features.json (one registry, also used by the upstream
 review); portkit/compatibility.json adds PortKit's level for each feature and the owners of files
@@ -12,6 +13,10 @@ that more than one feature changes; portkit/policy.json lists what is never tran
 Exit status: 0 when consistent, 1 with one line per problem otherwise.
 """
 import argparse
+import difflib
+import hashlib
+import shutil
+import tempfile
 import fnmatch
 import json
 import subprocess
@@ -120,6 +125,12 @@ def validate(repo):
             problems.append(f"compatibility: {fid} has level {entry.get('level')!r}; expected one of {', '.join(LEVELS)}")
         if not isinstance(entry.get("verified"), bool) or not entry.get("reason"):
             problems.append(f"compatibility: {fid} needs 'verified' (true/false) and a 'reason'")
+        if entry.get("verified") is True:
+            evidence = entry.get("evidence", "")
+            if not str(evidence).startswith("https://github.com/") or "/actions/runs/" not in str(evidence):
+                problems.append(f"compatibility: {fid} is verified without 'evidence' (the passing transfer-test run URL)")
+            if entry.get("level") == "unsupported":
+                problems.append(f"compatibility: {fid} is unsupported and cannot be verified")
 
     by_id = {f["id"]: f for f in features if "id" in f}
     patterns = policy.get("forbidden", [])
@@ -207,6 +218,213 @@ def inventory_markdown(data):
     return "\n".join(lines) + "\n"
 
 
+# ---------------------------------------------------------------------------------------------
+# Planning (dry run). Reads the source repository's Git objects and the target's files; never
+# writes to the target.
+
+def blob(repo, ref, path):
+    """Bytes of path at ref in the source repository, or None when it does not exist there."""
+    result = subprocess.run(["git", "-C", str(repo), "show", f"{ref}:{path}"], capture_output=True)
+    return result.stdout if result.returncode == 0 else None
+
+
+def read(path):
+    return path.read_bytes() if path.is_file() else None
+
+
+def sha256(data):
+    return hashlib.sha256(data).hexdigest() if data is not None else None
+
+
+def apply_patch_in_scratch(path, current, base, plus):
+    """Applies the base->plus change of one file to `current` (the target's version) in a scratch
+    directory, by context (like git apply). Returns the result, or None when it does not apply."""
+    with tempfile.TemporaryDirectory() as scratch:
+        scratch = Path(scratch)
+        for side, data in (("a", base), ("b", plus)):
+            (scratch / side / path).parent.mkdir(parents=True, exist_ok=True)
+            (scratch / side / path).write_bytes(data)
+        diff = subprocess.run(["git", "diff", "--no-index", "--no-color", "--binary", f"a/{path}", f"b/{path}"],
+                              cwd=scratch, capture_output=True)
+        patch = diff.stdout.replace(f"a/a/{path}".encode(), f"a/{path}".encode()).replace(
+            f"b/b/{path}".encode(), f"b/{path}".encode())
+        work = scratch / "work"
+        (work / path).parent.mkdir(parents=True, exist_ok=True)
+        (work / path).write_bytes(current)
+        (scratch / "change.patch").write_bytes(patch)
+        applied = subprocess.run(["git", "apply", "--whitespace=nowarn", str(scratch / "change.patch")],
+                                 cwd=work, capture_output=True)
+        return (work / path).read_bytes() if applied.returncode == 0 else None
+
+
+def check_target(target, overlay):
+    """Problems that make the target unsupported as a whole (it is not a Nuvio project PortKit knows)."""
+    contract = overlay.get("target_contract", {})
+    problems = []
+    for path in contract.get("required_paths", []):
+        if not (Path(target) / path).exists():
+            problems.append(f"target has no {path}")
+    for path, needle in contract.get("required_text", {}).items():
+        data = read(Path(target) / path)
+        if data is None or needle.encode() not in data:
+            problems.append(f"target {path} does not contain {needle!r}")
+    return problems
+
+
+def production_refusal(fid, entry):
+    """Why a feature may not be transferred for real (None when it may): only portable features whose
+    transfer test passed (verified, with evidence) are transferred outside a trial."""
+    if entry.get("level") != "portable":
+        return f"{fid} is {entry.get('level')}: only portable features are transferred; use a trial to test it"
+    if not entry.get("verified"):
+        return f"{fid} is not verified (no passing transfer test yet); use a trial to test it"
+    return None
+
+
+def plan(source, target, wanted, source_ref="HEAD", trial=False):
+    """What transferring `wanted` (and their dependencies) into `target` would do.
+
+    Outside a trial only portable, verified features are planned. A trial (CI transfer tests,
+    isolated branches) may plan any feature that is not unsupported; its result is not a transfer
+    to keep.
+
+    Every action is one of: create, patch-exact (the target file is the upstream file),
+    patch-context (the target changed the file but the change still applies), delete, already
+    (the target already has the Plus result) or conflict. Nothing is written."""
+    source, target = Path(source), Path(target)
+    registry, overlay, policy = load(source)
+    base = overlay["upstream_base"]["commit"]
+    by_id = {f["id"]: f for f in registry["features"]}
+    levels = overlay["features"]
+    report = {"source_ref": subprocess.run(["git", "-C", str(source), "rev-parse", source_ref],
+                                           capture_output=True, text=True).stdout.strip(),
+              "upstream_base": base, "target": str(target), "requested": list(wanted),
+              "refused": [], "features": {}, "status": "ready", "trial": bool(trial)}
+
+    target_problems = check_target(target, overlay)
+    if target_problems:
+        report["status"] = "unsupported-target"
+        report["refused"] = target_problems
+        return report
+    try:
+        order = dependency_order(registry["features"], wanted)
+    except ValueError as error:
+        report["status"] = "refused"
+        report["refused"].append(str(error))
+        return report
+    for fid in order:
+        if levels.get(fid, {}).get("level") == "unsupported":
+            report["refused"].append(f"{fid} is unsupported: {levels[fid]['reason']}")
+        elif not trial:
+            why = production_refusal(fid, levels.get(fid, {}))
+            if why:
+                report["refused"].append(why)
+    shared = overlay.get("shared_files", {})
+    for path, entry in shared.items():
+        owners = entry["owners"]
+        chosen = [o for o in owners if o in order]
+        if chosen and len(chosen) != len(owners):
+            missing = [o for o in owners if o not in order]
+            report["refused"].append(f"{path} is changed by {', '.join(owners)} together; add {', '.join(missing)}")
+    if report["refused"]:
+        report["status"] = "refused"
+        return report
+
+    patterns = policy.get("forbidden", [])
+    for fid in order:
+        feature = by_id[fid]
+        actions = []
+        targets = [(p, "keep") for p in feature_paths(feature)] + \
+                  [(resolve(p), "remove") for p in feature.get("removed_files", [])]
+        for path, kind in targets:
+            hit = forbidden_match(path, patterns)
+            if hit:
+                actions.append({"path": path, "action": "conflict", "why": f"forbidden by {hit}"})
+                continue
+            base_data, plus_data = blob(source, base, path), blob(source, source_ref, path)
+            current = read(target / path)
+            action = {"path": path, "upstream": sha256(base_data), "plus": sha256(plus_data), "target": sha256(current)}
+            if kind == "remove":
+                if current is None:
+                    action["action"] = "already"
+                elif current == base_data:
+                    action["action"] = "delete"
+                else:
+                    action.update(action="conflict", why="the target changed a file this feature deletes")
+            elif plus_data is None:
+                action.update(action="conflict", why="the source has no such file")
+            elif current == plus_data:
+                action["action"] = "already"
+            elif base_data is None:
+                if current is None:
+                    action["action"] = "create"
+                else:
+                    action.update(action="conflict", why="the target has its own file at this path")
+            elif current is None:
+                action.update(action="conflict", why="the upstream file this feature changes is missing in the target")
+            elif current == base_data:
+                action["action"] = "patch-exact"
+            else:
+                result = apply_patch_in_scratch(path, current, base_data, plus_data)
+                if result is None:
+                    action.update(action="conflict", why="the target changed this file where the feature changes it")
+                else:
+                    action["action"] = "patch-context"
+                    action["result"] = sha256(result)
+            actions.append(action)
+        conflicts = [a for a in actions if a["action"] == "conflict"]
+        status = "conflict" if conflicts else ("already" if all(a["action"] == "already" for a in actions) else "ready")
+        report["features"][fid] = {"level": levels[fid]["level"], "status": status, "actions": actions}
+    if any(f["status"] == "conflict" for f in report["features"].values()):
+        report["status"] = "conflict"
+    elif all(f["status"] == "already" for f in report["features"].values()):
+        report["status"] = "already"
+    return report
+
+
+def planned_content(source, target, report, action):
+    """The bytes the target file would have after the action (None: deleted or unchanged)."""
+    path, kind = action["path"], action["action"]
+    if kind in ("create", "patch-exact"):
+        return blob(source, report["source_ref"], path)
+    if kind == "patch-context":
+        _, overlay, _ = load(source)
+        base = overlay["upstream_base"]["commit"]
+        return apply_patch_in_scratch(path, read(Path(target) / path), blob(source, base, path),
+                                      blob(source, report["source_ref"], path))
+    return None
+
+
+def plan_diff(source, target, report):
+    """Unified diff of everything the plan would change in the target."""
+    out = []
+    for feature in report["features"].values():
+        for action in feature["actions"]:
+            if action["action"] not in ("create", "patch-exact", "patch-context", "delete"):
+                continue
+            before = read(Path(target) / action["path"]) or b""
+            after = b"" if action["action"] == "delete" else planned_content(source, target, report, action)
+            out += difflib.unified_diff(before.decode("utf-8", "replace").splitlines(keepends=True),
+                                        after.decode("utf-8", "replace").splitlines(keepends=True),
+                                        f"a/{action['path']}", f"b/{action['path']}")
+    return "".join(out)
+
+
+def plan_markdown(report):
+    lines = [f"# PortKit plan ({report['status']}{', trial' if report.get('trial') else ''})", "",
+             f"- Source: `{report['source_ref'][:12]}`, upstream base `{report['upstream_base'][:8]}`",
+             f"- Target: `{report['target']}`", f"- Requested: {', '.join(report['requested'])}",
+             "- `ready` means every change applies to the target's files; whether the result builds and passes",
+             "  the feature's tests is proven only by a transfer test (`compatibility.json` `verified`).", ""]
+    if report["refused"]:
+        lines += ["## Refused", ""] + [f"- {r}" for r in report["refused"]] + [""]
+    for fid, feature in report["features"].items():
+        lines += [f"## {fid} ({feature['level']}): {feature['status']}", "", "| File | Action | Why |", "|---|---|---|"]
+        lines += [f"| `{a['path']}` | {a['action']} | {a.get('why', '')} |" for a in feature["actions"]]
+        lines.append("")
+    return "\n".join(lines)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="portkit")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -216,6 +434,15 @@ def main(argv=None):
     inv.add_argument("--repo", default=".")
     inv.add_argument("--base", help="upstream commit (default: compatibility.json upstream_base)")
     inv.add_argument("--markdown", help="also write a Markdown report here")
+    planner = sub.add_parser("plan", help="dry run: what transferring features would do; changes nothing")
+    planner.add_argument("--repo", default=".", help="the Nuvio Plus repository (source)")
+    planner.add_argument("--source-ref", default="HEAD")
+    planner.add_argument("--target", required=True, help="the Nuvio project to transfer into")
+    planner.add_argument("--json", help="write the plan as JSON here")
+    planner.add_argument("--diff", help="write the planned changes as a unified diff here")
+    planner.add_argument("--trial", action="store_true",
+                         help="plan unverified, adapter-required or manual features too (for transfer tests)")
+    planner.add_argument("features", nargs="+")
     args = parser.parse_args(argv)
 
     if args.command == "validate":
@@ -234,6 +461,14 @@ def main(argv=None):
         if args.markdown:
             Path(args.markdown).write_text(inventory_markdown(data))
         return 0
+    if args.command == "plan":
+        report = plan(args.repo, args.target, args.features, args.source_ref, trial=args.trial)
+        print(plan_markdown(report))
+        if args.json:
+            Path(args.json).write_text(json.dumps(report, indent=2))
+        if args.diff:
+            Path(args.diff).write_text(plan_diff(args.repo, args.target, report))
+        return {"ready": 0, "already": 0}.get(report["status"], 3)
     return 2
 
 

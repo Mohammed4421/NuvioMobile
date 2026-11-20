@@ -11,33 +11,109 @@
     "commit": "511ebd5f175dd39e31b9cc0e7b259259e887cf6f"
   },
   "features": {
-    "lazy-key-collisions": {"level": "portable", "verified": false, "reason": "one Nuvio file, self-contained change"},
-    "subtitle-parser-worst-case": {"level": "portable", "verified": false, "reason": "two Nuvio files, no new API"},
-    "subtitle-style": {"level": "adapter-required", "verified": false, "reason": "stored subtitle settings and player engine hooks"},
-    "player-engines": {"level": "adapter-required", "verified": false, "reason": "ExoPlayer/mpv integration points differ between forks"},
-    "subtitle-gestures": {"level": "manual", "verified": false, "reason": "spread over player screen files that forks change often"},
-    "device-subtitles": {"level": "adapter-required", "verified": false, "reason": "subtitle picker plus player modal hooks"},
-    "download-location": {"level": "manual", "verified": false, "reason": "rewrites the download pipeline and its stored records"},
-    "season-downloads": {"level": "manual", "verified": false, "reason": "depends on download-location and the streams screen"},
-    "library-downloads": {"level": "manual", "verified": false, "reason": "library screen and app shell navigation"},
-    "addon-link-confirmation": {"level": "adapter-required", "verified": false, "reason": "new class plus a hook in the app's deep-link handling"},
-    "arabic": {"level": "adapter-required", "verified": false, "reason": "resource files merge by string name, not by line"},
-    "updater": {"level": "unsupported", "verified": false, "reason": "needs the target's own identity, release source, channels and signing"},
-    "identity": {"level": "unsupported", "verified": false, "reason": "package, signing and release pipeline of Nuvio Plus; never transferred"},
-    "account-and-sync": {"level": "unsupported", "verified": false, "reason": "build configuration of Nuvio Plus (CI script)"}
+    "lazy-key-collisions": {
+      "level": "portable",
+      "verified": false,
+      "reason": "one Nuvio file, self-contained change"
+    },
+    "subtitle-parser-worst-case": {
+      "level": "portable",
+      "verified": false,
+      "reason": "two Nuvio files, no new API"
+    },
+    "subtitle-style": {
+      "level": "adapter-required",
+      "verified": false,
+      "reason": "stored subtitle settings and player engine hooks"
+    },
+    "player-engines": {
+      "level": "adapter-required",
+      "verified": false,
+      "reason": "ExoPlayer/mpv integration points differ between forks"
+    },
+    "subtitle-gestures": {
+      "level": "manual",
+      "verified": false,
+      "reason": "spread over player screen files that forks change often"
+    },
+    "device-subtitles": {
+      "level": "adapter-required",
+      "verified": false,
+      "reason": "subtitle picker plus player modal hooks"
+    },
+    "download-location": {
+      "level": "manual",
+      "verified": false,
+      "reason": "rewrites the download pipeline and its stored records"
+    },
+    "season-downloads": {
+      "level": "manual",
+      "verified": false,
+      "reason": "depends on download-location and the streams screen"
+    },
+    "library-downloads": {
+      "level": "manual",
+      "verified": false,
+      "reason": "library screen and app shell navigation"
+    },
+    "addon-link-confirmation": {
+      "level": "adapter-required",
+      "verified": false,
+      "reason": "new class plus a hook in the app's deep-link handling"
+    },
+    "arabic": {
+      "level": "adapter-required",
+      "verified": false,
+      "reason": "resource files merge by string name, not by line"
+    },
+    "updater": {
+      "level": "unsupported",
+      "verified": false,
+      "reason": "needs the target's own identity, release source, channels and signing"
+    },
+    "identity": {
+      "level": "unsupported",
+      "verified": false,
+      "reason": "package, signing and release pipeline of Nuvio Plus; never transferred"
+    },
+    "account-and-sync": {
+      "level": "unsupported",
+      "verified": false,
+      "reason": "build configuration of Nuvio Plus (CI script)"
+    }
   },
   "shared_files": {
     "composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt": {
-      "owners": ["download-location", "season-downloads"],
-      "policy": "transfer only together; season-downloads depends on download-location"
+      "owners": [
+        "download-location",
+        "season-downloads"
+      ],
+      "policy": "transfer together; planning refuses one owner alone"
     },
     "composeApp/src/commonMain/kotlin/com/nuvio/app/MainAppContent.kt": {
-      "owners": ["library-downloads", "addon-link-confirmation"],
-      "policy": "hunk-level: each owner's change applied as its own patch hunk; a conflicting hunk stops that feature only"
+      "owners": [
+        "library-downloads",
+        "addon-link-confirmation"
+      ],
+      "policy": "transfer together until hunks are attributed to features; planning refuses one owner alone"
     },
     "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeUi.kt": {
-      "owners": ["subtitle-gestures", "device-subtitles"],
-      "policy": "hunk-level as above; both are manual or adapter-required until tested"
+      "owners": [
+        "subtitle-gestures",
+        "device-subtitles"
+      ],
+      "policy": "transfer together until hunks are attributed to features; planning refuses one owner alone"
+    }
+  },
+  "target_contract": {
+    "_about": "A target must look like Nuvio Mobile (Kotlin Multiplatform, package com.nuvio.app) before PortKit plans anything; a version name alone is not trusted.",
+    "required_paths": [
+      "settings.gradle.kts",
+      "composeApp/build.gradle.kts",
+      "composeApp/src/commonMain/kotlin/com/nuvio/app"
+    ],
+    "required_text": {
+      "settings.gradle.kts": ":composeApp"
     }
   }
 }
