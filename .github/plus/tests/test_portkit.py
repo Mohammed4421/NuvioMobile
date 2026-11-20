@@ -122,6 +122,7 @@ class BrokenRegistries(unittest.TestCase):
     def test_verified_needs_the_evidence_of_a_passing_run(self):
         overlay = copy.deepcopy(self.overlay)
         overlay["features"]["lazy-key-collisions"]["verified"] = True
+        overlay["features"]["lazy-key-collisions"].pop("evidence", None)
         self.assertTrue(any("verified without 'evidence'" in p for p in self.problems(overlay=overlay)))
         good = {"run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/1", "commit": "a" * 40}
         overlay["features"]["lazy-key-collisions"]["evidence"] = good

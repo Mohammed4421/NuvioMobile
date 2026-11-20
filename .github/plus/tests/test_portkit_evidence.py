@@ -43,6 +43,11 @@ class Evidence(unittest.TestCase):
             elif source.is_file():
                 (self.repo / path).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(source, self.repo / path)
+        overlay = json.loads((self.repo / "portkit/compatibility.json").read_text())
+        for entry in overlay["features"].values():  # start from nothing verified
+            entry["verified"] = False
+            entry.pop("evidence", None)
+        (self.repo / "portkit/compatibility.json").write_text(json.dumps(overlay))
         git(self.repo, "init", "-q", "-b", "main")
         self.commit("tested")
         self.tested = git(self.repo, "rev-parse", "HEAD")
