@@ -125,6 +125,12 @@ def validate(repo):
             problems.append(f"compatibility: {fid} has level {entry.get('level')!r}; expected one of {', '.join(LEVELS)}")
         if not isinstance(entry.get("verified"), bool) or not entry.get("reason"):
             problems.append(f"compatibility: {fid} needs 'verified' (true/false) and a 'reason'")
+        if entry.get("verified") is True:
+            evidence = entry.get("evidence", "")
+            if not str(evidence).startswith("https://github.com/") or "/actions/runs/" not in str(evidence):
+                problems.append(f"compatibility: {fid} is verified without 'evidence' (the passing transfer-test run URL)")
+            if entry.get("level") == "unsupported":
+                problems.append(f"compatibility: {fid} is unsupported and cannot be verified")
 
     by_id = {f["id"]: f for f in features if "id" in f}
     patterns = policy.get("forbidden", [])
@@ -265,8 +271,22 @@ def check_target(target, overlay):
     return problems
 
 
-def plan(source, target, wanted, source_ref="HEAD"):
+def production_refusal(fid, entry):
+    """Why a feature may not be transferred for real (None when it may): only portable features whose
+    transfer test passed (verified, with evidence) are transferred outside a trial."""
+    if entry.get("level") != "portable":
+        return f"{fid} is {entry.get('level')}: only portable features are transferred; use a trial to test it"
+    if not entry.get("verified"):
+        return f"{fid} is not verified (no passing transfer test yet); use a trial to test it"
+    return None
+
+
+def plan(source, target, wanted, source_ref="HEAD", trial=False):
     """What transferring `wanted` (and their dependencies) into `target` would do.
+
+    Outside a trial only portable, verified features are planned. A trial (CI transfer tests,
+    isolated branches) may plan any feature that is not unsupported; its result is not a transfer
+    to keep.
 
     Every action is one of: create, patch-exact (the target file is the upstream file),
     patch-context (the target changed the file but the change still applies), delete, already
@@ -279,7 +299,7 @@ def plan(source, target, wanted, source_ref="HEAD"):
     report = {"source_ref": subprocess.run(["git", "-C", str(source), "rev-parse", source_ref],
                                            capture_output=True, text=True).stdout.strip(),
               "upstream_base": base, "target": str(target), "requested": list(wanted),
-              "refused": [], "features": {}, "status": "ready"}
+              "refused": [], "features": {}, "status": "ready", "trial": bool(trial)}
 
     target_problems = check_target(target, overlay)
     if target_problems:
@@ -295,6 +315,10 @@ def plan(source, target, wanted, source_ref="HEAD"):
     for fid in order:
         if levels.get(fid, {}).get("level") == "unsupported":
             report["refused"].append(f"{fid} is unsupported: {levels[fid]['reason']}")
+        elif not trial:
+            why = production_refusal(fid, levels.get(fid, {}))
+            if why:
+                report["refused"].append(why)
     shared = overlay.get("shared_files", {})
     for path, entry in shared.items():
         owners = entry["owners"]
@@ -387,7 +411,7 @@ def plan_diff(source, target, report):
 
 
 def plan_markdown(report):
-    lines = [f"# PortKit plan ({report['status']})", "",
+    lines = [f"# PortKit plan ({report['status']}{', trial' if report.get('trial') else ''})", "",
              f"- Source: `{report['source_ref'][:12]}`, upstream base `{report['upstream_base'][:8]}`",
              f"- Target: `{report['target']}`", f"- Requested: {', '.join(report['requested'])}",
              "- `ready` means every change applies to the target's files; whether the result builds and passes",
@@ -416,6 +440,8 @@ def main(argv=None):
     planner.add_argument("--target", required=True, help="the Nuvio project to transfer into")
     planner.add_argument("--json", help="write the plan as JSON here")
     planner.add_argument("--diff", help="write the planned changes as a unified diff here")
+    planner.add_argument("--trial", action="store_true",
+                         help="plan unverified, adapter-required or manual features too (for transfer tests)")
     planner.add_argument("features", nargs="+")
     args = parser.parse_args(argv)
 
@@ -436,7 +462,7 @@ def main(argv=None):
             Path(args.markdown).write_text(inventory_markdown(data))
         return 0
     if args.command == "plan":
-        report = plan(args.repo, args.target, args.features, args.source_ref)
+        report = plan(args.repo, args.target, args.features, args.source_ref, trial=args.trial)
         print(plan_markdown(report))
         if args.json:
             Path(args.json).write_text(json.dumps(report, indent=2))

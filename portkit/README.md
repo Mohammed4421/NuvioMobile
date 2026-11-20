@@ -22,7 +22,9 @@ python3 portkit/portkit.py plan --target ../my-nuvio-fork --json plan.json --dif
 
 `plan` first checks that the target is a Nuvio project (`target_contract`), refuses unsupported
 features, unknown ones and one owner of a shared file alone, adds dependencies, then gives each
-file one action:
+file one action. **Only portable features whose transfer test passed (`verified`, with the run as
+`evidence`) are planned for a real transfer.** `--trial` also plans unverified, adapter-required or
+manual features; trials are for the CI transfer tests and isolated branches, not for keeping:
 
 | Action | Meaning |
 |---|---|
