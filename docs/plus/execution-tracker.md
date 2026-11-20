@@ -979,3 +979,11 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
 | Backups | `allowBackup=false` | — | Profile data and tokens are not in device backups |
 | APK integrity | `UpdateArchiveCheck` (package, version, certificate or pinned rotation); device tests in B14-2 | — | Covered |
 | Malformed subtitles/media | Parsers already covered by Build 13 tests (encodings, ASS/TTML); players are Media3/mpv | NEEDS PHYSICAL DEVICE for a fuzz run | No change without a reproduced defect |
+- **CI downloads (runs 44663582915, 44663793918):** not a code fault. Maven Central answered HTTP 429
+  (Too Many Requests) for `guava-33.7.2-android.pom`; Gradle then disabled the repository for that
+  build, so the next lookups read "Could not find" (ui-tooling, kermit, reorderable…). Three PR runs
+  had started together, each with several Gradle jobs downloading the new Guava (PR caches are
+  read-only), and the three fixed 60 s retries all landed inside the limit. Fix: `gradle-retry.sh`
+  makes five attempts with growing waits and jitter (45/90/180/360 s + up to half the base), names the
+  reason, still never retries compile errors, failing tests, timeouts or kills; PR runs are started
+  one at a time. Guava stays at the fixed 33.7.2; the OSV check is unchanged.
