@@ -14,6 +14,11 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | B15-CI-02 | Repository | Gitlinks without `.gitmodules` entries (K-05) | CI teardown log | P3 | DEFER (Nuvio's tree; no build effect) | SPECIFIED |
 | B15-UI-03 | Localization | `runBlocking` resource reads in `LocalizedUiText` (Nuvio's code) | Code review only | — | DEFER until measured on a device (P5) | DISCOVERED |
 | B15-REL-01 | Release notes | Android 9 note missing in the Arabic part of custom-14 notes (K-02) | Release page | P3 | FIX by hand on the release page (session cannot edit releases); future notes carry the changelog text | SPECIFIED |
+| B15-SEC-01 | Signing | `signing/nuvio-plus.p12` (builds 8-12 key) is in the public repository | Documented in the release workflows; used only as the v3 rotation's old signer; Build 14 release run 44727757154 refused an update signed by it alone on Android 9 and 14 | — | KEEP (by design: rotation proof) | VERIFIED (release run 44727757154) |
+| B15-AND-01 | Manifest | App label moved to the `appLabel` placeholder; debug-only package visibility | Diff review: default placeholder is still `@string/app_name` (translatable); releases do not override it; no permission added | — | KEEP | VERIFIED (review) |
+| B15-LIB-01 | Library | Downloads tab replaces Nuvio's downloads button (button file deleted) | Diff review of `LibraryScreen.kt`; `LibraryDownloadEntriesTest`; open: look and RTL (P4), chip count includes paused downloads | — | KEEP; visuals in P4 | IMPLEMENTED |
+| B15-STR-01 | Streams | Season download sheet (rest of season / whole season) | Diff review of `StreamsScreen.kt`; queue paths in the race harness | — | KEEP; visuals in P4 | IMPLEMENTED |
+| B15-SET-01 | Settings | Subtitle brightness slider and bottom-offset range | Diff review of `SubtitleAppearanceSettings.kt`; effect on the picture needs a device | — | KEEP; NEEDS PHYSICAL DEVICE | IMPLEMENTED |
 
 ## Areas reviewed and still to review
 
