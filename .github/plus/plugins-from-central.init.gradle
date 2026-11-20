@@ -10,3 +10,19 @@ beforeSettings { settings ->
         }
     }
 }
+
+// CI only. Google's mirror of Maven Central, consulted only after Maven Central (and Google's own
+// repository) answered "not found". On 20 November 2026 Maven Central answered 404 for
+// com.google.guava:guava:33.7.2-android (security update GHSA-xxph-c9ww-hj94) to the unit-test job
+// while the build job of the same run downloaded it (run 44666891660); Gradle then remembers the
+// miss, so retrying cannot help. The mirror serves the same Maven Central artifacts; added after the
+// project's repositories, it never replaces one Maven Central answers.
+settingsEvaluated { settings ->
+    settings.dependencyResolutionManagement.repositories {
+        maven {
+            name = 'MavenCentralGoogleMirror'
+            url = 'https://maven-central.storage-download.googleapis.com/maven2/'
+            mavenContent { releasesOnly() }
+        }
+    }
+}

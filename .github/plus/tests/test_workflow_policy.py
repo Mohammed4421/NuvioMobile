@@ -497,6 +497,12 @@ class WorkflowPolicyTest(unittest.TestCase):
                 self.assertTrue(installed and installed[0] < gradle_at, f"{job_id} runs Gradle without the init script")
         init = (ROOT / ".github/plus/plugins-from-central.init.gradle").read_text()
         self.assertIn("useModule(\"io.sentry:sentry-android-gradle-plugin:${requested.version}\")", init)
+        # Google's Maven Central mirror only as a fallback: added after the project's repositories
+        # (settingsEvaluated), HTTPS, releases only.
+        self.assertIn("settingsEvaluated { settings ->", init)
+        self.assertIn("url = 'https://maven-central.storage-download.googleapis.com/maven2/'", init)
+        self.assertIn("releasesOnly()", init)
+        self.assertNotIn("beforeSettings { settings ->\n    settings.dependencyResolutionManagement", init)
 
     def test_the_build_writes_no_signing_settings(self):
         script = (ROOT / ".github/plus/prepare-build.sh").read_text()
