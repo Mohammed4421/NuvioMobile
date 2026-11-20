@@ -1,0 +1,26 @@
+{
+  "_about": "What PortKit never transfers, whatever a feature lists. Globs match repository paths.",
+  "forbidden": [
+    "signing/**",
+    "**/*.p12",
+    "**/*.jks",
+    "**/*.keystore",
+    "**/*.pem",
+    "**/*.key",
+    "**/local.properties",
+    "**/google-services.json",
+    "**/GoogleService-Info.plist",
+    ".github/workflows/**",
+    ".github/plus/**"
+  ],
+  "_forbidden_reasons": {
+    "signing/**, keys": "signing keys and certificates stay with their project",
+    "local.properties, google services": "machine or account secrets",
+    ".github/**": "CI, signing and release pipelines belong to Nuvio Plus; a target keeps its own"
+  },
+  "not_features": {
+    ".gitattributes": "repository settings of Nuvio Plus",
+    ".gitignore": "repository settings of Nuvio Plus",
+    "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watchprogress/WatchProgressIdentityTest.kt": "a later Nuvio fix (20626a1d) taken early; arrives with Nuvio itself"
+  }
+}

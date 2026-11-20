@@ -640,6 +640,14 @@ jobs:
           left="$(git config --list --includes | grep -ci 'authorization' || true)"
           if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
 
+      - name: Get the Nuvio release PortKit compares with
+        # The upstream commit in portkit/compatibility.json (public repository, no token): PortKit's
+        # test checks that every Nuvio Plus change against it belongs to a registered feature.
+        run: |
+          base="$(python3 -I -c 'import json; print(json.load(open("portkit/compatibility.json"))["upstream_base"]["commit"])')"
+          [[ "${base}" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::portkit/compatibility.json has no valid upstream_base commit"; exit 1; }
+          git fetch --no-tags --depth=1 https://github.com/NuvioMedia/NuvioMobile.git "${base}"
+
       - name: Run
         run: |
           python3 -I -c "import yaml" 2>/dev/null || sudo apt-get install -y -qq python3-yaml

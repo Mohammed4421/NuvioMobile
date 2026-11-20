@@ -50,7 +50,7 @@ lines = [
 
 owner = {}
 for feature in features:
-    for path in feature["files"]:
+    for path in feature["files"] + feature.get("test_files", []) + feature.get("removed_files", []):
         owner.setdefault(full(path), []).append(feature["id"])
 
 if conflicts:
@@ -62,7 +62,8 @@ if conflicts:
 
 feature_lines = []
 for feature in features:
-    files = sorted(full(p) for p in feature["files"] if full(p) in nuvio_files)
+    files = sorted(full(p) for p in feature["files"] + feature.get("test_files", []) + feature.get("removed_files", [])
+                   if full(p) in nuvio_files)
     hits = []
     for pattern in feature.get("keywords", []):
         regex = re.compile(pattern, re.IGNORECASE)
