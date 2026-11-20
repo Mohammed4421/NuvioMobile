@@ -9,6 +9,7 @@ import com.nuvio.app.features.downloads.SeasonDownloadQueue as Queue
 import com.nuvio.app.features.downloads.SeasonDownloadScope
 import com.nuvio.app.features.downloads.SeasonQueueEntry
 import com.nuvio.app.features.downloads.SeasonQueueStorage
+import com.nuvio.app.features.downloads.SeasonStartResult
 import com.nuvio.app.features.profiles.ProfileRepository as Profiles
 import com.nuvio.app.features.streams.StreamItem
 import kotlinx.coroutines.CompletableDeferred
@@ -25,9 +26,12 @@ object Scenarios {
         all().filter { it.profileId == profile && it.parentMetaId == meta }.map { "E${it.episodeNumber}:${it.state}" }
     private fun dl(profile: Int) = Downloads.storedFor(profile).map { "${it.parentMetaId}:E${it.episodeNumber}" }.sorted()
 
+    /** What the last startSeason returned (the toast the user sees comes from it). */
+    private var lastResult: SeasonStartResult? = null
+
     private fun startSeason(meta: String = "tt1", episode: Int = 1) {
         Queue.launch {
-            Queue.startSeason(
+            lastResult = Queue.startSeason(
                 "series", meta, "series", "Show", null, null, null, "$meta:1:$episode", 1, episode, null, null,
                 StreamItem(name = "Show S01E0$episode 1080p WEB", addonId = "addon", playableDirectUrl = "https://x/$meta-e$episode.mkv"),
                 SeasonDownloadScope.RestOfSeason,
@@ -68,6 +72,8 @@ object Scenarios {
         TestMain.drain()
         check(dl(B).isEmpty(), "profile B got downloads it never asked for: ${dl(B)}")
         check(eps(B).isEmpty(), "profile B got queue entries it never asked for: ${eps(B)}")
+        check(eps(A).isEmpty(), "profile A got entries after the switch: ${eps(A)}")
+        check(lastResult == SeasonStartResult.ProfileChanged, "result was $lastResult, not ProfileChanged (the user's message)")
         return result("A->B during MetaDetailsRepository.fetch") { "A queue=${eps(A)} A dl=${dl(A)} B queue=${eps(B)} B dl=${dl(B)} log=${Downloads.log}" }
     }
 
@@ -98,12 +104,17 @@ object Scenarios {
         TestMain.drain()
         check(dl(B).isEmpty(), "download landed in B: ${dl(B)}")
         check(eps(A).size == 3, "A lost queue entries: ${eps(A)}")
+        // The chosen episode was stopped by the switch, not by its stream: it waits, not "needs a choice".
+        check(eps(A).firstOrNull() == "E1:Waiting", "the chosen episode is ${eps(A).firstOrNull()}, not E1:Waiting")
         val afterSwitch = "A queue=${eps(A)} A dl=${dl(A)} B dl=${dl(B)}"
         // Back to A: the queue goes on in A, nothing twice.
         Resolver.hold = false
         Profiles.selectProfile(A)
         TestMain.drain()
         check(dl(B).isEmpty(), "download landed in B after return: ${dl(B)}")
+        // Back in A it is searched again (fresh links) and downloaded once, in A.
+        check(dl(A).contains("tt1:E1"), "E1 was not downloaded in A after the return: ${dl(A)}")
+        check(Downloads.log.count { it == "P1:tt1:S1E1" } == 1, "E1 handed to the downloader ${Downloads.log.count { it == "P1:tt1:S1E1" }} times")
         return result("A->B during resolveToPlayableStream (chosen episode)") { "after switch: $afterSwitch | back in A: queue=${eps(A)} dl=${dl(A)} log=${Downloads.log}" }
     }
 

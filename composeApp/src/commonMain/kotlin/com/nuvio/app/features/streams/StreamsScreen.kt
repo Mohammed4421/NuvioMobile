@@ -75,6 +75,7 @@ import com.nuvio.app.core.ui.rememberArtworkBackdrop
 import com.nuvio.app.features.downloads.DownloadsRepository
 import com.nuvio.app.features.downloads.SeasonDownloadQueue
 import com.nuvio.app.features.downloads.SeasonDownloadScope
+import com.nuvio.app.features.downloads.SeasonStartResult
 import com.nuvio.app.features.details.MetaScreenSettingsRepository
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -442,10 +443,10 @@ fun StreamsScreen(
                             downloadScope = scope,
                         )
                         NuvioToastController.show(
-                            if (added > 0) {
-                                getString(Res.string.season_download_queued, added)
-                            } else {
-                                seasonDownloadNothingText
+                            when (added) {
+                                is SeasonStartResult.Queued -> getString(Res.string.season_download_queued, added.count)
+                                SeasonStartResult.NothingToAdd -> seasonDownloadNothingText
+                                SeasonStartResult.ProfileChanged -> getString(Res.string.season_download_profile_changed)
                             },
                         )
                     }
