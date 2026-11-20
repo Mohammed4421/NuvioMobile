@@ -12,6 +12,9 @@ pull requests of one build) cannot release a partial build, and no run has to be
 2. Start the release by hand: Actions → *Build Custom APK* → *Run workflow*, branch
    `custom-subtitles`, and `release_commit` = the full commit of the branch head (shown by the last
    run's notice). Any other value, or a branch that moved on meanwhile, publishes nothing.
+   Right before release signing (after approval 1) and right before publishing (after approval 2)
+   the run reads the branch head from GitHub again: if the branch moved meanwhile, that commit is
+   neither signed nor published.
 3. The run repeats every check and the review gate (the head must be a tested pull request merged by
    the owner), then waits for the owner's approval of release signing (`plus-release`).
 4. The signed APKs are verified (`release-verify`) and installed as an update on emulators: from the
@@ -20,6 +23,9 @@ pull requests of one build) cannot release a partial build, and no run has to be
 5. Publishing waits for the owner's second approval, then makes the `custom-N` release.
 
 Nothing above is skipped for a rescue build (`rollback.md`).
+
+A failed run (a failed check, a wrong `release_commit`, a moved branch) makes no GitHub release: its
+report is in the run's summary and in the `nuvio-plus-failure-report` artifact with the logs.
 
 | Event | Checks | Review gate | Release signing | Update tests | Published |
 |---|---|---|---|---|---|

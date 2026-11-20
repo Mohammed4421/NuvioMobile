@@ -4,7 +4,9 @@ Android never installs a lower version code over a higher one, and an older buil
 written by a newer one. So a rollback is a **new forward release**, not reinstalling an old APK.
 
 1. **Keep history.** Every published build stays on the Releases page with its APKs, notes, checks
-   and the failure pre-releases with their logs. Do not delete releases.
+   and the older failure pre-releases (`build-failed-N`) with their logs. Do not delete releases.
+   Since build 14 failures are reported in the run (summary and the `nuvio-plus-failure-report`
+   artifact), not as releases.
 2. **Recovery release.** Revert the bad change on a `plus-fix/rollback-<build>` branch (`git revert`,
    not a reset), push it, let the checks pass, merge it into `custom-subtitles`. The build gets the
    next build number, so its version code is higher than the bad build and installs over it.
