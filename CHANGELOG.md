@@ -22,6 +22,11 @@ Newest first.
   in the release APK and asks the OSV database about them; a known high or critical vulnerability
   stops the build until it is fixed or reviewed with a written reason and an end date.
 
+### Security
+- **Guava updated from 33.3.1 to 33.7.2** (Android edition), fixing a high-severity issue in which
+  reading crafted serialized data could use up memory (GHSA-xxph-c9ww-hj94). Found by the new
+  vulnerability check.
+
 ### Removed
 - **The "accept a new signing certificate" switch of the build workflows.** It belonged to the key
   change of build 13; another key change would need its own reviewed plan.
