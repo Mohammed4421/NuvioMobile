@@ -40,10 +40,12 @@ class RealRepository(unittest.TestCase):
             self.assertIsNotNone(portkit.forbidden_match(path, policy), path)
         self.assertIsNone(portkit.forbidden_match("composeApp/src/commonMain/kotlin/A.kt", policy))
 
-    def test_nothing_is_verified_without_a_transfer_test(self):
-        # Turns true only with a passing transfer test (later PortKit steps).
+    def test_only_portable_features_with_evidence_are_verified(self):
         overlay = json.loads((ROOT / "portkit/compatibility.json").read_text())["features"]
-        self.assertEqual([], [fid for fid, e in overlay.items() if e["verified"]])
+        for fid, entry in overlay.items():
+            if entry["verified"]:
+                self.assertEqual("portable", entry["level"], fid)
+                self.assertIn("/actions/runs/", entry["evidence"], fid)
 
 
 class BrokenRegistries(unittest.TestCase):
@@ -116,6 +118,15 @@ class BrokenRegistries(unittest.TestCase):
         problems = self.problems(overlay=overlay)
         self.assertTrue(any("no level for registry feature 'arabic'" in p for p in problems))
         self.assertTrue(any("lazy-key-collisions has level 'easy'" in p for p in problems))
+
+    def test_verified_needs_the_evidence_of_a_passing_run(self):
+        overlay = copy.deepcopy(self.overlay)
+        overlay["features"]["lazy-key-collisions"]["verified"] = True
+        self.assertTrue(any("verified without 'evidence'" in p for p in self.problems(overlay=overlay)))
+        overlay["features"]["lazy-key-collisions"]["evidence"] = "https://github.com/o/r/actions/runs/1"
+        self.assertEqual([], self.problems(overlay=overlay))
+        overlay["features"]["identity"].update(verified=True, evidence="https://github.com/o/r/actions/runs/1")
+        self.assertTrue(any("unsupported and cannot be verified" in p for p in self.problems(overlay=overlay)))
 
     def test_an_overlay_feature_missing_from_the_registry_is_reported(self):
         overlay = copy.deepcopy(self.overlay)

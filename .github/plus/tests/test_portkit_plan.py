@@ -53,8 +53,8 @@ class Plan(unittest.TestCase):
         self.target = upstream_tree(sorted(p for p in paths if not p.startswith(".github/")))
         self.addCleanup(shutil.rmtree, self.target)
 
-    def plan(self, *features):
-        return portkit.plan(ROOT, self.target, list(features))
+    def plan(self, *features, trial=True):
+        return portkit.plan(ROOT, self.target, list(features), trial=trial)
 
     def test_a_dry_run_changes_nothing_in_the_target(self):
         before = tree_digest(self.target)
@@ -131,11 +131,34 @@ class Plan(unittest.TestCase):
         self.assertEqual("unsupported-target", report["status"])
         self.assertEqual({}, report["features"])
 
+    def test_outside_a_trial_only_portable_verified_features_are_planned(self):
+        overlay = json.loads((ROOT / "portkit/compatibility.json").read_text())["features"]
+        for feature in ("subtitle-style", "player-engines", "arabic"):  # adapter-required, applies cleanly
+            self.assertEqual("ready", self.plan(feature)["status"], feature)
+            report = self.plan(feature, trial=False)
+            self.assertEqual("refused", report["status"], feature)
+            self.assertEqual({}, report["features"])
+        for feature in ("season-downloads", "download-location"):  # manual
+            report = self.plan(feature, trial=False)
+            self.assertEqual("refused", report["status"], feature)
+            self.assertIn("only portable features are transferred", " ".join(report["refused"]))
+        for feature in ("lazy-key-collisions", "subtitle-parser-worst-case"):  # portable
+            report = self.plan(feature, trial=False)
+            if overlay[feature]["verified"]:
+                self.assertEqual("ready", report["status"], feature)
+            else:
+                self.assertEqual("refused", report["status"], feature)
+                self.assertIn("not verified", " ".join(report["refused"]))
+
+    def test_a_trial_never_allows_unsupported_features(self):
+        for feature in ("identity", "updater"):
+            self.assertEqual("refused", self.plan(feature, trial=True)["status"])
+
     def test_the_command_line_writes_plan_and_diff_and_signals_conflicts(self):
         with tempfile.TemporaryDirectory() as out:
             ok = subprocess.run(["python3", "-I", str(ROOT / "portkit/portkit.py"), "plan", "--repo", str(ROOT),
                                  "--target", str(self.target), "--json", f"{out}/plan.json", "--diff", f"{out}/plan.diff",
-                                 "lazy-key-collisions"], capture_output=True, text=True)
+                                 "--trial", "lazy-key-collisions"], capture_output=True, text=True)
             self.assertEqual(0, ok.returncode, ok.stdout + ok.stderr)
             self.assertEqual("ready", json.loads(Path(out, "plan.json").read_text())["status"])
             self.assertIn("reservedKeys", Path(out, "plan.diff").read_text())

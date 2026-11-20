@@ -22,7 +22,9 @@ python3 portkit/portkit.py plan --target ../my-nuvio-fork --json plan.json --dif
 
 `plan` first checks that the target is a Nuvio project (`target_contract`), refuses unsupported
 features, unknown ones and one owner of a shared file alone, adds dependencies, then gives each
-file one action:
+file one action. **Only portable features whose transfer test passed (`verified`, with the run as
+`evidence`) are planned for a real transfer.** `--trial` also plans unverified, adapter-required or
+manual features; trials are for the CI transfer tests and isolated branches, not for keeping:
 
 | Action | Meaning |
 |---|---|
@@ -43,6 +45,12 @@ python3 portkit/portkit.py apply --target ../my-nuvio-fork --branch portkit/lazy
 python3 portkit/portkit.py rollback --target ../my-nuvio-fork --branch portkit/lazy-keys
 ```
 
+- The transfer starts from the target's last commit. A target with uncommitted changes (staged,
+  unstaged or untracked) is refused; `--from-head` transfers onto the last commit anyway and records
+  that the uncommitted work was left out.
+- Only portable, verified features are transferred. `--trial` (unverified, adapter-required or manual
+  features, for tests) must use a `portkit-trial/` branch and is marked as a trial in the ledger and
+  commit; a real transfer cannot use such a branch.
 - The target's checkout is never touched: PortKit adds a Git worktree on a **new** branch from the
   target's HEAD (an existing branch is refused), plans against it, computes every result first,
   writes, checks each file holds what was planned, and commits with `.portkit/transfers.json`
