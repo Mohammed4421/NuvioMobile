@@ -6,6 +6,8 @@ This file holds the checks every later step relies on. Standard library only.
   portkit.py validate  [--repo DIR]                 registry, overlay and policy are consistent
   portkit.py inventory [--repo DIR] [--base SHA]    what each feature changes against upstream
   portkit.py plan --target DIR FEATURE...           dry run: what a transfer would do, changes nothing
+  portkit.py apply --target REPO FEATURE...         transfer on a new branch of the target (worktree)
+  portkit.py rollback --target REPO --branch B      undo PortKit's own changes on that branch
 
 The feature registry is .github/plus/features.json (one registry, also used by the upstream
 review); portkit/compatibility.json adds PortKit's level for each feature and the owners of files
@@ -401,6 +403,144 @@ def plan_markdown(report):
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------------------------
+# Applying. The target's checkout is never touched: PortKit adds a Git worktree on a new branch
+# from the target's HEAD, plans against it, writes there, and commits with a ledger of what it
+# wrote. If anything fails before the commit, the worktree and the branch it created are removed.
+
+LEDGER = ".portkit/transfers.json"
+TRAILER = "PortKit-Transfer"
+
+
+class TransferError(Exception):
+    pass
+
+
+def run_git(directory, *args, check=True):
+    result = subprocess.run(["git", "-C", str(directory), *args], capture_output=True, text=True)
+    if check and result.returncode != 0:
+        raise TransferError(f"git {' '.join(args)}: {result.stderr.strip()}")
+    return result
+
+
+def apply(source, target, wanted, branch, source_ref="HEAD"):
+    """Transfers `wanted` onto a new `branch` of the target repository. Returns a result dict:
+    status applied | already | refused | conflict | unsupported-target, the plan, and the commit."""
+    source, target = Path(source).resolve(), Path(target).resolve()
+    if run_git(target, "rev-parse", "--is-inside-work-tree", check=False).returncode != 0:
+        raise TransferError(f"{target} is not a Git repository")
+    if run_git(target, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}", check=False).returncode == 0:
+        raise TransferError(f"branch {branch} already exists in the target; choose another")
+    head = run_git(target, "rev-parse", "HEAD").stdout.strip()
+    work = Path(tempfile.mkdtemp(prefix="portkit-")) / "work"
+    created = False
+    try:
+        run_git(target, "worktree", "add", "-q", "-b", branch, str(work), head)
+        created = True
+        report = plan(source, work, wanted, source_ref)
+        if report["status"] != "ready":
+            return {"status": report["status"], "plan": report, "branch": None, "commit": None}
+        ledger_path = work / LEDGER
+        ledger = json.loads(ledger_path.read_text()) if ledger_path.is_file() else {"transfers": []}
+        entry = {"source": report["source_ref"], "upstream_base": report["upstream_base"], "target_head": head,
+                 "features": list(report["features"]), "files": {}}
+        # Compute every result before writing anything.
+        writes = []
+        for feature in report["features"].values():
+            for action in feature["actions"]:
+                kind = action["action"]
+                if kind == "already":
+                    continue
+                path = work / action["path"]
+                before = read(path)
+                if sha256(before) != action["target"]:
+                    raise TransferError(f"{action['path']} changed after planning")
+                after = None if kind == "delete" else planned_content(source, work, report, action)
+                if kind != "delete" and after is None:
+                    raise TransferError(f"{action['path']} could not be computed")
+                writes.append((action["path"], after))
+                entry["files"][action["path"]] = {"action": kind, "before": sha256(before), "after": sha256(after)}
+        for relative, after in writes:
+            path = work / relative
+            if after is None:
+                path.unlink()
+            else:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                temporary = path.with_name(path.name + ".portkit-tmp")
+                temporary.write_bytes(after)
+                temporary.replace(path)
+        ledger["transfers"].append(entry)
+        ledger_path.parent.mkdir(parents=True, exist_ok=True)
+        ledger_path.write_text(json.dumps(ledger, indent=2) + "\n")
+        # Every written file must now hold exactly what was planned.
+        for relative, info in entry["files"].items():
+            if sha256(read(work / relative)) != info["after"]:
+                raise TransferError(f"{relative} does not hold the planned content")
+        run_git(work, "add", "-A")
+        message = (f"PortKit: transfer {', '.join(entry['features'])} from Nuvio Plus\n\n"
+                   f"Source {entry['source']} (upstream base {entry['upstream_base']}).\n"
+                   f"Files: {len(entry['files'])}. Ledger: {LEDGER}.\n\n{TRAILER}: {entry['source']}")
+        run_git(work, "-c", "user.name=PortKit", "-c", "user.email=portkit@localhost", "commit", "-q", "-m", message)
+        commit = run_git(work, "rev-parse", "HEAD").stdout.strip()
+        return {"status": "applied", "plan": report, "branch": branch, "commit": commit}
+    except BaseException:
+        if created:
+            run_git(target, "worktree", "remove", "--force", str(work), check=False)
+            run_git(target, "branch", "-D", branch, check=False)
+            created = False
+        raise
+    finally:
+        if created:
+            run_git(target, "worktree", "remove", "--force", str(work), check=False)
+            # Keep the branch only when it carries the transfer commit.
+            if run_git(target, "rev-parse", branch, check=False).stdout.strip() == head:
+                run_git(target, "branch", "-D", branch, check=False)
+        shutil.rmtree(work.parent, ignore_errors=True)
+
+
+def rollback(target, branch):
+    """Undoes, on `branch` (as a new commit), the files of PortKit transfers that still hold exactly
+    what PortKit wrote. Files changed since are kept and reported. Returns the result dict."""
+    target = Path(target).resolve()
+    work = Path(tempfile.mkdtemp(prefix="portkit-")) / "work"
+    run_git(target, "worktree", "add", "-q", str(work), branch)
+    try:
+        commits = run_git(work, "log", "--format=%H", f"--grep=^{TRAILER}: ", branch).stdout.split()
+        if not commits:
+            return {"status": "nothing", "reverted": [], "kept": []}
+        reverted, kept = [], []
+        for commit in commits:  # newest first
+            ledger = json.loads(run_git(work, "show", f"{commit}:{LEDGER}").stdout)
+            entry = ledger["transfers"][-1]
+            for relative, info in entry["files"].items():
+                path = work / relative
+                if sha256(read(path)) != info["after"]:
+                    kept.append(relative)
+                    continue
+                previous = subprocess.run(["git", "-C", str(work), "show", f"{commit}^:{relative}"], capture_output=True)
+                if info["before"] is None:
+                    path.unlink(missing_ok=True)
+                elif previous.returncode == 0 and sha256(previous.stdout) == info["before"]:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(previous.stdout)
+                else:
+                    kept.append(relative)
+                    continue
+                reverted.append(relative)
+        ledger_path = work / LEDGER
+        if ledger_path.is_file() and not kept:
+            ledger_path.unlink()
+        if reverted:
+            run_git(work, "add", "-A")
+            run_git(work, "-c", "user.name=PortKit", "-c", "user.email=portkit@localhost", "commit", "-q", "-m",
+                    f"PortKit: roll back {len(reverted)} file(s) PortKit wrote" +
+                    (f"; kept {len(kept)} changed since" if kept else ""))
+        return {"status": "rolled-back" if reverted else "nothing", "reverted": reverted, "kept": kept}
+    finally:
+        run_git(target, "worktree", "remove", "--force", str(work), check=False)
+        shutil.rmtree(work.parent, ignore_errors=True)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="portkit")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -417,6 +557,15 @@ def main(argv=None):
     planner.add_argument("--json", help="write the plan as JSON here")
     planner.add_argument("--diff", help="write the planned changes as a unified diff here")
     planner.add_argument("features", nargs="+")
+    applier = sub.add_parser("apply", help="transfer features onto a new branch of the target repository")
+    applier.add_argument("--repo", default=".", help="the Nuvio Plus repository (source)")
+    applier.add_argument("--source-ref", default="HEAD")
+    applier.add_argument("--target", required=True, help="the target Git repository (its checkout is not touched)")
+    applier.add_argument("--branch", required=True, help="new branch to create in the target")
+    applier.add_argument("features", nargs="+")
+    undo = sub.add_parser("rollback", help="undo PortKit's own changes on a branch of the target")
+    undo.add_argument("--target", required=True)
+    undo.add_argument("--branch", required=True)
     args = parser.parse_args(argv)
 
     if args.command == "validate":
@@ -443,6 +592,22 @@ def main(argv=None):
         if args.diff:
             Path(args.diff).write_text(plan_diff(args.repo, args.target, report))
         return {"ready": 0, "already": 0}.get(report["status"], 3)
+    if args.command == "apply":
+        try:
+            result = apply(args.repo, args.target, args.features, args.branch, args.source_ref)
+        except TransferError as error:
+            print(f"::error::{error}. Nothing was changed in the target.")
+            return 4
+        print(plan_markdown(result["plan"]))
+        if result["status"] == "applied":
+            print(f"Applied on branch {result['branch']} as {result['commit']}; the target's checkout is unchanged.")
+            return 0
+        print(f"Nothing applied ({result['status']}); no branch was left in the target.")
+        return 0 if result["status"] == "already" else 3
+    if args.command == "rollback":
+        result = rollback(args.target, args.branch)
+        print(json.dumps(result, indent=2))
+        return 0
     return 2
 
 
