@@ -25,7 +25,7 @@ for attempt in $(seq 1 "${attempts}"); do
   fi
   if (( attempt < attempts )); then
     wait=$(( base * (1 << (attempt - 1)) + RANDOM % (base / 2 + 1) ))
-    reason="$(grep -oE "status code 429|status code 50[0-9]|Read timed out|Connection reset" "${log}" | head -n 1)"
+    reason="$(grep -oE "status code 429|status code 50[0-9]|Read timed out|Connection reset|Could not find [^ ]+" "${log}" | head -n 1)"
     echo "::warning::A download failed${reason:+ (${reason})} (attempt ${attempt} of ${attempts}); running Gradle again in ${wait} s." >&2
     "${pause}" "${wait}"
   fi
