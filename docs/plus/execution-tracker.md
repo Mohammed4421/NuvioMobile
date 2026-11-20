@@ -925,3 +925,7 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   branch ruleset. Attempts by the session were refused by its own safety rules.
 - **Upstream:** latest stable Nuvio release is 1.0.0 (`511ebd5f`), already the base of Nuvio Plus;
   1.1.0-beta.1/2 are betas and are not merged.
+
+- **S2 first finding (CI run 44656038835):** HIGH `GHSA-xxph-c9ww-hj94` in
+  `com.google.guava:guava:33.3.1-android` (declared by Nuvio in `composeApp`), fixed in 33.7.2.
+  Fixed by updating to `33.7.2-android`, not by a review entry.
