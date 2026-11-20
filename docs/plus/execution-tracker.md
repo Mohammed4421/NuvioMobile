@@ -1026,3 +1026,9 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   short when parsed, hence `Unreadable`. Fix: wait until the copy has the full size (60 s), else copy
   through `adb push` + `run-as cp`; no verdict counts on a partial file
   (`test_an_incomplete_copy_gives_no_verdict`).
+- **Real cause on Android 9 (run 44719370201, after the copy fix):** an app bug present since build 12.
+  Android 9's `getPackageArchiveInfo` returns no `SigningInfo` with `GET_SIGNING_CERTIFICATES` alone
+  (`signing=…/1014 signingInfo=null`); with `GET_SIGNATURES` added it does (`both=… signingInfo(contents=1, history=2)`).
+  So every update was `Unsigned` on Android 9. Fix: `packageInfoFlags` asks for both on 9+
+  (`android9AndLaterAskForBothKindsOfCertificates`); proof is the Android 9 device check. Android 9
+  users of builds 12-13 install build 14 from the release page once (their old check refuses it).

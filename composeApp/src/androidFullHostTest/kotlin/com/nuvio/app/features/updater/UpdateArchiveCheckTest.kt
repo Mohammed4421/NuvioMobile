@@ -146,4 +146,17 @@ class UpdateArchiveCheckTest {
         )
         assertFalse(UpdateArchiveCheck.signerAccepted(identity(key), both, setOf(newKey)))
     }
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun android9AndLaterAskForBothKindsOfCertificates() {
+        // Android 9 reads an archive's certificates only with GET_SIGNATURES; without it every
+        // update was "Unsigned" there.
+        for (sdk in listOf(28, 29, 34, 36)) {
+            val flags = UpdateArchiveCheck.packageInfoFlags(sdk)
+            kotlin.test.assertTrue(flags and android.content.pm.PackageManager.GET_SIGNATURES != 0, "sdk $sdk")
+            kotlin.test.assertTrue(flags and android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES != 0, "sdk $sdk")
+        }
+        kotlin.test.assertEquals(android.content.pm.PackageManager.GET_SIGNATURES, UpdateArchiveCheck.packageInfoFlags(26))
+    }
 }
