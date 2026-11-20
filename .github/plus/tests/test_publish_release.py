@@ -83,12 +83,13 @@ class PublishReleaseTest(unittest.TestCase):
         self.assertIn("التثبيت والتحديث بالعربية", notes)
         self.assertIn("من البناء 12 أو أقدم", notes)
 
-    def test_the_real_changelog_can_be_published_after_build_13(self):
-        # Build 13's notes must not be offered again: the top section is a new "Next build".
+    def test_the_real_changelog_opens_a_new_build_after_the_last_published_one(self):
+        # A published build's notes must not be offered again: the top section is a new "Next build",
+        # directly above the closed section of the last build (Build 14 at the time of writing).
         changelog = (PLUS.parents[1] / "CHANGELOG.md").read_text()
         top = [line for line in changelog.splitlines() if line.startswith("## ")][:2]
         self.assertTrue(top[0].startswith("## Next build"), top)
-        self.assertTrue(top[1].startswith("## Build 13"), top)
+        self.assertRegex(top[1], r"^## Build (1[4-9]|[2-9][0-9]) ", top)
 
     def test_a_pending_label_in_the_heading_is_dropped(self):
         self.publish("## Next build (pending approval) — safer updates\n\n- x\n")

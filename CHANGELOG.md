@@ -4,7 +4,15 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
-## Next build — stability: updates, downloads, project safety
+## Next build — Build 15: audit and polish
+
+### Fixed
+- **Lists could crash when two sections shared a key that looked like a generated one.** The helper
+  that makes repeated list keys unique (home, search, catalogs, collections) could give two entries the
+  same key, for example `section`, `section#0`, `section`. It now never reuses a real or generated key;
+  lists without such keys keep exactly the keys they had.
+
+## Build 14 — stability: updates, downloads, project safety
 
 ### Fixed
 - **In-app updates on Android 9.** The app's update check could not read the signature of a
