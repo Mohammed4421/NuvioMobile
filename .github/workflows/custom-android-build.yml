@@ -1,8 +1,11 @@
 name: Build Custom APK
 
-# Publishing builds. A push to custom-subtitles publishes a stable release, a push to plus-beta a
-# beta pre-release, and only when every check passes (plus-build.yml) and the review gate confirms
-# with GitHub that the commit came through a tested pull request merged by the owner.
+# Publishing builds. A push to custom-subtitles or plus-beta (a merged pull request) builds and checks
+# the branch and is never published, so merging a series of pull requests cannot release a partial
+# build. A release is published only by running this workflow by hand on the branch with
+# release_commit set to the branch head (docs/plus/release.md): then every check passes
+# (plus-build.yml), the review gate confirms with GitHub that the commit came through a tested pull
+# request merged by the owner, and the owner approves signing and publishing.
 #
 # Only the publish and report-failure jobs can write to the repository; they run no Gradle and use
 # the APKs the checks signed, verified against the digest list from the sign job.
@@ -14,13 +17,15 @@ on:
       - 'docs/**'
   workflow_dispatch:
     inputs:
-      allow_key_change:
-        description: Accept a new signing certificate (users then reinstall once)
-        type: boolean
-        default: false
+      release_commit:
+        description: "Publish: the full commit of the branch head (40 hex). Any other value publishes nothing."
+        required: true
+        type: string
 
+# Releases queue one after another. Checks after a merge have their own queue, so a release waiting
+# for the owner's approval never holds them up (and they never publish).
 concurrency:
-  group: nuvio-plus-publish
+  group: ${{ github.event_name == 'workflow_dispatch' && 'nuvio-plus-publish' || format('nuvio-plus-verify-{0}', github.ref_name) }}
   cancel-in-progress: false
 
 permissions:
@@ -48,7 +53,6 @@ jobs:
     with:
       ref: ${{ github.sha }}
       channel: ${{ github.ref_name == 'plus-beta' && 'beta' || 'stable' }}
-      allow_key_change: ${{ inputs.allow_key_change || false }}
       status_sha: ${{ github.sha }}
       status_prefix: nuvio-plus/publish
     # Only the public app settings, and only on the publishing branches (never on review branches);
@@ -113,6 +117,9 @@ jobs:
       # Certificate of the release key (docs/plus/signing-migration.md), made on 2026-11-19 by
       # plus-release-key.yml (run 44534502910). Only APKs signed with it are published.
       RELEASE_IDENTITY: 99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35
+      # Only a hand-started run that names the exact commit it publishes goes on to release signing.
+      EVENT: ${{ github.event_name }}
+      RELEASE_COMMIT: ${{ inputs.release_commit }}
     steps:
       - name: Tested with the public test key; a release key is pinned
         id: decide
@@ -130,7 +137,16 @@ jobs:
             echo "publish=false" >> "${GITHUB_OUTPUT}"
             exit 0
           fi
-          echo "Tested; moving on to release signing with ${RELEASE_IDENTITY}."
+          if [[ "${EVENT}" != workflow_dispatch ]]; then
+            echo "::notice::Built and checked after the merge; not published. To publish this commit, run this workflow by hand on ${GITHUB_REF_NAME} with release_commit=${GITHUB_SHA} (docs/plus/release.md)."
+            echo "publish=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          if [[ ! "${RELEASE_COMMIT}" =~ ^[0-9a-f]{40}$ || "${RELEASE_COMMIT}" != "${GITHUB_SHA}" ]]; then
+            echo "::error::release_commit (${RELEASE_COMMIT:-empty}) is not the branch head ${GITHUB_SHA}. Nothing is published."
+            exit 1
+          fi
+          echo "Tested; moving on to release signing of ${GITHUB_SHA} with ${RELEASE_IDENTITY}."
           { echo "publish=true"; echo "identity=${RELEASE_IDENTITY}"; echo "compromised=${COMPROMISED}"; } >> "${GITHUB_OUTPUT}"
 
   release-sign:
@@ -148,6 +164,20 @@ jobs:
     outputs:
       manifest: ${{ steps.sign.outputs.manifest }}
     steps:
+      - name: The branch head is still this commit
+        # Inline, no file of the commit. The branch may have moved while the checks ran or the owner's
+        # approval was pending: only the commit that is still the branch head is signed.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          head="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${GITHUB_REF_NAME}" --jq .object.sha)" \
+            || { echo "::error::Could not read the head of ${GITHUB_REF_NAME}; nothing is signed."; exit 1; }
+          if [[ ! "${head}" =~ ^[0-9a-f]{40}$ || "${head}" != "${GITHUB_SHA}" ]]; then
+            echo "::error::${GITHUB_REF_NAME} is now at ${head:-nothing}, not ${GITHUB_SHA} (it moved after this run started). This stale commit is not signed; start a release for the new head."
+            exit 1
+          fi
+          echo "${GITHUB_REF_NAME} is still at ${GITHUB_SHA}."
+
       - name: Check out the old public key only (for the lineage)
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
@@ -403,6 +433,20 @@ jobs:
             [[ "${cert}" == "${identity}" ]] || { echo "::error::${apk} is not signed with the release key"; exit 1; }
           done
 
+      - name: The branch head is still this commit
+        # Inline, no file of the commit. The branch may have moved while the checks ran or the owner's
+        # approval was pending: only the commit that is still the branch head is published.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          head="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${GITHUB_REF_NAME}" --jq .object.sha)" \
+            || { echo "::error::Could not read the head of ${GITHUB_REF_NAME}; nothing is published."; exit 1; }
+          if [[ ! "${head}" =~ ^[0-9a-f]{40}$ || "${head}" != "${GITHUB_SHA}" ]]; then
+            echo "::error::${GITHUB_REF_NAME} is now at ${head:-nothing}, not ${GITHUB_SHA} (it moved after this run started). This stale commit is not published; start a release for the new head."
+            exit 1
+          fi
+          echo "${GITHUB_REF_NAME} is still at ${GITHUB_SHA}."
+
       - name: Publish release
         env:
           PLUS_CHANNEL: ${{ github.ref_name == 'plus-beta' && 'beta' || 'stable' }}
@@ -415,12 +459,12 @@ jobs:
     if: failure() && needs.branch.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    permissions:
-      contents: write
+    # Reports in the run itself (summary and an artifact with the logs), never as a GitHub release:
+    # releases are only what was published.
+    permissions: {}
     env:
-      GH_TOKEN: ${{ github.token }}
       BUILD: ${{ needs.checks.outputs.build_number }}
-      RESULTS: "Checks: ${{ needs.checks.result }} · Review gate: ${{ needs.review-gate.result }} · Signing identity: ${{ needs.release-identity.result }} · Publish: ${{ needs.publish.result }}"
+      RESULTS: "Checks: ${{ needs.checks.result }} · Review gate: ${{ needs.review-gate.result }} · Signing identity: ${{ needs.release-identity.result }} · Release signing: ${{ needs.release-sign.result }} · Verify: ${{ needs.release-verify.result }} · Update tests: ${{ needs.release-upgrade.result }} · Publish: ${{ needs.publish.result }}"
     steps:
       - name: Get the logs
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -430,12 +474,12 @@ jobs:
           merge-multiple: true
           path: logs
 
-      - name: Publish the errors as a pre-release
+      - name: Write the failure report (no release)
         run: |
           build="${BUILD:-run${GITHUB_RUN_NUMBER}}"
           [[ "${build}" =~ ^(run)?[0-9]+$ ]] || build="run${GITHUB_RUN_NUMBER}"
           {
-            echo "Build ${build} at \`${GITHUB_SHA::7}\` did not pass its checks, so nothing was published. The previous build stays current."
+            echo "Build ${build} at \`${GITHUB_SHA::7}\` did not pass its checks or gates, so nothing was published. The previous build stays current."
             echo
             echo "${RESULTS}"
             echo
@@ -454,6 +498,15 @@ jobs:
               echo '```'
             fi
           } > errors.md
-          gh release delete "build-failed-${build}" --repo "${GITHUB_REPOSITORY}" --yes --cleanup-tag > /dev/null 2>&1 || true
-          gh release create "build-failed-${build}" --repo "${GITHUB_REPOSITORY}" --target "${GITHUB_SHA}" \
-            --prerelease --title "Build ${build} failed its checks" --notes-file errors.md
+          cat errors.md >> "${GITHUB_STEP_SUMMARY}"
+          echo "::error::Build ${build} was not published. The report is in this run's summary and in the nuvio-plus-failure-report artifact."
+
+      - name: Keep the report with the logs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuvio-plus-failure-report
+          path: |
+            errors.md
+            logs/
+          if-no-files-found: warn
+          retention-days: 90

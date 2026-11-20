@@ -907,3 +907,56 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   configuration Gradle keeps only the highest version). With that file Robolectric uses nothing else,
   so it lists every version the tests use (SDK 26, 28, 34, 36; checked when the file is written).
   No test is skipped or made optional.
+
+## B14-1: Build 14 foundation (2026-11-20)
+
+- **M1:** `CHANGELOG.md` closes "Build 13" and opens a new "Next build". The old top section's
+  SHA-256 `05e73912…` equals the `changelog-section` of `custom-13`, so the publish script would have
+  refused it; the new one differs. Tests: `test_the_real_changelog_can_be_published_after_build_13`.
+- **Release notes:** how to update from build 13 and from build 12, Android 7–8, English and Arabic
+  (`publish-release.sh`, test).
+- **M3:** `rollback.md`: build 13 is the floor; a rescue build is a forward release with the release
+  key, a higher version code, data compatibility and every gate.
+- **S2:** `osv-check.py` in the build job: the release runtime classpath against osv.dev; HIGH,
+  CRITICAL or unknown severity blocks unless reviewed with a reason and an end date (≤ 180 days).
+- **S3:** README (install, update pipeline, signing), feature registry (identity).
+- **S6:** the `allow_key_change` switch is removed from both workflows and `check-update-compat.sh`.
+- **Settings the session may not change (owner):** repository description, Dependabot alerts,
+  branch ruleset. Attempts by the session were refused by its own safety rules.
+- **Upstream:** latest stable Nuvio release is 1.0.0 (`511ebd5f`), already the base of Nuvio Plus;
+  1.1.0-beta.1/2 are betas and are not merged.
+
+- **S2 first finding (CI run 44656038835):** HIGH `GHSA-xxph-c9ww-hj94` in
+  `com.google.guava:guava:33.3.1-android` (declared by Nuvio in `composeApp`), fixed in 33.7.2.
+  Fixed by updating to `33.7.2-android`, not by a review entry.
+- **CI downloads (runs 44663582915, 44663793918):** not a code fault. Maven Central answered HTTP 429
+  (Too Many Requests) for `guava-33.7.2-android.pom`; Gradle then disabled the repository for that
+  build, so the next lookups read "Could not find" (ui-tooling, kermit, reorderable…). Three PR runs
+  had started together, each with several Gradle jobs downloading the new Guava (PR caches are
+  read-only), and the three fixed 60 s retries all landed inside the limit. Fix: `gradle-retry.sh`
+  makes five attempts with growing waits and jitter (45/90/180/360 s + up to half the base), names the
+  reason, still never retries compile errors, failing tests, timeouts or kills; PR runs are started
+  one at a time. Guava stays at the fixed 33.7.2; the OSV check is unchanged.
+- **Release gate (owner's request, 2026-11-20):** a push to a publishing branch no longer goes on to
+  release signing; `release-identity` gives `publish=false` unless the run was started by hand with
+  `release_commit` equal to `GITHUB_SHA`. review-gate (HEAD = merge commit of a tested PR merged by
+  the owner), the pinned identities, `release-sign` (environment `plus-release`, branch policy),
+  `release-verify`, `release-upgrade` and `publish` are unchanged. Merge runs and releases have
+  separate queues (`cancel-in-progress: false` for both). Tests: `test_a_merge_never_publishes`,
+  `test_a_release_names_the_exact_commit_it_publishes`, `test_merges_and_releases_queue_separately_and_never_cancel`.
+- **Gate review fixes (owner, 2026-11-20):** `release-sign` (first step, before the key is used) and
+  `publish` (step before `publish-release.sh`) read `git/ref/heads/<branch>` and stop unless it is
+  still `GITHUB_SHA` (branch moved during checks or a pending approval). `report-failure` has no
+  permissions and makes no release: summary plus `nuvio-plus-failure-report` artifact (90 days).
+  Tests: `test_a_branch_that_moved_is_neither_signed_nor_published`,
+  `test_the_head_is_read_again_right_before_signing_and_publishing`,
+  `test_failures_are_reported_in_the_run_never_as_a_release`. Not changed: `plus-sync` still opens a
+  `review-nuvio-<tag>` pre-release when Actions may not open pull requests (a review notice, not a
+  build).
+- **Unit tests of #11 (run 44666891660):** not a code fault. Maven Central answered 404 for
+  `guava-33.7.2-android.pom` to that job while the build job of the same run downloaded it; Gradle
+  caches a miss, so all five retries failed in about a second. CI init script
+  (`plugins-from-central.init.gradle`) adds Google's Maven Central mirror
+  (`maven-central.storage-download.googleapis.com`, HTTPS, releases only) **after** Google and Maven
+  Central, so it is only asked for what both report missing; checked with Gradle 8.14.3 that it comes
+  last. Retry warnings now name a "Could not find" too. Guava stays 33.7.2; OSV unchanged.

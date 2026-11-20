@@ -74,6 +74,22 @@ class PublishReleaseTest(unittest.TestCase):
         self.assertRegex(notes, r"<!-- changelog-section: [0-9a-f]{64} -->")
         self.assertIn("--latest", (self.state / "created").read_text())
 
+    def test_the_notes_say_how_to_update_from_build_13_and_from_build_12_in_both_languages(self):
+        self.publish(NEXT)
+        notes = self.created_notes()
+        self.assertIn("**From build 13 or later:**", notes)
+        self.assertIn("**From build 12 or earlier:**", notes)
+        self.assertIn("Android 7 and 8", notes)
+        self.assertIn("التثبيت والتحديث بالعربية", notes)
+        self.assertIn("من البناء 12 أو أقدم", notes)
+
+    def test_the_real_changelog_can_be_published_after_build_13(self):
+        # Build 13's notes must not be offered again: the top section is a new "Next build".
+        changelog = (PLUS.parents[1] / "CHANGELOG.md").read_text()
+        top = [line for line in changelog.splitlines() if line.startswith("## ")][:2]
+        self.assertTrue(top[0].startswith("## Next build"), top)
+        self.assertTrue(top[1].startswith("## Build 13"), top)
+
     def test_a_pending_label_in_the_heading_is_dropped(self):
         self.publish("## Next build (pending approval) — safer updates\n\n- x\n")
         self.assertIn("### Build 13 — safer updates", self.created_notes())

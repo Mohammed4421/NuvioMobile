@@ -34,12 +34,8 @@ status=0
 [[ "${new_package}" == "${old_package}" ]] || { echo "::error::Package changed: ${old_package} -> ${new_package}"; status=1; }
 (( new_code > old_code )) || { echo "::error::Version code ${new_code} is not higher than ${old_code}"; status=1; }
 if [[ "${new_cert}" != "${old_cert}" ]]; then
-  if [[ "${ALLOW_KEY_CHANGE:-false}" == "true" ]]; then
-    echo "::warning::Signing certificate changed on purpose; this build needs a reinstall."
-  else
-    echo "::error::Signing certificate changed; the build would not install over ${previous_tag}"
-    status=1
-  fi
+  echo "::error::Signing certificate changed; the build would not install over ${previous_tag}"
+  status=1
 fi
 if (( status == 0 )); then
   echo "- Update over ${previous_tag}: same package and signing certificate (SHA-256 ${new_cert::16}…), version code ${old_code} → ${new_code}." >> checks.md

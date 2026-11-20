@@ -4,7 +4,35 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
-## Next build — safer updates and season downloads
+## Next build — stability: updates, downloads, project safety
+
+### Changed
+- **A merge never publishes a release.** Merged pull requests are built and checked only; a release
+  is started by hand for the exact commit and still needs every check and both of the owner's
+  approvals, so merging the parts of a build one by one cannot release a partial build. Signing and
+  publishing each read the branch head again and refuse a commit the branch has moved past.
+- **Failed builds are reported in their run, not as releases.** The report and logs are kept as a
+  run artifact; the Releases page lists only published builds (older failure pages stay).
+- **Release notes say how to update from build 13 and from build 12**, in English and Arabic.
+- **Project documentation describes the new signing key.** The README, the rollback rules and the
+  feature list no longer present the old public key as the release key; a rescue build is always
+  signed with the current key and has a higher version code.
+
+### Added
+- **Checks for known vulnerabilities in the app's libraries.** Every full check lists the libraries
+  in the release APK and asks the OSV database about them; a known high or critical vulnerability
+  stops the build until it is fixed or reviewed with a written reason and an end date.
+
+### Security
+- **Guava updated from 33.3.1 to 33.7.2** (Android edition), fixing a high-severity issue in which
+  reading crafted serialized data could use up memory (GHSA-xxph-c9ww-hj94). Found by the new
+  vulnerability check.
+
+### Removed
+- **The "accept a new signing certificate" switch of the build workflows.** It belonged to the key
+  change of build 13; another key change would need its own reviewed plan.
+
+## Build 13 — new signing key, safer updates and season downloads
 
 ### Fixed
 - **Pausing a season download pauses the season.** Pausing an episode that came from "download
@@ -32,8 +60,8 @@ Newest first.
   an update this app cannot compare with its own signature, is refused with a message (also in
   Arabic) instead of being handed to the installer.
 - **Safer builds.** The signing key is never available to builds of code that has not been reviewed.
-  A release is published only for a reviewed pull request that passed every check, signed with the
-  same key as earlier builds. The update check now really compares signing certificates.
+  A release is published only for a reviewed pull request that passed every check, after the owner
+  approves the signing and the publishing. The update check now really compares signing certificates.
 
 ## Build 12 — safe upstream sync v2, updater channels, strict tests
 
