@@ -113,6 +113,9 @@
         "deviceSubtitle",
         "OpenDocument\\(",
         "subtitle.*(from|load).*(device|file)"
+      ],
+      "test_files": [
+        "androidHostTest/kotlin/com/nuvio/app/features/player/LocalSubtitleSyncCuesTest.kt"
       ]
     },
     {
