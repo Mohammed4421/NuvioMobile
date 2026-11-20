@@ -991,3 +991,10 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   `test_failures_are_reported_in_the_run_never_as_a_release`. Not changed: `plus-sync` still opens a
   `review-nuvio-<tag>` pre-release when Actions may not open pull requests (a review notice, not a
   build).
+- **Unit tests of #11 (run 44666891660):** not a code fault. Maven Central answered 404 for
+  `guava-33.7.2-android.pom` to that job while the build job of the same run downloaded it; Gradle
+  caches a miss, so all five retries failed in about a second. CI init script
+  (`plugins-from-central.init.gradle`) adds Google's Maven Central mirror
+  (`maven-central.storage-download.googleapis.com`, HTTPS, releases only) **after** Google and Maven
+  Central, so it is only asked for what both report missing; checked with Gradle 8.14.3 that it comes
+  last. Retry warnings now name a "Could not find" too. Guava stays 33.7.2; OSV unchanged.
