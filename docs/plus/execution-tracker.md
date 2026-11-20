@@ -964,3 +964,12 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   `release-verify`, `release-upgrade` and `publish` are unchanged. Merge runs and releases have
   separate queues (`cancel-in-progress: false` for both). Tests: `test_a_merge_never_publishes`,
   `test_a_release_names_the_exact_commit_it_publishes`, `test_merges_and_releases_queue_separately_and_never_cancel`.
+- **Gate review fixes (owner, 2026-11-20):** `release-sign` (first step, before the key is used) and
+  `publish` (step before `publish-release.sh`) read `git/ref/heads/<branch>` and stop unless it is
+  still `GITHUB_SHA` (branch moved during checks or a pending approval). `report-failure` has no
+  permissions and makes no release: summary plus `nuvio-plus-failure-report` artifact (90 days).
+  Tests: `test_a_branch_that_moved_is_neither_signed_nor_published`,
+  `test_the_head_is_read_again_right_before_signing_and_publishing`,
+  `test_failures_are_reported_in_the_run_never_as_a_release`. Not changed: `plus-sync` still opens a
+  `review-nuvio-<tag>` pre-release when Actions may not open pull requests (a review notice, not a
+  build).

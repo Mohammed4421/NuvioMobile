@@ -128,7 +128,8 @@ The in-app update check follows this fork's releases.
 Every push to `custom-subtitles` builds the APKs and runs every check (unit tests, update check,
 emulator). A release is published only for a pull request the owner merged, after the owner approves
 the signing with the release key and, once the signed APKs passed the emulator move tests, the
-publishing. A failed build publishes its error log as a `build-failed-N` pre-release (no APK).
+publishing. A failed build is reported in its run (summary and a `nuvio-plus-failure-report`
+artifact with the logs), never as a release; older `build-failed-N` pre-releases are kept as history.
 
 **Signing.** Releases since build 13 are signed with a release key that only the protected
 `plus-release` environment holds (certificate SHA-256
