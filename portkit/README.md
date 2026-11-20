@@ -3,7 +3,8 @@
 Moves Nuvio Plus features into a compatible Nuvio project (the official app or a fork of it),
 feature by feature, without overwriting what the target already changed. Build 15, phase P7.
 
-**Status: foundation, dry run and safe apply.** The transfer tests that build the result come next. No feature is marked verified until its transfer test passes.
+**Status: foundation, dry run, safe apply and transfer tests.** `verified` in `compatibility.json`
+turns true for a feature only after the transfer tests pass for it in CI. No feature is marked verified until its transfer test passes.
 
 | File | What it is |
 |---|---|
@@ -50,6 +51,14 @@ python3 portkit/portkit.py rollback --target ../my-nuvio-fork --branch portkit/l
 - Applying a feature the target already has changes nothing (`already`).
 - `rollback` reverts, as a new commit on that branch, only files that still hold exactly what
   PortKit wrote; files the fork changed afterwards are kept and listed.
+
+### Transfer tests
+
+`.github/workflows/portkit.yml` runs `transfer-test.sh` for each target: a Git repository of the
+upstream base, and the same with `fixtures/fork-a.patch` (a fork that changed the transferred files
+elsewhere and has its own file). Each run transfers the features with `apply`, builds the result
+with Gradle and runs the transferred tests; every one must run and pass. Results:
+`portkit-transfer.md` in the run summary and artifact.
 
 Identity (package, signing, release pipeline) and the updater are never transferred: a target
 keeps its own identity, keys and update source. Transferred code stays under GPL-3.0 with its
