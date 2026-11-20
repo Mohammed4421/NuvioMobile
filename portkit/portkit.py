@@ -21,11 +21,21 @@ import shutil
 import tempfile
 import fnmatch
 import json
+import os
+import re
+import urllib.error
+import urllib.request
 import subprocess
 import sys
 from pathlib import Path
 
 LEVELS = ("portable", "adapter-required", "manual", "unsupported")
+RUN_URL = re.compile(r"^https://github\.com/Mohammed4421/NuvioMobile/actions/runs/([0-9]+)$")
+TRANSFER_WORKFLOW = "PortKit transfer tests"
+# What a transfer test exercises besides the feature's own files: if any of it changed since the
+# tested commit, the evidence no longer covers the current code.
+TRANSFER_MACHINERY = ["portkit/portkit.py", "portkit/transfer-test.sh", "portkit/check-test-classes.py",
+                      "portkit/fixtures", "portkit/policy.json", ".github/workflows/portkit.yml"]
 # Registry paths are relative to composeApp/src unless they start with a top-level folder.
 TOP_LEVEL = ("composeApp/", "androidApp/", "iosApp/", ".github/", "docs/", "gradle/", "signing/")
 
@@ -128,9 +138,10 @@ def validate(repo):
         if not isinstance(entry.get("verified"), bool) or not entry.get("reason"):
             problems.append(f"compatibility: {fid} needs 'verified' (true/false) and a 'reason'")
         if entry.get("verified") is True:
-            evidence = entry.get("evidence", "")
-            if not str(evidence).startswith("https://github.com/") or "/actions/runs/" not in str(evidence):
-                problems.append(f"compatibility: {fid} is verified without 'evidence' (the passing transfer-test run URL)")
+            evidence = entry.get("evidence") if isinstance(entry.get("evidence"), dict) else {}
+            if not RUN_URL.match(str(evidence.get("run", ""))) or not re.fullmatch(r"[0-9a-f]{40}", str(evidence.get("commit", ""))):
+                problems.append(f"compatibility: {fid} is verified without 'evidence' "
+                                "({run: transfer-test run URL of this repository, commit: the commit it tested})")
             if entry.get("level") == "unsupported":
                 problems.append(f"compatibility: {fid} is unsupported and cannot be verified")
 
@@ -594,6 +605,93 @@ def rollback(target, branch):
         shutil.rmtree(work.parent, ignore_errors=True)
 
 
+# ---------------------------------------------------------------------------------------------
+# Evidence. A verified feature names the transfer-test run that proved it and the commit that run
+# tested. check_evidence asks GitHub that the run is the transfer-test workflow, succeeded and ran
+# on that commit; that the workflow at that commit transferred the feature into every target; and
+# that neither the feature's files nor PortKit's transfer machinery changed since.
+
+def github_run(run_id):
+    request = urllib.request.Request(f"https://api.github.com/repos/Mohammed4421/NuvioMobile/actions/runs/{run_id}",
+                                     headers={"Accept": "application/vnd.github+json"})
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if token:
+        request.add_header("Authorization", f"Bearer {token}")
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as error:
+            if error.code not in (403, 429, 500, 502, 503, 504) or attempt == 3:
+                raise
+        except urllib.error.URLError:
+            if attempt == 3:
+                raise
+        import time
+        time.sleep(10 * (attempt + 1))
+
+
+def check_evidence(repo, fetch_run=github_run):
+    """Problems with the evidence of every verified feature (empty when all of it holds)."""
+    repo = Path(repo)
+    registry, overlay, _ = load(repo)
+    by_id = {f["id"]: f for f in registry["features"]}
+    problems = []
+    for fid, entry in overlay["features"].items():
+        if not entry.get("verified"):
+            continue
+        evidence = entry.get("evidence") or {}
+        match = RUN_URL.match(str(evidence.get("run", "")))
+        commit = str(evidence.get("commit", ""))
+        if not match or not re.fullmatch(r"[0-9a-f]{40}", commit):
+            problems.append(f"{fid}: evidence needs a run URL of this repository and a commit")
+            continue
+        try:
+            run = fetch_run(match.group(1))
+        except Exception as error:  # network or API error: the evidence is not confirmed
+            problems.append(f"{fid}: could not read run {match.group(1)} from GitHub ({error})")
+            continue
+        if run.get("name") != TRANSFER_WORKFLOW:
+            problems.append(f"{fid}: run {match.group(1)} is '{run.get('name')}', not '{TRANSFER_WORKFLOW}'")
+        if run.get("status") != "completed" or run.get("conclusion") != "success":
+            problems.append(f"{fid}: run {match.group(1)} did not succeed ({run.get('status')}/{run.get('conclusion')})")
+        if run.get("head_sha") != commit:
+            problems.append(f"{fid}: run {match.group(1)} tested {run.get('head_sha')}, not {commit}")
+        if git(repo, "cat-file", "-e", f"{commit}^{{commit}}").returncode != 0:
+            git(repo, "fetch", "--no-tags", "--depth=1", "origin", commit)
+        if git(repo, "cat-file", "-e", f"{commit}^{{commit}}").returncode != 0:
+            problems.append(f"{fid}: commit {commit} is not available to compare")
+            continue
+        workflow = git(repo, "show", f"{commit}:.github/workflows/portkit.yml").stdout
+        invocations = re.findall(r"transfer-test\.sh[^\n]*\n\s*([a-z0-9,-]+)", workflow)
+        if not invocations or not all(fid in inv.split(",") for inv in invocations):
+            problems.append(f"{fid}: the transfer-test workflow at {commit[:8]} does not transfer it into every target")
+        paths = feature_paths(by_id[fid]) + [resolve(p) for p in by_id[fid].get("removed_files", [])]
+        changed = git(repo, "diff", "--name-only", commit, "HEAD", "--", *paths, *TRANSFER_MACHINERY).stdout.split()
+        if changed:
+            problems.append(f"{fid}: changed since the tested commit {commit[:8]}: {', '.join(changed)}; run the transfer test again")
+    return problems
+
+
+def matrix_markdown(repo):
+    """The compatibility matrix: one row per feature, from the registry and compatibility.json."""
+    registry, overlay, _ = load(repo)
+    by_id = {f["id"]: f for f in registry["features"]}
+    shared = overlay.get("shared_files", {})
+    lines = ["# PortKit compatibility matrix", "",
+             f"Upstream base: Nuvio {overlay['upstream_base']['version']} (`{overlay['upstream_base']['commit'][:8]}`). "
+             "Generated by `portkit.py matrix` from `.github/plus/features.json` and `portkit/compatibility.json`.", "",
+             "| Feature | Level | Verified | Evidence | Depends on | Shared files | Why |", "|---|---|---|---|---|---|---|"]
+    for fid, entry in overlay["features"].items():
+        evidence = entry.get("evidence") or {}
+        proof = f"[run]({evidence['run']}) on `{evidence['commit'][:8]}`" if entry.get("verified") else "—"
+        files = [p.rsplit("/", 1)[-1] for p, e in shared.items() if fid in e["owners"]]
+        lines.append(f"| {fid} | {entry['level']} | {'yes' if entry.get('verified') else 'no'} | {proof} | "
+                     f"{', '.join(by_id[fid].get('depends', [])) or '—'} | {', '.join(files) or '—'} | {entry['reason']} |")
+    lines += ["", "A real transfer (`apply` without `--trial`) takes only rows that are portable **and** verified."]
+    return "\n".join(lines) + "\n"
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="portkit")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -622,6 +720,9 @@ def main(argv=None):
     applier.add_argument("--from-head", action="store_true",
                          help="transfer onto the last commit even though the target has uncommitted changes")
     applier.add_argument("features", nargs="+")
+    sub.add_parser("matrix", help="print the compatibility matrix (Markdown)").add_argument("--repo", default=".")
+    sub.add_parser("check-evidence", help="the evidence of every verified feature holds (asks GitHub)").add_argument(
+        "--repo", default=".")
     undo = sub.add_parser("rollback", help="undo PortKit's own changes on a branch of the target")
     undo.add_argument("--target", required=True)
     undo.add_argument("--branch", required=True)
@@ -666,6 +767,18 @@ def main(argv=None):
             return 0
         print(f"Nothing applied ({result['status']}); no branch was left in the target.")
         return 0 if result["status"] == "already" else 3
+    if args.command == "matrix":
+        print(matrix_markdown(args.repo), end="")
+        return 0
+    if args.command == "check-evidence":
+        problems = check_evidence(args.repo)
+        for problem in problems:
+            print(f"::error::{problem}")
+        _, overlay, _ = load(args.repo)
+        verified = [fid for fid, e in overlay["features"].items() if e.get("verified")]
+        if not problems:
+            print(f"PortKit evidence holds for {len(verified)} verified feature(s): {', '.join(verified) or 'none'}.")
+        return 1 if problems else 0
     if args.command == "rollback":
         try:
             result = rollback(args.target, args.branch)

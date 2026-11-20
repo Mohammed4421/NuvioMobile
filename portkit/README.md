@@ -13,6 +13,8 @@ turns true for a feature only after the transfer tests pass for it in CI. No fea
 | `policy.json` | What is never transferred: signing keys, secrets, `local.properties`, CI and release pipelines |
 | `portkit.py` | `validate` (registry, levels and policy agree), `inventory` (what each feature changes against upstream) and `plan` (dry run on a target: what a transfer would do, as a report and a diff; writes nothing) |
 | `reports/inventory.md` | The current inventory |
+| `reports/compatibility-matrix.md` | Level, verified, evidence, dependencies and shared files of every feature |
+| `reports/test-report.md` | PASS / FAIL / BLOCKED / NOT TESTED for every required check, with evidence |
 
 ```sh
 python3 portkit/portkit.py validate
@@ -60,6 +62,34 @@ python3 portkit/portkit.py rollback --target ../my-nuvio-fork --branch portkit/l
 - `rollback` reverts, as a new commit on that branch, only files that still hold exactly what
   PortKit wrote; files the fork changed afterwards are kept and listed.
 
+### Examples
+
+A transfer that works (official Nuvio 1.0.0, both verified features):
+
+```text
+$ python3 portkit/portkit.py apply --target ../nuvio --branch portkit/fixes lazy-key-collisions subtitle-parser-worst-case
+| `composeApp/.../DuplicateSafeLazyKeys.kt` | patch-exact |  |
+| `composeApp/.../SubtitleParserWorstCaseTest.kt` | create |  |
+Applied on branch portkit/fixes as 1a2b3c…; the target's checkout is unchanged.
+```
+
+Transfers that stop, and why:
+
+```text
+$ python3 portkit/portkit.py apply --target ../nuvio --branch portkit/style subtitle-style
+## Refused
+- subtitle-style is adapter-required: only portable features are transferred; use a trial to test it
+
+$ python3 portkit/portkit.py apply --target ../nuvio --branch portkit/id identity
+- identity is unsupported: package, signing and release pipeline of Nuvio Plus; never transferred
+
+$ python3 portkit/portkit.py apply --target ../dirty-fork --branch portkit/x lazy-key-collisions
+::error::the target has 2 uncommitted change(s); commit or stash them, or pass --from-head …
+
+$ python3 portkit/portkit.py plan --target ../fork-that-edited-the-line --trial lazy-key-collisions
+| `composeApp/.../DuplicateSafeLazyKeys.kt` | conflict | the target changed this file where the feature changes it |
+```
+
 ### Transfer tests
 
 `.github/workflows/portkit.yml` runs `transfer-test.sh` for each target: a Git repository of the
@@ -87,5 +117,17 @@ notices.
 - **ما يأتي لاحقًا:** اختبارات النقل التي تبني المشروع الناتج. لا تُعلَّم أي ميزة «مُتحقَّق منها» قبل نجاح اختبار نقلها.
 
 **لا يُنقل أبدًا:** مفاتيح التوقيع، والأسرار، و`local.properties`، وخطوط البناء والنشر. كذلك هوية التطبيق والمحدّث لا يُنقلان؛ فالمشروع الهدف يحتفظ بهويته ومفاتيحه ومصدر تحديثاته.
+
+**الاستخدام باختصار:**
+1. **الفحص:** `validate` يتأكد من اتساق السجل.
+2. **التجربة:** `plan` يعرض ما سيتغير دون أي كتابة.
+3. **النقل:** `apply` ينقل إلى فرع جديد.
+4. **التراجع:** `rollback` عند الحاجة.
+
+**الميزات القابلة للنقل الآن:** ميزتان فقط من 14، تحقق منهما اختبار بناء فعلي على Nuvio 1.0.0 الرسمي وعلى Fork مختلف. هما `lazy-key-collisions` و`subtitle-parser-worst-case`.
+
+**الميزات الأخرى:** مرفوضة في النقل الفعلي حتى تُكتب لها محوّلات وتنجح اختباراتها. التفاصيل في `reports/compatibility-matrix.md`، ونتائج الاختبارات في `reports/test-report.md`.
+
+**مثال على رفض صحيح:** طلب نقل `identity` أو `updater`، أو مشروع هدف فيه تغييرات غير محفوظة.
 
 </div>

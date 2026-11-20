@@ -45,7 +45,7 @@ class RealRepository(unittest.TestCase):
         for fid, entry in overlay.items():
             if entry["verified"]:
                 self.assertEqual("portable", entry["level"], fid)
-                self.assertIn("/actions/runs/", entry["evidence"], fid)
+                self.assertIn("/actions/runs/", entry["evidence"]["run"], fid)
 
 
 class BrokenRegistries(unittest.TestCase):
@@ -122,10 +122,12 @@ class BrokenRegistries(unittest.TestCase):
     def test_verified_needs_the_evidence_of_a_passing_run(self):
         overlay = copy.deepcopy(self.overlay)
         overlay["features"]["lazy-key-collisions"]["verified"] = True
+        overlay["features"]["lazy-key-collisions"].pop("evidence", None)
         self.assertTrue(any("verified without 'evidence'" in p for p in self.problems(overlay=overlay)))
-        overlay["features"]["lazy-key-collisions"]["evidence"] = "https://github.com/o/r/actions/runs/1"
+        good = {"run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/1", "commit": "a" * 40}
+        overlay["features"]["lazy-key-collisions"]["evidence"] = good
         self.assertEqual([], self.problems(overlay=overlay))
-        overlay["features"]["identity"].update(verified=True, evidence="https://github.com/o/r/actions/runs/1")
+        overlay["features"]["identity"].update(verified=True, evidence=good)
         self.assertTrue(any("unsupported and cannot be verified" in p for p in self.problems(overlay=overlay)))
 
     def test_an_overlay_feature_missing_from_the_registry_is_reported(self):
@@ -139,6 +141,12 @@ class DependencyOrder(unittest.TestCase):
         registry = json.loads((ROOT / ".github/plus/features.json").read_text())
         order = portkit.dependency_order(registry["features"], ["library-downloads"])
         self.assertEqual(["download-location", "season-downloads", "library-downloads"], order)
+
+
+
+class Reports(unittest.TestCase):
+    def test_the_committed_matrix_matches_the_overlay(self):
+        self.assertEqual(portkit.matrix_markdown(ROOT), (ROOT / "portkit/reports/compatibility-matrix.md").read_text())
 
 
 if __name__ == "__main__":

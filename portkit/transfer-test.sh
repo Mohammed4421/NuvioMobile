@@ -2,7 +2,8 @@
 # PortKit transfer test: builds a Git repository of the upstream base (optionally changed by a fork
 # fixture patch), transfers features into it with portkit.py apply --trial (they need not be
 # verified yet: this test is what verifies them), checks out the transfer branch,
-# runs the transferred tests with Gradle and requires every one to run and pass.
+# runs the transferred tests with Gradle and requires every named test class to run with no failure,
+# then assembles the target's Android APK (debug, unsigned by a release key) and requires the APK.
 # Usage: transfer-test.sh <label> <fixture patch or -> <features (comma-separated)> <test classes (comma-separated)>
 # Needs: the upstream base commit in this repository, Java 21, Gradle setup (CI), gradle-retry.sh.
 # Appends one line per result to portkit-transfer.md.
@@ -38,9 +39,18 @@ for test in "${test_list[@]}"; do filters+=(--tests "${test}"); done
     -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore "${filters[@]}" > /dev/null
 ) || { tail -n 40 "${target}.gradle.log"; fail "Gradle failed (build or tests); log above"; }
 python3 -I "${repo}/.github/plus/test-results.py" "${target}/composeApp/build/test-results" "${target}.results.json"
-total="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["total"])' "${target}.results.json")"
-failed="$(python3 -I -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["failed"]))' "${target}.results.json")"
-(( total > 0 )) || fail "no transferred test ran"
-(( failed == 0 )) || fail "${failed} of ${total} transferred tests failed"
-echo "| ${label} | ${features} | PASS | builds; ${total} transferred tests pass |" >> "${report}"
-echo "::notice::${label}: ${features} transferred, built, ${total} tests pass"
+# Every requested class must have run, and none of its tests may fail.
+python3 -I "${here}/check-test-classes.py" "${target}/composeApp/build/test-results" "${tests}" > "${target}.classes.txt" \
+  || { cat "${target}.classes.txt"; fail "a transferred test class did not run or failed"; }
+cat "${target}.classes.txt"
+classes="$(paste -sd ';' "${target}.classes.txt")"
+(
+  cd "${target}"
+  bash "${repo}/.github/plus/gradle-retry.sh" "${target}.apk.log" timeout 40m ./gradlew :androidApp:assembleFullDebug \
+    -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore > /dev/null
+) || { tail -n 40 "${target}.apk.log"; fail "the Android APK did not assemble; log above"; }
+apk="$(find "${target}/androidApp/build/outputs/apk" -name '*.apk' | head -n 1)"
+[[ -n "${apk}" ]] || fail "assembleFullDebug produced no APK"
+size="$(stat -c %s "${apk}")"
+echo "| ${label} | ${features} | PASS | ${classes}; APK assembled ($(basename "${apk}"), ${size} bytes) |" >> "${report}"
+echo "::notice::${label}: ${features} transferred; ${classes}; APK $(basename "${apk}") assembled"
