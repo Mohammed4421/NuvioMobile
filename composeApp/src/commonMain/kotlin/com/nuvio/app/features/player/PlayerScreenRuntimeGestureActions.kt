@@ -1,5 +1,7 @@
 package com.nuvio.app.features.player
 
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
@@ -385,13 +387,27 @@ internal fun PlayerScreenRuntime.rememberSubtitleGestureCallbacks(): PlayerSubti
     val begin = rememberUpdatedState(::beginSubtitleGesture)
     val update = rememberUpdatedState(::updateSubtitleGesture)
     val end = rememberUpdatedState(::endSubtitleGesture)
+    // A gesture left unfinished (the player closes or the gesture area goes away mid-drag)
+    // still stores where the subtitles were left.
+    DisposableEffect(Unit) {
+        onDispose {
+            subtitleGestureSession.flush()
+            subtitleGesturePreviewStyle = null
+        }
+    }
+    // Between gestures the stored style is the truth: drop the preview once it changes.
+    val storedStyle = playerSettingsUiState.subtitleStyle
+    LaunchedEffect(storedStyle) {
+        if (!subtitleGestureSession.active) subtitleGesturePreviewStyle = null
+    }
     // The object is a pointerInput key, so it must stay the same across recompositions;
     // the States inside always hold the latest values.
     return remember { PlayerSubtitleGestureCallbacks(enabled, begin, update, end) }
 }
 
 internal fun PlayerScreenRuntime.beginSubtitleGesture() {
-    subtitleGestureStartStyle = subtitleStyle
+    subtitleGestureSession.begin(subtitleStyle)
+    subtitleGesturePreviewStyle = null
 }
 
 /**
@@ -399,15 +415,20 @@ internal fun PlayerScreenRuntime.beginSubtitleGesture() {
  * the offset unit is 1/1000 of the height, so the text follows the finger.
  */
 internal fun PlayerScreenRuntime.updateSubtitleGesture(zoom: Float, upwardFraction: Float) {
-    val start = subtitleGestureStartStyle ?: subtitleStyle.also { subtitleGestureStartStyle = it }
-    val fontSize = (start.fontSizeSp * zoom).roundToInt().coerceIn(subtitleFontSizeRangeSp)
-    val bottomOffset = (start.bottomOffset + upwardFraction * 1000f).roundToInt()
-        .coerceIn(0, SUBTITLE_BOTTOM_OFFSET_MAX)
-    val updated = start.copy(fontSizeSp = fontSize, bottomOffset = bottomOffset)
-    if (updated != subtitleStyle) {
-        PlayerSettingsRepository.setSubtitleStyle(updated)
+    var startFontSize = 0
+    val updated = subtitleGestureSession.update(subtitleStyle) { start ->
+        startFontSize = start.fontSizeSp
+        start.copy(
+            fontSizeSp = (start.fontSizeSp * zoom).roundToInt().coerceIn(subtitleFontSizeRangeSp),
+            bottomOffset = (start.bottomOffset + upwardFraction * 1000f).roundToInt()
+                .coerceIn(0, SUBTITLE_BOTTOM_OFFSET_MAX),
+        )
     }
-    val resizing = fontSize != start.fontSizeSp
+    // Shown at once; stored when the gesture ends (endSubtitleGesture).
+    subtitleGesturePreviewStyle = subtitleGestureSession.preview
+    val fontSize = updated.fontSizeSp
+    val bottomOffset = updated.bottomOffset
+    val resizing = fontSize != startFontSize
     liveGestureFeedback = GestureFeedbackState(
         messageRes = if (resizing) Res.string.subtitle_gesture_size_level else Res.string.subtitle_gesture_position_level,
         messageArgs = listOf(if (resizing) fontSize.toString() else bottomOffset.toString()),
@@ -416,7 +437,9 @@ internal fun PlayerScreenRuntime.updateSubtitleGesture(zoom: Float, upwardFracti
 }
 
 internal fun PlayerScreenRuntime.endSubtitleGesture() {
-    subtitleGestureStartStyle = null
+    // The preview stays shown until the stored style arrives (LaunchedEffect below), so the
+    // subtitles do not jump back for a frame.
+    subtitleGestureSession.flush()
     liveGestureFeedback = null
 }
 

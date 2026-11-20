@@ -7,6 +7,10 @@ Newest first.
 ## Next build — Build 15: audit and polish
 
 ### Fixed
+- **Moving or resizing subtitles with your fingers no longer stores the settings on every frame.**
+  The subtitles follow the fingers as before; their place and size are stored once, when the gesture
+  ends (or if the player closes mid-gesture). Before, a one-second drag stored twelve subtitle
+  settings about sixty times.
 - **Manual subtitle sync works offline for a subtitle picked from the device.** The sync panel
   skipped loading the subtitle lines whenever the phone was offline, even for a file already on the
   phone.
