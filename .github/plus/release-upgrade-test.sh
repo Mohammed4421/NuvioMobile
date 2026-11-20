@@ -89,8 +89,8 @@ if (( sdk < 28 )); then
   exit 0
 fi
 
-adb install -r "${debug_app}" > /dev/null || fail "The debug app (device test host) could not be installed"
-adb install -r "${debug_test}" > /dev/null || fail "The device test could not be installed"
+device_host="$(bash "${here}/device-test-host.sh" "${debug_app}" "${debug_test}")" || fail "The device test host could not be set up"
+eval "${device_host}"
 damaged="$(mktemp --suffix=.apk)"
 head -c "$(( $(stat -c %s "${release}") / 2 ))" "${release}" > "${damaged}"
 
