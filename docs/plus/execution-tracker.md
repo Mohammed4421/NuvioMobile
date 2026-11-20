@@ -907,3 +907,21 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   configuration Gradle keeps only the highest version). With that file Robolectric uses nothing else,
   so it lists every version the tests use (SDK 26, 28, 34, 36; checked when the file is written).
   No test is skipped or made optional.
+
+## B14-1: Build 14 foundation (2026-11-20)
+
+- **M1:** `CHANGELOG.md` closes "Build 13" and opens a new "Next build". The old top section's
+  SHA-256 `05e73912…` equals the `changelog-section` of `custom-13`, so the publish script would have
+  refused it; the new one differs. Tests: `test_the_real_changelog_can_be_published_after_build_13`.
+- **Release notes:** how to update from build 13 and from build 12, Android 7–8, English and Arabic
+  (`publish-release.sh`, test).
+- **M3:** `rollback.md`: build 13 is the floor; a rescue build is a forward release with the release
+  key, a higher version code, data compatibility and every gate.
+- **S2:** `osv-check.py` in the build job: the release runtime classpath against osv.dev; HIGH,
+  CRITICAL or unknown severity blocks unless reviewed with a reason and an end date (≤ 180 days).
+- **S3:** README (install, update pipeline, signing), feature registry (identity).
+- **S6:** the `allow_key_change` switch is removed from both workflows and `check-update-compat.sh`.
+- **Settings the session may not change (owner):** repository description, Dependabot alerts,
+  branch ruleset. Attempts by the session were refused by its own safety rules.
+- **Upstream:** latest stable Nuvio release is 1.0.0 (`511ebd5f`), already the base of Nuvio Plus;
+  1.1.0-beta.1/2 are betas and are not merged.

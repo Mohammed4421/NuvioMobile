@@ -22,11 +22,6 @@ on:
         description: Commit to build
         required: true
         type: string
-      allow_key_change:
-        description: Accept a new signing certificate (users then reinstall once)
-        required: false
-        type: boolean
-        default: false
       channel:
         description: stable (custom-N releases) or beta (custom-N-beta pre-releases)
         required: false
@@ -215,6 +210,24 @@ jobs:
             }
           echo "- Build: release APKs for 4 ABIs, version ${version}-plus.${BUILD} (${CHANNEL})." > checks-build.md
 
+      - name: Known vulnerabilities in the libraries of the release APK (OSV)
+        # The resolved release runtime classpath, asked of osv.dev; a HIGH or CRITICAL vulnerability
+        # (or one of unknown severity) stops the build unless .github/plus/osv-reviewed.json reviews it
+        # with a reason and an end date. Native .so libraries are not covered.
+        run: |
+          bash .github/plus/gradle-retry.sh dependencies.log ./gradlew -q :androidApp:dependencies \
+            --configuration fullReleaseRuntimeClasspath \
+            -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore \
+            -Pnuvio.applicationIdSuffix=.plus -Pnuvio.minSdk=28 > /dev/null
+          set +e
+          python3 .github/plus/osv-check.py dependencies.log .github/plus/osv-reviewed.json > osv.md
+          status=$?
+          set -e
+          cat osv.md
+          { grep -v '^::' osv.md || true; } | head -n 1 >> checks-build.md
+          { echo "### Library vulnerabilities (OSV)"; grep -v '^::' osv.md || true; } >> "${GITHUB_STEP_SUMMARY}"
+          exit "${status}"
+
       - name: Name the APKs and list their digests
         id: name
         env:
@@ -357,7 +370,6 @@ jobs:
 
       - name: Compare with the latest published build
         env:
-          ALLOW_KEY_CHANGE: ${{ inputs.allow_key_change }}
           PLUS_CHANNEL: ${{ env.CHANNEL }}
         run: |
           mkdir -p result && cd result
@@ -705,11 +717,10 @@ jobs:
         id: previous
         env:
           PLUS_CHANNEL: ${{ env.CHANNEL }}
-          ALLOW_KEY_CHANGE: ${{ inputs.allow_key_change }}
         run: |
           tag="$(bash .github/plus/previous-release.sh)"
           apk=""
-          if [[ -n "${tag}" && "${ALLOW_KEY_CHANGE}" != "true" ]]; then
+          if [[ -n "${tag}" ]]; then
             gh release download "${tag}" --repo "${GITHUB_REPOSITORY}" --dir previous --pattern '*x86_64*.apk' --clobber
             apk="$(ls previous/*.apk | head -n 1)"
           fi

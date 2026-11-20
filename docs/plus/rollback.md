@@ -12,8 +12,11 @@ written by a newer one. So a rollback is a **new forward release**, not reinstal
    new fields in download records, the season queue, the transfer store. The recovery code must read
    them (unknown JSON fields are ignored; new enum values are not). Add a migration test for any data
    the bad build changed.
-4. **Signing.** The certificate is not changed by a rollback. A change of key is a separate plan
-   with its own approval (users reinstall once, and lose local data unless it is exported).
+4. **Signing.** A recovery release is signed like every release since build 13: with the release
+   key `99c0a98c…1e35` in the `plus-release` environment, through `release-sign`, the emulator move
+   tests and the owner's two approvals. **Never with the old public key** (`signing/nuvio-plus.p12`):
+   `release-identity` refuses to publish anything it signed, and phones that moved to build 13 or later
+   refuse it anyway. No rollback changes the key or the package `com.nuvio.app.plus`.
 5. **Updater.** Users on the bad build get the recovery build through the in-app updater like any
    other update; nothing else is needed.
 6. **Upstream merges.** To undo a Nuvio merge, revert the merge commit (`git revert -m 1 <merge>`),
@@ -39,11 +42,18 @@ Storing a literal `Paused`, as the first F1 change did, would have erased the qu
 - A test must decode the new format with the previous build's model, copied into the test as
   `SeasonQueueStorageTest` does.
 
-**Going back after build 13:**
-- **Preferred: a forward release.** Revert on `plus-fix/rollback-13` and publish it as build 14, which
-  installs over 13. Keep `SeasonQueueStorage` (reading and writing) even when reverting F1 or F2, so
-  the queue keeps being read.
-- **Reinstalling Build 12** is impossible as an update (lower version code). Only an uninstall allows
-  it, and that erases all app data anyway.
-- **Stopping the spread of a bad build at once:** mark its release as a pre-release (or delete it).
-  The stable updater then stops offering it. Phones that already updated keep it until the next build.
+**Going back after build 13 (the key change):**
+- **Build 13 is the floor.** Build 12 is signed with the old key: a phone with build 13 or later
+  refuses it as an update (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`, proven on Android 9 and 14 in the
+  `release-upgrade` job) and only an uninstall, which erases the app's data, would allow it. Going back
+  to build 12 is not a rollback option.
+- **Only a forward release.** Revert on `plus-fix/rollback-<build>` and publish it as the next build
+  number: same package, same release key, a higher version code. It must read everything the bad build
+  wrote (point 3), with a test; `SeasonQueueStorage` stays (reading and writing) even when reverting
+  F1 or F2.
+- **Its gates are the same as any release:** every check, the review gate, `release-sign`,
+  `release-verify`, the emulator moves (from the previous build and from build 12) and the owner's
+  approvals. A rollback is no reason to skip one.
+- **Stopping the spread of a bad build at once:** mark its release as a pre-release. The stable
+  updater then stops offering it; phones that already updated keep it until the recovery build.
+  Do not delete the release or its APKs (point 1).

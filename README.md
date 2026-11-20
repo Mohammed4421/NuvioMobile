@@ -77,39 +77,42 @@
 ## Install / التثبيت
 
 1. Download the `arm64-v8a` APK from the [latest build](https://github.com/Mohammed4421/NuvioMobile/releases/latest)
-   (most phones and tablets).
+   (most phones and tablets). Android 9 or later.
 2. Install it. It sits next to the official Nuvio app and keeps its own settings and downloads.
-3. To update, install the newer APK over it; settings and downloads stay.
+3. To update from build 13 or later, use Settings › Updates in the app, or install the newer APK over
+   it; settings and downloads stay.
 
 > [!IMPORTANT]
-> Builds 1–6 were signed with a different key each time: uninstall such a build once before installing
-> build 8 or newer. From then on, every build installs as an update. Nuvio account sign-in works; Trakt sign-in needs your own Trakt API keys
-> (see *Build*).
+> **Build 13 changed the signing key**, because the key of builds 8–12 was published in this
+> repository. Coming from build 12 or earlier, download build 13 or later once from the Releases page
+> and install it over the old app, without uninstalling it: on Android 9 and later your data is kept,
+> and from then on the phone refuses anything signed with the old key. The old app's updater cannot
+> do this step. Android 7 and 8 cannot install build 13 or later.
 >
-> البناءات 1–6 كانت تُوقَّع بمفتاح مختلف كل مرة؛ احذفها مرة واحدة قبل تثبيت البناء 8 أو أحدث، وبعدها كل بناء يُثبَّت كتحديث. حساب Nuvio يعمل، أما Trakt
-> فيحتاج مفاتيح Trakt خاصة بك.
+> **غيّر البناء 13 مفتاح التوقيع** لأن مفتاح البناءات 8–12 كان منشورًا في هذا المستودع. من البناء 12
+> أو أقدم: نزّل البناء 13 أو أحدث من صفحة الإصدارات مرة واحدة وثبّته فوق التطبيق القديم دون حذفه؛ على
+> أندرويد 9 وأحدث تبقى بياناتك، وبعدها يرفض الجوال أي ملف موقّع بالمفتاح القديم. محدّث التطبيق القديم لا
+> يستطيع هذه الخطوة. أندرويد 7 و8 لا يستطيعان تثبيت البناء 13 وما بعده.
+>
+> Nuvio account sign-in works; Trakt sign-in needs your own Trakt API keys (see *Build*).
+> حساب Nuvio يعمل، أما Trakt فيحتاج مفاتيح Trakt خاصة بك.
 
 ## Staying up to date / التحديثات
 
-Nuvio releases reach Nuvio Plus through a gated pipeline (`.github/workflows/plus-pipeline.yml`, daily):
+Nuvio releases reach Nuvio Plus only through review (`.github/workflows/plus-pipeline.yml`, daily):
 
-1. The newest **stable** Nuvio release is merged into the `plus-staging` branch. Betas are merged only
-   when chosen by hand.
-2. A Git conflict stops the run. Code that both Nuvio and Nuvio Plus changed, or a Nuvio feature that
-   looks like a Nuvio Plus one, holds the update for a review (run the pipeline again with *approve*).
-3. Staging is built and checked: all unit tests, an update check against the published build (same
-   package and signature, higher version code) and an emulator test that installs the previous build,
-   updates it in place, checks that app data is kept and opens the app.
-4. Only then does `custom-subtitles` move to the tested commit and the tested APKs get published.
+1. For a new Nuvio release, a review branch `plus-review/nuvio-<tag>` is made from `custom-subtitles`
+   (stable releases) or `plus-beta` (betas, never automatic) and the release is merged there only.
+2. A review record lists conflicts, touched Nuvio Plus features and possible duplicates; the branch is
+   built and checked (never published) and a pull request is opened.
+3. Nothing reaches `custom-subtitles` until the owner merges that pull request, and nothing is
+   published without the signing and publishing approvals described under *Build*.
 
-Anything that stops an update appears as a `sync-…` pre-release with the reason; the stable branch and
-the current build stay as they are. Pushes to `custom-subtitles` go through the same checks before a
-release is published. The in-app update check follows this fork's releases.
+The in-app update check follows this fork's releases.
 
-تحديثات Nuvio المستقرة تُدمج يوميًا في فرع تجريبي (`plus-staging`) أولًا، وتمر بالبناء وكل الاختبارات
-واختبار التحديث على محاكي، ثم تنتقل للفرع المستقر وتُنشر. أي تعارض أو تداخل مع ميزات Nuvio Plus أو فشل
-اختبار يوقف النشر ويظهر كإصدار تجريبي باسم `sync-…`، والنسخة الحالية تبقى كما هي. إصدارات Beta لا تُدمج
-تلقائيًا.
+تحديثات Nuvio لا تصل إلا بعد مراجعة: لكل إصدار جديد يُنشأ فرع مراجعة ويُدمج الإصدار فيه وحده، ويُبنى
+ويُختبر دون نشر، ثم يُفتح طلب دمج. لا يدخل شيء الفرع المستقر إلا بدمج المالك، ولا يُنشر شيء إلا بموافقتيه
+على التوقيع والنشر. إصدارات Beta لا تُدمج تلقائيًا.
 
 ## Known limits / حدود معروفة
 
@@ -121,20 +124,23 @@ release is published. The in-app update check follows this fork's releases.
 
 ## Build / البناء
 
-Every push to `custom-subtitles` builds a signed release APK with GitHub Actions and publishes it under
-[Releases](https://github.com/Mohammed4421/NuvioMobile/releases). If a build fails, the error log is
-published as a pre-release so it can be read without opening the Actions log.
+Every push to `custom-subtitles` builds the APKs and runs every check (unit tests, update check,
+emulator). A release is published only for a pull request the owner merged, after the owner approves
+the signing with the release key and, once the signed APKs passed the emulator move tests, the
+publishing. A failed build publishes its error log as a `build-failed-N` pre-release (no APK).
 
-Builds are signed with the key in `signing/`, so each one installs as an update. That key is public:
-an APK from anywhere else could be signed with it too, so install Nuvio Plus only from this
-repository's releases, or set your own key with the secrets below.
+**Signing.** Releases since build 13 are signed with a release key that only the protected
+`plus-release` environment holds (certificate SHA-256
+`99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35`), with APK Signature Scheme v3
+and a lineage from the old key. The key in `signing/` is the **old, public** key of builds 8–12: it
+signs only test builds in CI and that lineage, never a release. Install Nuvio Plus only from this
+repository's releases or the app's updater. Details: [docs/plus/signing-migration.md](docs/plus/signing-migration.md).
 
-Optional repository secrets:
+Optional repository secret:
 
 | Secret | Purpose |
 |---|---|
-| `CUSTOM_KEYSTORE_BASE64`, `CUSTOM_KEYSTORE_PASSWORD`, `CUSTOM_KEY_ALIAS` | Sign with your own private key instead of the public one in `signing/` |
-| `CUSTOM_LOCAL_PROPERTIES` | Extra `local.properties` lines (Trakt, Simkl, Supabase keys and so on) |
+| `CUSTOM_LOCAL_PROPERTIES` | Extra `local.properties` lines (Trakt, Simkl, Supabase keys and so on); every value ends up inside the APK |
 
 Local build:
 

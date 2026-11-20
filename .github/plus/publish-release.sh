@@ -36,7 +36,20 @@ fi
   echo
   echo "**Install:** \`NuvioPlus-build${build}-arm64-v8a.apk\` fits most phones and tablets. Needs Android 9 or later."
   echo
-  echo "**Coming from build 12 or earlier:** the signing key changed (the old one was public). The old app's updater cannot install this build: download the APK here once and install it over the old app. On Android 9 and later your data is kept, and the app's updater works again from then on. Android 7 and 8 cannot install this build."
+  echo "**From build 13 or later:** update in the app (Settings › Updates) or install this APK over it; your data is kept."
+  echo
+  echo "**From build 12 or earlier:** the signing key changed with build 13 (the old one was public). The old app's updater cannot install this build: download the APK here once and install it over the old app, without uninstalling it. On Android 9 and later your data is kept, and the app's updater works again from then on."
+  echo
+  echo "**Android 7 and 8** cannot install this build (it needs Android 9 or later) and stay on build 12."
+  echo
+  echo "<details dir=\"rtl\"><summary>التثبيت والتحديث بالعربية</summary>"
+  echo
+  echo "- الملف المناسب لأغلب الجوالات والأجهزة اللوحية: \`NuvioPlus-build${build}-arm64-v8a.apk\`، ويحتاج أندرويد 9 أو أحدث."
+  echo "- **من البناء 13 أو أحدث:** حدّث من داخل التطبيق (الإعدادات › التحديثات) أو ثبّت هذا الملف فوقه، وتبقى بياناتك."
+  echo "- **من البناء 12 أو أقدم:** تغيّر مفتاح التوقيع مع البناء 13 لأن المفتاح القديم كان مكشوفًا، فمحدّث التطبيق القديم لا يستطيع تثبيت هذا البناء. نزّل الملف من هذه الصفحة مرة واحدة وثبّته فوق التطبيق القديم دون حذفه؛ على أندرويد 9 وأحدث تبقى بياناتك، وبعدها يعمل التحديث من داخل التطبيق."
+  echo "- **أندرويد 7 و8** لا يستطيعان تثبيت هذا البناء ويبقيان على البناء 12."
+  echo
+  echo "</details>"
   [[ "${channel}" == beta ]] && echo && echo "**Beta:** built from the \`plus-beta\` branch with a Nuvio beta. Offered in the app only on the Beta update channel."
   if [[ -n "${note}" ]]; then echo; echo "${note}"; fi
   echo

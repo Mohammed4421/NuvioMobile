@@ -13,11 +13,6 @@ on:
       - '**.md'
       - 'docs/**'
   workflow_dispatch:
-    inputs:
-      allow_key_change:
-        description: Accept a new signing certificate (users then reinstall once)
-        type: boolean
-        default: false
 
 concurrency:
   group: nuvio-plus-publish
@@ -48,7 +43,6 @@ jobs:
     with:
       ref: ${{ github.sha }}
       channel: ${{ github.ref_name == 'plus-beta' && 'beta' || 'stable' }}
-      allow_key_change: ${{ inputs.allow_key_change || false }}
       status_sha: ${{ github.sha }}
       status_prefix: nuvio-plus/publish
     # Only the public app settings, and only on the publishing branches (never on review branches);

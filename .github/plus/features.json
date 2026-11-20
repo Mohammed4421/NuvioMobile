@@ -235,20 +235,28 @@
     },
     {
       "id": "identity",
-      "title": "Package com.nuvio.app.plus, launcher name, signing, version code",
-      "since": "Build 1 (fixed key Build 8)",
+      "title": "Package com.nuvio.app.plus, launcher name, signing, version code, Android 9+",
+      "since": "Build 1 (release key and v3 lineage Build 13)",
       "files": [
         "androidApp/build.gradle.kts",
         "androidApp/src/main/AndroidManifest.xml",
         "signing/nuvio-plus.p12",
-        ".github/plus/sign-apks.sh"
+        ".github/plus/sign-apks.sh",
+        ".github/plus/release-verify.py",
+        ".github/plus/release-upgrade-test.sh",
+        ".github/workflows/custom-android-build.yml",
+        ".github/workflows/plus-release-key.yml",
+        "docs/plus/signing-migration.md"
       ],
       "depends": [],
-      "data": "everything: changing package or key means a reinstall",
+      "data": "everything: releases are signed with the release key 99c0a98c...1e35 (v3, lineage from the old public key 40335e31...f48a, which signs only CI test builds); changing package or key means a reinstall",
       "tests": [
-        "CI update check (package, certificate, version code)",
-        "CI sign job (same certificate as the previous build, v2 scheme)",
-        "CI emulator update test"
+        "CI update check of test builds (package, certificate, version code) against custom-12",
+        "CI sign job (test builds, old public key, v2 scheme)",
+        "CI emulator update test",
+        "release-verify (v3 only, pinned certificate, lineage, contents equal to the tested APKs)",
+        "release-upgrade (emulators: move from the previous release and from build 12, data kept, foreign keys refused)",
+        "test_workflow_policy.py, test_release_verify.py"
       ],
       "keywords": [
         "applicationIdSuffix",
