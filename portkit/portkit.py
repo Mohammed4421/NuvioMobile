@@ -447,12 +447,29 @@ def run_git(directory, *args, check=True):
     return result
 
 
-def apply(source, target, wanted, branch, source_ref="HEAD"):
+TRIAL_PREFIX = "portkit-trial/"
+
+
+def apply(source, target, wanted, branch, source_ref="HEAD", trial=False, from_head=False):
     """Transfers `wanted` onto a new `branch` of the target repository. Returns a result dict:
-    status applied | already | refused | conflict | unsupported-target, the plan, and the commit."""
+    status applied | already | refused | conflict | unsupported-target, the plan, and the commit.
+
+    The transfer starts from the target's last commit. Uncommitted changes in the target are not
+    part of it, so a target with any (staged, unstaged or untracked) is refused unless `from_head`
+    says to use HEAD anyway. A trial (unverified features, for transfer tests) must use a branch
+    under portkit-trial/ and is marked as a trial in the ledger and the commit."""
     source, target = Path(source).resolve(), Path(target).resolve()
     if run_git(target, "rev-parse", "--is-inside-work-tree", check=False).returncode != 0:
         raise TransferError(f"{target} is not a Git repository")
+    if trial and not branch.startswith(TRIAL_PREFIX):
+        raise TransferError(f"a trial transfer must use a branch under {TRIAL_PREFIX}")
+    if not trial and branch.startswith(TRIAL_PREFIX):
+        raise TransferError(f"{TRIAL_PREFIX} branches are for trials only")
+    pending = run_git(target, "status", "--porcelain", "--untracked-files=normal").stdout.strip()
+    if pending and not from_head:
+        count = len(pending.splitlines())
+        raise TransferError(f"the target has {count} uncommitted change(s); commit or stash them, "
+                            "or pass --from-head to transfer onto the last commit without them")
     if run_git(target, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}", check=False).returncode == 0:
         raise TransferError(f"branch {branch} already exists in the target; choose another")
     head = run_git(target, "rev-parse", "HEAD").stdout.strip()
@@ -461,12 +478,13 @@ def apply(source, target, wanted, branch, source_ref="HEAD"):
     try:
         run_git(target, "worktree", "add", "-q", "-b", branch, str(work), head)
         created = True
-        report = plan(source, work, wanted, source_ref)
+        report = plan(source, work, wanted, source_ref, trial=trial)
         if report["status"] != "ready":
             return {"status": report["status"], "plan": report, "branch": None, "commit": None}
         ledger_path = work / LEDGER
         ledger = json.loads(ledger_path.read_text()) if ledger_path.is_file() else {"transfers": []}
         entry = {"source": report["source_ref"], "upstream_base": report["upstream_base"], "target_head": head,
+                 "trial": bool(trial), "uncommitted_left_out": bool(pending),
                  "features": list(report["features"]), "files": {}}
         # Compute every result before writing anything.
         writes = []
@@ -501,12 +519,13 @@ def apply(source, target, wanted, branch, source_ref="HEAD"):
             if sha256(read(work / relative)) != info["after"]:
                 raise TransferError(f"{relative} does not hold the planned content")
         run_git(work, "add", "-A")
-        message = (f"PortKit: transfer {', '.join(entry['features'])} from Nuvio Plus\n\n"
+        message = (f"PortKit{' trial' if trial else ''}: transfer {', '.join(entry['features'])} from Nuvio Plus\n\n"
                    f"Source {entry['source']} (upstream base {entry['upstream_base']}).\n"
                    f"Files: {len(entry['files'])}. Ledger: {LEDGER}.\n\n{TRAILER}: {entry['source']}")
         run_git(work, "-c", "user.name=PortKit", "-c", "user.email=portkit@localhost", "commit", "-q", "-m", message)
         commit = run_git(work, "rev-parse", "HEAD").stdout.strip()
-        return {"status": "applied", "plan": report, "branch": branch, "commit": commit}
+        return {"status": "applied", "plan": report, "branch": branch, "commit": commit,
+                "uncommitted_left_out": bool(pending)}
     except BaseException:
         if created:
             run_git(target, "worktree", "remove", "--force", str(work), check=False)
@@ -526,6 +545,16 @@ def rollback(target, branch):
     """Undoes, on `branch` (as a new commit), the files of PortKit transfers that still hold exactly
     what PortKit wrote. Files changed since are kept and reported. Returns the result dict."""
     target = Path(target).resolve()
+    if run_git(target, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}", check=False).returncode != 0:
+        raise TransferError(f"the target has no branch {branch}")
+    # A branch checked out in a worktree (the main checkout included) is not changed behind that
+    # worktree's back: its files would no longer match its branch.
+    listing = run_git(target, "worktree", "list", "--porcelain").stdout
+    for block in listing.strip().split("\n\n"):
+        fields = dict(line.split(" ", 1) for line in block.splitlines() if " " in line)
+        if fields.get("branch") == f"refs/heads/{branch}":
+            raise TransferError(f"{branch} is checked out at {fields.get('worktree')}; switch that worktree to "
+                                "another branch first. Nothing was changed")
     work = Path(tempfile.mkdtemp(prefix="portkit-")) / "work"
     run_git(target, "worktree", "add", "-q", str(work), branch)
     try:
@@ -588,6 +617,10 @@ def main(argv=None):
     applier.add_argument("--source-ref", default="HEAD")
     applier.add_argument("--target", required=True, help="the target Git repository (its checkout is not touched)")
     applier.add_argument("--branch", required=True, help="new branch to create in the target")
+    applier.add_argument("--trial", action="store_true",
+                         help=f"transfer unverified features for a test, on a {TRIAL_PREFIX} branch")
+    applier.add_argument("--from-head", action="store_true",
+                         help="transfer onto the last commit even though the target has uncommitted changes")
     applier.add_argument("features", nargs="+")
     undo = sub.add_parser("rollback", help="undo PortKit's own changes on a branch of the target")
     undo.add_argument("--target", required=True)
@@ -620,18 +653,25 @@ def main(argv=None):
         return {"ready": 0, "already": 0}.get(report["status"], 3)
     if args.command == "apply":
         try:
-            result = apply(args.repo, args.target, args.features, args.branch, args.source_ref)
+            result = apply(args.repo, args.target, args.features, args.branch, args.source_ref,
+                           trial=args.trial, from_head=args.from_head)
         except TransferError as error:
             print(f"::error::{error}. Nothing was changed in the target.")
             return 4
         print(plan_markdown(result["plan"]))
         if result["status"] == "applied":
             print(f"Applied on branch {result['branch']} as {result['commit']}; the target's checkout is unchanged.")
+            if result["uncommitted_left_out"]:
+                print("Note: the target's uncommitted changes are not part of this branch (--from-head).")
             return 0
         print(f"Nothing applied ({result['status']}); no branch was left in the target.")
         return 0 if result["status"] == "already" else 3
     if args.command == "rollback":
-        result = rollback(args.target, args.branch)
+        try:
+            result = rollback(args.target, args.branch)
+        except TransferError as error:
+            print(f"::error::{error}")
+            return 4
         print(json.dumps(result, indent=2))
         return 0
     return 2

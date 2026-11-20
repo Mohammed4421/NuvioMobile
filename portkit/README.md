@@ -44,6 +44,12 @@ python3 portkit/portkit.py apply --target ../my-nuvio-fork --branch portkit/lazy
 python3 portkit/portkit.py rollback --target ../my-nuvio-fork --branch portkit/lazy-keys
 ```
 
+- The transfer starts from the target's last commit. A target with uncommitted changes (staged,
+  unstaged or untracked) is refused; `--from-head` transfers onto the last commit anyway and records
+  that the uncommitted work was left out.
+- Only portable, verified features are transferred. `--trial` (unverified, adapter-required or manual
+  features, for tests) must use a `portkit-trial/` branch and is marked as a trial in the ledger and
+  commit; a real transfer cannot use such a branch.
 - The target's checkout is never touched: PortKit adds a Git worktree on a **new** branch from the
   target's HEAD (an existing branch is refused), plans against it, computes every result first,
   writes, checks each file holds what was planned, and commits with `.portkit/transfers.json`
