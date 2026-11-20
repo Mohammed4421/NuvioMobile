@@ -7,6 +7,11 @@ Newest first.
 ## Next build — stability: updates, downloads, project safety
 
 ### Changed
+- **Every release is tested as an update before it is published**: on Android 9 and 14 emulators, from
+  the previous release and from build 12, with app data kept. The app's own update check runs on the
+  emulator's real Android and must accept the release and refuse an APK with another key, one with the
+  old public key and a damaged download. Pull requests run the same check against the published
+  release.
 - **A merge never publishes a release.** Merged pull requests are built and checked only; a release
   is started by hand for the exact commit and still needs every check and both of the owner's
   approvals, so merging the parts of a build one by one cannot release a partial build. Signing and

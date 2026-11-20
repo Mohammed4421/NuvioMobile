@@ -392,9 +392,22 @@ class WorkflowPolicyTest(unittest.TestCase):
         gate = self.workflows["custom-android-build.yml"]["jobs"]["review-gate"]
         self.assertIn("review-gate.py publish", "\n".join(s.get("run", "") for s in steps(gate)))
         build = self.workflows["plus-build.yml"]["jobs"]
-        self.assertEqual({"sign", "update-check", "test-gate"}, set(build["emulator"]["needs"]))
+        self.assertEqual({"sign", "update-check", "test-gate", "device-test-build"}, set(build["emulator"]["needs"]))
         report = set(build["report"]["needs"])
         self.assertEqual(set(build) - {"report"}, report, "every check must count in the reported status")
+
+    def test_every_release_is_tested_as_an_update_with_the_apps_own_check(self):
+        upgrade = self.workflows["custom-android-build.yml"]["jobs"]["release-upgrade"]
+        script = next(s for s in steps(upgrade) if "release-upgrade-test.sh" in str(s.get("with", {}).get("script", "")))["with"]["script"]
+        for argument in ("$BUILD12_APK", "$PREVIOUS_APK", "$RELEASE_APK", "$OLD_KEY_APK", "$FOREIGN_APK", "debug-app.apk", "debug-test.apk"):
+            self.assertIn(argument, script)
+        setup = "\n".join(s.get("run", "") for s in steps(upgrade))
+        self.assertIn("is not signed with the release key", setup, "the previous release must carry the release key")
+        emulator = self.workflows["plus-build.yml"]["jobs"]["emulator"]
+        runner = next(s for s in steps(emulator) if "emulator-update-test.sh" in str(s.get("with", {}).get("script", "")))
+        self.assertIn("update-check-device-test.sh", runner["with"]["script"])
+        device = self.workflows["plus-build.yml"]["jobs"]["device-test-build"]
+        self.assertNotIn("secrets.", yaml.safe_dump(device))
 
     def test_checks_run_once_per_change(self):
         # A push to a branch with an open pull request must not start a second full run.

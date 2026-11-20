@@ -311,7 +311,7 @@ jobs:
           retention-days: 14
 
   release-upgrade:
-    name: Move from build 12 on Android ${{ matrix.api }}
+    name: Update to the release on Android ${{ matrix.api }} (from the previous release and build 12)
     needs: [checks, release-identity, release-verify]
     if: needs.release-identity.outputs.publish == 'true'
     strategy:
@@ -319,7 +319,7 @@ jobs:
       matrix:
         api: [26, 28, 34]
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     permissions:
       contents: read
     env:
@@ -338,18 +338,43 @@ jobs:
           left="$(git config --list --includes | grep -ci 'authorization' || true)"
           if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
 
-      - name: Get the release and the tested APKs
+      - name: Get the release, the tested APKs and the device test
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: nuvio-plus-{release,apk}
+          pattern: nuvio-plus-{release,apk,update-device-test}
           path: apks
 
-      - name: Get build 12
+      - name: Get build 12 and the previous release; make an APK with a foreign key
+        env:
+          IDENTITY: ${{ needs.release-identity.outputs.identity }}
         run: |
-          gh release download custom-12 --repo "${GITHUB_REPOSITORY}" --dir previous --pattern '*x86_64*.apk' --clobber
-          echo "PREVIOUS_APK=$(ls previous/*x86_64*.apk)" >> "${GITHUB_ENV}"
-          echo "RELEASE_APK=$(ls apks/nuvio-plus-release/*x86_64*.apk)" >> "${GITHUB_ENV}"
-          echo "OLD_KEY_APK=$(ls apks/nuvio-plus-apk/*x86_64*.apk)" >> "${GITHUB_ENV}"
+          set -euo pipefail
+          gh release download custom-12 --repo "${GITHUB_REPOSITORY}" --dir build12 --pattern '*x86_64*.apk' --clobber
+          # The previous release users update from in the app: the newest published one, which must be
+          # signed with the release key (build 13 and later).
+          tag="$(gh release view --repo "${GITHUB_REPOSITORY}" --json tagName --jq .tagName)"
+          previous=""
+          if [[ "${tag}" != custom-12 ]]; then
+            gh release download "${tag}" --repo "${GITHUB_REPOSITORY}" --dir previous --pattern '*x86_64*.apk' --clobber
+            previous="$(ls previous/*x86_64*.apk)"
+            [[ "$(python3 -I .github/plus/apk-certs.py --current "${previous}")" == "${IDENTITY}" ]] \
+              || { echo "::error::${tag} is not signed with the release key"; exit 1; }
+          fi
+          release="$(ls apks/nuvio-plus-release/*x86_64*.apk)"
+          # Any other key: what a stranger could sign (generated here, thrown away with the job).
+          tools="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)"
+          keytool -genkeypair -noprompt -storetype PKCS12 -keystore "${RUNNER_TEMP}/foreign.p12" -storepass foreign-key \
+            -alias foreign -keyalg EC -groupname secp256r1 -validity 2 -dname "CN=Not Nuvio Plus" > /dev/null 2>&1
+          "${tools}/apksigner" sign --ks "${RUNNER_TEMP}/foreign.p12" --ks-pass pass:foreign-key \
+            --min-sdk-version 28 --out "${RUNNER_TEMP}/foreign.apk" "${release}"
+          {
+            echo "BUILD12_APK=$(ls build12/*x86_64*.apk)"
+            echo "PREVIOUS_APK=${previous}"
+            echo "RELEASE_APK=${release}"
+            echo "OLD_KEY_APK=$(ls apks/nuvio-plus-apk/*x86_64*.apk)"
+            echo "FOREIGN_APK=${RUNNER_TEMP}/foreign.apk"
+          } >> "${GITHUB_ENV}"
+          echo "Previous release: ${tag}"
 
       - name: Enable KVM
         run: |
@@ -357,7 +382,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Move build 12 to the release
+      - name: Update to the release (app check, installer, data)
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: ${{ matrix.api }}
@@ -365,7 +390,7 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
-          script: bash .github/plus/release-upgrade-test.sh "$PREVIOUS_APK" "$RELEASE_APK" "$OLD_KEY_APK"
+          script: bash .github/plus/release-upgrade-test.sh "$BUILD12_APK" "$PREVIOUS_APK" "$RELEASE_APK" "$OLD_KEY_APK" "$FOREIGN_APK" apks/nuvio-plus-update-device-test/debug-app.apk apks/nuvio-plus-update-device-test/debug-test.apk
 
       - name: Keep the result
         if: always()

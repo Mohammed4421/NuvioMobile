@@ -926,6 +926,26 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
 - **Upstream:** latest stable Nuvio release is 1.0.0 (`511ebd5f`), already the base of Nuvio Plus;
   1.1.0-beta.1/2 are betas and are not merged.
 
+## B14-2: update safety (2026-11-20)
+
+- **M2:** `release-upgrade` (before every release, Android 8/9/14 emulators): from the previous
+  release (signed with the release key, checked) the app's own update check
+  (`UpdateArchiveDeviceTest`, real PackageManager) must accept the release and refuse a foreign-key,
+  an old-key and a damaged APK; Android must refuse the foreign and old-key APKs; the release must
+  install as an update with data kept, a higher version code, and open. From build 12 the same check
+  must accept the pinned rotation, then the update keeps data and the old key is refused. Android 8
+  refuses the release.
+- **Pull requests:** the emulator job also installs the published release and runs the app's check
+  against the test build (refused: other key), the release itself (not newer) and a damaged download.
+- **Code:** `UpdateArchiveCheck.checkAgainst` (the app's `check` uses it), `UpdateArchiveDeviceCheck`
+  for the device test; debug-only `<queries>` for `com.nuvio.app.plus`.
+- **First emulator run failed (run 44657320619), root cause fixed:** `update-device-check.sh` used
+  the host `com.nuvio.app`, but the debug app's id is `com.nuviodebug.com` (`androidApp/build.gradle.kts`),
+  so `run-as` and the instrumentation were not found; and `adb shell` handed `Unreadable|Unsigned`
+  to the device's shell, where `|` became a pipe. Now `device-test-host.sh` reads the host and runner
+  from the APKs (aapt2, `apk-instrumentation.py`), checks them against `pm list instrumentation` and
+  `run-as`; every value given to `am instrument` is single-quoted. Tests: `test_device_test_host.py`
+  (fails on the old script).
 - **S2 first finding (CI run 44656038835):** HIGH `GHSA-xxph-c9ww-hj94` in
   `com.google.guava:guava:33.3.1-android` (declared by Nuvio in `composeApp`), fixed in 33.7.2.
   Fixed by updating to `33.7.2-android`, not by a review entry.
