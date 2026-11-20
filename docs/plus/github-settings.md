@@ -95,8 +95,8 @@ use tags and would stop running, so turn it on only after deciding about them.
 1. A push straight to `custom-subtitles` is refused.
 2. A pull request into `custom-subtitles` shows `nuvio-plus/checks` and `nuvio-plus/review` and
    cannot be merged before both are green.
-3. Merging a green pull request publishes the next build only once section 4 is decided (the publish run shows "Reviewed and
-   tested pull request" passing).
+3. Merging a green pull request builds and checks the branch but publishes nothing; a release is
+   started by hand (`docs/plus/release.md`) and its run shows "Reviewed and tested pull request" passing.
 
 ## 4. The public key never publishes
 
