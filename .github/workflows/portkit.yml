@@ -11,6 +11,12 @@ on:
       - "portkit/**"
       - ".github/plus/features.json"
       - ".github/workflows/portkit.yml"
+      # The files of the features PortKit tests, so a change to them is tested again.
+      - "composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt"
+      - "composeApp/src/commonTest/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeysTest.kt"
+      - "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt"
+      - "composeApp/src/commonMain/kotlin/com/nuvio/app/features/autosync/AutoSyncSubtitleCueParser.kt"
+      - "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserWorstCaseTest.kt"
   workflow_dispatch:
 
 concurrency:
@@ -27,6 +33,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
+      actions: read  # the evidence check reads earlier transfer-test runs
     steps:
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -83,6 +90,11 @@ jobs:
           bash portkit/transfer-test.sh "fork A (portkit/fixtures/fork-a.patch)" portkit/fixtures/fork-a.patch \
             lazy-key-collisions,subtitle-parser-worst-case \
             com.nuvio.app.core.ui.DuplicateSafeLazyKeysTest,com.nuvio.app.features.player.SubtitleParserWorstCaseTest
+
+      - name: Evidence of verified features
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I portkit/portkit.py check-evidence
 
       - name: Report
         if: always()
