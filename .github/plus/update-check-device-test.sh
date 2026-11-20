@@ -14,8 +14,8 @@ fail() { echo "::error::$*"; exit 1; }
 for apk in "${release}" "${build}" "${debug_app}" "${debug_test}"; do [[ -f "${apk}" ]] || fail "Missing APK: ${apk}"; done
 adb wait-for-device
 
-adb install -r "${debug_app}" > /dev/null || fail "The debug app could not be installed"
-adb install -r "${debug_test}" > /dev/null || fail "The device test could not be installed"
+device_host="$(bash "${here}/device-test-host.sh" "${debug_app}" "${debug_test}")" || fail "The device test host could not be set up"
+eval "${device_host}"
 adb uninstall "${package}" > /dev/null 2>&1 || true
 adb install "${release}" > /dev/null || fail "The published release could not be installed"
 
