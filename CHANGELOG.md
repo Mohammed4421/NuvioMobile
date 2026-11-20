@@ -7,6 +7,9 @@ Newest first.
 ## Next build — Build 15: audit and polish
 
 ### Fixed
+- **Manual subtitle sync works offline for a subtitle picked from the device.** The sync panel
+  skipped loading the subtitle lines whenever the phone was offline, even for a file already on the
+  phone.
 - **A malformed subtitle could freeze a download or the subtitle list.** Subtitles from add-ons are
   read when a download is prepared and in the player. A file with an unclosed tag, brace or paragraph
   repeated made the reader rescan the rest of the file from every position: 60 KB took 5 seconds,

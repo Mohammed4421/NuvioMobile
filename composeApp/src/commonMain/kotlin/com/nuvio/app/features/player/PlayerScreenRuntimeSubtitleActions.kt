@@ -71,8 +71,9 @@ internal fun PlayerScreenRuntime.setSubtitleDelay(delayMs: Int) {
 internal fun PlayerScreenRuntime.loadSubtitleAutoSyncCues(force: Boolean = false) {
     val subtitle = selectedAddonSubtitle ?: return
     if (!force && subtitleAutoSyncState.cues.isNotEmpty()) return
-    // Offline: the cue download would only hang, so skip it and leave the state as is.
-    if (isNetworkOffline()) return
+    // Offline: the cue download would only hang, so skip it and leave the state as is. A subtitle
+    // picked from the device is a local file and loads without the network.
+    if (subtitleCuesNeedNetwork(subtitle.url) && isNetworkOffline()) return
     subtitleAutoSyncState = subtitleAutoSyncState.copy(isLoading = true, errorMessage = null)
     scope.launch {
         val result = runCatching {
@@ -115,6 +116,9 @@ internal fun PlayerScreenRuntime.applySubtitleAutoSyncCue(cue: SubtitleSyncCue) 
         .coerceIn(SUBTITLE_DELAY_MIN_MS, SUBTITLE_DELAY_MAX_MS)
     setSubtitleDelay(newDelayMs)
 }
+
+/** Subtitle cues come over the network unless the subtitle is a local file (picked from the device). */
+internal fun subtitleCuesNeedNetwork(url: String): Boolean = !url.startsWith("file:", ignoreCase = true)
 
 internal val AddonSubtitle.isDeviceSubtitle: Boolean
     get() = id.startsWith("device:")
