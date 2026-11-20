@@ -1,0 +1,139 @@
+# Nuvio's own instrumented tests on emulators (Build 15, P3-F1): SubtitlePlaybackTest (ExoPlayer and
+# libmpv subtitles), SubtitleSettingsTest and MpvSurfaceTest existed in androidApp/src/androidTest
+# but no workflow ran them. Runs them against the debug app of the pull request on Android 14 and 9.
+# A separate workflow so its stability is seen before it is proposed as a required check. No secret,
+# no write permission; the debug key is made by the build tools and thrown away with the job.
+name: Nuvio device tests
+
+on:
+  pull_request:
+    branches: [custom-subtitles]
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+concurrency:
+  group: nuvio-device-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the debug app and its device tests
+    if: github.event_name == 'workflow_dispatch' || !github.event.pull_request.draft
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Forget the checkout token
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Set up Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-read-only: true
+
+      - name: Take the Sentry plugin from Maven Central
+        run: |
+          mkdir -p "${HOME}/.gradle/init.d"
+          cp ".github/plus/plugins-from-central.init.gradle" "${HOME}/.gradle/init.d/"
+
+      - name: Prepare properties (no signing settings)
+        run: bash .github/plus/prepare-build.sh "$(bash .github/plus/next-build-number.sh)"
+
+      - name: Build
+        run: |
+          set -o pipefail
+          bash .github/plus/gradle-retry.sh device-test-build.log ./gradlew \
+            :androidApp:assembleFullDebug :androidApp:assembleFullDebugAndroidTest \
+            -Dorg.gradle.jvmargs="-Xmx10g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m" \
+            -Pkotlin.compiler.execution.strategy=in-process \
+            -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore --stacktrace || {
+              { grep -E "^e: " device-test-build.log || true; } | head -n 8 | sed 's/^/::error::/'
+              exit 1
+            }
+          mkdir -p device-test
+          cp "$(find androidApp/build/outputs/apk/full/debug -name '*.apk' | head -n 1)" device-test/debug-app.apk
+          cp "$(find androidApp/build/outputs/apk/androidTest/full/debug -name '*.apk' | head -n 1)" device-test/debug-test.apk
+
+      - name: Keep the APKs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuvio-device-tests-apks
+          path: device-test
+          if-no-files-found: error
+          retention-days: 7
+
+  emulator:
+    name: Nuvio device tests (Android ${{ matrix.api }})
+    needs: build
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [34, 28]
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Forget the checkout token
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Get the APKs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuvio-device-tests-apks
+          path: device-test
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          LABEL: android-${{ matrix.api }}
+        with:
+          api-level: ${{ matrix.api }}
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: bash .github/plus/nuvio-device-tests.sh device-test/debug-app.apk device-test/debug-test.apk "$LABEL"
+
+      - name: Keep the log
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuvio-device-tests-log-${{ matrix.api }}
+          path: nuvio-device-tests-*.log
+          if-no-files-found: warn
+          retention-days: 14
