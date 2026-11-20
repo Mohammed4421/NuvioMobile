@@ -1,7 +1,10 @@
 package com.nuvio.app.features.downloads
 
-import android.app.job.JobScheduler
+import androidx.work.Configuration
+import androidx.work.testing.SynchronousExecutor
+import androidx.work.testing.WorkManagerTestInitHelper
 import java.io.File
+import org.junit.Before
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
@@ -19,6 +22,16 @@ import kotlin.test.assertTrue
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28, 34])
 class SeasonPauseAndroidTest {
+    @Before
+    fun setUpWorkManager() {
+        // Below Android 14 the scheduler pauses and resumes through WorkManager, which a test has to
+        // set up itself. Work stays queued: the test driver never reports its constraints as met.
+        WorkManagerTestInitHelper.initializeTestWorkManager(
+            RuntimeEnvironment.getApplication(),
+            Configuration.Builder().setExecutor(SynchronousExecutor()).build(),
+        )
+    }
+
     @Test
     fun aJobGoesOnAfterAPausedEpisodeAndStopsOnAFailure() {
         assertEquals(ChainStep.Finished, chainStepAfter(DownloadStatus.Completed))
@@ -57,11 +70,12 @@ class SeasonPauseAndroidTest {
     @Test
     @Config(sdk = [34])
     fun pausingAnEpisodeThatRunsInsideAnotherJobLeavesThatJobScheduled() {
-        val context = RuntimeEnvironment.getApplication()
-        val scheduler = AndroidDownloadScheduler(context)
+        val scheduler = AndroidDownloadScheduler(RuntimeEnvironment.getApplication())
         val host = scheduler.enqueue(downloadItem(id = "e1").copy(fileName = "host.mkv"))
         val chained = scheduler.store.begin(downloadItem(id = "e2").copy(fileName = "chained.mkv"))
-        val jobs = context.getSystemService(JobScheduler::class.java).forNamespace("nuvio-downloads")
+        assertNotEquals(host.jobId, chained.jobId, "the two episodes share a job id")
+        // The scheduler's own namespaced JobScheduler: the one it schedules on and cancels from.
+        val jobs = scheduler.jobScheduler()
         val scheduledBefore = jobs.allPendingJobs.map { it.id }
 
         scheduler.pause(chained.item.fileName)
@@ -70,5 +84,9 @@ class SeasonPauseAndroidTest {
         assertEquals(DownloadStatus.Downloading, scheduler.store.get("host.mkv")?.item?.status)
         assertTrue(host.jobId in scheduledBefore, "the host job was not scheduled: $scheduledBefore")
         assertEquals(scheduledBefore, jobs.allPendingJobs.map { it.id }, "pausing the chained episode cancelled the host job")
+
+        // Control: this view does see a cancellation, so the check above is not vacuous.
+        scheduler.pause(host.item.fileName)
+        assertTrue(host.jobId !in jobs.allPendingJobs.map { it.id }, "pausing the host left its job scheduled")
     }
 }
