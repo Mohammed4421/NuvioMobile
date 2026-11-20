@@ -2542,6 +2542,7 @@
     <string name="season_download_all">الموسم كاملًا</string>
     <string name="season_download_queued">أُضيفت %1$d حلقة إلى التنزيلات</string>
     <string name="season_download_nothing">هذه الحلقات منزّلة مسبقًا</string>
+    <string name="season_download_profile_changed">تغيّر البروفايل أثناء تجهيز التنزيل. أعد المحاولة من البروفايل المطلوب.</string>
     <string name="downloads_section_queue">طابور الموسم</string>
     <string name="downloads_queue_episode">م%1$s ح%2$s</string>
     <string name="downloads_queue_waiting">بالانتظار</string>

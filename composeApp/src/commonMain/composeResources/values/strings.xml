@@ -2589,6 +2589,7 @@
     <string name="season_download_all">Whole season</string>
     <string name="season_download_queued">%1$d episodes added to downloads</string>
     <string name="season_download_nothing">These episodes are already downloaded</string>
+    <string name="season_download_profile_changed">The profile changed while the download was being prepared. Try again from the profile you want.</string>
     <string name="downloads_section_queue">Season queue</string>
     <string name="downloads_queue_episode">S%1$s E%2$s</string>
     <string name="downloads_queue_waiting">Waiting</string>

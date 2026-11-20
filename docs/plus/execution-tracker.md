@@ -939,3 +939,21 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   against the test build (refused: other key), the release itself (not newer) and a damaged download.
 - **Code:** `UpdateArchiveCheck.checkAgainst` (the app's `check` uses it), `UpdateArchiveDeviceCheck`
   for the device test; debug-only `<queries>` for `com.nuvio.app.plus`.
+
+## B14-3: downloads (2026-11-20)
+
+- **E1:** `SeasonDownloadQueue.startSeason` returns `SeasonStartResult` (`Queued(n)`,
+  `NothingToAdd`, `ProfileChanged`); the streams screen shows the profile-changed message (EN/AR).
+  Harness r1: result is `ProfileChanged`, nothing queued in A or B.
+- **r2:** an episode whose resolve was stopped by a profile switch returns to `Waiting`
+  (`NeedsChoice` only when its stream really failed). Harness r2: `E1:Waiting` after the switch, then
+  downloaded exactly once in A after the return, never in B.
+- **F4 review (SAF), no code change:** resume reopens the same `.part` document (`wa`) and checks
+  the server range; a revoked folder permission fails with a clear message before any write;
+  completeness is checked (`downloaded == total`) before the final name; a provider that cannot
+  rename gets a size-checked copy, and on any failure the `.part` is kept, never deleted; Remove
+  deletes only unfinished documents; names are unique against both `Name` and `Name.part`.
+  Low, deferred: when a `.part` document was deleted outside the app the free-space check still
+  counts the old progress (the download then fails on a full disk instead of before it; no data
+  loss). Needs a SAF-provider test before changing.
+- **NEEDS PHYSICAL DEVICE:** SD-card providers and vendor file managers.

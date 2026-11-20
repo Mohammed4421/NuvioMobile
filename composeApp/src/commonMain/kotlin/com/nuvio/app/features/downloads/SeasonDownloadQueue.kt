@@ -149,6 +149,18 @@ data class SeasonQueueEntry(
     val profileId: Int? = null,
 )
 
+/** What a "download season" request did. */
+sealed interface SeasonStartResult {
+    /** [count] episodes were added (the chosen one included). */
+    data class Queued(val count: Int) : SeasonStartResult
+
+    /** Every episode is already downloaded or queued, or the episode list could not be loaded. */
+    data object NothingToAdd : SeasonStartResult
+
+    /** The profile changed while the episode list loaded: nothing was added to any profile. */
+    data object ProfileChanged : SeasonStartResult
+}
+
 enum class SeasonDownloadScope {
     /** The chosen episode and every later one in the season. */
     RestOfSeason,
@@ -255,7 +267,7 @@ object SeasonDownloadQueue {
 
     /**
      * Downloads [referenceStream] for the chosen episode right away and queues the other episodes
-     * of the season. Returns how many episodes were added (the chosen one included).
+     * of the season. See [SeasonStartResult] for what it returns.
      */
     suspend fun startSeason(
         contentType: String,
@@ -272,7 +284,7 @@ object SeasonDownloadQueue {
         currentEpisodeThumbnail: String?,
         referenceStream: StreamItem,
         downloadScope: SeasonDownloadScope,
-    ): Int {
+    ): SeasonStartResult {
         ensureStarted()
         DownloadsRepository.ensureLoaded()
         // The profile the season is asked for; the episode list below may arrive after a switch.
@@ -289,7 +301,7 @@ object SeasonDownloadQueue {
                 .getOrNull()
         // Switched while the episode list loaded: the loaded downloads are another profile's, so
         // nothing is queued (never into the profile now active, never checked against its downloads).
-        if (activeProfile != requestedProfile) return 0
+        if (activeProfile != requestedProfile) return SeasonStartResult.ProfileChanged
         val seasonEpisodes = meta?.videos.orEmpty()
             .filter { it.season == seasonNumber && it.episode != null && it.available }
             .distinctBy { it.episode }
@@ -321,7 +333,7 @@ object SeasonDownloadQueue {
         val wanted = (listOf(currentEntry) + others)
             .filter { entry -> needsDownload(entry) && !isQueued(entry) }
             .sortedBy { it.episodeNumber }
-        if (wanted.isEmpty()) return 0
+        if (wanted.isEmpty()) return SeasonStartResult.NothingToAdd
 
         val currentWanted = wanted.firstOrNull { it.episodeNumber == episodeNumber }
         val queued = wanted.filterNot { it === currentWanted }
@@ -330,10 +342,20 @@ object SeasonDownloadQueue {
             // The chosen episode uses exactly the stream the user picked.
             update { listOf(currentWanted) + it }
             val handedOff = trackSearch(currentWanted.id) { safeHandOff(currentWanted, referenceStream) }
-            if (!handedOff) setState(currentWanted.id, SeasonQueueEntryState.NeedsChoice)
+            if (!handedOff && _entries.value.any { it.id == currentWanted.id }) {
+                // Stopped by a profile switch (its search cancelled, or the hand-off refused under
+                // another profile), not by the stream: it waits in its own profile and is searched
+                // again there with fresh links, like the other episodes. A real failure of the chosen
+                // stream still asks the user to choose.
+                val stoppedBySwitch = activeProfile != currentWanted.profileId
+                setState(
+                    currentWanted.id,
+                    if (stoppedBySwitch) SeasonQueueEntryState.Waiting else SeasonQueueEntryState.NeedsChoice,
+                )
+            }
         }
         pump()
-        return wanted.size
+        return SeasonStartResult.Queued(wanted.size)
     }
 
     /**

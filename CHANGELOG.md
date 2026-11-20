@@ -17,6 +17,12 @@ Newest first.
   feature list no longer present the old public key as the release key; a rescue build is always
   signed with the current key and has a higher version code.
 
+- **Season downloads: a clear message when the profile changes while a season is being prepared**
+  ("The profile changed while the download was being prepared. Try again from the profile you
+  want."), instead of the generic "nothing to add". Nothing is queued in either profile.
+- **Season downloads: an episode stopped by a profile switch goes back to Waiting**, not "needs a
+  choice". Back in its profile it is searched again and downloaded once.
+
 ### Added
 - **Checks for known vulnerabilities in the app's libraries.** Every full check lists the libraries
   in the release APK and asks the OSV database about them; a known high or critical vulnerability
