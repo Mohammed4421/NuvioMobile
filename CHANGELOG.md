@@ -7,6 +7,10 @@ Newest first.
 ## Next build — Build 15: audit and polish
 
 ### Fixed
+- **Moving or resizing subtitles with your fingers no longer stores the settings on every frame.**
+  The subtitles follow the fingers as before; their place and size are stored once, when the gesture
+  ends (or if the player closes mid-gesture). Before, a one-second drag stored twelve subtitle
+  settings about sixty times.
 - **A malformed subtitle could freeze a download or the subtitle list.** Subtitles from add-ons are
   read when a download is prepared and in the player. A file with an unclosed tag, brace or paragraph
   repeated made the reader rescan the rest of the file from every position: 60 KB took 5 seconds,

@@ -163,7 +163,8 @@ internal class PlayerScreenRuntime(
     var gestureFeedback by mutableStateOf<GestureFeedbackState?>(null)
     var liveGestureFeedback by mutableStateOf<GestureFeedbackState?>(null)
     /** Style when the current subtitle drag/pinch started; null when no such gesture runs. */
-    var subtitleGestureStartStyle: SubtitleStyleState? = null
+    val subtitleGestureSession = SubtitleGestureSession(persist = PlayerSettingsRepository::setSubtitleStyle)
+    var subtitleGesturePreviewStyle by mutableStateOf<SubtitleStyleState?>(null)
     var renderedGestureFeedback by mutableStateOf<GestureFeedbackState?>(null)
     var lockedOverlayVisible by mutableStateOf(false)
     var gestureMessageJob by mutableStateOf<Job?>(null)
