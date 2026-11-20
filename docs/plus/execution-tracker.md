@@ -939,3 +939,6 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   against the test build (refused: other key), the release itself (not newer) and a damaged download.
 - **Code:** `UpdateArchiveCheck.checkAgainst` (the app's `check` uses it), `UpdateArchiveDeviceCheck`
   for the device test; debug-only `<queries>` for `com.nuvio.app.plus`.
+- **S2 first finding (CI run 44656038835):** HIGH `GHSA-xxph-c9ww-hj94` in
+  `com.google.guava:guava:33.3.1-android` (declared by Nuvio in `composeApp`), fixed in 33.7.2.
+  Fixed by updating to `33.7.2-android`, not by a review entry.
