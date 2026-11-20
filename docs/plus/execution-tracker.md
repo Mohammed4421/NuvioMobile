@@ -1010,3 +1010,25 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   (`maven-central.storage-download.googleapis.com`, HTTPS, releases only) **after** Google and Maven
   Central, so it is only asked for what both report missing; checked with Gradle 8.14.3 that it comes
   last. Retry warnings now name a "Could not find" too. Guava stays 33.7.2; OSV unchanged.
+
+## B14-5: first release run (2026-11-20)
+
+- Run 44713566037 (dispatch, `a74f18ba`): checks, review gate, identity, release signing (owner's
+  approval), `release-verify`, update tests on Android 8 and 14 passed; **Android 9 failed**: the
+  app's check read the signed release as `Unreadable` (expected accepted) on the previous-release
+  step. Publish skipped; no release made (the gate worked).
+- Cause not yet known: the copy to the device or Android 9's archive parser. Added: the copy size is
+  checked before any verdict; the device test logs what Android's parser reads with each flag; the
+  pull request emulator job runs the in-app check on Android 9 too.
+- **Cause found (PR #14, run 44717664104):** the device copy, not the app. Right after `adb exec-in`
+  returned, the copies held 17.6 of 61.8 MB, 11.5 of 61.8 MB and 7.8 of 30.9 MB, even on Android 14.
+  The check had been reading the file while it was still being written; on Android 9 it was still
+  short when parsed, hence `Unreadable`. Fix: wait until the copy has the full size (60 s), else copy
+  through `adb push` + `run-as cp`; no verdict counts on a partial file
+  (`test_an_incomplete_copy_gives_no_verdict`).
+- **Real cause on Android 9 (run 44719370201, after the copy fix):** an app bug present since build 12.
+  Android 9's `getPackageArchiveInfo` returns no `SigningInfo` with `GET_SIGNING_CERTIFICATES` alone
+  (`signing=…/1014 signingInfo=null`); with `GET_SIGNATURES` added it does (`both=… signingInfo(contents=1, history=2)`).
+  So every update was `Unsigned` on Android 9. Fix: `packageInfoFlags` asks for both on 9+
+  (`android9AndLaterAskForBothKindsOfCertificates`); proof is the Android 9 device check. Android 9
+  users of builds 12-13 install build 14 from the release page once (their old check refuses it).

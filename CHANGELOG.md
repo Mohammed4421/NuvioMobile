@@ -6,6 +6,12 @@ Newest first.
 
 ## Next build — stability: updates, downloads, project safety
 
+### Fixed
+- **In-app updates on Android 9.** The app's update check could not read the signature of a
+  downloaded update on Android 9 and refused every update as unsigned (builds 12 and 13). Fixed in
+  this build. **On Android 9, install this build once from this page** (download the APK and open it;
+  your data stays); later updates then work from inside the app. Android 10 and newer were not affected.
+
 ### Changed
 - **Every release is tested as an update before it is published**: on Android 9 and 14 emulators, from
   the previous release and from build 12, with app data kept. The app's own update check runs on the

@@ -131,9 +131,17 @@ internal object UpdateArchiveCheck {
         return evaluate(installed, archive, trustedRotations)
     }
 
+    /**
+     * Android 9's getPackageArchiveInfo collects an APK's certificates only when GET_SIGNATURES is
+     * set: with GET_SIGNING_CERTIFICATES alone it returns no SigningInfo, and every update looked
+     * unsigned (the device test on Android 9 found it, Build 14). Both flags give SigningInfo on 9+.
+     */
     @Suppress("DEPRECATION")
+    internal fun packageInfoFlags(sdk: Int): Int =
+        if (sdk >= 28) PackageManager.GET_SIGNING_CERTIFICATES or PackageManager.GET_SIGNATURES else PackageManager.GET_SIGNATURES
+
     private fun packageInfo(manager: PackageManager, archivePath: String?, packageName: String?): PackageInfo? {
-        val flags = if (Build.VERSION.SDK_INT >= 28) PackageManager.GET_SIGNING_CERTIFICATES else PackageManager.GET_SIGNATURES
+        val flags = packageInfoFlags(Build.VERSION.SDK_INT)
         return if (archivePath != null) {
             manager.getPackageArchiveInfo(archivePath, flags)
         } else {

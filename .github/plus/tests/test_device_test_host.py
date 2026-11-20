@@ -58,12 +58,15 @@ FAKE_ADB = r"""#!/usr/bin/env bash
 case "$1" in
   shell)
     shift
-    if [[ "$1" == run-as ]]; then exit 0; fi
+    if [[ "$1" == run-as ]]; then
+      [[ "$*" == *" stat "* ]] && cat "$ARGS_OUT.size" 2>/dev/null
+      exit 0
+    fi
     am() { printf '%s\n' "$@" > "$ARGS_OUT"; echo "OK (1 test)"; }
     pm() { :; }
     export -f am pm
     exec bash -c "$*" ;;
-  exec-in) cat > /dev/null ;;
+  exec-in) wc -c | tr -d ' ' > "$ARGS_OUT.size" ;;
   logcat)
     if [[ "$2" == -d ]]; then
       path="$(grep -A1 '^apk$' "$ARGS_OUT" | tail -n 1)"
@@ -83,7 +86,7 @@ class ArgumentsThroughAdbShell(unittest.TestCase):
             apk.write_bytes(b"PK")
             args_out = Path(tmp, "args")
             env = dict(os.environ, PATH=f"{tmp}:{os.environ['PATH']}", ARGS_OUT=str(args_out),
-                       NUVIO_TEST_HOST="com.nuviodebug.com",
+                       NUVIO_TEST_HOST="com.nuviodebug.com", NUVIO_COPY_WAIT="2",
                        NUVIO_TEST_RUNNER="com.nuviodebug.com.test/androidx.test.runner.AndroidJUnitRunner")
             result = subprocess.run(["bash", str(PLUS / "update-device-check.sh"), str(apk), "Unreadable|Unsigned", "damaged"],
                                     env=env, capture_output=True, text=True)
@@ -93,6 +96,22 @@ class ArgumentsThroughAdbShell(unittest.TestCase):
             self.assertEqual("com.nuviodebug.com.test/androidx.test.runner.AndroidJUnitRunner", received[-1])
             self.assertTrue(received[received.index("apk") + 1].startswith("/data/data/com.nuviodebug.com/files/update-check/"))
             self.assertIn("damaged: Unreadable", result.stdout)
+
+    def test_an_incomplete_copy_gives_no_verdict(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            adb = Path(tmp, "adb")
+            adb.write_text(FAKE_ADB.replace('wc -c | tr -d \' \' > "$ARGS_OUT.size"', 'head -c 1 > /dev/null; echo 1 > "$ARGS_OUT.size"'))
+            adb.chmod(adb.stat().st_mode | stat.S_IEXEC)
+            apk = Path(tmp, "x.apk")
+            apk.write_bytes(b"PK" * 100)
+            env = dict(os.environ, PATH=f"{tmp}:{os.environ['PATH']}", ARGS_OUT=str(Path(tmp, "args")),
+                       NUVIO_TEST_HOST="com.nuviodebug.com", NUVIO_COPY_WAIT="2",
+                       NUVIO_TEST_RUNNER="com.nuviodebug.com.test/androidx.test.runner.AndroidJUnitRunner")
+            result = subprocess.run(["bash", str(PLUS / "update-device-check.sh"), str(apk), "accepted", "cut"],
+                                    env=env, capture_output=True, text=True)
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("not copied completely", result.stdout)
+            self.assertFalse(Path(tmp, "args").exists(), "the test ran on a partial file")
 
     def test_without_the_host_the_check_refuses_to_guess(self):
         result = subprocess.run(["bash", str(PLUS / "update-device-check.sh"), "x.apk", "accepted", "x"],
