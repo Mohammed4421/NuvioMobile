@@ -64,6 +64,9 @@
     <string name="addons_modal_checking_title">Checking Addon</string>
     <string name="addons_modal_failure_title">Install Failed</string>
     <string name="addons_modal_success_message">%1$s was validated and added successfully.</string>
+    <string name="addons_link_confirm_title">Add this add-on?</string>
+    <string name="addons_link_confirm_message">A link wants to add an add-on from %1$s. Add-ons see what you watch and supply the streams. Add it only if you trust it.</string>
+    <string name="addons_link_confirm_install">Add</string>
     <string name="addons_modal_success_title">Addon Installed</string>
     <string name="addons_move_down">Move addon down</string>
     <string name="addons_move_up">Move addon up</string>

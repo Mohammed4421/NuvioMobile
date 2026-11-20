@@ -299,6 +299,26 @@
         "CI: build fails on duplicate resource names"
       ],
       "keywords": []
+    },
+    {
+      "id": "addon-link-confirmation",
+      "title": "Add-on links ask before installing",
+      "since": "Build 14",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/addons/AddonLinkConfirmation.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/MainAppContent.kt"
+      ],
+      "depends": [],
+      "data": "none (nothing stored until the user confirms)",
+      "tests": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/addons/AddonLinkConfirmationTest.kt"
+      ],
+      "keywords": [
+        "AddonInstall",
+        "addAddon",
+        "stremio://",
+        "deep link"
+      ]
     }
   ]
 }

@@ -967,6 +967,18 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
   counts the old progress (the download then fails on a full disk instead of before it; no data
   loss). Needs a SAF-provider test before changing.
 - **NEEDS PHYSICAL DEVICE:** SD-card providers and vendor file managers.
+
+## B14-4: app security review (S5, 2026-11-20)
+
+| Area | Evidence | Severity | Result |
+|---|---|---|---|
+| Add-on deep links | `MainAppContent` installed `AppDeepLink.AddonInstall` from any `stremio://` / `nuvio://<host>` link at once (`AddonRepository.addAddon`), no confirmation; the activity is exported with these schemes | Medium (any page or app could add an add-on that sees viewing and supplies streams) | Fixed: `AddonLinkConfirmation` + dialog showing the host only; `AddonLinkConfirmationTest` (no install without confirm, once on confirm, host not path/token) |
+| Cleartext traffic | `usesCleartextTraffic=true`, `network_security_config` base-config permits cleartext | Low, accepted | Needed for http add-ons, debrid/local media servers; the updater checks every APK's signature with the pinned key (`UpdateArchiveCheck`) so a tampered http download is refused |
+| Exported components | Only launcher aliases and the main activity; services/receivers/FileProvider `exported=false` | — | No change |
+| File sharing | FileProvider paths: cache `updates/`, `subtitles/`, files `downloads/` | — | No change; no root or external paths |
+| Backups | `allowBackup=false` | — | Profile data and tokens are not in device backups |
+| APK integrity | `UpdateArchiveCheck` (package, version, certificate or pinned rotation); device tests in B14-2 | — | Covered |
+| Malformed subtitles/media | Parsers already covered by Build 13 tests (encodings, ASS/TTML); players are Media3/mpv | NEEDS PHYSICAL DEVICE for a fuzz run | No change without a reproduced defect |
 - **CI downloads (runs 44663582915, 44663793918):** not a code fault. Maven Central answered HTTP 429
   (Too Many Requests) for `guava-33.7.2-android.pom`; Gradle then disabled the repository for that
   build, so the next lookups read "Could not find" (ui-tooling, kermit, reorderable…). Three PR runs

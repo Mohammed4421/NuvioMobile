@@ -65,6 +65,9 @@
     <string name="addons_modal_checking_title">جارٍ فحص الإضافة</string>
     <string name="addons_modal_failure_title">فشل التثبيت</string>
     <string name="addons_modal_success_message">تم التحقق من %1$s وإضافته بنجاح.</string>
+    <string name="addons_link_confirm_title">إضافة هذه الإضافة؟</string>
+    <string name="addons_link_confirm_message">رابط يطلب إضافة إضافة من %1$s. الإضافات ترى ما تشاهده وتقدّم روابط التشغيل. أضفها فقط إن كنت تثق بها.</string>
+    <string name="addons_link_confirm_install">إضافة</string>
     <string name="addons_modal_success_title">تم تثبيت الإضافة</string>
     <string name="addons_move_down">نقل الإضافة إلى أسفل</string>
     <string name="addons_move_up">نقل الإضافة إلى أعلى</string>
