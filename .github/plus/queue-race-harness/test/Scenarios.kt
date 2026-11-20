@@ -252,18 +252,26 @@ object Scenarios {
     }
 
     @JvmStatic fun r11_pauseAndResume(): String {
+        // Build 15 contract: a paused episode is skipped; the next one goes on.
         boot()
         Meta.cached = season(3)
         startSeason(); TestMain.drain()
         val e1 = Downloads.storedFor(A).single()
-        Downloads.setStatus(e1.id, DownloadStatus.Paused); TestMain.drain()
-        check(eps(A).first() == "E1:Paused", "E1 not paused in the queue: ${eps(A)}")
-        check(dl(A) == listOf("tt1:E1"), "pausing started the next episode: ${dl(A)}")
-        Downloads.setStatus(e1.id, DownloadStatus.Downloading); TestMain.drain()
-        check(eps(A).first() == "E1:Downloading", "E1 not resumed: ${eps(A)}")
+        Downloads.pauseDownload(e1.id); TestMain.drain()
+        check(eps(A) == listOf("E1:Paused", "E2:Downloading", "E3:Waiting"), "E2 did not follow the paused E1: ${eps(A)}")
+        Downloads.resumeDownload(e1.id); TestMain.drain()      // while E2 downloads
+        check(eps(A) == listOf("E1:Resuming", "E2:Downloading", "E3:Waiting"), "E1 not held for its turn: ${eps(A)}")
+        check(Downloads.resumed.isEmpty(), "E1 ran next to E2: ${Downloads.resumed}")
+        Downloads.resumeDownload(e1.id); TestMain.drain()      // a second tap changes nothing
+        check(Downloads.resumed.isEmpty(), "second tap started E1: ${Downloads.resumed}")
+        val e2 = Downloads.storedFor(A).first { it.episodeNumber == 2 }
+        check(e2.status == DownloadStatus.Downloading, "E2 was stopped by the resume: $e2")
+        Downloads.finish(e2.id); TestMain.drain()
+        check(Downloads.resumed == listOf(e1.id), "E1 did not continue (same download) after E2: ${Downloads.resumed}")
+        check(eps(A) == listOf("E1:Downloading", "E3:Waiting"), "E3 started before E1 finished: ${eps(A)}")
         Downloads.finish(e1.id); TestMain.drain()
-        check(dl(A) == listOf("tt1:E1", "tt1:E2"), "E2 did not follow once: ${dl(A)}")
-        return result("pause, resume, then the next episode") { "A=${eps(A)} log=${Downloads.log}" }
+        check(dl(A) == listOf("tt1:E1", "tt1:E2", "tt1:E3"), "E3 did not follow once: ${dl(A)}")
+        return result("pause E1 -> E2 goes on; resume E1 during E2 waits its turn") { "A=${eps(A)} log=${Downloads.log} resumed=${Downloads.resumed}" }
     }
 
     @JvmStatic fun r12_finishWhileAnEpisodeIsRemoved(): String {
@@ -292,5 +300,108 @@ object Scenarios {
         check(dl(A) == listOf("tt1:E1", "tt1:E2"), "A: ${dl(A)}")
         check(dl(B) == listOf("tt2:E1", "tt2:E2"), "B: ${dl(B)}")
         return result("two profiles, each with its own season, switching between") { "A dl=${dl(A)} B dl=${dl(B)}" }
+    }
+
+    // ---- Build 15: pause contract (episode, season, all).
+
+    private fun running(profile: Int) = Downloads.storedFor(profile).filter { it.status == DownloadStatus.Downloading }
+
+    @JvmStatic fun r14_pauseOneSeasonOfTwo(): String {
+        boot()
+        Meta.byId["tt1"] = season(2)
+        Meta.byId["tt2"] = season(2, prefix = "tt2")
+        startSeason("tt1"); TestMain.drain()
+        startSeason("tt2"); TestMain.drain()
+        check(eps(A) == listOf("E1:Downloading", "E2:Waiting") && eps(A, "tt2") == listOf("E1:Downloading", "E2:Waiting"), "start (each chosen episode starts at once): ${eps(A)} ${eps(A, "tt2")}")
+        Queue.pauseSeason("tt1", 1); TestMain.drain()
+        check(eps(A) == listOf("E1:Paused", "E2:Waiting"), "tt1 not paused: ${eps(A)}")
+        check(all().first { it.parentMetaId == "tt1" && it.episodeNumber == 1 }.pausedBy.name == "Season", "E1 not paused by its season")
+        check(eps(A, "tt2").first() == "E1:Downloading", "the other season did not go on: ${eps(A, "tt2")}")
+        running(A).forEach { Downloads.finish(it.id) }; TestMain.drain()
+        running(A).forEach { Downloads.finish(it.id) }; TestMain.drain()
+        check(dl(A).none { it == "tt1:E2" }, "the paused season started its next episode: ${dl(A)}")
+        check(eps(A, "tt2").isEmpty(), "the other season did not finish: ${eps(A, "tt2")}")
+        Queue.resumeSeason("tt1", 1); TestMain.drain()
+        check(eps(A).first() == "E1:Downloading" && Downloads.resumed.size == 1, "season resume did not continue E1: ${eps(A)} ${Downloads.resumed}")
+        running(A).forEach { Downloads.finish(it.id) }; TestMain.drain()
+        check(dl(A).contains("tt1:E2"), "tt1 E2 did not follow: ${dl(A)}")
+        return result("pause one season of two, then resume it") { "tt1=${eps(A)} tt2=${eps(A, "tt2")} dl=${dl(A)} resumed=${Downloads.resumed}" }
+    }
+
+    @JvmStatic fun r15_pauseAllHoldsEverythingAndResumeAllSkipsSinglePauses(): String {
+        boot()
+        Meta.cached = season(3)
+        startSeason(); TestMain.drain()
+        val e1 = Downloads.storedFor(A).single()
+        Downloads.pauseDownload(e1.id); TestMain.drain()              // E1 paused by the user -> E2 runs
+        Downloads.addManual("movie", "tt9"); TestMain.drain()          // a download outside the queue
+        Queue.pauseAll(); TestMain.drain()
+        check(running(A).isEmpty(), "pause all left a download running: ${running(A)}")
+        check(eps(A) == listOf("E1:Paused", "E2:Paused", "E3:Waiting"), "queue after pause all: ${eps(A)}")
+        Queue.remove(all().first { it.episodeNumber == 2 }.id); TestMain.drain()   // even a freed slot starts nothing
+        check(dl(A).none { it == "tt1:E3" }, "pause all let E3 start: ${dl(A)}")
+        check(Queue.holds.value.allPausedProfiles == setOf(A), "pause all not shown: ${Queue.holds.value}")
+        // Restore E2 for the resume check.
+        return result("pause all holds every start") { "A=${eps(A)} dl=${dl(A)} holds=${Queue.holds.value}" }
+    }
+
+    @JvmStatic fun r16_resumeAll(): String {
+        boot()
+        Meta.cached = season(3)
+        startSeason(); TestMain.drain()
+        val e1 = Downloads.storedFor(A).single()
+        Downloads.pauseDownload(e1.id); TestMain.drain()              // E1: paused by the user
+        val e2 = Downloads.storedFor(A).first { it.episodeNumber == 2 }
+        Downloads.addManual("movie", "tt9"); TestMain.drain()
+        Queue.pauseAll(); TestMain.drain()
+        Queue.resumeAll(); TestMain.drain()
+        check(Downloads.resumed.toSet() == setOf(e2.id, "movie"), "resume all resumed the wrong downloads: ${Downloads.resumed}")
+        check(Downloads.storedFor(A).first { it.id == e1.id }.status == DownloadStatus.Paused, "resume all resumed E1 paused on its own")
+        check(eps(A) == listOf("E1:Paused", "E2:Downloading", "E3:Waiting"), "queue after resume all: ${eps(A)}")
+        Downloads.finish(e2.id); TestMain.drain()
+        check(eps(A) == listOf("E1:Paused", "E3:Downloading"), "E3 did not follow E2: ${eps(A)}")
+        return result("resume all continues only what pause all paused") { "A=${eps(A)} resumed=${Downloads.resumed}" }
+    }
+
+    @JvmStatic fun r17_restartPhase1(): String {
+        boot()
+        Meta.cached = season(3)
+        startSeason(); TestMain.drain()
+        val e1 = Downloads.storedFor(A).single()
+        Downloads.pauseDownload(e1.id); TestMain.drain()              // E1 paused, E2 runs
+        Downloads.resumeDownload(e1.id); TestMain.drain()             // E1 waits for its turn
+        Queue.pauseAll(); TestMain.drain()                             // E2 and the waiting E1 paused by "all"
+        return result("restart phase 1 (paused, waiting to resume, pause all)") { "A=${eps(A)} holds=${Queue.holds.value}" }
+    }
+
+    @JvmStatic fun r17_restartPhase2(): String {
+        boot()                                                          // cold start
+        check(eps(A) == listOf("E1:Paused", "E2:Paused", "E3:Waiting"), "states lost on restart: ${eps(A)}")
+        check(Queue.holds.value.allPausedProfiles == setOf(A), "pause all lost on restart")
+        check(running(A).isEmpty() && Downloads.log.isEmpty() && Downloads.resumed.isEmpty(), "something started after the restart")
+        Queue.resumeAll(); TestMain.drain()
+        // Both were paused by "all": E1 first in queue order, then E2, never both at once.
+        check(running(A).size == 1 && eps(A) == listOf("E1:Downloading", "E2:Resuming", "E3:Waiting"), "after resume all: ${eps(A)}")
+        running(A).forEach { Downloads.finish(it.id) }; TestMain.drain()
+        check(eps(A) == listOf("E2:Downloading", "E3:Waiting") && running(A).size == 1, "E2 did not continue next: ${eps(A)}")
+        return result("restart keeps pauses and pause all") { "A=${eps(A)} resumed=${Downloads.resumed}" }
+    }
+
+    @JvmStatic fun r18_pauseAllIsPerProfile(): String {
+        boot()
+        Meta.byId["tt1"] = season(2)
+        Meta.byId["tt2"] = season(2, prefix = "tt2")
+        startSeason("tt1"); TestMain.drain()
+        Queue.pauseAll(); TestMain.drain()
+        Profiles.selectProfile(B); TestMain.drain()
+        check(Queue.holds.value.allPausedProfiles.isEmpty(), "B shows A's pause all")
+        startSeason("tt2"); TestMain.drain()
+        Downloads.storedFor(B).forEach { Downloads.finish(it.id) }; TestMain.drain()
+        check(dl(B) == listOf("tt2:E1", "tt2:E2"), "B's queue was held by A's pause all: ${dl(B)}")
+        Profiles.selectProfile(A); TestMain.drain()
+        check(running(A).isEmpty() && dl(A) == listOf("tt1:E1"), "A started while paused: ${dl(A)} ${running(A)}")
+        Queue.resumeAll(); TestMain.drain()
+        check(running(A).size == 1, "A did not resume: ${eps(A)}")
+        return result("pause all in A, B goes on, A waits until resume all") { "A=${eps(A)} B dl=${dl(B)}" }
     }
 }

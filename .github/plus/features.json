@@ -170,7 +170,7 @@
       "depends": [
         "download-location"
       ],
-      "data": "season_queue",
+      "data": "season_queue, season_queue_holds (Build 15: pause all, paused seasons)",
       "tests": [
         "SeasonStreamMatcherTest",
         "PlusDownloadsMigrationTest"
@@ -184,7 +184,8 @@
       "test_files": [
         "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonQueuePolicyTest.kt",
         "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonQueueStorageTest.kt",
-        "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonStreamMatcherTest.kt"
+        "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonStreamMatcherTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/downloads/SeasonPauseAndroidTest.kt"
       ]
     },
     {

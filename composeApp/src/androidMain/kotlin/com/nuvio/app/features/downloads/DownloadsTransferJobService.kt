@@ -67,10 +67,11 @@ class DownloadsTransferJobService : JobService() {
         params: JobParameters,
         finishedId: String,
     ) {
-        var finished = finishedId
+        var finished: String? = finishedId
+        var paused: String? = null
         while (true) {
             val next = scheduler.takeChainedTransfer {
-                SeasonDownloadQueue.continueInBackground(finished)
+                SeasonDownloadQueue.continueInBackground(finished, pausedDownloadId = paused)
             } ?: return
             DownloadsLiveStatusPlatform.notifyTransfer(next.item)
             var retry = true
@@ -79,8 +80,11 @@ class DownloadsTransferJobService : JobService() {
                 if (retry) delay(30_000L)
             }
             scheduler.notifyCurrent(next.item.fileName)
-            if (scheduler.store.get(next.item.fileName)?.item?.status != DownloadStatus.Completed) return
-            finished = next.item.id
+            when (chainStepAfter(scheduler.store.get(next.item.fileName)?.item?.status)) {
+                ChainStep.Finished -> { finished = next.item.id; paused = null }
+                ChainStep.SkipPaused -> { finished = null; paused = next.item.id }
+                ChainStep.Stop -> return
+            }
         }
     }
 
@@ -125,4 +129,18 @@ class DownloadsTransferJobService : JobService() {
         scope.cancel()
         super.onDestroy()
     }
+}
+
+internal enum class ChainStep { Finished, SkipPaused, Stop }
+
+/**
+ * What a download job does after a season episode it ran in its own time ends. Finished: the next
+ * episode. Paused by the user (the notification or the app): it keeps its partial file and its place,
+ * and the queue goes on with the next episode in this same job, which Android still allows. Failed,
+ * deleted or anything else: the job stops; the queue goes on when the app is opened.
+ */
+internal fun chainStepAfter(status: DownloadStatus?): ChainStep = when (status) {
+    DownloadStatus.Completed -> ChainStep.Finished
+    DownloadStatus.Paused -> ChainStep.SkipPaused
+    else -> ChainStep.Stop
 }

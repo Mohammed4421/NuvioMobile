@@ -2599,7 +2599,16 @@
     <string name="downloads_queue_searching">Finding a matching source…</string>
     <string name="downloads_queue_downloading">Downloading</string>
     <string name="downloads_queue_needs_choice">No matching source. Retry or download it manually.</string>
-    <string name="downloads_queue_paused">Paused: the next episode waits until you resume it</string>
+    <string name="downloads_queue_paused">Paused: skipped, the next episodes go on</string>
+    <string name="downloads_queue_paused_season">Paused with its season</string>
+    <string name="downloads_queue_paused_all">Paused with all downloads</string>
+    <string name="downloads_queue_resuming">Resumes after the current download</string>
+    <string name="downloads_queue_season">Season %1$s</string>
+    <string name="downloads_queue_season_paused">Season %1$s · paused</string>
+    <string name="downloads_queue_pause_season">Pause season</string>
+    <string name="downloads_queue_resume_season">Resume season</string>
+    <string name="downloads_pause_all">Pause all</string>
+    <string name="downloads_resume_all">Resume all</string>
     <string name="downloads_queue_clear">Clear queue</string>
     <string name="downloads_queue_retry">Retry</string>
     <string name="downloads_queue_remove">Remove</string>

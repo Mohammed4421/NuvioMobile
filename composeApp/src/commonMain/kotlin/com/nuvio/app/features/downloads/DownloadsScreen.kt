@@ -65,6 +65,7 @@ fun DownloadsScreen(
     }
 
     val queueEntries by SeasonDownloadQueue.entries.collectAsStateWithLifecycle()
+    val queueHolds by SeasonDownloadQueue.holds.collectAsStateWithLifecycle()
     val downloadPreferences by remember {
         DownloadPreferences.ensureLoaded()
         DownloadPreferences.state
@@ -129,9 +130,12 @@ fun DownloadsScreen(
                 preferences = downloadPreferences,
                 onChooseFolder = pickDownloadFolder,
             )
-            seasonQueueContent(entries = queueEntries)
+            val allPaused = queueHolds.allPausedProfiles.isNotEmpty()
+            val hasActive = uiState.activeItems.isNotEmpty()
+            seasonQueueContent(entries = queueEntries, holds = queueHolds, showPauseAll = !hasActive)
             downloadsRootContent(
                 uiState = uiState,
+                allPaused = allPaused,
                 onOpenDownload = onOpenDownload,
                 onOpenShow = { showId, title ->
                     onNavigateToShow?.invoke(showId, title) ?: run { selectedShowId = showId }
@@ -168,6 +172,7 @@ fun DownloadsScreen(
 
 private fun LazyListScope.downloadsRootContent(
     uiState: DownloadsUiState,
+    allPaused: Boolean,
     onOpenDownload: (DownloadItem) -> Unit,
     onOpenShow: (showId: String, title: String) -> Unit,
     onDeleteDownload: (String) -> Unit,
@@ -186,7 +191,15 @@ private fun LazyListScope.downloadsRootContent(
 
     if (activeItems.isNotEmpty()) {
         item {
-            SectionTitle(stringResource(Res.string.downloads_section_active))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(end = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    SectionTitle(stringResource(Res.string.downloads_section_active))
+                }
+                PauseAllButton(allPaused)
+            }
         }
         items(
             items = activeItems,
@@ -372,9 +385,21 @@ private fun LazyListScope.downloadsSettingsContent(
     }
 }
 
-private fun LazyListScope.seasonQueueContent(entries: List<SeasonQueueEntry>) {
+/** "Pause all" while something may run; "Resume all" while pause all holds the downloads. */
+@Composable
+private fun PauseAllButton(allPaused: Boolean) {
+    TextButton(onClick = { if (allPaused) SeasonDownloadQueue.resumeAll() else SeasonDownloadQueue.pauseAll() }) {
+        Text(stringResource(if (allPaused) Res.string.downloads_resume_all else Res.string.downloads_pause_all))
+    }
+}
+
+private fun LazyListScope.seasonQueueContent(
+    entries: List<SeasonQueueEntry>,
+    holds: SeasonQueueHolds,
+    showPauseAll: Boolean,
+) {
     // Episodes already downloading are listed with the other active downloads. A paused one stays
-    // here too, so it is clear why the next episode waits (and it can be removed to skip it).
+    // here too, with what paused it, and can be removed from the queue.
     val pending = entries.filter { it.state != SeasonQueueEntryState.Downloading }
     if (pending.isEmpty()) return
     item(key = "season-queue-title") {
@@ -385,11 +410,52 @@ private fun LazyListScope.seasonQueueContent(entries: List<SeasonQueueEntry>) {
             Box(modifier = Modifier.weight(1f)) {
                 SectionTitle(stringResource(Res.string.downloads_section_queue))
             }
+            if (showPauseAll) PauseAllButton(holds.allPausedProfiles.isNotEmpty())
             TextButton(onClick = { SeasonDownloadQueue.clear() }) {
                 Text(stringResource(Res.string.downloads_queue_clear))
             }
         }
     }
+    // One group per season, in queue order, each with its own pause.
+    pending.groupBy { it.seasonKey() }.forEach { (key, seasonEntries) ->
+        val seasonPaused = key in holds.pausedSeasons
+        item(key = "queue-season-${key.parentMetaId}-${key.seasonNumber}") {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                val seasonLabel = key.seasonNumber.toString().padStart(2, '0')
+                Text(
+                    text = "${seasonEntries.first().title} · " + stringResource(
+                        if (seasonPaused) Res.string.downloads_queue_season_paused else Res.string.downloads_queue_season,
+                        seasonLabel,
+                    ),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                IconButton(
+                    onClick = {
+                        if (seasonPaused) SeasonDownloadQueue.resumeSeason(key.parentMetaId, key.seasonNumber)
+                        else SeasonDownloadQueue.pauseSeason(key.parentMetaId, key.seasonNumber)
+                    },
+                ) {
+                    Icon(
+                        imageVector = if (seasonPaused) Icons.Rounded.PlayArrow else Icons.Rounded.Pause,
+                        contentDescription = stringResource(
+                            if (seasonPaused) Res.string.downloads_queue_resume_season else Res.string.downloads_queue_pause_season,
+                        ),
+                    )
+                }
+            }
+        }
+        seasonQueueEntries(seasonEntries)
+    }
+}
+
+private fun LazyListScope.seasonQueueEntries(pending: List<SeasonQueueEntry>) {
     items(items = pending, key = { "queue-${it.id}" }) { entry ->
         Surface(
             modifier = Modifier
@@ -433,7 +499,12 @@ private fun LazyListScope.seasonQueueContent(entries: List<SeasonQueueEntry>) {
                                 SeasonQueueEntryState.Searching -> Res.string.downloads_queue_searching
                                 SeasonQueueEntryState.Downloading -> Res.string.downloads_queue_downloading
                                 SeasonQueueEntryState.NeedsChoice -> Res.string.downloads_queue_needs_choice
-                                SeasonQueueEntryState.Paused -> Res.string.downloads_queue_paused
+                                SeasonQueueEntryState.Paused -> when (entry.pausedBy) {
+                                    SeasonPauseScope.Episode -> Res.string.downloads_queue_paused
+                                    SeasonPauseScope.Season -> Res.string.downloads_queue_paused_season
+                                    SeasonPauseScope.All -> Res.string.downloads_queue_paused_all
+                                }
+                                SeasonQueueEntryState.Resuming -> Res.string.downloads_queue_resuming
                             },
                         ),
                         style = MaterialTheme.typography.bodySmall,

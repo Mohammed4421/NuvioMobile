@@ -22,6 +22,11 @@ fun main(args: Array<String>) {
         listOf("r11_pauseAndResume"),
         listOf("r12_finishWhileAnEpisodeIsRemoved"),
         listOf("r13_profileSwitchWhileTwoSeasonsRun"),
+        listOf("r14_pauseOneSeasonOfTwo"),
+        listOf("r15_pauseAllHoldsEverythingAndResumeAllSkipsSinglePauses"),
+        listOf("r16_resumeAll"),
+        listOf("r17_restartPhase1", "r17_restartPhase2"),
+        listOf("r18_pauseAllIsPerProfile"),
     )
     var failed = 0
     for (steps in plan) {

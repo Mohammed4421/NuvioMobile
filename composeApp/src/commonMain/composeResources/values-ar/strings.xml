@@ -2552,7 +2552,16 @@
     <string name="downloads_queue_searching">يبحث عن مصدر مطابق…</string>
     <string name="downloads_queue_downloading">قيد التنزيل</string>
     <string name="downloads_queue_needs_choice">لا يوجد مصدر مطابق. أعد المحاولة أو نزّلها يدويًا.</string>
-    <string name="downloads_queue_paused">متوقف مؤقتًا: الحلقة التالية تنتظر حتى تستأنفه</string>
+    <string name="downloads_queue_paused">متوقفة: تُتجاوز وتكمل الحلقات التالية</string>
+    <string name="downloads_queue_paused_season">متوقفة مع موسمها</string>
+    <string name="downloads_queue_paused_all">متوقفة مع كل التنزيلات</string>
+    <string name="downloads_queue_resuming">تُستأنف بعد التنزيل الجاري</string>
+    <string name="downloads_queue_season">الموسم %1$s</string>
+    <string name="downloads_queue_season_paused">الموسم %1$s · متوقف</string>
+    <string name="downloads_queue_pause_season">إيقاف الموسم</string>
+    <string name="downloads_queue_resume_season">استئناف الموسم</string>
+    <string name="downloads_pause_all">إيقاف الكل</string>
+    <string name="downloads_resume_all">استئناف الكل</string>
     <string name="downloads_queue_clear">إفراغ الطابور</string>
     <string name="downloads_queue_retry">إعادة المحاولة</string>
     <string name="downloads_queue_remove">حذف</string>

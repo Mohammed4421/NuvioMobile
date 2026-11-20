@@ -6,6 +6,19 @@ Newest first.
 
 ## Next build — Build 15: audit and polish
 
+### Changed
+- **A paused episode no longer stops the rest of its season.** Pausing one episode of a season
+  download now skips it: the next episodes go on, and the paused one keeps its place and its partial
+  file and is never retried by itself. Resuming it while another episode downloads lets it continue
+  right after that one, instead of running two downloads at once or stopping the current one.
+- **Pause a season, or pause everything.** In Downloads, each season in the queue has its own pause
+  button, which stops only that season. "Pause all" pauses every download of the profile and starts
+  nothing new until "Resume all"; "Resume all" continues only what it paused, not episodes or seasons
+  you paused yourself. Both are kept across app restarts and are per profile.
+- On Android 14 and later, an episode paused from its notification while the app is hidden lets the
+  next one start in the same background download when Android allows it (the episode was running
+  after an earlier one); otherwise the queue goes on when you open the app.
+
 ### Fixed
 - **A malformed subtitle could freeze a download or the subtitle list.** Subtitles from add-ons are
   read when a download is prepared and in the player. A file with an unclosed tag, brace or paragraph

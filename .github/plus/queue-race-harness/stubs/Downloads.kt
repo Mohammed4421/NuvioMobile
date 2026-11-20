@@ -38,7 +38,7 @@ object DownloadsRepository {
     private fun read(profile: Int): List<DownloadItem> =
         file(profile).takeIf { it.exists() }?.readLines()?.filter { it.isNotBlank() }?.map {
             val p = it.split("|")
-            DownloadItem(p[0], p[1], p[2].toInt(), p[3].toInt(), DownloadStatus.valueOf(p[4]))
+            DownloadItem(p[0], p[1], p[2].toIntOrNull(), p[3].toIntOrNull(), DownloadStatus.valueOf(p[4]))
         }.orEmpty()
     private fun write(profile: Int, items: List<DownloadItem>) =
         file(profile).writeText(items.joinToString("\n") { "${it.id}|${it.parentMetaId}|${it.seasonNumber}|${it.episodeNumber}|${it.status}" })
@@ -88,6 +88,32 @@ object DownloadsRepository {
     /** The user pauses or resumes a download (test helper). */
     fun setStatus(downloadId: String, status: DownloadStatus) {
         val updated = _uiState.value.items.map { if (it.id == downloadId) it.copy(status = status) else it }
+        write(loadedFor!!, updated)
+        _uiState.value = DownloadsUiState(updated)
+    }
+
+    /** Every resume that reached the downloader (download id), in order. */
+    val resumed = mutableListOf<String>()
+
+    fun pauseDownload(downloadId: String) {
+        val item = _uiState.value.items.firstOrNull { it.id == downloadId } ?: return
+        if (item.status != DownloadStatus.Downloading) return
+        setStatus(downloadId, DownloadStatus.Paused)
+    }
+
+    /** Like the real one: a held queue episode waits instead of starting next to another. */
+    fun resumeDownload(downloadId: String, fromQueue: Boolean = false) {
+        ensureLoaded()
+        val item = _uiState.value.items.firstOrNull { it.id == downloadId } ?: return
+        if (item.status != DownloadStatus.Paused && item.status != DownloadStatus.Failed) return
+        if (!fromQueue && item.status == DownloadStatus.Paused && SeasonDownloadQueue.holdResume(downloadId)) return
+        resumed += downloadId
+        setStatus(downloadId, DownloadStatus.Downloading)
+    }
+
+    /** A download that is not part of a season queue (test helper). */
+    fun addManual(id: String, meta: String) {
+        val updated = _uiState.value.items + DownloadItem(id, meta, null, null, DownloadStatus.Downloading)
         write(loadedFor!!, updated)
         _uiState.value = DownloadsUiState(updated)
     }

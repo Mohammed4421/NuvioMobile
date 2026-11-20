@@ -251,10 +251,16 @@ object DownloadsRepository {
             .forEach(::pauseDownload)
     }
 
-    fun resumeDownload(downloadId: String) {
+    /**
+     * Continues a paused or failed download from its partial file. A paused season-queue episode
+     * resumed while another queue episode downloads waits for its turn instead (see
+     * [SeasonDownloadQueue.holdResume]); the queue itself passes [fromQueue] when that turn comes.
+     */
+    fun resumeDownload(downloadId: String, fromQueue: Boolean = false) {
         ensureLoaded()
         val item = _uiState.value.items.firstOrNull { it.id == downloadId } ?: return
         if (item.status != DownloadStatus.Paused && item.status != DownloadStatus.Failed) return
+        if (!fromQueue && item.status == DownloadStatus.Paused && SeasonDownloadQueue.holdResume(downloadId)) return
 
         val reset = item.copy(
             status = DownloadStatus.Downloading,

@@ -12,7 +12,7 @@ internal object SeasonQueueStorage {
     fun encode(entries: List<SeasonQueueEntry>): String = entries.joinToString("\n") { e ->
         listOf(e.id, e.contentType, e.parentMetaId, e.parentMetaType, e.title, e.videoId, e.seasonNumber, e.episodeNumber,
             e.reference.addonId, e.reference.addonName, e.reference.bingeGroup ?: "", e.reference.text,
-            e.state.name, e.downloadId ?: "", e.profileId?.toString() ?: "").joinToString(F)
+            e.state.name, e.downloadId ?: "", e.profileId?.toString() ?: "", e.pausedBy.name).joinToString(F)
     }
 
     fun decode(stored: String?): Decoded {
@@ -25,8 +25,29 @@ internal object SeasonQueueStorage {
                 reference = SeasonQueueReference(p[8], p[9], p[10].ifEmpty { null }, p[11]),
                 state = SeasonQueueEntryState.valueOf(p[12]), downloadId = p[13].ifEmpty { null },
                 profileId = p[14].ifEmpty { null }?.toInt(),
+                pausedBy = SeasonPauseScope.valueOf(p[15]),
             )
         }, emptyList())
+    }
+
+    fun encodeHolds(h: SeasonQueueHolds): String = buildList {
+        add("all:" + h.allPausedProfiles.sorted().joinToString(","))
+        h.pausedSeasons.forEach { add("season:${it.profileId}|${it.parentMetaId}|${it.seasonNumber}") }
+        h.pausedByAll.forEach { (profile, ids) -> add("byall:$profile|" + ids.sorted().joinToString(",")) }
+    }.joinToString("\n")
+
+    fun decodeHolds(stored: String?): SeasonQueueHolds {
+        if (stored.isNullOrBlank()) return SeasonQueueHolds()
+        val lines = stored.lines()
+        return SeasonQueueHolds(
+            allPausedProfiles = lines.first { it.startsWith("all:") }.removePrefix("all:").split(",").filter { it.isNotEmpty() }.map { it.toInt() }.toSet(),
+            pausedSeasons = lines.filter { it.startsWith("season:") }.map {
+                val p = it.removePrefix("season:").split("|"); SeasonKey(p[0].toInt(), p[1], p[2].toInt())
+            }.toSet(),
+            pausedByAll = lines.filter { it.startsWith("byall:") }.associate {
+                val p = it.removePrefix("byall:").split("|"); p[0].toInt() to p[1].split(",").filter { id -> id.isNotEmpty() }.toSet()
+            },
+        )
     }
 
     fun keepUnreadable(previous: String?, unreadable: List<String>, limit: Int = 20): String = ""

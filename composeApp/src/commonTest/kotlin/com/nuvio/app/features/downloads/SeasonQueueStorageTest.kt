@@ -192,4 +192,53 @@ class SeasonQueueStorageTest {
         assertEquals("[\"c\"]", SeasonQueueStorage.keepUnreadable(second, emptyList(), limit = 1))
         assertEquals("[\"x\"]", SeasonQueueStorage.keepUnreadable("{damaged", listOf("x")))
     }
+
+    // --- Build 15: what paused an episode, a resume waiting for its turn, pause all and seasons ----
+
+    private val build15Queue = listOf(
+        entry(1, SeasonQueueEntryState.Paused, "d1").copy(pausedBy = SeasonPauseScope.Season),
+        entry(2, SeasonQueueEntryState.Paused, "d2").copy(pausedBy = SeasonPauseScope.All),
+        entry(3, SeasonQueueEntryState.Resuming, "d3"),
+        entry(4, SeasonQueueEntryState.Paused, "d4"),
+        entry(5, SeasonQueueEntryState.Waiting),
+    )
+
+    @Test
+    fun build15StatesSurviveARoundTrip() {
+        val decoded = SeasonQueueStorage.decode(SeasonQueueStorage.encode(build15Queue))
+        assertEquals(build15Queue, decoded.entries)
+        assertEquals(emptyList(), decoded.unreadable)
+    }
+
+    /** Builds 13 and 14 read `Downloading` + `paused` as paused: the download and its partial file are kept. */
+    @Test
+    fun builds13And14ReadEveryBuild15PauseAsAPausedEpisode() {
+        val stored = SeasonQueueStorage.encode(build15Queue)
+        for (id in listOf("d1", "d2", "d3", "d4")) {
+            assertTrue("\"state\":\"Downloading\",\"downloadId\":\"$id\",\"paused\":true" in stored, stored)
+        }
+        assertTrue("\"Resuming\"" !in stored && "\"Paused\"" !in stored, stored)
+        assertEquals(listOf("e1", "e2", "e3", "e4", "e5"), build12Load(stored).map { it.id })
+    }
+
+    /** A paused episode stored by Builds 13 and 14 (no `pausedBy`) was paused by the user. */
+    @Test
+    fun aPausedEpisodeFromBuild14WasPausedByTheUser() {
+        val build14 = SeasonQueueStorage.encode(queue).replace(",\"pausedBy\":\"Episode\"", "").replace(",\"resuming\":false", "")
+        val first = SeasonQueueStorage.decode(build14).entries.first()
+        assertEquals(SeasonQueueEntryState.Paused, first.state)
+        assertEquals(SeasonPauseScope.Episode, first.pausedBy)
+    }
+
+    @Test
+    fun holdsSurviveARoundTripAndOlderBuildsHoldNothing() {
+        val holds = SeasonQueueHolds(
+            allPausedProfiles = setOf(1),
+            pausedSeasons = setOf(SeasonKey(1, "tt1", 2), SeasonKey(3, "tt9", 1)),
+            pausedByAll = mapOf(1 to setOf("movie", "d7")),
+        )
+        assertEquals(holds, SeasonQueueStorage.decodeHolds(SeasonQueueStorage.encodeHolds(holds)))
+        assertEquals(SeasonQueueHolds(), SeasonQueueStorage.decodeHolds(null))
+        assertEquals(SeasonQueueHolds(), SeasonQueueStorage.decodeHolds("not json"))
+    }
 }

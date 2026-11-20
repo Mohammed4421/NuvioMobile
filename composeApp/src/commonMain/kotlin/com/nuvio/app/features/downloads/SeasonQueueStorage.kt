@@ -18,6 +18,11 @@ import kotlinx.serialization.json.contentOrNull
  * Going back to Build 12 keeps every entry; there the paused one behaves as in Build 12 (it leaves the
  * queue and the next episode starts), and profiles share the queue again.
  *
+ * **Since Build 15** a paused episode also stores what paused it (`pausedBy`), and a paused episode
+ * waiting to resume is stored as a paused one plus `"resuming": true`. Builds 13 and 14 read both as
+ * paused (they ignore the new keys), which keeps the download and its partial file. Pause all and
+ * paused seasons are stored apart, under their own key ([encodeHolds]), which older builds never read.
+ *
  * **Read entry by entry, from any build.** A damaged entry is set aside instead of losing the others,
  * an unknown future state is read as the nearest safe one, and whatever cannot be read is returned in
  * [Decoded.unreadable] so the caller can keep it instead of deleting it.
@@ -58,6 +63,9 @@ internal object SeasonQueueStorage {
         // Since build 13; Build 12 ignores them.
         val paused: Boolean = false,
         val profileId: Int? = null,
+        // Since Build 15; Builds 12-14 ignore them.
+        val pausedBy: String? = null,
+        val resuming: Boolean = false,
     )
 
     @Serializable
@@ -120,12 +128,14 @@ internal object SeasonQueueStorage {
             text = entry.reference.text,
         ),
         state = when (entry.state) {
-            SeasonQueueEntryState.Paused -> "Downloading"
+            SeasonQueueEntryState.Paused, SeasonQueueEntryState.Resuming -> "Downloading"
             else -> entry.state.name
         },
         downloadId = entry.downloadId,
-        paused = entry.state == SeasonQueueEntryState.Paused,
+        paused = entry.state == SeasonQueueEntryState.Paused || entry.state == SeasonQueueEntryState.Resuming,
         profileId = entry.profileId,
+        pausedBy = entry.pausedBy.name.takeIf { entry.state == SeasonQueueEntryState.Paused },
+        resuming = entry.state == SeasonQueueEntryState.Resuming,
     )
 
     private fun fromStored(stored: StoredEntry): SeasonQueueEntry = SeasonQueueEntry(
@@ -150,10 +160,12 @@ internal object SeasonQueueStorage {
         ),
         state = stateOf(stored),
         downloadId = stored.downloadId,
+        pausedBy = SeasonPauseScope.entries.firstOrNull { it.name == stored.pausedBy } ?: SeasonPauseScope.Episode,
         profileId = stored.profileId,
     )
 
     private fun stateOf(stored: StoredEntry): SeasonQueueEntryState = when {
+        stored.state == "Downloading" && stored.paused && stored.resuming -> SeasonQueueEntryState.Resuming
         stored.state == "Downloading" && stored.paused -> SeasonQueueEntryState.Paused
         stored.state == "Paused" -> SeasonQueueEntryState.Paused
         stored.state in build12States -> SeasonQueueEntryState.valueOf(stored.state)
@@ -161,5 +173,33 @@ internal object SeasonQueueStorage {
         // download again (the queue settles it); anything else waits for its turn.
         stored.downloadId != null -> SeasonQueueEntryState.Downloading
         else -> SeasonQueueEntryState.Waiting
+    }
+
+    @Serializable
+    private data class StoredHolds(
+        val allPausedProfiles: List<Int> = emptyList(),
+        val pausedSeasons: List<SeasonKey> = emptyList(),
+        val pausedByAll: Map<String, List<String>> = emptyMap(),
+    )
+
+    fun encodeHolds(holds: SeasonQueueHolds): String = json.encodeToString(
+        StoredHolds.serializer(),
+        StoredHolds(
+            allPausedProfiles = holds.allPausedProfiles.sorted(),
+            pausedSeasons = holds.pausedSeasons.toList(),
+            pausedByAll = holds.pausedByAll.map { (profile, ids) -> profile.toString() to ids.sorted() }.toMap(),
+        ),
+    )
+
+    /** Nothing stored (every build before 15) or unreadable: nothing is held. */
+    fun decodeHolds(stored: String?): SeasonQueueHolds {
+        if (stored.isNullOrBlank()) return SeasonQueueHolds()
+        val holds = runCatching { json.decodeFromString(StoredHolds.serializer(), stored) }.getOrNull()
+            ?: return SeasonQueueHolds()
+        return SeasonQueueHolds(
+            allPausedProfiles = holds.allPausedProfiles.toSet(),
+            pausedSeasons = holds.pausedSeasons.toSet(),
+            pausedByAll = holds.pausedByAll.mapNotNull { (profile, ids) -> profile.toIntOrNull()?.let { it to ids.toSet() } }.toMap(),
+        )
     }
 }
