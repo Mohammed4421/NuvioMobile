@@ -29,7 +29,7 @@ import java.util.Locale
 import org.junit.After
 import org.junit.Rule
 import org.junit.runner.RunWith
-import org.robolectric.ParameterizedRobolectricTestRunner
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
@@ -44,16 +44,16 @@ import kotlin.test.assertTrue
  * build/reports/plus-screenshots/<screen>-<device>.png (kept by CI as an artifact), so a later
  * change can be compared with these images. The checks below make sure each image really shows the
  * screen in the asked direction; they do not judge the look, which is reviewed by eye.
+ *
+ * One subclass per setup: Robolectric applies a class's @Config before the test activity starts, so
+ * the language and direction are those of the device from the first frame (setting them inside a
+ * test came too late: the activity had already started left to right).
  */
-@RunWith(ParameterizedRobolectricTestRunner::class)
-@GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [34], application = Application::class)
-class PlusReferenceScreenshotsTest(private val device: String, private val qualifiers: String) {
+abstract class PlusReferenceScreenshots(private val device: String) {
     @get:Rule val compose = createComposeRule()
     private val savedLocale: Locale = Locale.getDefault()
 
     @BeforeTest fun setUp() {
-        RuntimeEnvironment.setQualifiers(qualifiers)
         Locale.setDefault(if (device.startsWith("ar")) Locale.forLanguageTag("ar") else Locale.ENGLISH)
         PlayerSettingsStorage.initialize(RuntimeEnvironment.getApplication())
     }
@@ -130,14 +130,24 @@ class PlusReferenceScreenshotsTest(private val device: String, private val quali
         updatedAtEpochMs = 1,
     )
 
-    companion object {
-        @JvmStatic
-        @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
-        fun devices(): List<Array<String>> = listOf(
-            arrayOf("en-phone", "en-rUS-ldltr-w411dp-h891dp-port-xxhdpi"),
-            arrayOf("ar-phone", "ar-ldrtl-w411dp-h891dp-port-xxhdpi"),
-            arrayOf("en-tablet", "en-rUS-ldltr-w1280dp-h800dp-land-xhdpi"),
-            arrayOf("ar-tablet", "ar-ldrtl-w1280dp-h800dp-land-xhdpi"),
-        )
-    }
 }
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], application = Application::class, qualifiers = "en-rUS-ldltr-w411dp-h891dp-port-xxhdpi")
+class PlusReferenceScreenshotsEnglishPhoneTest : PlusReferenceScreenshots("en-phone")
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], application = Application::class, qualifiers = "ar-ldrtl-w411dp-h891dp-port-xxhdpi")
+class PlusReferenceScreenshotsArabicPhoneTest : PlusReferenceScreenshots("ar-phone")
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], application = Application::class, qualifiers = "en-rUS-ldltr-w1280dp-h800dp-land-xhdpi")
+class PlusReferenceScreenshotsEnglishTabletTest : PlusReferenceScreenshots("en-tablet")
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], application = Application::class, qualifiers = "ar-ldrtl-w1280dp-h800dp-land-xhdpi")
+class PlusReferenceScreenshotsArabicTabletTest : PlusReferenceScreenshots("ar-tablet")

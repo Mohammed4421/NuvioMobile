@@ -331,9 +331,16 @@
       "depends": [],
       "data": "none",
       "tests": [
-        "CI: build fails on duplicate resource names"
+        "CI: build fails on duplicate resource names",
+        "PlusReferenceScreenshotsEnglishPhoneTest",
+        "PlusReferenceScreenshotsArabicPhoneTest",
+        "PlusReferenceScreenshotsEnglishTabletTest",
+        "PlusReferenceScreenshotsArabicTabletTest"
       ],
-      "keywords": []
+      "keywords": [],
+      "test_files": [
+        "androidHostTest/kotlin/com/nuvio/app/plus/screenshots/PlusReferenceScreenshotsTest.kt"
+      ]
     },
     {
       "id": "addon-link-confirmation",
