@@ -136,13 +136,18 @@ class WorkflowPolicyTest(unittest.TestCase):
 
     PUBLIC = "40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a"
 
-    def run_identity_check(self, certificate, private_key, release_identity=None):
+    HEAD = "0123456789abcdef0123456789abcdef01234567"
+
+    def run_identity_check(self, certificate, private_key, release_identity=None,
+                           event="workflow_dispatch", release_commit=HEAD):
         job = self.workflows["custom-android-build.yml"]["jobs"]["release-identity"]
         with tempfile.TemporaryDirectory() as temp:
             output = Path(temp, "output")
             env = {"CERTIFICATE": certificate, "PRIVATE_KEY_CONFIGURED": private_key,
                    "COMPROMISED": job["env"]["COMPROMISED"],
                    "RELEASE_IDENTITY": job["env"]["RELEASE_IDENTITY"] if release_identity is None else release_identity,
+                   "EVENT": event, "RELEASE_COMMIT": release_commit, "GITHUB_SHA": self.HEAD,
+                   "GITHUB_REF_NAME": "custom-subtitles",
                    "GITHUB_OUTPUT": str(output), "PATH": "/usr/bin:/bin"}
             result = subprocess.run(["bash", "-e", "-c", steps(job)[0]["run"]], env=env, capture_output=True, text=True)
             return result, output.read_text() if output.exists() else ""
@@ -178,6 +183,32 @@ class WorkflowPolicyTest(unittest.TestCase):
         result, _ = self.run_identity_check(self.PUBLIC, "true", "cd" * 32)
         self.assertNotEqual(0, result.returncode)
         self.assertIn("legacy private key", result.stdout)
+
+    def test_a_merge_never_publishes(self):
+        # A push (a merged pull request) is checked, not published: a series of merges cannot release
+        # a partial build. Not a failure either.
+        result, output = self.run_identity_check(self.PUBLIC, "false", event="push", release_commit="")
+        self.assertEqual(0, result.returncode, result.stdout)
+        self.assertEqual("publish=false\n", output)
+        self.assertIn(f"release_commit={self.HEAD}", result.stdout)
+        job = self.workflows["custom-android-build.yml"]["jobs"]["release-identity"]
+        self.assertEqual("${{ github.event_name }}", job["env"]["EVENT"])
+        self.assertEqual("${{ inputs.release_commit }}", job["env"]["RELEASE_COMMIT"])
+
+    def test_a_release_names_the_exact_commit_it_publishes(self):
+        for wrong in ("", "abc", "f" * 40, self.HEAD.upper(), self.HEAD[:39] + "8"):
+            result, output = self.run_identity_check(self.PUBLIC, "false", event="workflow_dispatch", release_commit=wrong)
+            self.assertNotEqual(0, result.returncode, wrong)
+            self.assertNotIn("publish=true", output, wrong)
+        dispatch = self.workflows["custom-android-build.yml"]["on"]["workflow_dispatch"]["inputs"]["release_commit"]
+        self.assertIs(True, dispatch["required"])
+
+    def test_merges_and_releases_queue_separately_and_never_cancel(self):
+        workflow = self.workflows["custom-android-build.yml"]
+        self.assertIs(False, workflow["concurrency"]["cancel-in-progress"])
+        group = workflow["concurrency"]["group"]
+        self.assertIn("'nuvio-plus-publish'", group)
+        self.assertIn("workflow_dispatch", group)
 
     def test_every_release_job_waits_for_the_identity_decision(self):
         jobs = self.workflows["custom-android-build.yml"]["jobs"]
