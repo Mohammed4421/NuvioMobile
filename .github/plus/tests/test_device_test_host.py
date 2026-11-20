@@ -86,7 +86,7 @@ class ArgumentsThroughAdbShell(unittest.TestCase):
             apk.write_bytes(b"PK")
             args_out = Path(tmp, "args")
             env = dict(os.environ, PATH=f"{tmp}:{os.environ['PATH']}", ARGS_OUT=str(args_out),
-                       NUVIO_TEST_HOST="com.nuviodebug.com",
+                       NUVIO_TEST_HOST="com.nuviodebug.com", NUVIO_COPY_WAIT="2",
                        NUVIO_TEST_RUNNER="com.nuviodebug.com.test/androidx.test.runner.AndroidJUnitRunner")
             result = subprocess.run(["bash", str(PLUS / "update-device-check.sh"), str(apk), "Unreadable|Unsigned", "damaged"],
                                     env=env, capture_output=True, text=True)
@@ -105,7 +105,7 @@ class ArgumentsThroughAdbShell(unittest.TestCase):
             apk = Path(tmp, "x.apk")
             apk.write_bytes(b"PK" * 100)
             env = dict(os.environ, PATH=f"{tmp}:{os.environ['PATH']}", ARGS_OUT=str(Path(tmp, "args")),
-                       NUVIO_TEST_HOST="com.nuviodebug.com",
+                       NUVIO_TEST_HOST="com.nuviodebug.com", NUVIO_COPY_WAIT="2",
                        NUVIO_TEST_RUNNER="com.nuviodebug.com.test/androidx.test.runner.AndroidJUnitRunner")
             result = subprocess.run(["bash", str(PLUS / "update-device-check.sh"), str(apk), "accepted", "cut"],
                                     env=env, capture_output=True, text=True)

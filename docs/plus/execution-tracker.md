@@ -1020,3 +1020,9 @@ secrets, app settings, CI levels and cache, and are covered by the run on `8a05a
 - Cause not yet known: the copy to the device or Android 9's archive parser. Added: the copy size is
   checked before any verdict; the device test logs what Android's parser reads with each flag; the
   pull request emulator job runs the in-app check on Android 9 too.
+- **Cause found (PR #14, run 44717664104):** the device copy, not the app. Right after `adb exec-in`
+  returned, the copies held 17.6 of 61.8 MB, 11.5 of 61.8 MB and 7.8 of 30.9 MB, even on Android 14.
+  The check had been reading the file while it was still being written; on Android 9 it was still
+  short when parsed, hence `Unreadable`. Fix: wait until the copy has the full size (60 s), else copy
+  through `adb push` + `run-as cp`; no verdict counts on a partial file
+  (`test_an_incomplete_copy_gives_no_verdict`).

@@ -13,16 +13,27 @@ safe='^[A-Za-z0-9._/|-]+$'
   || { echo "::error::${label}: unexpected characters in the check's arguments"; exit 1; }
 name="update-$(date +%s%N).apk"
 adb shell run-as "${host}" mkdir -p files/update-check > /dev/null
-adb exec-in run-as "${host}" sh -c "cat > files/update-check/${name}" < "${apk}" \
-  || { echo "::error::${label}: could not copy the APK for the check"; exit 1; }
-path="/data/data/${host}/files/update-check/${name}"
-# The copy must be complete before the verdict means anything.
+# exec-in can return before the device has written the whole file (Build 14: 17 of 62 MB right after
+# it), so wait for all of it; if it never arrives, copy through adb push and run-as cp instead.
 size="$(stat -c %s "${apk}")"
-copied="$(adb shell run-as "${host}" stat -c %s "files/update-check/${name}" 2>/dev/null | tr -d '\r')"
-if [[ "${copied}" != "${size}" ]]; then
-  echo "::error::${label}: the APK was not copied completely to the device (${copied:-nothing} of ${size} bytes)"
-  exit 1
+copied_size() { adb shell run-as "${host}" stat -c %s "files/update-check/${name}" 2>/dev/null | tr -d '\r'; }
+wait_for_copy() {
+  local i
+  for i in $(seq 1 "${NUVIO_COPY_WAIT:-60}"); do [[ "$(copied_size)" == "${size}" ]] && return 0; sleep 1; done
+  return 1
+}
+adb exec-in run-as "${host}" sh -c "cat > files/update-check/${name}" < "${apk}" > /dev/null 2>&1
+if ! wait_for_copy; then
+  echo "${label}: the direct copy stopped at $(copied_size) of ${size} bytes; copying through adb push"
+  adb push "${apk}" "/data/local/tmp/${name}" > /dev/null \
+    && adb shell run-as "${host}" cp "/data/local/tmp/${name}" "files/update-check/${name}" > /dev/null
+  adb shell rm -f "/data/local/tmp/${name}" > /dev/null 2>&1 || true
+  wait_for_copy || {
+    echo "::error::${label}: the APK was not copied completely to the device ($(copied_size) of ${size} bytes)"
+    exit 1
+  }
 fi
+path="/data/data/${host}/files/update-check/${name}"
 adb logcat -c > /dev/null 2>&1 || true
 # adb shell joins its arguments into one command for the device's shell, where "|" would be a pipe:
 # every value goes in single quotes (they contain none; checked above).
