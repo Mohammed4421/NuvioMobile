@@ -164,6 +164,7 @@
         "commonMain/kotlin/com/nuvio/app/features/downloads/SeasonDownloadQueue.kt",
         "commonMain/kotlin/com/nuvio/app/features/streams/StreamsScreen.kt",
         "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsTransferJobService.kt",
+        "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsNotificationActionReceiver.kt",
         "androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt",
         "commonMain/kotlin/com/nuvio/app/features/downloads/SeasonQueueStorage.kt"
       ],
