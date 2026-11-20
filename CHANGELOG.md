@@ -7,6 +7,12 @@ Newest first.
 ## Next build — Build 15: audit and polish
 
 ### Fixed
+- **A malformed subtitle could freeze a download or the subtitle list.** Subtitles from add-ons are
+  read when a download is prepared and in the player. A file with an unclosed tag, brace or paragraph
+  repeated made the reader rescan the rest of the file from every position: 60 KB took 5 seconds,
+  1 MB minutes, holding up the download. It now reads such files in a fraction of a second; normal
+  files give exactly the same lines (60,000 random files compared). Text after a broken tag such as
+  `<b ` is no longer dropped.
 - **Lists could crash when two sections shared a key that looked like a generated one.** The helper
   that makes repeated list keys unique (home, search, catalogs, collections) could give two entries the
   same key, for example `section`, `section#0`, `section`. It now never reuses a real or generated key;

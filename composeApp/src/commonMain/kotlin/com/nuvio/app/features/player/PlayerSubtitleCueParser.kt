@@ -212,7 +212,7 @@ object PlayerSubtitleCueParser {
         if (end - start <= 0) return null
         val body = normalizeCueText(
             parts[textIndex]
-                .replace(Regex("""\{[^}]*}"""), "")
+                .replace(Regex("""\{[^{}]*}"""), "")
                 .replace("\\N", "\n")
                 .replace("\\n", "\n")
                 .replace("\\h", " ")
@@ -221,10 +221,10 @@ object PlayerSubtitleCueParser {
     }
 
     private fun parseTtml(text: String): List<SubtitleSyncCue> =
-        Regex("""(?is)<p\b([^>]*)>(.*?)</p>""")
-            .findAll(text)
-            .mapNotNull { match ->
-                val attrs = match.groupValues[1]
+        ttmlParagraphs(text)
+            .asSequence()
+            .mapNotNull { (paragraphAttributes, paragraphBody) ->
+                val attrs = paragraphAttributes
                 val startRaw = attrs.attributeValue("begin")
                     ?: attrs.attributeValue("start")
                     ?: return@mapNotNull null
@@ -233,7 +233,7 @@ object PlayerSubtitleCueParser {
                 val end = endRaw?.let { parseTtmlTimestamp(it) } ?: (start + 3000L)
                 if (end - start <= 0) return@mapNotNull null
                 val body = normalizeCueText(
-                    match.groupValues[2]
+                    paragraphBody
                         .replace(Regex("""<br\s*/?>""", RegexOption.IGNORE_CASE), "\n")
                 )
                 if (body.isBlank()) null else SubtitleSyncCue(startTimeMs = start, endTimeMs = end, text = body)
@@ -325,7 +325,7 @@ object PlayerSubtitleCueParser {
     private fun normalizeCueText(text: String): String {
         return text
             .replace(Regex("""<(?:\d+:)?\d{1,2}:\d{2}(?:[.,]\d+)?>"""), "")
-            .replace(Regex("""</?[a-zA-Z0-9._-]+(?: [^>]*)?>"""), "")
+            .replace(Regex("""</?[a-zA-Z0-9._-]+(?: [^<>]*)?>"""), "")
             .replace("&nbsp;", " ")
             .replace("&amp;", "&")
             .replace("&lt;", "<")
@@ -335,5 +335,31 @@ object PlayerSubtitleCueParser {
             .map { it.replace(Regex("""[ \t]+"""), " ").trim() }
             .filter { it.isNotBlank() }
             .joinToString("\n")
+    }
+
+    /**
+     * The `<p …>…</p>` paragraphs of a TTML document, as `(attributes, body)`, the same as
+     * `(?is)<p\b([^>]*)>(.*?)</p>` but in one pass: the regex rescanned the rest of the file from
+     * every unclosed `<p`, so a malformed or hostile file of a few hundred kilobytes took minutes.
+     */
+    private fun ttmlParagraphs(text: String): List<Pair<String, String>> {
+        val paragraphs = mutableListOf<Pair<String, String>>()
+        var from = 0
+        while (true) {
+            val open = text.indexOf("<p", from, ignoreCase = true)
+            if (open < 0) break
+            val afterName = open + 2
+            if (afterName < text.length && (text[afterName].isLetterOrDigit() || text[afterName] == '_')) {
+                from = afterName
+                continue
+            }
+            val tagEnd = text.indexOf('>', afterName)
+            if (tagEnd < 0) break
+            val close = text.indexOf("</p>", tagEnd + 1, ignoreCase = true)
+            if (close < 0) break
+            paragraphs += text.substring(afterName, tagEnd) to text.substring(tagEnd + 1, close)
+            from = close + 4
+        }
+        return paragraphs
     }
 }
