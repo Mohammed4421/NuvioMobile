@@ -319,6 +319,24 @@
         "stremio://",
         "deep link"
       ]
+    },
+    {
+      "id": "lazy-key-collisions",
+      "title": "Unique list keys even when real keys look generated",
+      "since": "Build 15",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt"
+      ],
+      "depends": [],
+      "data": "none",
+      "tests": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeysTest.kt"
+      ],
+      "keywords": [
+        "withDuplicateSafeLazyKeys",
+        "DuplicateSafeLazyEntry",
+        "lazyKey"
+      ]
     }
   ]
 }
