@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Debug builds only: UpdateArchiveDeviceTest reads the installed Nuvio Plus (package visibility). -->
+    <queries>
+        <package android:name="com.nuvio.app.plus" />
+    </queries>
     <application>
         <activity
             android:name="com.nuvio.android.BackgroundDownloadTestActivity"

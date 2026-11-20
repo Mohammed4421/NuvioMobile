@@ -7,6 +7,11 @@ Newest first.
 ## Next build — stability: updates, downloads, project safety
 
 ### Changed
+- **Every release is tested as an update before it is published**: on Android 9 and 14 emulators, from
+  the previous release and from build 12, with app data kept. The app's own update check runs on the
+  emulator's real Android and must accept the release and refuse an APK with another key, one with the
+  old public key and a damaged download. Pull requests run the same check against the published
+  release.
 - **Release notes say how to update from build 13 and from build 12**, in English and Arabic.
 - **Project documentation describes the new signing key.** The README, the rollback rules and the
   feature list no longer present the old public key as the release key; a rescue build is always

@@ -110,8 +110,12 @@ internal object UpdateArchiveCheck {
             installedCertificate in archive.lineage.dropLast(1)
     }
 
-    fun check(context: Context, apkPath: String): UpdateArchiveProblem? = checkWith(
-        readInstalled = { packageInfo(context.packageManager, null, context.packageName)?.snapshot() },
+    fun check(context: Context, apkPath: String): UpdateArchiveProblem? =
+        checkAgainst(context, context.packageName, apkPath)
+
+    /** [check] against [installedPackage] instead of this app (the device test compares with Nuvio Plus). */
+    internal fun checkAgainst(context: Context, installedPackage: String, apkPath: String): UpdateArchiveProblem? = checkWith(
+        readInstalled = { packageInfo(context.packageManager, null, installedPackage)?.snapshot() },
         readArchive = { packageInfo(context.packageManager, apkPath, null)?.snapshot() },
     )
 
@@ -169,4 +173,15 @@ internal object UpdateArchiveCheck {
     private fun Array<Signature>?.digests(): List<String> = orEmpty().map { signature ->
         MessageDigest.getInstance("SHA-256").digest(signature.toByteArray()).joinToString("") { "%02x".format(it) }
     }
+}
+
+/**
+ * The in-app update check for device tests (androidApp's UpdateArchiveDeviceTest): the same code as
+ * [UpdateArchiveCheck.check], with Android's own PackageManager reading the installed Nuvio Plus and
+ * the downloaded APK. Returns the problem's name, or null when the update would be handed to the
+ * installer. Reads only; installs nothing.
+ */
+object UpdateArchiveDeviceCheck {
+    fun problem(context: Context, installedPackage: String, apkPath: String): String? =
+        UpdateArchiveCheck.checkAgainst(context, installedPackage, apkPath)?.name
 }
