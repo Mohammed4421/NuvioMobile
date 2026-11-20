@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # PortKit transfer test: builds a Git repository of the upstream base (optionally changed by a fork
-# fixture patch), transfers features into it with portkit.py apply, checks out the transfer branch,
+# fixture patch), transfers features into it with portkit.py apply --trial (they need not be
+# verified yet: this test is what verifies them), checks out the transfer branch,
 # runs the transferred tests with Gradle and requires every one to run and pass.
 # Usage: transfer-test.sh <label> <fixture patch or -> <features (comma-separated)> <test classes (comma-separated)>
 # Needs: the upstream base commit in this repository, Java 21, Gradle setup (CI), gradle-retry.sh.
@@ -23,10 +24,10 @@ git -C "${target}" add -A
 git -C "${target}" -c user.name=fixture -c user.email=fixture@localhost commit -q -m "${label}"
 
 IFS=',' read -r -a feature_list <<< "${features}"
-python3 -I "${here}/portkit.py" apply --repo "${repo}" --target "${target}" --branch portkit/transfer "${feature_list[@]}" \
+python3 -I "${here}/portkit.py" apply --trial --repo "${repo}" --target "${target}" --branch portkit-trial/transfer "${feature_list[@]}" \
   > "${target}.apply.log" 2>&1 || { cat "${target}.apply.log"; fail "portkit apply did not apply"; }
 grep -E "^\| \`|Applied on branch" "${target}.apply.log"
-git -C "${target}" checkout -q portkit/transfer || fail "transfer branch missing"
+git -C "${target}" checkout -q portkit-trial/transfer || fail "transfer branch missing"
 
 filters=()
 IFS=',' read -r -a test_list <<< "${tests}"
