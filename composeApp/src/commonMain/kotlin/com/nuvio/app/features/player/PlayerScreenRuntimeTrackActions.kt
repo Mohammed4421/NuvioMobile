@@ -1,7 +1,7 @@
 package com.nuvio.app.features.player
 
 internal val PlayerScreenRuntime.subtitleStyle: SubtitleStyleState
-    get() = playerSettingsUiState.subtitleStyle
+    get() = subtitleGesturePreviewStyle ?: playerSettingsUiState.subtitleStyle
 
 internal val PlayerScreenRuntime.activeAddonSubtitleType: String
     get() = contentType ?: parentMetaType

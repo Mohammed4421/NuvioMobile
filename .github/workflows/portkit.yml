@@ -1,0 +1,99 @@
+# PortKit transfer tests (Build 15, P7): transfer features into the upstream Nuvio release and into
+# a deliberately different fork fixture, build the result and run the transferred tests. Builds only
+# the pinned upstream release plus code from this pull request; no secret, no write permission, and
+# the Gradle cache is only read.
+name: PortKit transfer tests
+
+on:
+  pull_request:
+    branches: [custom-subtitles]
+    paths:
+      - "portkit/**"
+      - ".github/plus/features.json"
+      - ".github/workflows/portkit.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: portkit-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  transfer:
+    name: Transfer, build and test (upstream and a fork)
+    timeout-minutes: 90
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Get the upstream release PortKit transfers into
+        run: |
+          base="$(python3 -I -c 'import json; print(json.load(open("portkit/compatibility.json"))["upstream_base"]["commit"])')"
+          [[ "${base}" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::portkit/compatibility.json has no valid upstream_base commit"; exit 1; }
+          git fetch --no-tags --depth=1 https://github.com/NuvioMedia/NuvioMobile.git "${base}"
+
+      - name: Plan checks
+        run: |
+          python3 -I portkit/portkit.py validate
+          echo "| Target | Features | Result | Detail |" > portkit-transfer.md
+          echo "|---|---|---|---|" >> portkit-transfer.md
+
+      - name: Set up Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-read-only: true
+
+      - name: Take the Sentry plugin from Maven Central
+        run: |
+          mkdir -p "${HOME}/.gradle/init.d"
+          cp .github/plus/plugins-from-central.init.gradle "${HOME}/.gradle/init.d/"
+
+      - name: Portable features into upstream 1.0.0
+        run: |
+          bash portkit/transfer-test.sh "upstream 1.0.0" - \
+            lazy-key-collisions,subtitle-parser-worst-case \
+            com.nuvio.app.core.ui.DuplicateSafeLazyKeysTest,com.nuvio.app.features.player.SubtitleParserWorstCaseTest
+
+      - name: Portable features into fork fixture A
+        run: |
+          bash portkit/transfer-test.sh "fork A (portkit/fixtures/fork-a.patch)" portkit/fixtures/fork-a.patch \
+            lazy-key-collisions,subtitle-parser-worst-case \
+            com.nuvio.app.core.ui.DuplicateSafeLazyKeysTest,com.nuvio.app.features.player.SubtitleParserWorstCaseTest
+
+      - name: Report
+        if: always()
+        run: |
+          { echo "### PortKit transfer tests"; cat portkit-transfer.md 2>/dev/null || echo "no results"; } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: portkit-transfer
+          path: portkit-transfer.md
+          if-no-files-found: warn
+          retention-days: 30

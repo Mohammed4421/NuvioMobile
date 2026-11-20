@@ -3,8 +3,8 @@
 Moves Nuvio Plus features into a compatible Nuvio project (the official app or a fork of it),
 feature by feature, without overwriting what the target already changed. Build 15, phase P7.
 
-**Status: foundation and dry run.** Checks and planning work; applying and the transfer tests come
-in the next steps. No feature is marked verified until its transfer test passes.
+**Status: foundation, dry run, safe apply and transfer tests.** `verified` in `compatibility.json`
+turns true for a feature only after the transfer tests pass for it in CI. No feature is marked verified until its transfer test passes.
 
 | File | What it is |
 |---|---|
@@ -38,6 +38,36 @@ manual features; trials are for the CI transfer tests and isolated branches, not
 A conflict stops that feature only. Exit status: 0 ready or already, 3 refused, conflict or
 unsupported target.
 
+### Applying
+
+```sh
+python3 portkit/portkit.py apply --target ../my-nuvio-fork --branch portkit/lazy-keys lazy-key-collisions
+python3 portkit/portkit.py rollback --target ../my-nuvio-fork --branch portkit/lazy-keys
+```
+
+- The transfer starts from the target's last commit. A target with uncommitted changes (staged,
+  unstaged or untracked) is refused; `--from-head` transfers onto the last commit anyway and records
+  that the uncommitted work was left out.
+- Only portable, verified features are transferred. `--trial` (unverified, adapter-required or manual
+  features, for tests) must use a `portkit-trial/` branch and is marked as a trial in the ledger and
+  commit; a real transfer cannot use such a branch.
+- The target's checkout is never touched: PortKit adds a Git worktree on a **new** branch from the
+  target's HEAD (an existing branch is refused), plans against it, computes every result first,
+  writes, checks each file holds what was planned, and commits with `.portkit/transfers.json`
+  (before and after fingerprint of every file) and a `PortKit-Transfer:` trailer.
+- Anything other than a clean plan, or any failure, leaves no branch and no worktree behind.
+- Applying a feature the target already has changes nothing (`already`).
+- `rollback` reverts, as a new commit on that branch, only files that still hold exactly what
+  PortKit wrote; files the fork changed afterwards are kept and listed.
+
+### Transfer tests
+
+`.github/workflows/portkit.yml` runs `transfer-test.sh` for each target: a Git repository of the
+upstream base, and the same with `fixtures/fork-a.patch` (a fork that changed the transferred files
+elsewhere and has its own file). Each run transfers the features with `apply`, builds the result
+with Gradle and runs the transferred tests; every one must run and pass. Results:
+`portkit-transfer.md` in the run summary and artifact.
+
 Identity (package, signing, release pipeline) and the updater are never transferred: a target
 keeps its own identity, keys and update source. Transferred code stays under GPL-3.0 with its
 notices.
@@ -50,7 +80,11 @@ notices.
 
 أداة PortKit تنقل ميزات Nuvio Plus إلى مشروع Nuvio متوافق، سواء النسخة الرسمية أو أي Fork منها، ميزةً ميزة، ولا تكتب فوق تعديلات المشروع الهدف.
 
-**الحالة: الأساس والتجربة دون تعديل.** يعمل فحص التناسق والجرد والتخطيط (`plan`): يعرض ما سيتغير في المشروع الهدف ملفًا ملفًا مع Diff كامل، ولا يكتب فيه شيئًا. أما التطبيق الفعلي واختبارات النقل فتأتي في الخطوات التالية. لا تُعلَّم أي ميزة «مُتحقَّق منها» قبل نجاح اختبار نقلها.
+**الحالة: الأساس، والتجربة دون تعديل، والتطبيق الآمن.**
+- **التخطيط (`plan`):** يعرض ما سيتغير في المشروع الهدف ملفًا ملفًا مع Diff كامل، ولا يكتب فيه شيئًا.
+- **التطبيق (`apply`):** يكتب على فرع جديد في المشروع الهدف عبر Worktree مستقل، ولا يلمس نسخة العمل الأصلية. أي فشل لا يترك فرعًا ولا تعديلًا.
+- **التراجع (`rollback`):** يعيد فقط الملفات التي ما زالت تحمل ما كتبه PortKit نفسه.
+- **ما يأتي لاحقًا:** اختبارات النقل التي تبني المشروع الناتج. لا تُعلَّم أي ميزة «مُتحقَّق منها» قبل نجاح اختبار نقلها.
 
 **لا يُنقل أبدًا:** مفاتيح التوقيع، والأسرار، و`local.properties`، وخطوط البناء والنشر. كذلك هوية التطبيق والمحدّث لا يُنقلان؛ فالمشروع الهدف يحتفظ بهويته ومفاتيحه ومصدر تحديثاته.
 

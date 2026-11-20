@@ -11,6 +11,13 @@ Newest first.
   device as `.txt` (or with no extension) was always treated as SRT, so an ASS or VTT file showed
   nothing. Its format is now read from the text, and a file that is no subtitle is refused with a
   message.
+- **Moving or resizing subtitles with your fingers no longer stores the settings on every frame.**
+  The subtitles follow the fingers as before; their place and size are stored once, when the gesture
+  ends (or if the player closes mid-gesture). Before, a one-second drag stored twelve subtitle
+  settings about sixty times.
+- **Manual subtitle sync works offline for a subtitle picked from the device.** The sync panel
+  skipped loading the subtitle lines whenever the phone was offline, even for a file already on the
+  phone.
 - **A malformed subtitle could freeze a download or the subtitle list.** Subtitles from add-ons are
   read when a download is prepared and in the player. A file with an unclosed tag, brace or paragraph
   repeated made the reader rescan the rest of the file from every position: 60 KB took 5 seconds,
