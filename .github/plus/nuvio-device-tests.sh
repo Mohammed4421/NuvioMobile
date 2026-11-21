@@ -41,4 +41,13 @@ if (( status != 0 )); then
   adb logcat -d -v time | grep -iE "mpv|exoplayer|surface|nuvio|ActivityTaskManager|AndroidRuntime|DocumentsUI|ANR" | tail -n 300
   echo "::endgroup::"
 fi
+# The device tests' own screenshots (subtitles on ExoPlayer and mpv, the subtitle settings) on Android
+# 16 and later, printed for review: edge-to-edge layout and system bars changed there.
+if (( sdk >= 36 )); then
+  for shot in $(adb shell "ls /sdcard/Android/data/${NUVIO_TEST_HOST}/files/subtitle-tests/ 2>/dev/null" | tr -d '\r'); do
+    echo "PLUS-SHOT-BEGIN device-${label}-${shot}"
+    adb exec-out cat "/sdcard/Android/data/${NUVIO_TEST_HOST}/files/subtitle-tests/${shot}" | base64 -w 120
+    echo "PLUS-SHOT-END"
+  done
+fi
 exit "${status}"

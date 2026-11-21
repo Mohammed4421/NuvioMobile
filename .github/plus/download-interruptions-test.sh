@@ -106,7 +106,7 @@ server=$!
 trap 'kill ${server} 2>/dev/null; network_on' EXIT
 for _ in $(seq 1 20); do curl -s -o /dev/null -r 0-0 http://127.0.0.1:8765/fixture.bin && break; sleep 0.5; done
 adb wait-for-device
-adb install -r -g "${apk}" > /dev/null || fail "install failed"
+out="$(bash "${here}/adb-install.sh" -r -g "${apk}" 2>&1)" || fail "install failed: $(grep -m 3 -E "Failure|Exception|Error" <<< "${out}" | tr '\n' ' ')"
 result=PASS
 
 # A. Network lost and back.
@@ -135,7 +135,7 @@ fi
 # B. App process killed during the download, then opened again. A fresh app state first: the
 # finished download of A would otherwise make the test activity's enqueue a no-op.
 adb shell pm clear "${pkg}" > /dev/null || fail "could not clear the app"
-adb install -r -g "${apk}" > /dev/null || fail "reinstall failed"
+out="$(bash "${here}/adb-install.sh" -r -g "${apk}" 2>&1)" || fail "reinstall failed: $(grep -m 3 -E "Failure|Exception|Error" <<< "${out}" | tr '\n' ' ')"
 start_download
 pid="$(adb shell pidof "${pkg}" | tr -d '\r')"
 [[ -n "${pid}" ]] || fail "no app process while downloading"

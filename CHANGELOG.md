@@ -26,6 +26,8 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Player on Android 16:** the player's status updates now always run on the main thread, which
+  ExoPlayer requires. Found by the new Android 16 tests ("Player is accessed on the wrong thread").
 - **Downloads to a chosen folder or SD card:** subtitle copies saved next to the video are copied
   in a stream (a large ASS file with fonts no longer loads into memory at once), and a failed copy is
   logged instead of passing silently.

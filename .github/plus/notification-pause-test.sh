@@ -191,7 +191,7 @@ curl -s -o /dev/null -r 0-0 -w '%{http_code}' http://127.0.0.1:8765/fixture.bin 
 : > "${work}/requests.log"
 trap 'kill ${server} 2>/dev/null' EXIT
 adb wait-for-device
-adb install -r -g "${apk}" > /dev/null || fail "install failed"
+out="$(bash "${here}/adb-install.sh" -r -g "${apk}" 2>&1)" || fail "install failed: $(grep -m 3 -E "Failure|Exception|Error" <<< "${out}" | tr '\n' ' ')"
 adb shell run-as "${pkg}" rm -f cache/download-test-ready
 adb shell am start -W -n "${pkg}/com.nuvio.android.BackgroundDownloadTestActivity" \
   --es downloadUrl "http://10.0.2.2:8765/fixture.bin" > /dev/null || fail "could not start the download activity"
@@ -218,7 +218,7 @@ IFS=$'\t' read -r status _ _ <<< "$(state)"
 say "paused from the notification: status ${status}, .part kept at ${p1} bytes and not growing"
 requests_before="$(wc -l < "${work}/requests.log")"
 if [[ "${mode}" == pause-only ]]; then
-  say "NOT TESTED here: Resume from the notification on Android 14 (needs a real tap; device check)"
+  say "NOT TESTED here: Resume from the notification on Android 14 and later (needs a real tap; device check)"
   say "PASS (pause only)"
   exit 0
 fi
