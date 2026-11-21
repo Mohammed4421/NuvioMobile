@@ -7,6 +7,10 @@ import androidx.media3.datasource.okhttp.OkHttpDataSource
 import com.nuvio.app.core.diagnostics.SentryNetworkBreadcrumbInterceptor
 import com.nuvio.app.core.network.IPv4FirstDns
 import com.nuvio.app.core.network.NetworkErrorInterceptor
+import okhttp3.Call
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import java.net.HttpURLConnection
 import java.net.Socket
@@ -118,43 +122,82 @@ internal object PlayerPlaybackNetworking {
             .hostnameVerifier(tokenSafeHostnameVerifier)
             .build()
 
-    internal fun httpClientFor(headers: Map<String, String>, useLongReadTimeout: Boolean): OkHttpClient =
-        when {
-            carriesCredentials(headers) && useLongReadTimeout -> tokenSafeLoopbackPlaybackHttpClient
-            carriesCredentials(headers) -> tokenSafePlaybackHttpClient
+    internal fun httpClientFor(
+        headers: Map<String, String>,
+        useLongReadTimeout: Boolean,
+        url: HttpUrl? = null,
+    ): OkHttpClient {
+        val credentials = carriesCredentials(headers) || (url != null && urlCarriesCredentials(url))
+        return when {
+            credentials && useLongReadTimeout -> tokenSafeLoopbackPlaybackHttpClient
+            credentials -> tokenSafePlaybackHttpClient
             useLongReadTimeout -> loopbackPlaybackHttpClient
             else -> playbackHttpClient
         }
+    }
 
     fun createHttpDataSourceFactory(
         defaultHeaders: Map<String, String> = emptyMap(),
         useLongReadTimeout: Boolean = false,
     ): DataSource.Factory {
         val requestHeaders = sanitizeHeaders(defaultHeaders)
-        val baseClient = httpClientFor(requestHeaders, useLongReadTimeout)
-        val client = requestHeaders.headerValue("Authorization")?.let { authorization ->
-            baseClient.newBuilder()
-                .addNetworkInterceptor { chain ->
-                    val request = chain.request()
-                    if (request.header("Authorization") == null) {
-                        chain.proceed(
-                            request.newBuilder()
-                                .header("Authorization", authorization)
-                                .build()
-                        )
-                    } else {
-                        chain.proceed(request)
-                    }
-                }
-                .build()
-        } ?: baseClient
-
-        return OkHttpDataSource.Factory(client).apply {
+        return OkHttpDataSource.Factory(callFactoryFor(requestHeaders, useLongReadTimeout)).apply {
             setDefaultRequestProperties(requestHeaders)
             if (requestHeaders.headerValue("User-Agent") == null) {
                 setUserAgent(DEFAULT_USER_AGENT)
             }
         }
+    }
+
+    /**
+     * Picks the client per request, so a token in the URL (?token=, ?api_key=…) also gets a
+     * verified certificate, and guards the stream's credentials on redirects (credentialGuard).
+     */
+    internal fun callFactoryFor(headers: Map<String, String>, useLongReadTimeout: Boolean): Call.Factory {
+        val plain by lazy { httpClientFor(headers, useLongReadTimeout).guarded(headers) }
+        val verifying by lazy { tokenSafeClient(useLongReadTimeout).guarded(headers) }
+        return Call.Factory { request ->
+            val credentials = carriesCredentials(headers) || urlCarriesCredentials(request.url)
+            (if (credentials) verifying else plain).newCall(request)
+        }
+    }
+
+    private fun tokenSafeClient(useLongReadTimeout: Boolean): OkHttpClient =
+        if (useLongReadTimeout) tokenSafeLoopbackPlaybackHttpClient else tokenSafePlaybackHttpClient
+
+    private fun OkHttpClient.guarded(headers: Map<String, String>): OkHttpClient =
+        if (carriesCredentials(headers)) newBuilder().addNetworkInterceptor(credentialGuard(headers)).build() else this
+
+    /**
+     * Upstream re-adds the stream's Authorization after a redirect (credentialed HLS). That is kept
+     * inside the same site (same host, or same registrable domain such as api.x.com -> cdn.x.com).
+     * A redirect to another site or from https to http gets none of the stream's credential headers:
+     * OkHttp already drops Authorization there, and Cookie or token headers are dropped here too.
+     */
+    internal fun credentialGuard(headers: Map<String, String>): Interceptor {
+        val authorization = headers.headerValue("Authorization")
+        val credentialNames = headers.keys.filter { isCredentialHeader(it) }
+        return Interceptor { chain ->
+            val request = chain.request()
+            val origin = chain.call().request().url
+            val builder = request.newBuilder()
+            if (mayReceiveCredentials(origin, request.url)) {
+                if (authorization != null && request.header("Authorization") == null) {
+                    builder.header("Authorization", authorization)
+                }
+            } else {
+                credentialNames.forEach { builder.removeHeader(it) }
+            }
+            chain.proceed(builder.build())
+        }
+    }
+
+    /** The original request's site may receive its credentials; another site or an https->http downgrade may not. */
+    internal fun mayReceiveCredentials(origin: HttpUrl, target: HttpUrl): Boolean {
+        if (origin.isHttps && !target.isHttps) return false
+        if (origin.host == target.host) return true
+        val site = origin.topPrivateDomain() ?: return false
+        return site == target.topPrivateDomain()
     }
 
     fun createDataSourceFactory(
@@ -177,9 +220,45 @@ internal object PlayerPlaybackNetworking {
         range: String? = null,
     ): HttpURLConnection {
         val mergedHeaders = withDefaultUserAgent(headers)
-        return (URL(url).openConnection() as HttpURLConnection).apply {
+        val origin = url.toHttpUrlOrNull()
+        val credentials = carriesCredentials(mergedHeaders) || (origin != null && urlCarriesCredentials(origin))
+        if (!credentials || origin == null) {
+            return connect(url, mergedHeaders, credentials, method, connectTimeoutMs, readTimeoutMs, range, followRedirects = true)
+        }
+        // With credentials, redirects are followed here so the same rule as the player applies.
+        var current = origin
+        repeat(MAX_REDIRECTS + 1) {
+            val sendHeaders = if (mayReceiveCredentials(origin, current)) {
+                mergedHeaders
+            } else {
+                mergedHeaders.filterKeys { !isCredentialHeader(it) }
+            }
+            val verify = carriesCredentials(sendHeaders) || urlCarriesCredentials(current)
+            val connection = connect(current.toString(), sendHeaders, verify, method, connectTimeoutMs, readTimeoutMs, range, followRedirects = false)
+            val code = connection.responseCode
+            val next = connection.getHeaderField("Location")?.let { current.resolve(it) }
+            if (code !in 300..399 || next == null) return connection
+            connection.disconnect()
+            current = next
+        }
+        throw java.io.IOException("Too many redirects")
+    }
+
+    private const val MAX_REDIRECTS = 10
+
+    private fun connect(
+        url: String,
+        headers: Map<String, String>,
+        verifyCertificate: Boolean,
+        method: String,
+        connectTimeoutMs: Int,
+        readTimeoutMs: Int,
+        range: String?,
+        followRedirects: Boolean,
+    ): HttpURLConnection =
+        (URL(url).openConnection() as HttpURLConnection).apply {
             if (this is HttpsURLConnection) {
-                if (carriesCredentials(mergedHeaders)) {
+                if (verifyCertificate) {
                     sslSocketFactory = tokenSafeSslContext.socketFactory
                     hostnameVerifier = tokenSafeHostnameVerifier
                 } else {
@@ -187,19 +266,18 @@ internal object PlayerPlaybackNetworking {
                     hostnameVerifier = playbackHostnameVerifier
                 }
             }
-            instanceFollowRedirects = true
+            instanceFollowRedirects = followRedirects
             connectTimeout = connectTimeoutMs
             readTimeout = readTimeoutMs
             requestMethod = method
-            setRequestProperty("User-Agent", mergedHeaders.headerValue("User-Agent") ?: DEFAULT_USER_AGENT)
-            mergedHeaders.forEach { (key, value) ->
+            setRequestProperty("User-Agent", headers.headerValue("User-Agent") ?: DEFAULT_USER_AGENT)
+            headers.forEach { (key, value) ->
                 if (key.equals("Range", ignoreCase = true)) return@forEach
                 if (key.equals("User-Agent", ignoreCase = true)) return@forEach
                 setRequestProperty(key, value)
             }
             range?.let { setRequestProperty("Range", it) }
         }
-    }
 
     private fun sanitizeHeaders(headers: Map<String, String>): Map<String, String> =
         headers.mapNotNull { (rawKey, rawValue) ->
@@ -215,12 +293,26 @@ internal object PlayerPlaybackNetworking {
     private val credentialHeaders = setOf("authorization", "proxy-authorization", "cookie")
     private val credentialHeaderParts = listOf("token", "api-key", "apikey", "api_key", "x-api", "auth", "password", "secret", "session")
 
+    private fun isCredentialHeader(key: String): Boolean {
+        val name = key.trim().lowercase()
+        return name in credentialHeaders || credentialHeaderParts.any { it in name }
+    }
+
     /** True when a header carries something that identifies or authorizes the user. */
     internal fun carriesCredentials(headers: Map<String, String>): Boolean =
-        headers.any { (key, value) ->
-            val name = key.trim().lowercase()
-            value.isNotBlank() && (name in credentialHeaders || credentialHeaderParts.any { it in name })
+        headers.any { (key, value) -> value.isNotBlank() && isCredentialHeader(key) }
+
+    private val credentialQueryParts = listOf("token", "auth", "password", "passwd", "apikey", "secret", "session", "signature", "jwt")
+    private val credentialQueryNames = setOf("sig", "key", "pass", "pwd")
+
+    /** True when the URL itself carries a secret: user:password@ or a query such as ?token=, ?api_key=, ?password=. */
+    internal fun urlCarriesCredentials(url: HttpUrl): Boolean {
+        if (url.password.isNotEmpty()) return true
+        return url.queryParameterNames.any { raw ->
+            val name = raw.lowercase().replace("-", "").replace("_", "").replace(".", "")
+            name in credentialQueryNames || credentialQueryParts.any { it in name }
         }
+    }
 
     /** The device itself or the local network: localhost, private and link-local addresses, .local/.lan names. */
     internal fun isLocalNetworkHost(rawHost: String): Boolean {

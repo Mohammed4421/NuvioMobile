@@ -425,15 +425,18 @@
       "depends": [],
       "data": "none",
       "tests": [
-        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackTlsTest.kt"
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackTlsTest.kt",
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackRedirectCredentialsTest.kt"
       ],
       "keywords": [
         "TokenSafeTrustManager",
         "carriesCredentials",
-        "isLocalNetworkHost"
+        "isLocalNetworkHost",
+        "mayReceiveCredentials"
       ],
       "test_files": [
-        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackTlsTest.kt"
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackTlsTest.kt",
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackRedirectCredentialsTest.kt"
       ]
     }
   ]

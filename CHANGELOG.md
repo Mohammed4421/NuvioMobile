@@ -29,6 +29,11 @@ Newest first.
   only to a server with a valid certificate for its name, as libmpv already required for every
   stream. Streams without such headers play exactly as before, and servers on your own network
   (a NAS or home media server with a self-signed certificate) keep working.
+- **Your tokens no longer follow a redirect to another site.** When a source redirected the
+  player to a different site, the player put the stream's Authorization header back on the new
+  request, and cookies or key headers went along too. Now they go only to the same site (for
+  example api.provider.com → cdn.provider.com) and never from https to http. A token in the link
+  itself (?token=, ?api_key=, ?password=) now also needs a valid certificate, as a header token does.
 - **Subtitle files picked from the device no longer pile up.** Each pick kept a copy in the app's
   cache. Now each pick removes the copies left from earlier app sessions (nothing refers to them
   after a restart); copies from the current session stay, so a subtitle being shown is never
