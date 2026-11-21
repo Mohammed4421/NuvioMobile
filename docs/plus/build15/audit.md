@@ -58,8 +58,8 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | User impact | If it can happen in the app: a crash while playing with libmpv. If test-only: none |
 | Severity | High if reproducible in the app; Low if test-only — **unclassified until measured** |
 | Alternatives | (a) set the view property on `Dispatchers.Main.immediate` explicitly (Nuvio 1.1.0-beta.2 does so for its snapshot callbacks, not for this loop); (b) leave Nuvio's code as is and fix the test environment; (c) report upstream |
-| Chosen | None yet: measure first (repeated device-test runs), then decide between (a) and (b) |
+| Chosen | (a), in both effects that follow `snapshot()` (#34, `2a8ef3c3`): in the app the effects already resume on the main thread, so `Main.immediate` does not dispatch there |
 | Compatibility / maintenance | (a) changes a Nuvio file (adds a conflict line on upstream sync); (b) none |
 | Tests required | Repeated runs of `SubtitlePlaybackTest` on Android 14; a check of the dispatcher the effect runs on in the app |
 | Priority (§14) | P1 Must Fix if it reproduces in the app |
-| Decision / status | DEFER until measured — DISCOVERED |
+| Decision / status | FIX — IMPLEMENTED (device tests passed on Android 14 and 9 after the fix; one run, so not yet VERIFIED for an intermittent failure) |

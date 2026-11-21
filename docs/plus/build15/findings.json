@@ -710,18 +710,18 @@
         "Fix the test environment",
         "Report upstream"
       ],
-      "chosen": "None yet: measure first",
-      "rationale": "Severity provisional until reproduced",
+      "chosen": "(a) Back on Dispatchers.Main.immediate before touching the view, in both effects that follow snapshot()",
+      "rationale": "In the app the effects already resume on the main thread, so Main.immediate does not dispatch and behaviour is unchanged; it removes the dependence on the dispatcher the effect runs under",
       "compatibility": "Nuvio file",
       "tests_required": [
-        "Repeated SubtitlePlaybackTest runs",
-        "dispatcher check in the app"
+        "SubtitlePlaybackTest on Android 14 and 9 (passed once after the fix; repeated runs still to show the intermittent failure is gone)"
       ],
       "priority": "P1",
-      "decision": "DEFER",
-      "status": "DISCOVERED",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
       "refs": [
-        "#34 run of a0ed03fd"
+        "#34 run of a0ed03fd",
+        "#34 (fix, 2a8ef3c3: Nuvio device tests passed on Android 14 and 9)"
       ]
     }
   ]

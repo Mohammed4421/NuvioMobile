@@ -59,7 +59,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -74,12 +74,19 @@
           "commit": "8e0876ddf07e7d7c647bdca1ebd361efa8982adc",
           "what": "PR #17 checks (known issues updated)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44862598814,
+          "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
+          "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Fields match GitHub and the release.",
-      "next": "Cite the requirements-gate run of the commit adding check-baseline.py."
+      "next": "Owner acceptance."
     },
     {
       "id": "P0-02",
@@ -92,13 +99,20 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
           "run": 44735486746,
           "commit": "37999b3d71903ba21efe21d41084131ceff39942",
           "what": "PR #16 checks",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44862598814,
+          "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
+          "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
           "result": "PASS"
         }
       ],
@@ -107,7 +121,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "All toolchain and identity fields present with sources.",
-      "next": "Cite the requirements-gate run of the commit adding check-baseline.py."
+      "next": "Owner acceptance."
     },
     {
       "id": "P0-03",
@@ -120,7 +134,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -128,12 +142,19 @@
           "commit": "37999b3d71903ba21efe21d41084131ceff39942",
           "what": "PR #16 checks",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44862598814,
+          "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
+          "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present with sources.",
-      "next": "Cite the requirements-gate run of the commit adding check-baseline.py."
+      "next": "Owner acceptance."
     },
     {
       "id": "P0-04",
@@ -166,12 +187,20 @@
         "docs/plus/build15/baseline-dependencies.txt",
         ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44862598814,
+          "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
+          "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
+          "result": "PASS"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "APK SHA-256 and a resolved dependency list for Build 14.",
-      "next": "Cite the requirements-gate run of the commit adding check-baseline.py."
+      "next": "Owner acceptance."
     },
     {
       "id": "P0-06",
