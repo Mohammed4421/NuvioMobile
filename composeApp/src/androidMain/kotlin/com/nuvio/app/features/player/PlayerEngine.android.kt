@@ -1624,9 +1624,13 @@ private fun LibmpvPlayerSurface(
         val view = playerViewRef ?: return@LaunchedEffect
         view.setPaused(!latestPlayWhenReady.value)
         val snapshot = view.snapshot()
-        view.keepScreenOn = snapshot.isPlaying || snapshot.isLoading
-        latestOnSnapshot.value(snapshot)
-        nowPlayingController?.syncPlayback(snapshot)
+        // snapshot() runs on the mpv thread; under a dispatcher that does not dispatch back (the
+        // Compose test rule's), the code after it would touch the view from that thread.
+        withContext(Dispatchers.Main.immediate) {
+            view.keepScreenOn = snapshot.isPlaying || snapshot.isLoading
+            latestOnSnapshot.value(snapshot)
+            nowPlayingController?.syncPlayback(snapshot)
+        }
     }
 
     LaunchedEffect(playerViewRef, resizeMode) {
@@ -1647,9 +1651,12 @@ private fun LibmpvPlayerSurface(
         val view = playerViewRef ?: return@LaunchedEffect
         while (isActive) {
             val snapshot = view.snapshot()
-            latestOnSnapshot.value(snapshot)
-            nowPlayingController?.syncPlayback(snapshot)
-            view.keepScreenOn = snapshot.isPlaying || snapshot.isLoading
+            // Back on the main thread before touching the view (see the effect above).
+            withContext(Dispatchers.Main.immediate) {
+                latestOnSnapshot.value(snapshot)
+                nowPlayingController?.syncPlayback(snapshot)
+                view.keepScreenOn = snapshot.isPlaying || snapshot.isLoading
+            }
             delay(250L)
         }
     }
