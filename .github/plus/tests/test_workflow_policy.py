@@ -15,7 +15,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[3]
 WORKFLOWS = ROOT / ".github" / "workflows"
 PLUS = ["plus-build.yml", "plus-ci.yml", "plus-sync.yml", "plus-pipeline.yml", "custom-android-build.yml",
-        "plus-release-key.yml", "requirements-gate.yml"]
+        "plus-release-key.yml", "requirements-gate.yml", "download-notification-test.yml"]
 PINNED = re.compile(r"^[\w.-]+/[\w./-]+@[0-9a-f]{40}$")
 OWN_REUSABLE = re.compile(r"^(\./\.github/workflows/[\w-]+\.yml|Mohammed4421/NuvioMobile/\.github/workflows/[\w-]+\.yml@custom-subtitles)$")
 # Jobs allowed to write, and why.
@@ -480,7 +480,8 @@ class WorkflowPolicyTest(unittest.TestCase):
         for name, _, job_id, job in self.each_job():
             for step in steps(job):
                 if str(step.get("uses", "")).startswith("gradle/actions/setup-gradle@"):
-                    self.assertEqual(expected, (step.get("with") or {}).get("cache-read-only"), f"{name}/{job_id}")
+                    # true (never writes) is stricter still and is what non-publishing workflows use.
+                    self.assertIn((step.get("with") or {}).get("cache-read-only"), (expected, True), f"{name}/{job_id}")
 
     def test_jobs_below_an_optional_job_state_their_own_condition(self):
         # GitHub skips a job when any job it depends on, directly or not, was skipped, unless the job's
