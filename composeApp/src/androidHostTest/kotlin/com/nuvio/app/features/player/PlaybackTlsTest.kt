@@ -86,5 +86,10 @@ class PlaybackTlsTest {
         assertThrows(SSLHandshakeException::class.java) { get("https://self-signed.badssl.com/", token) }
         assertThrows(Exception::class.java) { get("https://wrong.host.badssl.com/", token) }
         assertEquals(200, get("https://badssl.com/", token))
+        // A token in the URL alone also needs a verified certificate.
+        val tokenInUrl = Request.Builder().url("https://self-signed.badssl.com/?token=test").build()
+        assertThrows(SSLHandshakeException::class.java) {
+            PlayerPlaybackNetworking.callFactoryFor(emptyMap(), useLongReadTimeout = false).newCall(tokenInUrl).execute().close()
+        }
     }
 }
