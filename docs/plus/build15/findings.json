@@ -1,706 +1,706 @@
 {
- "schema": 1,
- "note": "Every Build 15 audit finding with the fields of spec §4. kind: defect (has a severity), review (no defect found), claim (external claim checked). Kept in step with audit.md by test_audit_findings.py. B15-DL-03 is added with the season-pause pull request (#28), which holds its audit row.",
- "findings": [
-  {
-   "id": "B15-UI-01",
-   "kind": "defect",
-   "area": "Lists",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt"
-   ],
-   "evidence": "[section, section#0, section] produced section#0 twice with the original helper; 20,000 random lists after the fix",
-   "root_cause": "Generated suffixes did not reserve real keys shaped like generated ones",
-   "user_impact": "A list screen (home, search) can crash",
-   "severity": "Medium",
-   "alternatives": [
-    "Reserve all original keys and skip taken suffixes",
-    "Use index-based keys (loses scroll position)"
-   ],
-   "chosen": "Reserve original keys",
-   "rationale": "Keeps every non-colliding key unchanged",
-   "compatibility": "Nuvio file: registered in features.json; small diff",
-   "tests_required": [
-    "DuplicateSafeLazyKeysTest"
-   ],
-   "priority": "P2",
-   "decision": "FIX",
-   "status": "VERIFIED",
-   "refs": [
-    "#15",
-    "CI 44735358734"
-   ]
-  },
-  {
-   "id": "B15-SUB-01",
-   "kind": "defect",
-   "area": "Subtitles",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt",
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/autosync/AutoSyncSubtitleCueParser.kt"
-   ],
-   "evidence": "Scaling run: 60 KB malformed file 5.2 s, 1 MB minutes; 60,000-file old/new comparison equal on well-formed input",
-   "root_cause": "Rescanning the rest of the file from every position on unclosed tags (quadratic)",
-   "user_impact": "A malformed add-on subtitle freezes download preparation or the subtitle list",
-   "severity": "High",
-   "alternatives": [
-    "Linear single-pass scanning",
-    "Size cap only (hides the cause)"
-   ],
-   "chosen": "Linear scanning",
-   "rationale": "Fixes the cause without changing well-formed output",
-   "compatibility": "Two Nuvio files; PortKit-portable feature",
-   "tests_required": [
-    "SubtitleParserWorstCaseTest"
-   ],
-   "priority": "P1",
-   "decision": "FIX",
-   "status": "VERIFIED",
-   "refs": [
-    "#17",
-    "CI 44749841046"
-   ]
-  },
-  {
-   "id": "B15-SUB-02",
-   "kind": "review",
-   "area": "Subtitles",
-   "files": [
-    "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.android.kt"
-   ],
-   "evidence": "Code review: size cap, empty-file check, ASCII cache name, decoding on IO inside runCatching",
-   "root_cause": "—",
-   "user_impact": "None found",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "No defect",
-   "compatibility": "—",
-   "tests_required": [],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "VERIFIED",
-   "refs": [
-    "review"
-   ]
-  },
-  {
-   "id": "B15-SUB-03",
-   "kind": "defect",
-   "area": "Subtitles",
-   "files": [
-    "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.android.kt"
-   ],
-   "evidence": "One copy per import in cache/device-subtitles, never removed (code review)",
-   "root_cause": "Copies were never cleaned",
-   "user_impact": "Cache grows with each import until Android clears it",
-   "severity": "Low",
-   "alternatives": [
-    "Remove earlier processes' copies on import",
-    "Leave to the OS cache trimming"
-   ],
-   "chosen": "Remove earlier processes' copies",
-   "rationale": "Device subtitles are never stored as preferences, so nothing references old copies",
-   "compatibility": "Plus file",
-   "tests_required": [
-    "DeviceSubtitleCacheTest"
-   ],
-   "priority": "P3",
-   "decision": "FIX",
-   "status": "IMPLEMENTED",
-   "refs": [
-    "#37"
-   ]
-  },
-  {
-   "id": "B15-DL-01",
-   "kind": "defect",
-   "area": "Downloads",
-   "files": [
-    "composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt"
-   ],
-   "evidence": "Code review of executeToFolder (K-03)",
-   "root_cause": "Free-space check uses stored progress after the .part document was deleted outside the app",
-   "user_impact": "A download can start without enough space and fail later; no data loss",
-   "severity": "Low",
-   "alternatives": [
-    "Re-read the document size before the check",
-    "Keep as is"
-   ],
-   "chosen": "Defer",
-   "rationale": "Needs a SAF provider test to change safely",
-   "compatibility": "Plus file",
-   "tests_required": [
-    "SAF provider host test"
-   ],
-   "priority": "P3",
-   "decision": "DEFER",
-   "status": "SPECIFIED",
-   "refs": [
-    "known-issues K-03"
-   ]
-  },
-  {
-   "id": "B15-CI-02",
-   "kind": "defect",
-   "area": "Repository",
-   "files": [
-    ".gitmodules"
-   ],
-   "evidence": "CI teardown: 'No url found for submodule path libass-android'",
-   "root_cause": "Gitlinks without .gitmodules entries in Nuvio's tree",
-   "user_impact": "None at runtime; noise in CI logs",
-   "severity": "Low",
-   "alternatives": [
-    "Add .gitmodules entries",
-    "Leave (Nuvio's tree)"
-   ],
-   "chosen": "Defer",
-   "rationale": "Changing Nuvio's tree adds sync conflicts for no runtime gain",
-   "compatibility": "Nuvio's tree",
-   "tests_required": [],
-   "priority": "P3",
-   "decision": "DEFER",
-   "status": "SPECIFIED",
-   "refs": [
-    "known-issues K-05"
-   ]
-  },
-  {
-   "id": "B15-UI-03",
-   "kind": "defect",
-   "area": "Localisation",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/core/i18n/LocalizedUiText.kt"
-   ],
-   "evidence": "Code review only: runBlocking reads of Compose resources",
-   "root_cause": "Synchronous resource reads on the calling thread",
-   "user_impact": "Possible jank; not measured",
-   "severity": "Low",
-   "alternatives": [
-    "Async resource reads",
-    "Keep"
-   ],
-   "chosen": "Defer until measured (P5)",
-   "rationale": "No measured impact; Nuvio's code",
-   "compatibility": "Nuvio file",
-   "tests_required": [
-    "Frame-time measurement"
-   ],
-   "priority": "P3",
-   "decision": "DEFER",
-   "status": "DISCOVERED",
-   "refs": [
-    "severity provisional until P5"
-   ]
-  },
-  {
-   "id": "B15-SUB-04",
-   "kind": "defect",
-   "area": "Subtitles",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeSubtitleActions.kt"
-   ],
-   "evidence": "LocalSubtitleSyncCuesTest: local file and HTTP",
-   "root_cause": "Offline early return in loadSubtitleAutoSyncCues blocked local files without network",
-   "user_impact": "Manual sync of a device subtitle fails offline",
-   "severity": "Medium",
-   "alternatives": [
-    "Skip the offline return for file: URIs",
-    "Copy the file to memory first"
-   ],
-   "chosen": "Skip the offline return for local files",
-   "rationale": "Smallest change; iOS has no file: path (deferred)",
-   "compatibility": "Plus-touched file",
-   "tests_required": [
-    "LocalSubtitleSyncCuesTest",
-    "device check offline"
-   ],
-   "priority": "P1",
-   "decision": "FIX",
-   "status": "IMPLEMENTED",
-   "refs": [
-    "#24",
-    "NEEDS PHYSICAL DEVICE for the device check"
-   ]
-  },
-  {
-   "id": "B15-SUB-05",
-   "kind": "defect",
-   "area": "Subtitles",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeGestureActions.kt"
-   ],
-   "evidence": "updateSubtitleGesture saved 12 settings about sixty times per second of dragging",
-   "root_cause": "Every frame persisted the whole style",
-   "user_impact": "Storage churn and possible stutter while moving subtitles",
-   "severity": "Medium",
-   "alternatives": [
-    "Live preview, one save at gesture end",
-    "Throttle saves"
-   ],
-   "chosen": "One save at gesture end",
-   "rationale": "Saves exactly the final value, also on cancel or dispose",
-   "compatibility": "Plus file",
-   "tests_required": [
-    "SubtitleGestureSessionTest",
-    "device check of the feel"
-   ],
-   "priority": "P2",
-   "decision": "FIX",
-   "status": "IMPLEMENTED",
-   "refs": [
-    "#25",
-    "NEEDS PHYSICAL DEVICE for the feel"
-   ]
-  },
-  {
-   "id": "B15-SUB-06",
-   "kind": "defect",
-   "area": "Subtitles",
-   "files": [
-    "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.android.kt"
-   ],
-   "evidence": "LocalSubtitleFormatTest: content detection, non-subtitles refused, Windows-1256/ASS/SRT kept",
-   "root_cause": "Unknown extensions were renamed .srt",
-   "user_impact": "Wrong parser for ASS/VTT files picked without a known extension; non-subtitles accepted",
-   "severity": "Medium",
-   "alternatives": [
-    "Detect the format from content",
-    "Trust the extension"
-   ],
-   "chosen": "Detect from content",
-   "rationale": "Players pick the parser from the extension",
-   "compatibility": "Plus file",
-   "tests_required": [
-    "LocalSubtitleFormatTest"
-   ],
-   "priority": "P2",
-   "decision": "FIX",
-   "status": "VERIFIED",
-   "refs": [
-    "#26 (merged)",
-    "CI 44783683484"
-   ]
-  },
-  {
-   "id": "B15-DL-02",
-   "kind": "claim",
-   "area": "Downloads",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/SeasonDownloadQueue.kt"
-   ],
-   "evidence": "Harness r1-r13: no lost update or duplicate enqueue",
-   "root_cause": "Claimed race not present: all writers run on Main",
-   "user_impact": "None found",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "Risk unproven; harness added instead",
-   "compatibility": "—",
-   "tests_required": [
-    "Harness r9-r13"
-   ],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "VERIFIED",
-   "refs": [
-    "#27 (merged)"
-   ]
-  },
-  {
-   "id": "B15-DL-03",
-   "kind": "defect",
-   "area": "Downloads",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/SeasonDownloadQueue.kt",
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsRepository.kt",
-    "composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsNotificationActionReceiver.kt",
-    "composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt"
-   ],
-   "evidence": "Policy test and race harness r11 fail on the old code: a paused episode held every later episode of the profile, and resuming it while the queue ran started a second download",
-   "root_cause": "SeasonQueuePolicy.busy counted Paused items as running (design since Build 13, reversed by the owner's decision of 2026-11-20)",
-   "user_impact": "Pausing one episode stopped the rest of the season and other seasons; resume could start a duplicate download",
-   "severity": "High",
-   "alternatives": [
-    "Episode pause skips, season and 'pause all' hold (owner's contract)",
-    "Keep the Build 13 behaviour (one pause holds everything)"
-   ],
-   "chosen": "Owner's contract: episode pause skips; season pause holds that season; 'pause all' holds every download of the current profile and new ones until 'resume all', which never resumes one paused on its own",
-   "rationale": "Owner decision D-01 and the download contract",
-   "compatibility": "Stored queue format readable by Builds 12-14 (SeasonQueueStorageTest); Nuvio files registered in features.json",
-   "tests_required": [
-    "SeasonQueuePolicyTest",
-    "SeasonQueueStorageTest",
-    "SeasonPauseAndroidTest",
-    "race harness r11, r14-r21",
-    "notification pause/resume on Android 14 and 9 emulators"
-   ],
-   "priority": "P2",
-   "decision": "FIX",
-   "status": "IMPLEMENTED",
-   "refs": [
-    "#28"
-   ]
-  },
-  {
-   "id": "B15-EXT-01",
-   "kind": "claim",
-   "area": "Localisation",
-   "files": [
-    "composeApp/src/commonMain/composeResources/values-ar/strings_ratings.xml"
-   ],
-   "evidence": "File read: four %1$s placeholders correct",
-   "root_cause": "Claim contradicted",
-   "user_impact": "None",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "Claim false",
-   "compatibility": "—",
-   "tests_required": [
-    "test_arabic_strings.py"
-   ],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "VERIFIED",
-   "refs": [
-    "review"
-   ]
-  },
-  {
-   "id": "B15-EXT-02",
-   "kind": "claim",
-   "area": "Player",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSurfaceGestures.kt"
-   ],
-   "evidence": "touchGesturesEnabledState honoured; PlayerSurfaceGesturesTest",
-   "root_cause": "Claim contradicted",
-   "user_impact": "None",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "Claim false",
-   "compatibility": "—",
-   "tests_required": [
-    "PlayerSurfaceGesturesTest"
-   ],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "VERIFIED",
-   "refs": [
-    "review"
-   ]
-  },
-  {
-   "id": "B15-EXT-03",
-   "kind": "claim",
-   "area": "Architecture",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/"
-   ],
-   "evidence": "Design preference, no defect shown",
-   "root_cause": "—",
-   "user_impact": "None",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "Out of scope (§5 criteria not met)",
-   "compatibility": "—",
-   "tests_required": [],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "SPECIFIED",
-   "refs": [
-    "review"
-   ]
-  },
-  {
-   "id": "B15-REL-01",
-   "kind": "defect",
-   "area": "Release notes",
-   "files": [
-    "GitHub release custom-14 (release notes page)"
-   ],
-   "evidence": "custom-14 release page: Android 9 note only in English (K-02)",
-   "root_cause": "Note written in one language",
-   "user_impact": "Arabic readers on Android 9 miss the one-time manual install note",
-   "severity": "Low",
-   "alternatives": [
-    "Owner edits the release page",
-    "Carry it in Build 15 notes"
-   ],
-   "chosen": "Both",
-   "rationale": "The session cannot edit releases",
-   "compatibility": "—",
-   "tests_required": [
-    "Read back the Arabic notes of custom-14 through the releases API"
-   ],
-   "priority": "P3",
-   "decision": "FIX",
-   "status": "SPECIFIED",
-   "refs": [
-    "owner action"
-   ]
-  },
-  {
-   "id": "B15-SEC-01",
-   "kind": "review",
-   "area": "Signing",
-   "files": [
-    "signing/nuvio-plus.p12"
-   ],
-   "evidence": "Release run 44727757154 refused an update signed only by this key on Android 9 and 14",
-   "root_cause": "—",
-   "user_impact": "None: used only as the v3 rotation's old signer",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "By design: proves the key rotation",
-   "compatibility": "—",
-   "tests_required": [
-    "release upgrade test each release"
-   ],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "VERIFIED",
-   "refs": [
-    "release run 44727757154"
-   ]
-  },
-  {
-   "id": "B15-AND-01",
-   "kind": "review",
-   "area": "Manifest",
-   "files": [
-    "androidApp/src/main/AndroidManifest.xml",
-    "androidApp/build.gradle.kts"
-   ],
-   "evidence": "Diff review; release label fixed to 'Nuvio Plus' by the .plus suffix",
-   "root_cause": "—",
-   "user_impact": "Launcher name not translated (by design: distinct from the official app)",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "By design",
-   "compatibility": "—",
-   "tests_required": [],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "VERIFIED",
-   "refs": [
-    "review"
-   ]
-  },
-  {
-   "id": "B15-BLD-01",
-   "kind": "defect",
-   "area": "Build",
-   "files": [
-    "composeApp/build.gradle.kts",
-    "androidApp/build.gradle.kts"
-   ],
-   "evidence": "Diff review: update repository name written into generated Kotlin unescaped",
-   "root_cause": "Code generation without escaping",
-   "user_impact": "None today: the value comes from CI settings, not users",
-   "severity": "Low",
-   "alternatives": [
-    "Escape the value",
-    "Validate it against owner/repo"
-   ],
-   "chosen": "Keep for now",
-   "rationale": "Trusted input; change only with a test",
-   "compatibility": "Plus build code",
-   "tests_required": [
-    "code-generation test with a quote in the value"
-   ],
-   "priority": "P3",
-   "decision": "DEFER",
-   "status": "SPECIFIED",
-   "refs": [
-    "review"
-   ]
-  },
-  {
-   "id": "B15-WP-01",
-   "kind": "review",
-   "area": "Watch progress",
-   "files": [
-    "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watchprogress/WatchProgressIdentityTest.kt"
-   ],
-   "evidence": "Cherry-pick of Nuvio's 618622d8; assertion unchanged",
-   "root_cause": "—",
-   "user_impact": "None",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "Nuvio's own fix",
-   "compatibility": "Same change upstream: no conflict",
-   "tests_required": [],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "VERIFIED",
-   "refs": [
-    "review"
-   ]
-  },
-  {
-   "id": "B15-AR-01",
-   "kind": "review",
-   "area": "Arabic",
-   "files": [
-    "composeApp/src/commonMain/composeResources/values-ar/"
-   ],
-   "evidence": "test_arabic_strings.py: 2,811 strings, none missing, no placeholder mismatch",
-   "root_cause": "—",
-   "user_impact": "None",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep and guard",
-   "rationale": "New test fails on a missing or broken string",
-   "compatibility": "—",
-   "tests_required": [
-    "test_arabic_strings.py"
-   ],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "VERIFIED",
-   "refs": [
-    "#32"
-   ]
-  },
-  {
-   "id": "B15-ADD-01",
-   "kind": "defect",
-   "area": "Add-ons",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/MainAppContent.kt"
-   ],
-   "evidence": "Activity handles rotation (configChanges); state lost only on process death",
-   "root_cause": "Confirmation state remembered, not saved",
-   "user_impact": "After process death the pending link is dropped; nothing is installed (safe)",
-   "severity": "Low",
-   "alternatives": [
-    "rememberSaveable",
-    "Keep"
-   ],
-   "chosen": "Keep",
-   "rationale": "Safe failure direction",
-   "compatibility": "Nuvio-touched file",
-   "tests_required": [],
-   "priority": "P3",
-   "decision": "KEEP",
-   "status": "SPECIFIED",
-   "refs": [
-    "review"
-   ]
-  },
-  {
-   "id": "B15-LIB-01",
-   "kind": "review",
-   "area": "Library",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryScreen.kt"
-   ],
-   "evidence": "Diff review; LibraryDownloadEntriesTest",
-   "root_cause": "—",
-   "user_impact": "Look and RTL not reviewed yet (P4)",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "Logic sound",
-   "compatibility": "Nuvio file modified",
-   "tests_required": [
-    "LibraryDownloadEntriesTest",
-    "P4 screenshots"
-   ],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "IMPLEMENTED",
-   "refs": [
-    "P4 open"
-   ]
-  },
-  {
-   "id": "B15-STR-01",
-   "kind": "review",
-   "area": "Streams",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamsScreen.kt"
-   ],
-   "evidence": "Diff review; queue paths in the race harness",
-   "root_cause": "—",
-   "user_impact": "Look not reviewed yet (P4)",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "Logic sound",
-   "compatibility": "Nuvio file modified",
-   "tests_required": [
-    "P4 screenshots"
-   ],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "IMPLEMENTED",
-   "refs": [
-    "P4 open"
-   ]
-  },
-  {
-   "id": "B15-SET-01",
-   "kind": "review",
-   "area": "Settings",
-   "files": [
-    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/SubtitleAppearanceSettings.kt"
-   ],
-   "evidence": "Diff review; brightness effect needs a device",
-   "root_cause": "—",
-   "user_impact": "Not verified on a picture",
-   "severity": "n/a",
-   "alternatives": [],
-   "chosen": "Keep",
-   "rationale": "Logic sound",
-   "compatibility": "Nuvio file modified",
-   "tests_required": [
-    "device check"
-   ],
-   "priority": "—",
-   "decision": "KEEP",
-   "status": "IMPLEMENTED",
-   "refs": [
-    "NEEDS PHYSICAL DEVICE"
-   ]
-  },
-  {
-   "id": "B15-PLY-01",
-   "kind": "defect",
-   "area": "Player",
-   "files": [
-    "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt"
-   ],
-   "evidence": "SubtitlePlaybackTest (libmpv) failed once on Android 14 with CalledFromWrongThreadException at line 1652; passed on the same app code before",
-   "root_cause": "Hypothesis: resume after withContext(mpvDispatcher) on a non-main thread (in the test scheduler or the app: not established)",
-   "user_impact": "Crash while playing with libmpv if it happens in the app",
-   "severity": "High",
-   "alternatives": [
-    "Set the view property on Dispatchers.Main.immediate",
-    "Fix the test environment",
-    "Report upstream"
-   ],
-   "chosen": "None yet: measure first",
-   "rationale": "Severity provisional until reproduced",
-   "compatibility": "Nuvio file",
-   "tests_required": [
-    "Repeated SubtitlePlaybackTest runs",
-    "dispatcher check in the app"
-   ],
-   "priority": "P1",
-   "decision": "DEFER",
-   "status": "DISCOVERED",
-   "refs": [
-    "#34 run of a0ed03fd"
-   ]
-  }
- ]
+  "schema": 1,
+  "note": "Every Build 15 audit finding with the fields of spec §4. kind: defect (has a severity), review (no defect found), claim (external claim checked). Kept in step with audit.md by test_audit_findings.py.",
+  "findings": [
+    {
+      "id": "B15-UI-01",
+      "kind": "defect",
+      "area": "Lists",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt"
+      ],
+      "evidence": "[section, section#0, section] produced section#0 twice with the original helper; 20,000 random lists after the fix",
+      "root_cause": "Generated suffixes did not reserve real keys shaped like generated ones",
+      "user_impact": "A list screen (home, search) can crash",
+      "severity": "Medium",
+      "alternatives": [
+        "Reserve all original keys and skip taken suffixes",
+        "Use index-based keys (loses scroll position)"
+      ],
+      "chosen": "Reserve original keys",
+      "rationale": "Keeps every non-colliding key unchanged",
+      "compatibility": "Nuvio file: registered in features.json; small diff",
+      "tests_required": [
+        "DuplicateSafeLazyKeysTest"
+      ],
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "VERIFIED",
+      "refs": [
+        "#15",
+        "CI 44735358734"
+      ]
+    },
+    {
+      "id": "B15-SUB-01",
+      "kind": "defect",
+      "area": "Subtitles",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/autosync/AutoSyncSubtitleCueParser.kt"
+      ],
+      "evidence": "Scaling run: 60 KB malformed file 5.2 s, 1 MB minutes; 60,000-file old/new comparison equal on well-formed input",
+      "root_cause": "Rescanning the rest of the file from every position on unclosed tags (quadratic)",
+      "user_impact": "A malformed add-on subtitle freezes download preparation or the subtitle list",
+      "severity": "High",
+      "alternatives": [
+        "Linear single-pass scanning",
+        "Size cap only (hides the cause)"
+      ],
+      "chosen": "Linear scanning",
+      "rationale": "Fixes the cause without changing well-formed output",
+      "compatibility": "Two Nuvio files; PortKit-portable feature",
+      "tests_required": [
+        "SubtitleParserWorstCaseTest"
+      ],
+      "priority": "P1",
+      "decision": "FIX",
+      "status": "VERIFIED",
+      "refs": [
+        "#17",
+        "CI 44749841046"
+      ]
+    },
+    {
+      "id": "B15-SUB-02",
+      "kind": "review",
+      "area": "Subtitles",
+      "files": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.android.kt"
+      ],
+      "evidence": "Code review: size cap, empty-file check, ASCII cache name, decoding on IO inside runCatching",
+      "root_cause": "—",
+      "user_impact": "None found",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "No defect",
+      "compatibility": "—",
+      "tests_required": [],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "VERIFIED",
+      "refs": [
+        "review"
+      ]
+    },
+    {
+      "id": "B15-SUB-03",
+      "kind": "defect",
+      "area": "Subtitles",
+      "files": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.android.kt"
+      ],
+      "evidence": "One copy per import in cache/device-subtitles, never removed (code review)",
+      "root_cause": "Copies were never cleaned",
+      "user_impact": "Cache grows with each import until Android clears it",
+      "severity": "Low",
+      "alternatives": [
+        "Remove earlier processes' copies on import",
+        "Leave to the OS cache trimming"
+      ],
+      "chosen": "Remove earlier processes' copies",
+      "rationale": "Device subtitles are never stored as preferences, so nothing references old copies",
+      "compatibility": "Plus file",
+      "tests_required": [
+        "DeviceSubtitleCacheTest"
+      ],
+      "priority": "P3",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#37"
+      ]
+    },
+    {
+      "id": "B15-DL-01",
+      "kind": "defect",
+      "area": "Downloads",
+      "files": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt"
+      ],
+      "evidence": "Code review of executeToFolder (K-03)",
+      "root_cause": "Free-space check uses stored progress after the .part document was deleted outside the app",
+      "user_impact": "A download can start without enough space and fail later; no data loss",
+      "severity": "Low",
+      "alternatives": [
+        "Re-read the document size before the check",
+        "Keep as is"
+      ],
+      "chosen": "Defer",
+      "rationale": "Needs a SAF provider test to change safely",
+      "compatibility": "Plus file",
+      "tests_required": [
+        "SAF provider host test"
+      ],
+      "priority": "P3",
+      "decision": "DEFER",
+      "status": "SPECIFIED",
+      "refs": [
+        "known-issues K-03"
+      ]
+    },
+    {
+      "id": "B15-CI-02",
+      "kind": "defect",
+      "area": "Repository",
+      "files": [
+        ".gitmodules"
+      ],
+      "evidence": "CI teardown: 'No url found for submodule path libass-android'",
+      "root_cause": "Gitlinks without .gitmodules entries in Nuvio's tree",
+      "user_impact": "None at runtime; noise in CI logs",
+      "severity": "Low",
+      "alternatives": [
+        "Add .gitmodules entries",
+        "Leave (Nuvio's tree)"
+      ],
+      "chosen": "Defer",
+      "rationale": "Changing Nuvio's tree adds sync conflicts for no runtime gain",
+      "compatibility": "Nuvio's tree",
+      "tests_required": [],
+      "priority": "P3",
+      "decision": "DEFER",
+      "status": "SPECIFIED",
+      "refs": [
+        "known-issues K-05"
+      ]
+    },
+    {
+      "id": "B15-UI-03",
+      "kind": "defect",
+      "area": "Localisation",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/core/i18n/LocalizedUiText.kt"
+      ],
+      "evidence": "Code review only: runBlocking reads of Compose resources",
+      "root_cause": "Synchronous resource reads on the calling thread",
+      "user_impact": "Possible jank; not measured",
+      "severity": "Low",
+      "alternatives": [
+        "Async resource reads",
+        "Keep"
+      ],
+      "chosen": "Defer until measured (P5)",
+      "rationale": "No measured impact; Nuvio's code",
+      "compatibility": "Nuvio file",
+      "tests_required": [
+        "Frame-time measurement"
+      ],
+      "priority": "P3",
+      "decision": "DEFER",
+      "status": "DISCOVERED",
+      "refs": [
+        "severity provisional until P5"
+      ]
+    },
+    {
+      "id": "B15-SUB-04",
+      "kind": "defect",
+      "area": "Subtitles",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeSubtitleActions.kt"
+      ],
+      "evidence": "LocalSubtitleSyncCuesTest: local file and HTTP",
+      "root_cause": "Offline early return in loadSubtitleAutoSyncCues blocked local files without network",
+      "user_impact": "Manual sync of a device subtitle fails offline",
+      "severity": "Medium",
+      "alternatives": [
+        "Skip the offline return for file: URIs",
+        "Copy the file to memory first"
+      ],
+      "chosen": "Skip the offline return for local files",
+      "rationale": "Smallest change; iOS has no file: path (deferred)",
+      "compatibility": "Plus-touched file",
+      "tests_required": [
+        "LocalSubtitleSyncCuesTest",
+        "device check offline"
+      ],
+      "priority": "P1",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#24",
+        "NEEDS PHYSICAL DEVICE for the device check"
+      ]
+    },
+    {
+      "id": "B15-SUB-05",
+      "kind": "defect",
+      "area": "Subtitles",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeGestureActions.kt"
+      ],
+      "evidence": "updateSubtitleGesture saved 12 settings about sixty times per second of dragging",
+      "root_cause": "Every frame persisted the whole style",
+      "user_impact": "Storage churn and possible stutter while moving subtitles",
+      "severity": "Medium",
+      "alternatives": [
+        "Live preview, one save at gesture end",
+        "Throttle saves"
+      ],
+      "chosen": "One save at gesture end",
+      "rationale": "Saves exactly the final value, also on cancel or dispose",
+      "compatibility": "Plus file",
+      "tests_required": [
+        "SubtitleGestureSessionTest",
+        "device check of the feel"
+      ],
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#25",
+        "NEEDS PHYSICAL DEVICE for the feel"
+      ]
+    },
+    {
+      "id": "B15-SUB-06",
+      "kind": "defect",
+      "area": "Subtitles",
+      "files": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.android.kt"
+      ],
+      "evidence": "LocalSubtitleFormatTest: content detection, non-subtitles refused, Windows-1256/ASS/SRT kept",
+      "root_cause": "Unknown extensions were renamed .srt",
+      "user_impact": "Wrong parser for ASS/VTT files picked without a known extension; non-subtitles accepted",
+      "severity": "Medium",
+      "alternatives": [
+        "Detect the format from content",
+        "Trust the extension"
+      ],
+      "chosen": "Detect from content",
+      "rationale": "Players pick the parser from the extension",
+      "compatibility": "Plus file",
+      "tests_required": [
+        "LocalSubtitleFormatTest"
+      ],
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "VERIFIED",
+      "refs": [
+        "#26 (merged)",
+        "CI 44783683484"
+      ]
+    },
+    {
+      "id": "B15-DL-02",
+      "kind": "claim",
+      "area": "Downloads",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/SeasonDownloadQueue.kt"
+      ],
+      "evidence": "Harness r1-r13: no lost update or duplicate enqueue",
+      "root_cause": "Claimed race not present: all writers run on Main",
+      "user_impact": "None found",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "Risk unproven; harness added instead",
+      "compatibility": "—",
+      "tests_required": [
+        "Harness r9-r13"
+      ],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "VERIFIED",
+      "refs": [
+        "#27 (merged)"
+      ]
+    },
+    {
+      "id": "B15-DL-03",
+      "kind": "defect",
+      "area": "Downloads",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/SeasonDownloadQueue.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsRepository.kt",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsNotificationActionReceiver.kt",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt"
+      ],
+      "evidence": "Policy test and race harness r11 fail on the old code: a paused episode held every later episode of the profile, and resuming it while the queue ran started a second download",
+      "root_cause": "SeasonQueuePolicy.busy counted Paused items as running (design since Build 13, reversed by the owner's decision of 2026-11-20)",
+      "user_impact": "Pausing one episode stopped the rest of the season and other seasons; resume could start a duplicate download",
+      "severity": "High",
+      "alternatives": [
+        "Episode pause skips, season and 'pause all' hold (owner's contract)",
+        "Keep the Build 13 behaviour (one pause holds everything)"
+      ],
+      "chosen": "Owner's contract: episode pause skips; season pause holds that season; 'pause all' holds every download of the current profile and new ones until 'resume all', which never resumes one paused on its own",
+      "rationale": "Owner decision D-01 and the download contract",
+      "compatibility": "Stored queue format readable by Builds 12-14 (SeasonQueueStorageTest); Nuvio files registered in features.json",
+      "tests_required": [
+        "SeasonQueuePolicyTest",
+        "SeasonQueueStorageTest",
+        "SeasonPauseAndroidTest",
+        "race harness r11, r14-r21",
+        "notification pause/resume on Android 14 and 9 emulators"
+      ],
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#28"
+      ]
+    },
+    {
+      "id": "B15-EXT-01",
+      "kind": "claim",
+      "area": "Localisation",
+      "files": [
+        "composeApp/src/commonMain/composeResources/values-ar/strings_ratings.xml"
+      ],
+      "evidence": "File read: four %1$s placeholders correct",
+      "root_cause": "Claim contradicted",
+      "user_impact": "None",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "Claim false",
+      "compatibility": "—",
+      "tests_required": [
+        "test_arabic_strings.py"
+      ],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "VERIFIED",
+      "refs": [
+        "review"
+      ]
+    },
+    {
+      "id": "B15-EXT-02",
+      "kind": "claim",
+      "area": "Player",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSurfaceGestures.kt"
+      ],
+      "evidence": "touchGesturesEnabledState honoured; PlayerSurfaceGesturesTest",
+      "root_cause": "Claim contradicted",
+      "user_impact": "None",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "Claim false",
+      "compatibility": "—",
+      "tests_required": [
+        "PlayerSurfaceGesturesTest"
+      ],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "VERIFIED",
+      "refs": [
+        "review"
+      ]
+    },
+    {
+      "id": "B15-EXT-03",
+      "kind": "claim",
+      "area": "Architecture",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/"
+      ],
+      "evidence": "Design preference, no defect shown",
+      "root_cause": "—",
+      "user_impact": "None",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "Out of scope (§5 criteria not met)",
+      "compatibility": "—",
+      "tests_required": [],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "SPECIFIED",
+      "refs": [
+        "review"
+      ]
+    },
+    {
+      "id": "B15-REL-01",
+      "kind": "defect",
+      "area": "Release notes",
+      "files": [
+        "GitHub release custom-14 (release notes page)"
+      ],
+      "evidence": "custom-14 release page: Android 9 note only in English (K-02)",
+      "root_cause": "Note written in one language",
+      "user_impact": "Arabic readers on Android 9 miss the one-time manual install note",
+      "severity": "Low",
+      "alternatives": [
+        "Owner edits the release page",
+        "Carry it in Build 15 notes"
+      ],
+      "chosen": "Both",
+      "rationale": "The session cannot edit releases",
+      "compatibility": "—",
+      "tests_required": [
+        "Read back the Arabic notes of custom-14 through the releases API"
+      ],
+      "priority": "P3",
+      "decision": "FIX",
+      "status": "SPECIFIED",
+      "refs": [
+        "owner action"
+      ]
+    },
+    {
+      "id": "B15-SEC-01",
+      "kind": "review",
+      "area": "Signing",
+      "files": [
+        "signing/nuvio-plus.p12"
+      ],
+      "evidence": "Release run 44727757154 refused an update signed only by this key on Android 9 and 14",
+      "root_cause": "—",
+      "user_impact": "None: used only as the v3 rotation's old signer",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "By design: proves the key rotation",
+      "compatibility": "—",
+      "tests_required": [
+        "release upgrade test each release"
+      ],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "VERIFIED",
+      "refs": [
+        "release run 44727757154"
+      ]
+    },
+    {
+      "id": "B15-AND-01",
+      "kind": "review",
+      "area": "Manifest",
+      "files": [
+        "androidApp/src/main/AndroidManifest.xml",
+        "androidApp/build.gradle.kts"
+      ],
+      "evidence": "Diff review; release label fixed to 'Nuvio Plus' by the .plus suffix",
+      "root_cause": "—",
+      "user_impact": "Launcher name not translated (by design: distinct from the official app)",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "By design",
+      "compatibility": "—",
+      "tests_required": [],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "VERIFIED",
+      "refs": [
+        "review"
+      ]
+    },
+    {
+      "id": "B15-BLD-01",
+      "kind": "defect",
+      "area": "Build",
+      "files": [
+        "composeApp/build.gradle.kts",
+        "androidApp/build.gradle.kts"
+      ],
+      "evidence": "Diff review: update repository name written into generated Kotlin unescaped",
+      "root_cause": "Code generation without escaping",
+      "user_impact": "None today: the value comes from CI settings, not users",
+      "severity": "Low",
+      "alternatives": [
+        "Escape the value",
+        "Validate it against owner/repo"
+      ],
+      "chosen": "Keep for now",
+      "rationale": "Trusted input; change only with a test",
+      "compatibility": "Plus build code",
+      "tests_required": [
+        "code-generation test with a quote in the value"
+      ],
+      "priority": "P3",
+      "decision": "DEFER",
+      "status": "SPECIFIED",
+      "refs": [
+        "review"
+      ]
+    },
+    {
+      "id": "B15-WP-01",
+      "kind": "review",
+      "area": "Watch progress",
+      "files": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/watchprogress/WatchProgressIdentityTest.kt"
+      ],
+      "evidence": "Cherry-pick of Nuvio's 618622d8; assertion unchanged",
+      "root_cause": "—",
+      "user_impact": "None",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "Nuvio's own fix",
+      "compatibility": "Same change upstream: no conflict",
+      "tests_required": [],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "VERIFIED",
+      "refs": [
+        "review"
+      ]
+    },
+    {
+      "id": "B15-AR-01",
+      "kind": "review",
+      "area": "Arabic",
+      "files": [
+        "composeApp/src/commonMain/composeResources/values-ar/"
+      ],
+      "evidence": "test_arabic_strings.py: 2,811 strings, none missing, no placeholder mismatch",
+      "root_cause": "—",
+      "user_impact": "None",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep and guard",
+      "rationale": "New test fails on a missing or broken string",
+      "compatibility": "—",
+      "tests_required": [
+        "test_arabic_strings.py"
+      ],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "VERIFIED",
+      "refs": [
+        "#32"
+      ]
+    },
+    {
+      "id": "B15-ADD-01",
+      "kind": "defect",
+      "area": "Add-ons",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/MainAppContent.kt"
+      ],
+      "evidence": "Activity handles rotation (configChanges); state lost only on process death",
+      "root_cause": "Confirmation state remembered, not saved",
+      "user_impact": "After process death the pending link is dropped; nothing is installed (safe)",
+      "severity": "Low",
+      "alternatives": [
+        "rememberSaveable",
+        "Keep"
+      ],
+      "chosen": "Keep",
+      "rationale": "Safe failure direction",
+      "compatibility": "Nuvio-touched file",
+      "tests_required": [],
+      "priority": "P3",
+      "decision": "KEEP",
+      "status": "SPECIFIED",
+      "refs": [
+        "review"
+      ]
+    },
+    {
+      "id": "B15-LIB-01",
+      "kind": "review",
+      "area": "Library",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryScreen.kt"
+      ],
+      "evidence": "Diff review; LibraryDownloadEntriesTest",
+      "root_cause": "—",
+      "user_impact": "Look and RTL not reviewed yet (P4)",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "Logic sound",
+      "compatibility": "Nuvio file modified",
+      "tests_required": [
+        "LibraryDownloadEntriesTest",
+        "P4 screenshots"
+      ],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "P4 open"
+      ]
+    },
+    {
+      "id": "B15-STR-01",
+      "kind": "review",
+      "area": "Streams",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamsScreen.kt"
+      ],
+      "evidence": "Diff review; queue paths in the race harness",
+      "root_cause": "—",
+      "user_impact": "Look not reviewed yet (P4)",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "Logic sound",
+      "compatibility": "Nuvio file modified",
+      "tests_required": [
+        "P4 screenshots"
+      ],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "P4 open"
+      ]
+    },
+    {
+      "id": "B15-SET-01",
+      "kind": "review",
+      "area": "Settings",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/SubtitleAppearanceSettings.kt"
+      ],
+      "evidence": "Diff review; brightness effect needs a device",
+      "root_cause": "—",
+      "user_impact": "Not verified on a picture",
+      "severity": "n/a",
+      "alternatives": [],
+      "chosen": "Keep",
+      "rationale": "Logic sound",
+      "compatibility": "Nuvio file modified",
+      "tests_required": [
+        "device check"
+      ],
+      "priority": "—",
+      "decision": "KEEP",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "NEEDS PHYSICAL DEVICE"
+      ]
+    },
+    {
+      "id": "B15-PLY-01",
+      "kind": "defect",
+      "area": "Player",
+      "files": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt"
+      ],
+      "evidence": "SubtitlePlaybackTest (libmpv) failed once on Android 14 with CalledFromWrongThreadException at line 1652; passed on the same app code before",
+      "root_cause": "Hypothesis: resume after withContext(mpvDispatcher) on a non-main thread (in the test scheduler or the app: not established)",
+      "user_impact": "Crash while playing with libmpv if it happens in the app",
+      "severity": "High",
+      "alternatives": [
+        "Set the view property on Dispatchers.Main.immediate",
+        "Fix the test environment",
+        "Report upstream"
+      ],
+      "chosen": "None yet: measure first",
+      "rationale": "Severity provisional until reproduced",
+      "compatibility": "Nuvio file",
+      "tests_required": [
+        "Repeated SubtitlePlaybackTest runs",
+        "dispatcher check in the app"
+      ],
+      "priority": "P1",
+      "decision": "DEFER",
+      "status": "DISCOVERED",
+      "refs": [
+        "#34 run of a0ed03fd"
+      ]
+    }
+  ]
 }
