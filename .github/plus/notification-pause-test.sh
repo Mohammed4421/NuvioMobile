@@ -2,18 +2,16 @@
 # Owner's download contract (Build 15), condition 9: pause and resume from the notification while
 # the app is in the background. On the emulator, with the debug app:
 #   1. start a real download from a slow local server (BackgroundDownloadTestActivity), press Home;
-#   2. open the notification shade and tap the download's Pause button;
+#   2. send the download notification's Pause action: its own PendingIntent, taken from the posted
+#      notification by the debug-only NotificationActionTestReceiver (emulator shades did not
+#      reliably show the notification to UI automation; the screen tap itself is a device check);
 #   3. the download is Paused, its .part file stops growing and keeps its bytes;
 #   4. tap Resume: it continues from where it stopped (the server sees a Range request from that
 #      offset, not a new download from zero);
 #   5. it completes and the file's SHA-256 equals the served file's.
-# Prints PASS or the failing step with the evidence. Usage: notification-pause-test.sh <debug apk> <label> [stop-at-notification]
-# With "stop-at-notification" (Android 14 emulator: its shade does not show the app's low-priority
-# notification to the UI dump, five approaches tried in #28) the test checks the download runs in
-# the background and the app posts its notification (dumpsys), then stops: tapping Pause/Resume on
-# Android 14 is NOT TESTED here and stays on the owner's device list (NVP15-RISK-0009).
+# Prints PASS or the failing step with the evidence. Usage: notification-pause-test.sh <debug apk> <label>
 set -uo pipefail
-apk="$1"; label="$2"; mode="${3:-full}"
+apk="$1"; label="$2"
 here="$(cd "$(dirname "$0")" && pwd)"
 pkg=com.nuviodebug.com
 id=nuvio-background-download-fixture
@@ -121,6 +119,15 @@ open_shade() {
   adb shell input swipe "$((width / 2))" 2 "$((width / 2))" "$((height * 2 / 3))" 500; sleep 3
 }
 
+# Sends the action labelled $1 of the posted download notification (its own PendingIntent).
+send_notification_action() {
+  wait_for 30 "the app's download notification to be posted" notification_posted
+  local out
+  out="$(adb shell am broadcast -n "${pkg}/com.nuvio.android.NotificationActionTestReceiver" --es action "$1" 2>&1 | tr -d '\r')"
+  [[ "${out}" == *"result=1"* ]] || fail "the notification has no '$1' action (${out}; $(adb logcat -d -s NuvioNotificationTest | tail -n 3 | tr '\n' ' '))"
+  say "sent the notification's '$1' action"
+}
+
 # Taps the action $1 of the download's notification. The shade can open with the quick settings
 # taking the screen (the notification below the fold) and low-priority notifications are shown
 # collapsed (no actions) on newer Android: scroll until the notification is on screen, then use
@@ -195,15 +202,8 @@ s1="$(part_size "${file}")"; sleep 5; s2="$(part_size "${file}")"
 [[ -n "${s1}" && -n "${s2}" && "${s2}" -gt "${s1}" ]] || fail "not downloading in the background (.part ${s1:-none} -> ${s2:-none})"
 say "downloading in the background: .part ${s1} -> ${s2} bytes"
 
-if [[ "${mode}" == stop-at-notification ]]; then
-  wait_for 30 "the app's download notification to be posted" notification_posted
-  say "notification posted by the app (dumpsys notification)"
-  say "NOT TESTED here: tapping Pause/Resume on the notification (owner's device, NVP15-RISK-0009)"
-  exit 0
-fi
-
 # 3. Pause from the notification.
-tap_notification_button "Pause"
+send_notification_action "Pause"
 wait_for 20 "Paused" bash -c "[[ \"\$(adb shell run-as ${pkg} cat shared_prefs/nuvio_downloads.xml)\" == *Paused* ]]"
 sleep 3; p1="$(part_size "${file}")"; sleep 8; p2="$(part_size "${file}")"
 [[ -n "${p1}" && "${p1}" == "${p2}" ]] || fail ".part kept changing after pause (${p1:-none} -> ${p2:-none})"
@@ -214,7 +214,7 @@ say "paused from the notification: status ${status}, .part kept at ${p1} bytes a
 requests_before="$(wc -l < "${work}/requests.log")"
 
 # 4. Resume from the notification: continues from the kept bytes.
-tap_notification_button "Resume"
+send_notification_action "Resume"
 grown() { local size; size="$(part_size "${file}")"; [[ -n "${size}" && "${size}" -gt "${p1}" ]]; }
 wait_for 30 "the .part to grow after resume" grown
 resume_request="$(tail -n +"$((requests_before + 1))" "${work}/requests.log" | grep '^GET' | head -1)"

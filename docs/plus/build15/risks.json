@@ -39,12 +39,12 @@
     {
       "id": "NVP15-RISK-0004",
       "state": "NEEDS PHYSICAL DEVICE",
-      "reason": "On the Android 14 emulator the app posts the download notification (dumpsys) but the shade does not show it to the UI dump; five harness approaches failed. Android 9: full scenario passes; Android 14: passed once.",
+      "reason": "Emulator shades (Android 14 and, intermittently, Android 9) did not show the download notification to UI automation, while the app posted it. The emulator test now sends the posted notification's own Pause/Resume PendingIntent; only the system UI tap itself is left.",
       "needs": "Owner's phone: start a download, leave the app, Pause then Resume from the notification",
       "requirements": [
         "D-09"
       ],
-      "impact": "Contract condition 9 proven on Android 9 and once on Android 14; not repeatable on the Android 14 emulator",
+      "impact": "The app side of pause/resume from the notification is tested on both emulators; the physical tap is not",
       "priority": "P0",
       "alternatives": "Fix the test until the real scenario passes",
       "decision_owner": "agent",
