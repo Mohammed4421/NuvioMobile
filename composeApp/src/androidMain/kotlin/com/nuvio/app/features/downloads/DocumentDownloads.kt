@@ -105,7 +105,9 @@ internal object DocumentDownloads {
                 prepared.deleteRecursively()
             }
         }
+        // The video is saved either way; copies beside it are a convenience for other players.
         runCatching { exportSubtitleCopies(context, item, documentUri, videoName) }
+            .onFailure { downloadLog("subtitle copies beside the video not saved: ${it.javaClass.simpleName}") }
     }
 
     private fun exportSubtitleCopies(context: Context, item: DownloadItem, documentUri: String, videoName: String) {
@@ -126,8 +128,9 @@ internal object DocumentDownloads {
                 index++
             }
             val document = DownloadDocuments.createFile(context, folder, name, "application/octet-stream")
+            // Streamed: an ASS file with embedded fonts can be large.
             context.contentResolver.openOutputStream(document, "wt")?.use { output ->
-                output.write(source.readBytes())
+                source.inputStream().use { it.copyTo(output) }
             }
             exported += document.toString()
         }

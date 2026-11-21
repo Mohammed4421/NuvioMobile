@@ -6,10 +6,10 @@ Newest first.
 
 ## Next build — Build 15: audit and polish
 
-### Changed- **Season downloads: an episode the first add-on lacks is taken from your other add-ons**, but only
+### Changed
+- **Season downloads: an episode the first add-on lacks is taken from your other add-ons**, but only
   in the same resolution and release type as the first episode, so the season stays consistent. If no
   add-on has it in that quality, the episode still asks you to choose, as before (owner's choice).
-
 - **A paused episode no longer stops the rest of its season.** Pausing one episode of a season
   download now skips it: the next episodes go on, and the paused one keeps its place and its partial
   file and is never retried by itself. Resuming it while another episode downloads lets it continue
@@ -26,6 +26,17 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Downloads to a chosen folder or SD card:** subtitle copies saved next to the video are copied
+  in a stream (a large ASS file with fonts no longer loads into memory at once), and a failed copy is
+  logged instead of passing silently.
+- **Download screens, small polish:** a paused download without a known size no longer shows a moving
+  bar; a card without a poster shows a film or series icon; the empty message is centred; in the queue
+  the show's title is cut on its own so the season, episode and paused state stay visible; the queue
+  buttons move under the title on narrow screens; the Wi-Fi only switch has room from its text; an
+  episode can be removed while its source is being searched.
+- **Subtitle panel:** "Reset appearance" looks like the other buttons; the AutoSync buttons wrap on
+  narrow panels; loading lines shows a spinner and a failed load offers Retry; the − / + buttons have a
+  48 dp touch area.
 - **Choosing a subtitle while the video buffers no longer pauses it** (ExoPlayer), and a chosen
   add-on subtitle is no longer lost when the player reloads.
 - **A resumed download can no longer end up mixed or cut.** If the server sends another version of
