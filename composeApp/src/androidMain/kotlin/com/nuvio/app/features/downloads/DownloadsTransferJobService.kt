@@ -25,7 +25,10 @@ class DownloadsTransferJobService : JobService() {
 
     override fun onNetworkChanged(params: JobParameters) {
         val generation = params.extras.getString(AndroidDownloadScheduler.GENERATION) ?: return
-        if (runs[generation]?.isActive == true) startTransfer(params)
+        if (runs[generation]?.isActive == true) {
+            downloadLog("job ${params.jobId}: network changed, restarting transfer ${generation.take(8)}")
+            startTransfer(params)
+        }
     }
 
     private fun startTransfer(params: JobParameters): Boolean {
@@ -34,6 +37,7 @@ class DownloadsTransferJobService : JobService() {
         val generation = params.extras.getString(AndroidDownloadScheduler.GENERATION) ?: return false
         val transfer = scheduler.store.get(fileName)?.takeIf { it.generation == generation } ?: return false
         if (!scheduler.isActive(transfer)) return false
+        downloadLog("job ${params.jobId}: start transfer ${generation.take(8)} (running before: ${runs[generation]?.isActive == true})")
         DownloadsLiveStatusPlatform.initialize(this)
         setNotification(params, DownloadsLiveStatusPlatform.notificationId(transfer.item.id),
             DownloadsLiveStatusPlatform.buildNotification(this, transfer.item), JOB_END_NOTIFICATION_POLICY_REMOVE)
@@ -116,6 +120,7 @@ class DownloadsTransferJobService : JobService() {
         val scheduler = DownloadsPlatformDownloader.scheduler(this)
         val fileName = params.extras.getString(AndroidDownloadScheduler.FILE_NAME) ?: return false
         val generation = params.extras.getString(AndroidDownloadScheduler.GENERATION) ?: return false
+        downloadLog("job ${params.jobId}: stopped, reason ${params.stopReason}, transfer ${generation.take(8)}")
         runs.remove(generation)?.cancel()
         val transfer = scheduler.store.get(fileName)?.takeIf { it.generation == generation } ?: return false
         if (params.stopReason == JobParameters.STOP_REASON_USER) {

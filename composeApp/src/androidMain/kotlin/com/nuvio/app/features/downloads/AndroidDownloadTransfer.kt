@@ -108,6 +108,7 @@ internal suspend fun transferAndroidDownloadTo(
                         validator?.let { header("If-Range", it) }
                     }
                 }.build()
+                downloadLog("request from byte $offset (partial file ${sink.length()} bytes)")
                 val call = client.newCall(request)
                 activeCall.set(call)
                 ensureActive()
@@ -176,4 +177,12 @@ internal fun parseDownloadContentRange(value: String): Pair<Long, Long?>? {
     val total = match.groupValues[3].toLongOrNull()
     if (end < start || (total != null && end >= total)) return null
     return start to total
+}
+
+/** Logcat tag of the download engine: one line per job start, stop and HTTP request (no URLs). */
+internal const val DOWNLOAD_LOG_TAG = "NuvioDownload"
+
+/** Host tests run without Android's Log; logging must never break a download. */
+internal fun downloadLog(message: String) {
+    runCatching { android.util.Log.i(DOWNLOAD_LOG_TAG, message) }
 }
