@@ -1,0 +1,149 @@
+{
+ "note": "Reviewed attack surface of the Nuvio Plus release APK (P6-01, P6-03, P6-05). Checked against every built APK by .github/plus/security-surface.py; any new or removed line fails until reviewed here. Taken from the published Build 14 x86_64 APK.",
+ "surface": [
+  {
+   "line": "application allowBackup=false",
+   "reason": "App data (accounts, add-ons, settings) is not copied by Android backup."
+  },
+  {
+   "line": "application usesCleartextTraffic=true",
+   "reason": "Upstream Nuvio: add-ons and self-hosted streaming servers are often plain http on the local network. Accepted risk, recorded as B15-SEC-02; not changed in Build 15 (would break working add-ons, owner rule 10)."
+  },
+  {
+   "line": "exported activity com.nuvio.app.LinkActivity permission=None filters=[android.intent.action.VIEW https nuvio.tv; android.intent.action.VIEW nuvio; android.intent.action.VIEW nuvio auth; android.intent.action.VIEW stremio]",
+   "reason": "Deep links nuvio://, stremio:// and https://nuvio.tv (sign-in callback, add-on and content links). Its links take the same path as LinkActivity (handleAppUrl); installing an add-on from a link asks the user first (P6-02)."
+  },
+  {
+   "line": "exported activity com.nuvio.app.MainActivity permission=None",
+   "reason": "Upstream Nuvio; started by the launcher icons (subclasses) and by LinkActivity with an explicit intent. Its links take the same path as LinkActivity (handleAppUrl); installing an add-on from a link asks the user first (P6-02)."
+  },
+  {
+   "line": "exported activity com.nuvio.app.launcher.AppIconArcticBlue permission=None filters=[android.intent.action.MAIN]",
+   "reason": "Launcher icon choice (Settings > app icon): subclasses of MainActivity, switched by that setting."
+  },
+  {
+   "line": "exported activity com.nuvio.app.launcher.AppIconCopper permission=None filters=[android.intent.action.MAIN]",
+   "reason": "Launcher icon choice (Settings > app icon): subclasses of MainActivity, switched by that setting."
+  },
+  {
+   "line": "exported activity com.nuvio.app.launcher.AppIconDefault permission=None filters=[android.intent.action.MAIN]",
+   "reason": "Launcher icon choice (Settings > app icon): subclasses of MainActivity, switched by that setting."
+  },
+  {
+   "line": "exported activity com.nuvio.app.launcher.AppIconEmerald permission=None filters=[android.intent.action.MAIN]",
+   "reason": "Launcher icon choice (Settings > app icon): subclasses of MainActivity, switched by that setting."
+  },
+  {
+   "line": "exported activity com.nuvio.app.launcher.AppIconGraphite permission=None filters=[android.intent.action.MAIN]",
+   "reason": "Launcher icon choice (Settings > app icon): subclasses of MainActivity, switched by that setting."
+  },
+  {
+   "line": "exported activity com.nuvio.app.launcher.AppIconRoseGold permission=None filters=[android.intent.action.MAIN]",
+   "reason": "Launcher icon choice (Settings > app icon): subclasses of MainActivity, switched by that setting."
+  },
+  {
+   "line": "exported receiver androidx.profileinstaller.ProfileInstallReceiver permission=android.permission.DUMP filters=[androidx.profileinstaller.action.BENCHMARK_OPERATION; androidx.profileinstaller.action.INSTALL_PROFILE; androidx.profileinstaller.action.SAVE_PROFILE; androidx.profileinstaller.action.SKIP_FILE]",
+   "reason": "AndroidX library receiver guarded by android.permission.DUMP (shell or system only)."
+  },
+  {
+   "line": "exported receiver androidx.work.impl.diagnostics.DiagnosticsReceiver permission=android.permission.DUMP filters=[androidx.work.diagnostics.REQUEST_DIAGNOSTICS]",
+   "reason": "AndroidX library receiver guarded by android.permission.DUMP (shell or system only)."
+  },
+  {
+   "line": "exported service androidx.work.impl.background.systemjob.SystemJobService permission=android.permission.BIND_JOB_SERVICE",
+   "reason": "WorkManager job service guarded by BIND_JOB_SERVICE (system only); runs downloads on older Android."
+  },
+  {
+   "line": "fileprovider-path cache-path subtitles/",
+   "reason": "Subtitle files handed to an external player. Only this directory, only with a per-file grant."
+  },
+  {
+   "line": "fileprovider-path cache-path updates/",
+   "reason": "Downloaded update APK handed to the package installer. Only this directory, only with a per-file grant."
+  },
+  {
+   "line": "fileprovider-path files-path downloads/",
+   "reason": "Downloaded videos opened in an external player or shared by the user. Only this directory, only with a per-file grant."
+  },
+  {
+   "line": "network base-config cleartext=true",
+   "reason": "Same as usesCleartextTraffic (B15-SEC-02). Trust anchors: system plus the two Let's Encrypt roots for Android 7-9."
+  },
+  {
+   "line": "package com.nuvio.app.plus",
+   "reason": "Release identity of Nuvio Plus; must never change (owner rule 1)."
+  },
+  {
+   "line": "permission android.permission.ACCESS_NETWORK_STATE",
+   "reason": "Wi-Fi-only downloads and offline state."
+  },
+  {
+   "line": "permission android.permission.ACCESS_WIFI_STATE",
+   "reason": "Wi-Fi-only downloads."
+  },
+  {
+   "line": "permission android.permission.FOREGROUND_SERVICE",
+   "reason": "Playback and download services."
+  },
+  {
+   "line": "permission android.permission.FOREGROUND_SERVICE_DATA_SYNC",
+   "reason": "Downloads on Android 14+."
+  },
+  {
+   "line": "permission android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+   "reason": "Background playback."
+  },
+  {
+   "line": "permission android.permission.INTERNET",
+   "reason": "Streaming, add-ons, sync."
+  },
+  {
+   "line": "permission android.permission.POST_NOTIFICATIONS",
+   "reason": "Download and playback notifications (Android 13+ asks the user)."
+  },
+  {
+   "line": "permission android.permission.RECEIVE_BOOT_COMPLETED",
+   "reason": "WorkManager reschedules downloads after reboot."
+  },
+  {
+   "line": "permission android.permission.REQUEST_INSTALL_PACKAGES",
+   "reason": "In-app update (the user confirms in the system installer)."
+  },
+  {
+   "line": "permission android.permission.RUN_USER_INITIATED_JOBS",
+   "reason": "User-initiated download jobs on Android 14+."
+  },
+  {
+   "line": "permission android.permission.WAKE_LOCK",
+   "reason": "WorkManager and playback."
+  },
+  {
+   "line": "permission com.nuvio.app.plus.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+   "reason": "AndroidX internal: protects the app's own non-exported dynamic receivers."
+  },
+  {
+   "line": "provider androidx.core.content.FileProvider authorities=com.nuvio.app.plus.fileprovider exported=false grantUriPermissions=true",
+   "reason": "Not exported; files are reachable only through per-file grants (grantUriPermissions) for the paths listed."
+  },
+  {
+   "line": "provider androidx.startup.InitializationProvider authorities=com.nuvio.app.plus.androidx-startup exported=false grantUriPermissions=false",
+   "reason": "Library start-up provider, not exported."
+  },
+  {
+   "line": "provider io.sentry.android.core.SentryInitProvider authorities=com.nuvio.app.plus.SentryInitProvider exported=false grantUriPermissions=false",
+   "reason": "Library start-up provider, not exported."
+  },
+  {
+   "line": "provider io.sentry.android.core.SentryPerformanceProvider authorities=com.nuvio.app.plus.SentryPerformanceProvider exported=false grantUriPermissions=false",
+   "reason": "Library start-up provider, not exported."
+  },
+  {
+   "line": "provider io.sentry.ndk.SentryNdkPreloadProvider authorities=com.nuvio.app.plus.SentryNdkPreloadProvider exported=false grantUriPermissions=false",
+   "reason": "Library start-up provider, not exported."
+  },
+  {
+   "line": "provider org.jetbrains.compose.resources.AndroidContextProvider authorities=com.nuvio.app.plus.resources.AndroidContextProvider exported=false grantUriPermissions=false",
+   "reason": "Library start-up provider, not exported."
+  }
+ ]
+}
