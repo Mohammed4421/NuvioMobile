@@ -5,7 +5,7 @@
     {
       "id": "NVP15-RISK-0002",
       "state": "BLOCKED",
-      "reason": "Branch ruleset requires no pull request or checks (B15-SEC-03); this session cannot change settings",
+      "reason": "Ruleset 27721857 requires a pull request (applied by the owner), but a re-read at 15:05 on 2026-11-21 lists no required status checks (ruleset updated 13:40); a merge with failing checks is not blocked by GitHub, only by this session following the rule",
       "needs": "Owner applies ruleset-proposal.md",
       "requirements": [
         "P6-10",
@@ -16,7 +16,7 @@
       "priority": "P0",
       "alternatives": "Apply the proposal; or accept the risk explicitly",
       "decision_owner": "owner",
-      "closes_when": "Ruleset re-read shows the required checks"
+      "closes_when": "Ruleset re-read shows the required checks again"
     },
     {
       "id": "NVP15-RISK-0003",
@@ -39,7 +39,7 @@
     {
       "id": "NVP15-RISK-0004",
       "state": "NEEDS PHYSICAL DEVICE",
-      "reason": "Emulator shades (Android 14 and, intermittently, Android 9) did not show the download notification to UI automation, while the app posted it. The emulator test now sends the posted notification's own Pause/Resume PendingIntent; only the system UI tap itself is left.",
+      "reason": "Notification test (#48): Android 9 full pause and resume PASS (required check). Android 14: Pause PASS; Resume NOT TESTED, because Android 14 lets an app start a user-initiated download job from the background only after a real tap, which an automated PendingIntent.send() is not",
       "needs": "Owner's phone: start a download, leave the app, Pause then Resume from the notification",
       "requirements": [
         "D-09"
@@ -100,7 +100,7 @@
     {
       "id": "NVP15-RISK-0009",
       "state": "FAIL",
-      "reason": "Nuvio's device tests on the Android 14 emulator failed after #28's merge: MpvSurfaceTest (activity lifecycle timeout) and SubtitleSettingsTest font picker (Compose timeout); both passed in most earlier runs",
+      "reason": "Last 62 emulator runs: MpvSurfaceTest failed 3 times at three different steps (activity never reached CREATED, Android 14; first frame, Android 14, same run as a font picker timeout; frame after stop/resume, Android 9, run with more emulator colour-buffer errors). Font picker failed once waiting for the system picker. No app fault proven; #51 records colour and logcat on the next failure",
       "needs": "Repeated Android 14 runs; owner's device for the font picker",
       "requirements": [
         "P8-05"
@@ -109,7 +109,7 @@
       "priority": "P2",
       "alternatives": "Investigate if repeated (D-12 rule applies to Android 9 only)",
       "decision_owner": "agent",
-      "closes_when": "Both pass on further runs or a cause is found"
+      "closes_when": "A failure with #51 diagnostics shows the cause, or no recurrence over further runs"
     }
   ]
 }

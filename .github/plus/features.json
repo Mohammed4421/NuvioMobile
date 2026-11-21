@@ -152,7 +152,8 @@
         "PlusDownloadsMigrationTest",
         "DownloadSubtitlesTest",
         "DownloadsTransferWorkerTest",
-        "AndroidDownloadLifecycleTest"
+        "AndroidDownloadLifecycleTest",
+        "DownloadFreeSpaceTest"
       ],
       "keywords": [
         "OpenDocumentTree",
@@ -164,7 +165,8 @@
         "renameDocument"
       ],
       "test_files": [
-        "commonTest/kotlin/com/nuvio/app/features/downloads/PlusDownloadsMigrationTest.kt"
+        "commonTest/kotlin/com/nuvio/app/features/downloads/PlusDownloadsMigrationTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/downloads/DownloadFreeSpaceTest.kt"
       ]
     },
     {
