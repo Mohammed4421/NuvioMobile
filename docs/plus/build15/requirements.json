@@ -903,15 +903,20 @@
       "mandatory": true,
       "requirement": "Security review: Exported components.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
+      "paths": [
+        ".github/plus/apk-manifest.py",
+        ".github/plus/security-surface.py",
+        "docs/plus/build15/security-surface.json",
+        ".github/workflows/plus-build.yml"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "No written review against this item yet."
+        "Head APK surface: checked by the 'Attack surface' step of this pull request's checks; result not yet cited."
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Cite the checks run of the head APK."
     },
     {
       "id": "P6-02",
@@ -937,15 +942,20 @@
       "mandatory": true,
       "requirement": "Security review: FileProvider and permissions.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
+      "paths": [
+        ".github/plus/apk-manifest.py",
+        ".github/plus/security-surface.py",
+        "docs/plus/build15/security-surface.json",
+        ".github/workflows/plus-build.yml"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "No written review against this item yet."
+        "Head APK surface: checked by the 'Attack surface' step of this pull request's checks; result not yet cited."
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Cite the checks run of the head APK."
     },
     {
       "id": "P6-04",
