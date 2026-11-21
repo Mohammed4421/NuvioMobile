@@ -1077,10 +1077,10 @@
     <string name="settings_playback_auto_play_next_episode_description">بدء الحلقة التالية تلقائيًا عند ظهور التنبيه.</string>
     <string name="settings_playback_auto_play_next_episode_fallback">البديل عند فشل مجموعة المشاهدة المتتابعة</string>
     <string name="settings_playback_auto_play_next_episode_fallback_description">تحديد أول بث متاح تلقائيًا إذا لم يُعثر على مجموعة المشاهدة المتتالية. عند الإيقاف، يُعرض منتقي البث بدلًا من ذلك.</string>
-    <string name="settings_playback_decoder_device_only">فك التشفير عبر الجهاز</string>
-    <string name="settings_playback_decoder_prefer_app">الأولوية لفك التشفير عبر التطبيق (FFmpeg)</string>
-    <string name="settings_playback_decoder_prefer_device">الأولوية لفك التشفير عبر الجهاز</string>
-    <string name="settings_playback_decoder_priority">أولوية فك التشفير</string>
+    <string name="settings_playback_decoder_device_only">فك الترميز عبر الجهاز</string>
+    <string name="settings_playback_decoder_prefer_app">الأولوية لفك الترميز عبر التطبيق (FFmpeg)</string>
+    <string name="settings_playback_decoder_prefer_device">الأولوية لفك الترميز عبر الجهاز</string>
+    <string name="settings_playback_decoder_priority">أولوية فك الترميز</string>
     <string name="settings_playback_dialog_close">اضغط خارج النافذة للإغلاق</string>
     <string name="settings_playback_dialog_save_close">اضغط خارج النافذة للحفظ والإغلاق</string>
     <string name="settings_playback_duration_day_one">%1$d يوم</string>
@@ -2603,7 +2603,7 @@
     <string name="settings_playback_chapter_title_description">إظهار اسم الفصل الحالي فوق شريط التقدم.</string>
     <string name="settings_playback_downmix">تفعيل دمج القنوات (Downmix)</string>
     <string name="settings_playback_downmix_channels">عدد القنوات</string>
-    <string name="settings_playback_downmix_description">يدمج الصوت المحيطي إلى عدد القنوات المحدد أدناه عبر مفكك FFmpeg في التطبيق. يتطلب ضبط «أولوية فك التشفير» على «الأولوية لفك التشفير عبر التطبيق (FFmpeg)». الإخراج عبر البلوتوث يُدمج دائمًا إلى 2.0.</string>
+    <string name="settings_playback_downmix_description">يدمج الصوت المحيطي إلى عدد القنوات المحدد أدناه عبر مفكك FFmpeg في التطبيق. يتطلب ضبط «أولوية فك الترميز» على «الأولوية لفك الترميز عبر التطبيق (FFmpeg)». الإخراج عبر البلوتوث يُدمج دائمًا إلى 2.0.</string>
     <string name="settings_playback_downmix_maintain_volume">الحفاظ على مستوى الصوت الأصلي عند الدمج</string>
     <string name="settings_playback_downmix_maintain_volume_description">عند إيقافه، قد يخفض تطبيع الدمج مستوى الصوت العام.</string>
     <string name="settings_playback_downmix_section">دمج القنوات</string>
