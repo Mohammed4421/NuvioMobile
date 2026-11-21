@@ -143,6 +143,10 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          # Android 17's image did not boot within 600 s with the default 2 cores (run of 38f059c9).
+          cores: ${{ matrix.api == 37 && 4 || 2 }}
+          ram-size: ${{ matrix.api == 37 && '4096M' || '2048M' }}
+          emulator-boot-timeout: ${{ matrix.api == 37 && 1200 || 600 }}
           script: bash .github/plus/nuvio-device-tests.sh device-test/debug-app.apk device-test/debug-test.apk "$LABEL"
 
       - name: Keep the log
