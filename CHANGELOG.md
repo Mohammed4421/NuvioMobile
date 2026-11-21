@@ -7,6 +7,10 @@ Newest first.
 ## Next build — Build 15: audit and polish
 
 ### Fixed
+- **A subtitle file with another extension is read in its real format.** A file picked from the
+  device as `.txt` (or with no extension) was always treated as SRT, so an ASS or VTT file showed
+  nothing. Its format is now read from the text, and a file that is no subtitle is refused with a
+  message.
 - **Moving or resizing subtitles with your fingers no longer stores the settings on every frame.**
   The subtitles follow the fingers as before; their place and size are stored once, when the gesture
   ends (or if the player closes mid-gesture). Before, a one-second drag stored twelve subtitle
