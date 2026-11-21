@@ -36,3 +36,21 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | UI polish, RTL screenshots | Not started (P4) |
 | Performance | Not measured (P5) |
 | PortKit | P7 step 1: foundation (registry, levels, policy, inventory) |
+
+## Findings in the full format (spec §4)
+
+### B15-PLY-01 — libmpv snapshot loop sets a view property after a dispatcher switch
+
+| Field | Value |
+|---|---|
+| Files | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt` (Nuvio's code, line 1652 at `8c8098a8`) |
+| Evidence | `SubtitlePlaybackTest.libmpvStylesAndClearsTimedCaptions` failed once on the Android 14 emulator with `CalledFromWrongThreadException … Calling: NuvioLibmpv` at line 1652 (run of `a0ed03fd`, PR #34); the same test passed on the same app code in the previous run and on Android 9 |
+| Root cause (hypothesis, not proven) | The loop calls `view.snapshot()`, which runs `withContext(mpvDispatcher)`, then sets `view.keepScreenOn`. The coroutine resumes on its caller's dispatcher: in the app that is the main thread (Compose's `AndroidUiDispatcher`); under Compose's test scheduler it may resume elsewhere. Which one applies here is not established |
+| User impact | If it can happen in the app: a crash while playing with libmpv. If test-only: none |
+| Severity | High if reproducible in the app; Low if test-only — **unclassified until measured** |
+| Alternatives | (a) set the view property on `Dispatchers.Main.immediate` explicitly (Nuvio 1.1.0-beta.2 does so for its snapshot callbacks, not for this loop); (b) leave Nuvio's code as is and fix the test environment; (c) report upstream |
+| Chosen | None yet: measure first (repeated device-test runs), then decide between (a) and (b) |
+| Compatibility / maintenance | (a) changes a Nuvio file (adds a conflict line on upstream sync); (b) none |
+| Tests required | Repeated runs of `SubtitlePlaybackTest` on Android 14; a check of the dispatcher the effect runs on in the app |
+| Priority (§14) | P1 Must Fix if it reproduces in the app |
+| Decision / status | DEFER until measured — DISCOVERED |
