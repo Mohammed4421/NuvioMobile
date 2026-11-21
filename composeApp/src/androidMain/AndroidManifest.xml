@@ -6,7 +6,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
-    <application>
+    <!-- Nuvio Plus (Build 15): declares right-to-left support like the app (androidApp already sets it,
+         so the merged app manifest is unchanged). Host tests use this library manifest; without it
+         Android lays Arabic screens out left to right there, unlike in the app. -->
+    <application android:supportsRtl="true">
         <service
             android:name="com.nuvio.app.features.downloads.DownloadsTransferJobService"
             android:permission="android.permission.BIND_JOB_SERVICE"

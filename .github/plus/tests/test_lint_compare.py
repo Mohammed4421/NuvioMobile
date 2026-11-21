@@ -44,6 +44,12 @@ class Compare(unittest.TestCase):
         new, _, _ = lc.compare(report("/b14", OLD), report("/h", OLD, OLD))
         self.assertEqual(1, len(new))
 
+    def test_a_library_finding_in_a_new_cache_directory_is_not_new(self):
+        jar = lambda h: ("TrustAllX509TrustManager", "Warning", "Security", "checkServerTrusted is empty",
+                         f"/home/runner/.gradle/caches/9.4.1/transforms/{h}/transformed/out/jars/classes.jar", "")
+        new, _, blocking = lc.compare(report("/b14", jar("2d6295ec")), report("/h", jar("be50dd54")))
+        self.assertEqual(([], []), (new, blocking))
+
     def test_fixed_findings_are_listed(self):
         _, fixed, _ = lc.compare(report("/b14", OLD), report("/h"))
         self.assertEqual(1, len(fixed))

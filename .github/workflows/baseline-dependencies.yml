@@ -1,0 +1,102 @@
+# Build 15, P0-05: the resolved libraries of a release APK's runtime classpath at a given commit
+# (the published Build 14 for the baseline), printed to the job log and kept as an artifact, so the
+# baseline records exactly which library versions that release was built with. Manual only; reads
+# only; no secret, Gradle cache never written.
+name: Baseline dependencies
+
+on:
+  # On a pull request that changes this file it lists the published Build 14 (custom-14, 18276c69),
+  # so the baseline's list comes from a run of the reviewed workflow.
+  pull_request:
+    branches: [custom-subtitles]
+    paths: [".github/workflows/baseline-dependencies.yml"]
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Full commit SHA of the release to list
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  dependencies:
+    name: Resolved release libraries
+    timeout-minutes: 45
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the tools
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          path: tools
+
+      - name: Forget the checkout token
+        run: |
+          git -C tools config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git -C tools config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git -C tools config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git -C tools config --local --unset-all
+          left="$(git -C tools config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Check out the release
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ inputs.commit || '18276c6944915b5b0110fd94d243cc94619281b9' }}
+          path: app
+
+      - name: Forget the checkout token
+        run: |
+          git -C app config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git -C app config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git -C app config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git -C app config --local --unset-all
+          left="$(git -C app config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Set up Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-read-only: true
+
+      - name: Take the Sentry plugin from Maven Central
+        run: |
+          mkdir -p "${HOME}/.gradle/init.d"
+          cp tools/.github/plus/plugins-from-central.init.gradle "${HOME}/.gradle/init.d/"
+
+      - name: List the resolved libraries
+        env:
+          COMMIT: ${{ inputs.commit || '18276c6944915b5b0110fd94d243cc94619281b9' }}
+        run: |
+          cd app
+          [[ "$(git rev-parse HEAD)" == "${COMMIT}" ]] || { echo "::error::checked out $(git rev-parse HEAD), not ${COMMIT}"; exit 1; }
+          touch local.properties
+          bash ../tools/.github/plus/gradle-retry.sh ../dependencies.log ./gradlew -q :androidApp:dependencies \
+            --configuration fullReleaseRuntimeClasspath \
+            -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore \
+            -Pnuvio.applicationIdSuffix=.plus -Pnuvio.minSdk=28 > /dev/null
+          cd ..
+          python3 -I -c '
+          import importlib.util, sys
+          spec = importlib.util.spec_from_file_location("osv", "tools/.github/plus/osv-check.py")
+          osv = importlib.util.module_from_spec(spec); spec.loader.exec_module(osv)
+          libs = osv.libraries(open("dependencies.log").read())
+          print(f"RESOLVED {len(libs)} libraries at {sys.argv[1]}")
+          for name in sorted(libs): print(f"LIB {name}:{libs[name]}")
+          ' "${COMMIT}" | tee libraries.txt
+          [[ "$(grep -c '^LIB ' libraries.txt)" -gt 0 ]] || { echo "::error::no library resolved"; exit 1; }
+
+      - name: Keep the list
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: baseline-dependencies
+          path: libraries.txt
+          if-no-files-found: error
+          retention-days: 90

@@ -20,6 +20,8 @@ def findings(path, root):
     for issue in ET.parse(path).getroot().iter("issue"):
         loc = issue.find("location")
         file = (loc.get("file", "") if loc is not None else "").replace(root, "")
+        # Library jars sit in Gradle's transform cache under a hash that changes between builds.
+        file = re.sub(r"^.*/\.gradle/caches/[^/]+/transforms/[0-9a-f]+/", "<gradle-cache>/", file)
         line = loc.get("line") if loc is not None else None
         out.append({"id": issue.get("id"), "severity": issue.get("severity"), "category": issue.get("category", ""),
                     "message": issue.get("message", ""), "file": file, "line": line,

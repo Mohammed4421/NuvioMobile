@@ -84,6 +84,12 @@ jobs:
         working-directory: src
         run: bash .github/plus/prepare-build.sh "$(bash .github/plus/next-build-number.sh 2>/dev/null || echo 15)"
 
+      - name: Lint tasks of the modules (which modules lint covers)
+        working-directory: src
+        run: |
+          ./gradlew -q :composeApp:tasks --all -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore 2>/dev/null \
+            | grep -iE '^lint' || echo "no lint task listed for composeApp"
+
       - name: Lint
         working-directory: src
         env:
@@ -147,6 +153,7 @@ jobs:
 
       - name: Compare
         run: |
+          set -o pipefail
           status=0
           python3 -I .github/plus/lint-compare.py reports/lint-build14.xml "$(cat reports/root-build14.txt)" \
             reports/lint-head.xml "$(cat reports/root-head.txt)" | tee lint-compare.md || status=$?

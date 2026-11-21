@@ -58,7 +58,7 @@
       "paths": [
         "docs/plus/build15/baseline.json"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -78,7 +78,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Fields match GitHub and the release.",
-      "next": "—"
+      "next": "Re-verify on the commit that adds the hashes and library list."
     },
     {
       "id": "P0-02",
@@ -90,7 +90,7 @@
       "paths": [
         "docs/plus/build15/baseline.json"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -105,7 +105,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "All toolchain and identity fields present with sources.",
-      "next": "Add iOS target versions."
+      "next": "Re-verify on the commit that adds the hashes and library list."
     },
     {
       "id": "P0-03",
@@ -117,7 +117,7 @@
       "paths": [
         "docs/plus/build15/baseline.json"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -130,7 +130,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present with sources.",
-      "next": "—"
+      "next": "Re-verify on the commit that adds the hashes and library list."
     },
     {
       "id": "P0-04",
@@ -159,16 +159,15 @@
       "requirement": "baseline.json: file and dependency fingerprints for reproduction.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/baseline.json"
+        "docs/plus/build15/baseline.json",
+        "docs/plus/build15/baseline-dependencies.txt"
       ],
-      "status": "DISCOVERED",
+      "status": "IMPLEMENTED",
       "evidence": [],
-      "untested": [
-        "No dependency lock or verification metadata; no APK hashes recorded."
-      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "APK SHA-256 and a resolved dependency list for Build 14.",
-      "next": "Record hashes of custom-14 assets and a dependency report."
+      "next": "Verify on this pull request's checks."
     },
     {
       "id": "P0-06",
