@@ -329,14 +329,22 @@
         "commonMain/composeResources/values-ar/strings.xml",
         "commonMain/composeResources/values-ar/strings_ratings.xml",
         "commonMain/composeResources/values-ar/autosync_toast_strings.xml",
-        "commonMain/composeResources/values/strings.xml"
+        "commonMain/composeResources/values/strings.xml",
+        "androidMain/AndroidManifest.xml"
       ],
       "depends": [],
       "data": "none",
       "tests": [
-        "CI: build fails on duplicate resource names"
+        "CI: build fails on duplicate resource names",
+        "PlusReferenceScreenshotsEnglishPhoneTest",
+        "PlusReferenceScreenshotsArabicPhoneTest",
+        "PlusReferenceScreenshotsEnglishTabletTest",
+        "PlusReferenceScreenshotsArabicTabletTest"
       ],
-      "keywords": []
+      "keywords": [],
+      "test_files": [
+        "androidHostTest/kotlin/com/nuvio/app/plus/screenshots/PlusReferenceScreenshotsTest.kt"
+      ]
     },
     {
       "id": "addon-link-confirmation",
