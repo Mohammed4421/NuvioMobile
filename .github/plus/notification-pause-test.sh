@@ -25,6 +25,7 @@ fail() {
   { echo "== stored downloads"; adb shell run-as "${pkg}" cat shared_prefs/nuvio_downloads.xml
     echo "== files"; adb shell run-as "${pkg}" ls -la files/downloads
     echo "== jobs"; adb shell dumpsys jobscheduler | grep -A12 "${pkg}" | head -n 60
+    echo "== notifications"; adb shell dumpsys notification --noredact | grep -A8 "pkg=${pkg}" | head -n 40
     echo "== connectivity"; adb shell dumpsys connectivity | grep -iE "NetworkAgentInfo|Active default network" | head -n 10
     echo "== crashes"; adb logcat -d -b crash 2>/dev/null | tail -n 60
     echo "== app log"; adb logcat -d 2>/dev/null | grep -E "com\.nuviodebug|nuvio|AndroidRuntime|WM-|Download" | grep -viE "SuperDelight|gstatic|ZappDownloader| SP  " | tail -n 80
@@ -97,6 +98,18 @@ if best and abs(best[1] - y0) < 200:
     print(best[0], best[1])' "$1"
 }
 
+notification_posted() {
+  adb shell dumpsys notification --noredact 2>/dev/null | tr -d '\r' | grep -q "pkg=${pkg}"
+}
+
+# Opens the notification list as a user does: one finger from the top edge (cmd statusbar
+# expand-notifications opens the quick settings over the list on some Android 14 images).
+open_shade() {
+  local width
+  width="$(adb shell wm size | sed -nE 's/.* ([0-9]+)x[0-9]+.*/\1/p' | tail -n 1 | tr -d '\r')"
+  adb shell input swipe "$((width / 2))" 2 "$((width / 2))" "$((height * 2 / 3))" 500; sleep 3
+}
+
 # Taps the action $1 of the download's notification. The shade can open with the quick settings
 # taking the screen (the notification below the fold) and low-priority notifications are shown
 # collapsed (no actions) on newer Android: scroll until the notification is on screen, then use
@@ -104,7 +117,9 @@ if best and abs(best[1] - y0) < 200:
 tap_notification_button() {
   local point="" title="" height
   height="$(adb shell wm size | sed -nE 's/.* [0-9]+x([0-9]+).*/\1/p' | tail -n 1 | tr -d '\r')"
-  adb shell cmd statusbar expand-notifications; sleep 3
+  # The app must have posted the notification (system record), whatever the shade shows.
+  wait_for 30 "the app's download notification to be posted" notification_posted
+  open_shade
   for step in 1 2 3 4 5 6; do
     point="$(find_node "$1")"
     [[ -n "${point}" ]] && break
@@ -115,7 +130,7 @@ tap_notification_button() {
         adb shell input swipe 300 "$((height * 3 / 4))" 300 "$((height / 4))" 400
       else
         # The swipe may have closed the shade or the quick settings: open the notifications again.
-        adb shell cmd statusbar collapse; sleep 1; adb shell cmd statusbar expand-notifications
+        adb shell cmd statusbar collapse; sleep 1; open_shade
       fi
       sleep 2
       continue
