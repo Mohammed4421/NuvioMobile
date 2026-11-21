@@ -14,13 +14,16 @@ class GradleRetryTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             fake = Path(temp, "gradle")
             calls = Path(temp, "calls")
-            lines = ["#!/usr/bin/env bash", f'n=$(($(cat "{calls}" 2>/dev/null || echo 0) + 1)); echo $n > "{calls}"']
+            args = Path(temp, "args")
+            lines = ["#!/usr/bin/env bash", f'n=$(($(cat "{calls}" 2>/dev/null || echo 0) + 1)); echo $n > "{calls}"',
+                     f'echo "$*" >> "{args}"']
             for index, (text, status) in enumerate(outputs, start=1):
                 lines.append(f'if [ $n -eq {index} ]; then printf "%s\\n" {text!r}; exit {status}; fi')
             fake.write_text("\n".join(lines) + "\n")
             fake.chmod(0o755)
             result = subprocess.run(["bash", str(SCRIPT), str(Path(temp, "out.log")), str(fake)], capture_output=True,
                                     text=True, env={**os.environ, "GRADLE_RETRY_WAIT": "0", **(env or {})})
+            self.args = args.read_text().splitlines()
             return result.returncode, int(calls.read_text()), result.stderr
 
     def test_success_runs_once(self):
@@ -47,6 +50,22 @@ class GradleRetryTest(unittest.TestCase):
         for wait, low in zip(waits, (10, 20, 40, 80)):
             self.assertTrue(low <= wait <= low + 5, waits)
         self.assertIn("(status code 429)", stderr)
+
+    def test_a_file_missing_after_its_metadata_is_retried_with_fresh_dependencies(self):
+        missing = ("> Could not find guava-33.3.1-android.jar (com.google.guava:guava:33.3.1-android).\n"
+                   "  Searched in the following locations:")
+        code, calls, stderr = self.run_with([(missing, 1), ("BUILD SUCCESSFUL", 0)])
+        self.assertEqual((0, 2), (code, calls))
+        self.assertEqual(["", "--refresh-dependencies"], self.args)
+        self.assertIn("A download failed", stderr)
+
+    def test_other_download_retries_keep_the_command_unchanged(self):
+        self.run_with([("Could not download x.jar", 1), ("BUILD SUCCESSFUL", 0)])
+        self.assertEqual(["", ""], self.args)
+
+    def test_a_dependency_that_does_not_exist_is_not_retried(self):
+        missing = "> Could not find com.example:nothing:1.0.\n  Searched in the following locations:"
+        self.assertEqual((1, 1), self.run_with([(missing, 1)])[:2])
 
     def test_a_compile_error_is_not_retried(self):
         self.assertEqual((1, 1), self.run_with([("e: Unresolved reference\nCould not resolve x", 1)])[:2])
