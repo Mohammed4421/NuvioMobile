@@ -24,6 +24,32 @@
       "reason": "Owner: Android 9 matters little now; its support (minSdk 28) is kept",
       "impact": "Less effort on Android 9 test flakiness; real defects still fixed",
       "decision": "Owner 2026-11-21 08:32 ('تمام اكمل' to the recommended option)"
+    },
+    {
+      "id": "NVP15-CHG-0003",
+      "requirements": [
+        "P8-06",
+        "S16-04",
+        "D-09"
+      ],
+      "before": "Device tests before the release approval (spec §11, §16)",
+      "after": "No preview build: the owner tests on the final release only; device-only checks (HDR/Dolby Vision, notification tap on Android 14, gesture feel, SD card/SAF, real performance, his sources) stay NOT TESTED until then. Data, upgrade (14/13/12→15 with the real key), signing and Android 8 refusal are still tested automatically in the release run before publishing.",
+      "reason": "Owner: 'I only want to try the final release'",
+      "impact": "Device-only findings can only surface after publishing; critical data/upgrade/signing checks unaffected",
+      "decision": "Owner 2026-11-21 13:41"
+    },
+    {
+      "id": "NVP15-CHG-0004",
+      "requirements": [
+        "P0-04",
+        "P5-01",
+        "P5-04"
+      ],
+      "before": "P0-04: approved performance measurements (device implied)",
+      "after": "P0 baseline performance = emulator measurements (Build 14, Android 14 and 9, 10 values each); device values measured under P5-01/P5-04 on the final release",
+      "reason": "No device before the release (NVP15-CHG-0003); the owner approved P0 on that basis",
+      "impact": "P0 gate passes; device performance stays open in P5",
+      "decision": "Owner 2026-11-21 13:44 ('اعتمد')"
     }
   ]
 }

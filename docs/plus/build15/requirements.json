@@ -62,7 +62,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "VERIFIED",
+      "status": "ACCEPTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -96,8 +96,13 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Fields match GitHub and the release.",
-      "next": "Owner acceptance (P0 gate).",
-      "nvp15": "NVP15-REQ-0004"
+      "next": "—",
+      "nvp15": "NVP15-REQ-0004",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-21",
+        "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
+      }
     },
     {
       "id": "P0-02",
@@ -110,7 +115,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "VERIFIED",
+      "status": "ACCEPTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -139,8 +144,13 @@
       ],
       "needs_physical_device": false,
       "acceptance": "All toolchain and identity fields present with sources.",
-      "next": "Owner acceptance (P0 gate).",
-      "nvp15": "NVP15-REQ-0005"
+      "next": "—",
+      "nvp15": "NVP15-REQ-0005",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-21",
+        "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
+      }
     },
     {
       "id": "P0-03",
@@ -153,7 +163,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "VERIFIED",
+      "status": "ACCEPTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -180,15 +190,20 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present with sources.",
-      "next": "Owner acceptance (P0 gate).",
-      "nvp15": "NVP15-REQ-0006"
+      "next": "—",
+      "nvp15": "NVP15-REQ-0006",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-21",
+        "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
+      }
     },
     {
       "id": "P0-04",
       "spec": "Build 15 spec v1.0 §3",
       "phase": "P0",
       "mandatory": true,
-      "requirement": "baseline.json: approved performance measurements.",
+      "requirement": "baseline.json: approved performance measurements (owner: the emulator measurements are the approved baseline; device values move to P5-01/P5-04 on the final release, NVP15-CHG-0004).",
       "source": "Build 15 spec v1.0",
       "paths": [
         ".github/plus/measure-compare.py",
@@ -196,7 +211,7 @@
         ".github/workflows/performance-compare.yml",
         "docs/plus/build15/baseline.json"
       ],
-      "status": "IMPLEMENTED",
+      "status": "ACCEPTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -206,13 +221,16 @@
           "result": "PASS"
         }
       ],
-      "untested": [
-        "Real-device values: NEEDS PHYSICAL DEVICE."
-      ],
-      "needs_physical_device": true,
+      "untested": [],
+      "needs_physical_device": false,
       "acceptance": "Repeated Build 14 measurements on fixed devices.",
-      "next": "Measure on the owner's device.",
-      "nvp15": "NVP15-REQ-0007"
+      "next": "Device values under P5-01/P5-04.",
+      "nvp15": "NVP15-REQ-0007",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-21",
+        "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
+      }
     },
     {
       "id": "P0-05",
@@ -226,7 +244,7 @@
         "docs/plus/build15/baseline-dependencies.txt",
         ".github/plus/check-baseline.py"
       ],
-      "status": "VERIFIED",
+      "status": "ACCEPTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -246,8 +264,13 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "APK SHA-256 and a resolved dependency list for Build 14.",
-      "next": "Owner acceptance (P0 gate).",
-      "nvp15": "NVP15-REQ-0008"
+      "next": "—",
+      "nvp15": "NVP15-REQ-0008",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-21",
+        "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
+      }
     },
     {
       "id": "P0-06",
@@ -259,7 +282,7 @@
       "paths": [
         "docs/plus/build15/known-issues.md"
       ],
-      "status": "VERIFIED",
+      "status": "ACCEPTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -273,7 +296,12 @@
       "needs_physical_device": false,
       "acceptance": "Each pre-existing issue listed with source.",
       "next": "—",
-      "nvp15": "NVP15-REQ-0009"
+      "nvp15": "NVP15-REQ-0009",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-21",
+        "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
+      }
     },
     {
       "id": "P0-07",
@@ -283,13 +311,26 @@
       "requirement": "P0 gate: baseline approved; GitHub and test state known and re-checkable.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "ACCEPTED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_the_real_side_registers_hold",
+          "what": "The gate checks stage-gates.json: P0 PASS only with every P0 requirement verified or accepted and the owner's decision recorded",
+          "result": "PASS"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "P0-01..06 VERIFIED, then accepted.",
-      "next": "Close P0-04 and P0-05.",
-      "nvp15": "NVP15-REQ-0010"
+      "next": "—",
+      "nvp15": "NVP15-REQ-0010",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-21",
+        "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
+      }
     },
     {
       "id": "P1-01",
@@ -2825,13 +2866,26 @@
       "requirement": "Build 14 completeness not assumed; Build 15 source changes only after P0 is finished and approved by the owner.",
       "source": "Build 15 spec v1.1",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "ACCEPTED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_the_real_side_registers_hold",
+          "what": "The gate checks stage-gates.json: P0 PASS only with every P0 requirement verified or accepted and the owner's decision recorded",
+          "result": "PASS"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Owner's P0 decision recorded in stage-gates.json; source changes before it listed in carryover.json for re-check.",
-      "next": "Owner's P0 decision (NVP15-RISK-0001).",
-      "nvp15": "NVP15-REQ-0141"
+      "next": "—",
+      "nvp15": "NVP15-REQ-0141",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-21",
+        "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
+      }
     },
     {
       "id": "S22-01",
