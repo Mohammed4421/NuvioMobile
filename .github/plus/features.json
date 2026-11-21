@@ -197,7 +197,8 @@
         "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonQueuePolicyTest.kt",
         "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonQueueStorageTest.kt",
         "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonStreamMatcherTest.kt",
-        "androidHostTest/kotlin/com/nuvio/app/features/downloads/SeasonPauseAndroidTest.kt"
+        "androidHostTest/kotlin/com/nuvio/app/features/downloads/SeasonPauseAndroidTest.kt",
+        "androidApp/src/debug/kotlin/com/nuvio/android/NotificationActionTestReceiver.kt"
       ]
     },
     {
