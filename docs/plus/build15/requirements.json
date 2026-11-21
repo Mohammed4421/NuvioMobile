@@ -1052,15 +1052,17 @@
       "mandatory": true,
       "requirement": "Security review: Branch protection and merge/release gates.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
+      "paths": [
+        "docs/plus/build15/ruleset-proposal.md"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "No written review against this item yet."
+        "Ruleset change needs the owner (session cannot edit settings); current ruleset requires no checks (B15-SEC-03)."
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Owner applies or declines the proposal; then re-read the ruleset as evidence."
     },
     {
       "id": "P6-11",
