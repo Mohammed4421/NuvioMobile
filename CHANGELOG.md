@@ -7,6 +7,12 @@ Newest first.
 ## Next build — Build 15: audit and polish
 
 ### Fixed
+- **Your add-on and debrid tokens are no longer sent to a server that cannot prove who it is.** With
+  ExoPlayer, the player accepted any certificate, so on a hostile network (public Wi-Fi) a stream
+  request carrying a token could be read. A request that carries a token, cookie or key now goes
+  only to a server with a valid certificate for its name, as libmpv already required for every
+  stream. Streams without such headers play exactly as before, and servers on your own network
+  (a NAS or home media server with a self-signed certificate) keep working.
 - **Subtitle files picked from the device no longer pile up.** Each pick kept a copy in the app's
   cache. Now each pick removes the copies left from earlier app sessions (nothing refers to them
   after a restart); copies from the current session stay, so a subtitle being shown is never
