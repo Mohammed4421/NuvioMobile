@@ -23,5 +23,14 @@ if (( sdk < 29 )); then
   classes="${classes/,com.nuvio.android.SubtitleSettingsTest/}"
   echo "${label}: SubtitleSettingsTest.importsPreviewsAndRemovesACustomFontThroughTheSystemPicker: NOT TESTED (needs Android 10+ to place a picker-visible file)"
 fi
+adb logcat -c || true
 out="$(adb shell "am instrument -w -r -e class '${classes}' '${NUVIO_TEST_RUNNER}'" 2>&1 | tr -d '\r')"
-python3 -I "${here}/instrumentation-results.py" "${label}" <<< "${out}"
+status=0
+python3 -I "${here}/instrumentation-results.py" "${label}" <<< "${out}" || status=$?
+if (( status != 0 )); then
+  # Evidence for telling an app fault from the emulator: the player's and the system's lines.
+  echo "::group::${label}: logcat after the failed tests (player, surface, activity, crashes)"
+  adb logcat -d -v time | grep -iE "mpv|exoplayer|surface|nuvio|ActivityTaskManager|AndroidRuntime|DocumentsUI|ANR" | tail -n 300
+  echo "::endgroup::"
+fi
+exit "${status}"
