@@ -656,7 +656,11 @@ jobs:
       - name: Evidence of PortKit's verified features
         # A feature marked verified must cite a successful transfer-test run on the commit it names,
         # and neither the feature nor PortKit may have changed since (portkit.py check-evidence).
-        # Reads the public run without a token, so callers need not grant this workflow more.
+        # Reads the public run with this job's token first (its own request allowance: anonymous reads
+        # from shared runners hit GitHub's rate limit, run 44783639944) and without it when the token
+        # may not read Actions data, so callers need not grant this workflow more permissions.
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: python3 -I portkit/portkit.py check-evidence
 
   review-records:

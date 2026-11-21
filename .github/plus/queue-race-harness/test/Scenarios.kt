@@ -4,6 +4,7 @@ import com.nuvio.app.features.debrid.DirectDebridPlaybackResolver as Resolver
 import com.nuvio.app.features.details.MetaDetailsRepository as Meta
 import com.nuvio.app.features.details.season
 import com.nuvio.app.features.downloads.DownloadsRepository as Downloads
+import com.nuvio.app.features.downloads.DownloadStatus
 import com.nuvio.app.features.downloads.DownloadsStorage
 import com.nuvio.app.features.downloads.SeasonDownloadQueue as Queue
 import com.nuvio.app.features.downloads.SeasonDownloadScope
@@ -220,5 +221,76 @@ object Scenarios {
         check(dl(A) == listOf("tt1:E1", "tt1:E2"), "A did not move on in A: ${dl(A)}")
         check(dl(B).none { it.startsWith("tt1") }, "A's episodes landed in B: ${dl(B)}")
         return result("restart with queues of two profiles") { "A=${eps(A)} B=${eps(B, "tt2")} A dl=${dl(A)} B dl=${dl(B)}" }
+    }
+
+    // ---- Build 15: concurrency cases asked for by the review (prove a lost update or a duplicate
+    // enqueue before changing the queue's design).
+
+    @JvmStatic fun r9_twoSeasonsStartedTogether(): String {
+        boot()
+        Meta.byId["tt1"] = season(3)
+        Meta.byId["tt2"] = season(2, prefix = "tt2")
+        startSeason("tt1"); startSeason("tt2")       // both before the main thread runs
+        TestMain.drain()
+        check(eps(A) == listOf("E1:Downloading", "E2:Waiting", "E3:Waiting"), "tt1 queue: ${eps(A)}")
+        check(eps(A, "tt2") == listOf("E1:Downloading", "E2:Waiting"), "tt2 queue: ${eps(A, "tt2")}")
+        for (round in 1..4) {
+            Downloads.storedFor(A).filter { it.status == DownloadStatus.Downloading }.forEach { Downloads.finish(it.id) }
+            TestMain.drain()
+        }
+        check(dl(A) == listOf("tt1:E1", "tt1:E2", "tt1:E3", "tt2:E1", "tt2:E2"), "not every episode downloaded once: ${dl(A)}")
+        return result("two seasons started in the same main-thread turn") { "A dl=${dl(A)} log=${Downloads.log}" }
+    }
+
+    @JvmStatic fun r10_sameSeasonStartedTwice(): String {
+        boot()
+        Meta.cached = season(3)
+        startSeason("tt1"); startSeason("tt1")       // a double tap
+        TestMain.drain()
+        check(eps(A) == listOf("E1:Downloading", "E2:Waiting", "E3:Waiting"), "queue after a double start: ${eps(A)}")
+        return result("the same season started twice at once") { "A=${eps(A)} log=${Downloads.log}" }
+    }
+
+    @JvmStatic fun r11_pauseAndResume(): String {
+        boot()
+        Meta.cached = season(3)
+        startSeason(); TestMain.drain()
+        val e1 = Downloads.storedFor(A).single()
+        Downloads.setStatus(e1.id, DownloadStatus.Paused); TestMain.drain()
+        check(eps(A).first() == "E1:Paused", "E1 not paused in the queue: ${eps(A)}")
+        check(dl(A) == listOf("tt1:E1"), "pausing started the next episode: ${dl(A)}")
+        Downloads.setStatus(e1.id, DownloadStatus.Downloading); TestMain.drain()
+        check(eps(A).first() == "E1:Downloading", "E1 not resumed: ${eps(A)}")
+        Downloads.finish(e1.id); TestMain.drain()
+        check(dl(A) == listOf("tt1:E1", "tt1:E2"), "E2 did not follow once: ${dl(A)}")
+        return result("pause, resume, then the next episode") { "A=${eps(A)} log=${Downloads.log}" }
+    }
+
+    @JvmStatic fun r12_finishWhileAnEpisodeIsRemoved(): String {
+        boot()
+        Meta.cached = season(3)
+        startSeason(); TestMain.drain()
+        val e2 = all().first { it.episodeNumber == 2 }
+        Queue.remove(e2.id)                            // same main-thread turn as the finish below
+        Downloads.finish(Downloads.storedFor(A).single().id)
+        TestMain.drain()
+        check(Downloads.log.none { it.endsWith("E2") }, "removed E2 was downloaded: ${Downloads.log}")
+        check(dl(A) == listOf("tt1:E1", "tt1:E3"), "E3 did not follow E1: ${dl(A)}")
+        return result("download finishes while the next episode is removed") { "A=${eps(A)} log=${Downloads.log}" }
+    }
+
+    @JvmStatic fun r13_profileSwitchWhileTwoSeasonsRun(): String {
+        boot()
+        Meta.byId["tt1"] = season(2)
+        Meta.byId["tt2"] = season(2, prefix = "tt2")
+        startSeason("tt1"); TestMain.drain()
+        Profiles.selectProfile(B); TestMain.drain()
+        startSeason("tt2"); TestMain.drain()
+        Downloads.storedFor(B).forEach { Downloads.finish(it.id) }; TestMain.drain()
+        Profiles.selectProfile(A); TestMain.drain()
+        Downloads.storedFor(A).forEach { Downloads.finish(it.id) }; TestMain.drain()
+        check(dl(A) == listOf("tt1:E1", "tt1:E2"), "A: ${dl(A)}")
+        check(dl(B) == listOf("tt2:E1", "tt2:E2"), "B: ${dl(B)}")
+        return result("two profiles, each with its own season, switching between") { "A dl=${dl(A)} B dl=${dl(B)}" }
     }
 }
