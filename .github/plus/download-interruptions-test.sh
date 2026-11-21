@@ -77,7 +77,10 @@ check_resumed_from() {  # check_resumed_from <requests before> <kept bytes>
 }
 check_complete() {
   wait_for 300 "Completed" status_is Completed
-  local actual
+  local actual now
+  # The same download, not a new one under another name (a replaced download gets a new file name).
+  now="$(state | cut -f2)"
+  [[ "${now}" == "${file}" ]] || fail "the download was replaced by a new one (${file} -> ${now})"
   actual="$(adb exec-out "run-as ${pkg} cat 'files/downloads/${file}'" 2>/dev/null | sha256sum | cut -d' ' -f1)"
   [[ "${actual}" == "${expected}" ]] || fail "completed file differs: ${actual:-missing} != ${expected}"
   say "completed; SHA-256 matches the served file"
