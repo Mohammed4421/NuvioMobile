@@ -23,6 +23,9 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Downloads to a chosen folder or SD card:** subtitle copies saved next to the video are copied
+  in a stream (a large ASS file with fonts no longer loads into memory at once), and a failed copy is
+  logged instead of passing silently.
 - **Downloads in the library show the percentage first.** On a phone the card cut the line after
   "Downloading", so the percentage was hidden; it now reads "40% • Downloading".
 - **A download whose partial file was removed now says up front when storage is full.** The space
