@@ -201,7 +201,7 @@ internal class AndroidDownloadScheduler(val context: Context) {
                 validator = transfer.validator,
                 client = client,
                 onHeaders = { total, validator ->
-                    checkFreeSpace(transfer, total)
+                    checkFreeSpace(transfer, total, File(directory, "${transfer.item.fileName}.part").lengthOrZero())
                     updateActive(transfer) { it.copy(validator = validator, item = it.item.copy(totalBytes = total)) }
                 },
                 onProgress = { bytes, total ->
@@ -292,7 +292,7 @@ internal class AndroidDownloadScheduler(val context: Context) {
             validator = if (resumable != null) current.validator else null,
             client = client,
             onHeaders = { total, validator ->
-                checkFreeSpace(transfer, total)
+                checkFreeSpace(transfer, total, DownloadDocuments.size(context, documentUri) ?: 0L)
                 updateActive(transfer) { it.copy(validator = validator, item = it.item.copy(totalBytes = total)) }
             },
             onProgress = { bytes, total ->
@@ -357,11 +357,15 @@ internal class AndroidDownloadScheduler(val context: Context) {
         }
     }
 
-    /** Fails early, with a clear message, when the target storage cannot hold the rest of the file. */
-    private fun checkFreeSpace(transfer: AndroidDownloadTransfer, totalBytes: Long?) {
+    /**
+     * Fails early, with a clear message, when the target storage cannot hold the rest of the file.
+     * [partialBytes] is what is on storage now: if the partial file is gone (cleared by the user or
+     * the system), the whole file is needed again, whatever the saved progress said. If the server
+     * restarts from zero, the partial file is overwritten, so counting it as free space is right too.
+     */
+    private fun checkFreeSpace(transfer: AndroidDownloadTransfer, totalBytes: Long?, partialBytes: Long) {
         val total = totalBytes ?: return
-        val written = store.get(transfer.item.fileName)?.item?.downloadedBytes ?: 0L
-        val remaining = (total - written).coerceAtLeast(0L)
+        val remaining = remainingDownloadBytes(total, partialBytes)
         val available = availableBytes(transfer.item) ?: return
         if (remaining + FREE_SPACE_MARGIN_BYTES > available) {
             throw IllegalStateException(
@@ -433,3 +437,9 @@ internal fun shouldRetryAndroidDownload(error: Exception, retries: Int): Boolean
         is IOException -> true
         else -> false
     }
+
+/** Bytes still to be written: the total minus what is on storage now (never the saved progress). */
+internal fun remainingDownloadBytes(totalBytes: Long, partialBytes: Long): Long =
+    (totalBytes - partialBytes.coerceAtLeast(0L)).coerceAtLeast(0L)
+
+internal fun File.lengthOrZero(): Long = if (isFile) length() else 0L

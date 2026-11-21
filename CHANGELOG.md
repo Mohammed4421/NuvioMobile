@@ -23,6 +23,10 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **A download whose partial file was removed now says up front when storage is full.** The space
+  check used the saved progress, so after the partial file was cleared it expected only the rest of
+  the file, started again from zero and stopped later with a storage error. It now counts what is
+  really on storage.
 - **Your add-on and debrid tokens are no longer sent to a server that cannot prove who it is.** With
   ExoPlayer, the player accepted any certificate, so on a hostile network (public Wi-Fi) a stream
   request carrying a token could be read. A request that carries a token, cookie or key now goes
