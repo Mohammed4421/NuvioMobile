@@ -218,7 +218,7 @@ IFS=$'\t' read -r status _ _ <<< "$(state)"
 say "paused from the notification: status ${status}, .part kept at ${p1} bytes and not growing"
 requests_before="$(wc -l < "${work}/requests.log")"
 if [[ "${mode}" == pause-only ]]; then
-  say "NOT TESTED here: Resume from the notification on Android 14 (needs a real tap; device check)"
+  say "NOT TESTED here: Resume from the notification on Android 14 and later (needs a real tap; device check)"
   say "PASS (pause only)"
   exit 0
 fi

@@ -92,7 +92,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api: [34, 28]
+        # 28 and 34 as before (28 is a required check); 36 (Android 16) and 37 (Android 17) for compatibility.
+        api: [34, 28, 36, 37]
     steps:
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -110,6 +111,20 @@ jobs:
         with:
           name: nuvio-device-tests-apks
           path: device-test
+
+      - name: Emulator image for Android ${{ matrix.api }} exists
+        # Android 16 (API 36) and 17 (API 37) are compatibility runs (owner, 2026-11-21). A missing
+        # system image fails here with NOT TESTED; it is never treated as a pass.
+        env:
+          API: ${{ matrix.api }}
+        run: |
+          image="system-images;android-${API};google_apis;x86_64"
+          listing="$("${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --list 2>/dev/null || true)"
+          echo "Images for API ${API}:"; grep -F "system-images;android-${API}" <<< "${listing}" | sed 's/^/  /' | sort -u || true
+          if ! grep -qF "${image}" <<< "${listing}"; then
+            echo "::error::Android ${API}: ${image} is not available from the SDK manager; NOT TESTED"
+            exit 1
+          fi
 
       - name: Enable KVM
         run: |
