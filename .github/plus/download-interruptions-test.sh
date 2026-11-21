@@ -130,9 +130,17 @@ kept="$(part_size "${file}")"
 IFS=$'\t' read -r status _ _ error <<< "$(state)"
 [[ "${status}" != Failed ]] || fail "failed for good after the process died: ${error}"
 say "process killed: status ${status}, .part kept at ${kept} bytes"
-adb shell monkey -p "${pkg}" -c android.intent.category.LAUNCHER 1 > /dev/null 2>&1 || fail "could not open the app again"
-grown() { local size; size="$(part_size "${file}")"; [[ -n "${size}" && "${size}" -gt "${kept}" ]]; }
-wait_for 180 "the download to continue after the app was opened again" grown
+# Open the app as a user does, in a fresh task: bringing back the old task would recreate the
+# debug download activity, which starts the download a second time (a test artefact, run of d9f75a62).
+launcher="$(adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.LAUNCHER "${pkg}" | tr -d '\r' | tail -n 1)"
+[[ "${launcher}" == "${pkg}/"* ]] || fail "no launcher activity found: ${launcher}"
+adb shell am start -W -f 0x10008000 -n "${launcher}" > /dev/null || fail "could not open the app again"
+# Android may already have restarted the download job by itself; either way it must go on.
+going() { local size; size="$(part_size "${file}")"; status_is Completed || [[ -n "${size}" && "${size}" -gt "${kept}" ]]; }
+wait_for 180 "the download to continue after the process died" going
 check_resumed_from "${mark}" "${kept}"
+# Exactly one transfer after the process died: a second one from zero would write into the same file.
+from_zero="$(tail -n +"$(( mark + 1 ))" "${work}/requests.log" | grep -c '^GET range=- ' || true)"
+(( from_zero == 0 )) || fail "a second transfer started from byte 0 after the process died: $(tail -n +"$(( mark + 1 ))" "${work}/requests.log" | tr '\n' ';')"
 check_complete
 say "${result}"

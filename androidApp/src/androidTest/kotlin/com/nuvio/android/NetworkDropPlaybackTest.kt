@@ -46,13 +46,14 @@ class NetworkDropPlaybackTest {
         val mediaStart = indexOf(video, "mdat".toByteArray()).also { check(it > 0) } - 4
         val dropAt = mediaStart + (video.size - mediaStart) / 3
         val dropped = AtomicBoolean(false)
+        val droppedAt = java.util.concurrent.atomic.AtomicInteger(-1)
         val rangeStarts = Collections.synchronizedList(mutableListOf<Long>())
         ServerSocket(0).use { server ->
             thread(isDaemon = true) {
                 runCatching {
                     while (!server.isClosed) {
                         val socket = server.accept()
-                        thread(isDaemon = true) { serve(socket, video, mediaStart, dropAt, dropped, rangeStarts) }
+                        thread(isDaemon = true) { serve(socket, video, mediaStart, dropAt, dropped, droppedAt, rangeStarts) }
                     }
                 }
             }
@@ -91,14 +92,17 @@ class NetworkDropPlaybackTest {
             assertNull("${engine.name}: playback error after the drop", error)
             assertTrue("${engine.name}: the server never dropped the connection (test not valid)", dropped.get())
             assertTrue(
-                "${engine.name}: no request continued after the dropped byte $dropAt: ${rangeStarts.toList()}",
-                rangeStarts.any { it in (mediaStart + 1)..dropAt.toLong() },
+                "${engine.name}: no request continued from the dropped byte ${droppedAt.get()} (or before): ${rangeStarts.toList()}",
+                rangeStarts.any { it in (mediaStart + 1)..droppedAt.get().toLong() },
             )
         }
     }
 
     /** Range support; the media part at about 1.3 KB/s; the first connection that reaches [dropAt] is cut there. */
-    private fun serve(socket: Socket, body: ByteArray, mediaStart: Int, dropAt: Int, dropped: AtomicBoolean, rangeStarts: MutableList<Long>) {
+    private fun serve(
+        socket: Socket, body: ByteArray, mediaStart: Int, dropAt: Int, dropped: AtomicBoolean,
+        droppedAt: java.util.concurrent.atomic.AtomicInteger, rangeStarts: MutableList<Long>,
+    ) {
         socket.use {
             val reader = socket.getInputStream().bufferedReader(Charsets.ISO_8859_1)
             val requestLine = reader.readLine() ?: return
@@ -124,6 +128,7 @@ class NetworkDropPlaybackTest {
             var position = start.toInt()
             while (position < body.size) {
                 if (position >= dropAt && dropped.compareAndSet(false, true)) {
+                    droppedAt.set(position)
                     socket.setSoLinger(true, 0) // reset, as a broken network does
                     return
                 }
