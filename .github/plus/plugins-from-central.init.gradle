@@ -17,12 +17,19 @@ beforeSettings { settings ->
 // while the build job of the same run downloaded it (run 44666891660); Gradle then remembers the
 // miss, so retrying cannot help. The mirror serves the same Maven Central artifacts; added after the
 // project's repositories, it never replaces one Maven Central answers.
+// After Maven Central answered 429 (rate limit), gradle-retry.sh sets PLUS_CENTRAL_MIRROR_FIRST=1
+// for the next attempt: the mirror is then asked first, since Gradle stops asking a repository for
+// the rest of a build once it answered 429 and never falls back on such an error.
 settingsEvaluated { settings ->
-    settings.dependencyResolutionManagement.repositories {
-        maven {
-            name = 'MavenCentralGoogleMirror'
-            url = 'https://maven-central.storage-download.googleapis.com/maven2/'
-            mavenContent { releasesOnly() }
-        }
+    def repositories = settings.dependencyResolutionManagement.repositories
+    def mirror = repositories.maven {
+        name = 'MavenCentralGoogleMirror'
+        url = 'https://maven-central.storage-download.googleapis.com/maven2/'
+        mavenContent { releasesOnly() }
+    }
+    if (System.getenv('PLUS_CENTRAL_MIRROR_FIRST') == '1') {
+        repositories.remove(mirror)
+        repositories.addFirst(mirror)
+        println 'Maven Central rate-limited this runner: asking its Google mirror first.'
     }
 }
