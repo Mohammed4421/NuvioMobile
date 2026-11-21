@@ -326,7 +326,8 @@
         "commonMain/composeResources/values-ar/strings.xml",
         "commonMain/composeResources/values-ar/strings_ratings.xml",
         "commonMain/composeResources/values-ar/autosync_toast_strings.xml",
-        "commonMain/composeResources/values/strings.xml"
+        "commonMain/composeResources/values/strings.xml",
+        "androidMain/AndroidManifest.xml"
       ],
       "depends": [],
       "data": "none",
