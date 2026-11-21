@@ -22,6 +22,11 @@ fail() {
   echo "::error::${label}: $*"
   say "server requests:"; sed 's/^/  /' "${work}/requests.log" 2>/dev/null
   adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 && adb shell cat /sdcard/ui.xml > "notification-pause-${label}-ui.xml" 2>/dev/null
+  { echo "== stored downloads"; adb shell run-as "${pkg}" cat shared_prefs/nuvio_downloads.xml
+    echo "== files"; adb shell run-as "${pkg}" ls -la files/downloads
+    echo "== jobs"; adb shell dumpsys jobscheduler "${pkg}" | head -n 80
+    echo "== connectivity"; adb shell dumpsys connectivity | grep -iE "NetworkAgentInfo|Active default network" | head -n 10
+    echo "== log"; adb logcat -d -t 400 | grep -iE "nuvio|download|AndroidRuntime" | tail -n 120; } > "notification-pause-${label}-state.txt" 2>&1
   exit 1
 }
 
@@ -30,7 +35,8 @@ state() {
   adb shell run-as "${pkg}" cat shared_prefs/nuvio_downloads.xml 2>/dev/null | python3 -I -c '
 import html, json, re, sys
 xml = sys.stdin.read()
-for value in re.findall(r"<string name=\"[^\"]*downloads_payload\">(.*?)</string>", xml, re.S):
+# The payload key is scoped to the profile: downloads_payload_<profile id>.
+for value in re.findall(r"<string name=\"downloads_payload_[0-9]+\">(.*?)</string>", xml, re.S):
     payload = json.loads(html.unescape(value))
     items = payload.get("items", payload) if isinstance(payload, dict) else payload
     for item in items:
