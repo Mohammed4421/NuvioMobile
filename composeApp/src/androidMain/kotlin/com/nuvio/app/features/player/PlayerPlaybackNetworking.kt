@@ -226,7 +226,7 @@ internal object PlayerPlaybackNetworking {
             return connect(url, mergedHeaders, credentials, method, connectTimeoutMs, readTimeoutMs, range, followRedirects = true)
         }
         // With credentials, redirects are followed here so the same rule as the player applies.
-        var current = origin
+        var current: HttpUrl = origin
         repeat(MAX_REDIRECTS + 1) {
             val sendHeaders = if (mayReceiveCredentials(origin, current)) {
                 mergedHeaders
