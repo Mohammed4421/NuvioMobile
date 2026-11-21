@@ -6,10 +6,10 @@ Newest first.
 
 ## Next build — Build 15: audit and polish
 
-### Changed- **Season downloads: an episode the first add-on lacks is taken from your other add-ons**, but only
+### Changed
+- **Season downloads: an episode the first add-on lacks is taken from your other add-ons**, but only
   in the same resolution and release type as the first episode, so the season stays consistent. If no
   add-on has it in that quality, the episode still asks you to choose, as before (owner's choice).
-
 - **A paused episode no longer stops the rest of its season.** Pausing one episode of a season
   download now skips it: the next episodes go on, and the paused one keeps its place and its partial
   file and is never retried by itself. Resuming it while another episode downloads lets it continue
