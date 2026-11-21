@@ -98,6 +98,9 @@ class DeviceSubtitleStatesTest {
             // 3. The cached copy is gone; picking it again must not stop the video.
             check(subtitle.delete()) { "could not remove the cached subtitle" }
             compose.runOnIdle { controller!!.setSubtitleUri(subtitleUri); controller!!.seekTo(1_000); controller!!.play() }
+            // The last snapshot still says 7.5 s until the seek lands; wait for it first, or the
+            // progress check below passes on stale data and then reads the fresh, still-loading one.
+            compose.waitUntil(10_000) { compose.runOnIdle { error != null || snapshot.positionMs < 4_000 } }
             compose.waitUntil(20_000) { compose.runOnIdle { error != null || snapshot.positionMs >= 4_000 } }
             compose.runOnIdle {
                 assertNull("${engine.name}: a missing device subtitle stopped playback", error)

@@ -1274,9 +1274,13 @@ private fun ExoPlayerSurface(
     }
 
     LaunchedEffect(exoPlayer) {
-        while (isActive) {
-            dispatchExoPlayerSnapshot()
-            delay(250L)
+        // ExoPlayer must only be touched on its application thread; a recomposer can resume
+        // this effect elsewhere (seen under the Android 16 test dispatcher), so pin the loop.
+        withContext(Dispatchers.Main.immediate) {
+            while (isActive) {
+                dispatchExoPlayerSnapshot()
+                delay(250L)
+            }
         }
     }
 
