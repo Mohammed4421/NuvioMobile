@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+"""Build 15 inventory (P1-01): every area of the repository, how much of it Nuvio Plus changed against
+the Nuvio release it is based on, and what the Build 15 audit has reviewed there.
+
+Reproducible: the counts come from git (this commit against portkit/compatibility.json's
+upstream_base, which must be fetched first). The review states come from REVIEW below and name the
+audit rows behind them; an area that Plus changed and REVIEW does not list is reported NOT REVIEWED,
+so a new area can never look covered by default.
+Usage: build15-inventory.py [--repo DIR] [--markdown FILE] [--json FILE]
+"""
+import argparse
+import collections
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+AREA = re.compile(r"^(?:composeApp|androidApp)/src/[^/]+/kotlin/com/nuvio/(?:app|android)/(core|features)/([^/]+)/")
+TEST_SET = re.compile(r"^(?:composeApp|androidApp)/src/[^/]*[Tt]est[^/]*/")
+
+# What Build 15 has reviewed in each area, and the audit rows (docs/plus/build15/audit.md) or
+# earlier release tests behind it. PARTIAL names what is still open.
+REVIEW = {
+    "core/ui": ("PARTIAL", ["B15-UI-01"], "lazy-list keys only"),
+    "core/i18n": ("PARTIAL", ["B15-UI-03"], "runBlocking resource reads found, not measured (Nuvio's code)"),
+    "features/player": ("PARTIAL", ["B15-SUB-01"],
+                        "subtitle parsing; offline sync (#24) and gestures (#25) merged without rows here; "
+                        "engines, HDR and playback not reviewed"),
+    "features/autosync": ("PARTIAL", ["B15-SUB-01"], "subtitle parser only"),
+    "features/downloads": ("PARTIAL", ["B15-DL-01"],
+                           "season queue races (harness r1-r9 here); pause contract in open PR #28; "
+                           "SAF folder and free space partly"),
+    "features/updater": ("PARTIAL", ["Build 14 release tests"], "reviewed and device-tested for Build 14; not re-audited"),
+    "features/addons": ("PARTIAL", ["Build 14 link confirmation"], "add-on link confirmation only"),
+    "signing": ("REVIEWED", ["B15-SEC-01"], "old rotation key only; refused alone in the Build 14 release test"),
+    "androidApp": ("PARTIAL", ["B15-AND-01", "B15-BLD-01"], "manifests and build file reviewed; the update device test not yet"),
+    "composeApp": ("PARTIAL", ["B15-BLD-01", "B15-AR-01", "B15-ADD-01"], "build file, Arabic strings and app shell reviewed; look in P4"),
+    "features/watchprogress": ("REVIEWED", ["B15-WP-01"], "one test fixture, a cherry-pick of Nuvio's fix"),
+    "features/library": ("PARTIAL", ["B15-LIB-01"], "logic and tests reviewed; look and RTL in P4"),
+    "features/streams": ("PARTIAL", ["B15-STR-01"], "season download sheet reviewed; look in P4"),
+    "features/settings": ("PARTIAL", ["B15-SET-01"], "subtitle brightness needs a device"),
+    ".github/plus": ("REVIEWED", ["policy and script tests"], "every script has tests in .github/plus/tests"),
+    ".github/workflows": ("REVIEWED", ["test_workflow_policy.py"], "security policy tested on every pull request"),
+    "portkit": ("REVIEWED", ["P7 tests"], "PortKit's own tests"),
+}
+
+
+def git(repo, *args):
+    result = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True)
+    if result.returncode != 0:
+        sys.exit(f"git {' '.join(args)}: {result.stderr.strip()}")
+    return result.stdout
+
+
+def area_of(path):
+    match = AREA.match(path)
+    if match:
+        return f"{match.group(1)}/{match.group(2)}"
+    parts = path.split("/")
+    if parts[0] in (".github", "docs") and len(parts) > 2:
+        return "/".join(parts[:2])
+    return parts[0] if len(parts) > 1 else "(root files)"
+
+
+def inventory(repo):
+    base = json.loads(Path(repo, "portkit/compatibility.json").read_text())["upstream_base"]["commit"]
+    files = git(repo, "ls-files").split("\n")
+    changed = {}
+    for line in git(repo, "diff", "--name-status", "--no-renames", base, "HEAD").splitlines():
+        status, path = line.split("\t", 1)
+        changed[path] = status[0]
+    areas = collections.defaultdict(lambda: {"files": 0, "kotlin": 0, "tests": 0, "added": 0, "modified": 0, "deleted": 0})
+    for path in filter(None, files):
+        a = areas[area_of(path)]
+        a["files"] += 1
+        a["kotlin"] += path.endswith(".kt")
+        a["tests"] += bool(path.endswith(".kt") and TEST_SET.match(path))
+    for path, status in changed.items():
+        a = areas[area_of(path)]
+        a[{"A": "added", "M": "modified", "D": "deleted"}.get(status, "modified")] += 1
+    rows = []
+    for name, a in areas.items():
+        plus = a["added"] + a["modified"] + a["deleted"]
+        state, refs, note = REVIEW.get(name, ("NOT REVIEWED" if plus else "NUVIO (not reviewed)", [], ""))
+        rows.append({"area": name, **a, "plus_changes": plus, "review": state, "refs": refs, "note": note})
+    rows.sort(key=lambda r: (-r["plus_changes"], -r["kotlin"], r["area"]))
+    return {"base": base, "head": git(repo, "rev-parse", "HEAD").strip(), "areas": rows,
+            "totals": {k: sum(r[k] for r in rows) for k in ("files", "kotlin", "tests", "plus_changes")}}
+
+
+def markdown(inv):
+    t = inv["totals"]
+    out = [
+        "# Build 15 inventory (P1-01)",
+        "",
+        f"Generated by `.github/plus/build15-inventory.py` at `{inv['head'][:12]}` against Nuvio `{inv['base'][:12]}`.",
+        f"{t['files']} tracked files, {t['kotlin']} Kotlin ({t['tests']} in test source sets); "
+        f"{t['plus_changes']} files changed by Nuvio Plus.",
+        "",
+        "Review states: REVIEWED (tested as a whole), PARTIAL (what is open is named), NOT REVIEWED "
+        "(Plus changed it, no audit row), NUVIO (Nuvio's code, untouched by Plus, not reviewed in Build 15).",
+        "",
+        "## Areas Nuvio Plus changed",
+        "",
+        "| Area | Plus files (A/M/D) | Kotlin | Review | Evidence | Open |",
+        "|---|---|---|---|---|---|",
+    ]
+    for r in inv["areas"]:
+        if r["plus_changes"]:
+            out.append(f"| `{r['area']}` | {r['plus_changes']} ({r['added']}/{r['modified']}/{r['deleted']}) | "
+                       f"{r['kotlin']} | {r['review']} | {', '.join(r['refs']) or '—'} | {r['note'] or '—'} |")
+    out += ["", "## Nuvio's areas (untouched by Plus)", "",
+            "| Area | Files | Kotlin | Tests | Review |", "|---|---|---|---|---|"]
+    for r in inv["areas"]:
+        if not r["plus_changes"]:
+            out.append(f"| `{r['area']}` | {r['files']} | {r['kotlin']} | {r['tests']} | {r['review']} |")
+    return "\n".join(out) + "\n"
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repo", default=".")
+    parser.add_argument("--markdown")
+    parser.add_argument("--json")
+    args = parser.parse_args()
+    inv = inventory(args.repo)
+    if args.markdown:
+        Path(args.markdown).write_text(markdown(inv))
+    if args.json:
+        Path(args.json).write_text(json.dumps(inv, indent=2) + "\n")
+    t = inv["totals"]
+    unreviewed = [r["area"] for r in inv["areas"] if r["review"] == "NOT REVIEWED"]
+    print(f"{len(inv['areas'])} areas, {t['kotlin']} Kotlin files, {t['plus_changes']} Plus changes; "
+          f"Plus areas not reviewed: {', '.join(unreviewed) or 'none'}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
