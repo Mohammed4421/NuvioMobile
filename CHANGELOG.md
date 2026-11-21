@@ -23,6 +23,10 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Subtitle files picked from the device no longer pile up.** Each pick kept a copy in the app's
+  cache. Now each pick removes the copies left from earlier app sessions (nothing refers to them
+  after a restart); copies from the current session stay, so a subtitle being shown is never
+  removed. Two picks in the same millisecond no longer write to the same file.
 - **A subtitle file with another extension is read in its real format.** A file picked from the
   device as `.txt` (or with no extension) was always treated as SRT, so an ASS or VTT file showed
   nothing. Its format is now read from the text, and a file that is no subtitle is refused with a
