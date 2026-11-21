@@ -1,0 +1,17 @@
+// CI only (static-analysis.yml). Android lint of the app and the modules it depends on
+// (checkDependencies), all findings to one XML report, never stopping the build: the comparison with
+// Build 14 (lint-compare.py) decides. The project's build files are not changed.
+allprojects {
+    plugins.withId('com.android.application') {
+        project.android.lint {
+            checkDependencies = true
+            abortOnError = false
+            warningsAsErrors = false
+            xmlReport = true
+            xmlOutput = project.rootProject.file('lint-results.xml')
+            htmlReport = false
+            sarifReport = false
+            textReport = false
+        }
+    }
+}

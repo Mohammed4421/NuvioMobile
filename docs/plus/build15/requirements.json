@@ -1475,15 +1475,20 @@
       "mandatory": true,
       "requirement": "Test layer: Static analysis report.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
+      "paths": [
+        ".github/workflows/static-analysis.yml",
+        ".github/plus/lint-compare.py",
+        ".github/plus/lint-report.init.gradle",
+        ".github/plus/detekt-cli.init.gradle"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Final run on the candidate pending."
+        "Android lint reaches only androidApp (manifest, build files); composeApp is covered by detekt; results not yet cited."
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "Cite the static-analysis.yml run; fix or review blocking findings."
     },
     {
       "id": "P8-02",
