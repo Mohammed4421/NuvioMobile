@@ -122,7 +122,7 @@ tap_notification_button() {
   height="$(adb shell wm size | sed -nE 's/.* [0-9]+x([0-9]+).*/\1/p' | tail -n 1 | tr -d '\r')"
   # The app must have posted the notification (system record), whatever the shade shows.
   wait_for 30 "the app's download notification to be posted" notification_posted
-  open_shade
+  adb shell cmd statusbar expand-notifications; sleep 3
   for step in 1 2 3 4 5 6; do
     point="$(find_node "$1")"
     [[ -n "${point}" ]] && break
@@ -130,10 +130,10 @@ tap_notification_button() {
     if [[ -z "${title}" ]]; then
       say "notification not on screen (step ${step}): scrolling the shade"
       if (( step % 2 == 1 )); then
-        adb shell input swipe 300 "$((height * 3 / 4))" 300 "$((height / 4))" 400
+        adb shell input swipe 300 "$((height * 3 / 5))" 300 "$((height * 7 / 20))" 800
       else
         # The swipe may have closed the shade or the quick settings: open the notifications again.
-        adb shell cmd statusbar collapse; sleep 1; open_shade
+        adb shell cmd statusbar collapse; sleep 1; adb shell cmd statusbar expand-notifications; sleep 1
       fi
       sleep 2
       continue
@@ -172,6 +172,12 @@ curl -s -o /dev/null -r 0-0 -w '%{http_code}' http://127.0.0.1:8765/fixture.bin 
 trap 'kill ${server} 2>/dev/null' EXIT
 adb wait-for-device
 adb install -r -g "${apk}" > /dev/null || fail "install failed"
+# Other dismissible notifications (system ones of a fresh emulator) are cleared first, so the
+# download's notification is near the top of the shade.
+adb shell cmd statusbar expand-notifications; sleep 3
+clear="$(find_node "Clear all")"
+[[ -n "${clear}" ]] && adb shell input tap ${clear}
+adb shell cmd statusbar collapse; sleep 1
 adb shell run-as "${pkg}" rm -f cache/download-test-ready
 adb shell am start -W -n "${pkg}/com.nuvio.android.BackgroundDownloadTestActivity" \
   --es downloadUrl "http://10.0.2.2:8765/fixture.bin" > /dev/null || fail "could not start the download activity"
