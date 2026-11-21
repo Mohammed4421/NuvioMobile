@@ -49,6 +49,15 @@
     "note": "no repeatable device measurements exist yet; P5 needs fixed physical devices before limits are set"
   },
   "reproducibility": {
-    "dependencies": "resolved by Gradle from Google Maven and Maven Central (CI falls back to Google's Central mirror); no dependency lock or verification metadata yet"
+    "dependencies": "resolved by Gradle from Google Maven and Maven Central (CI falls back to Google's Central mirror); no dependency lock or verification metadata yet",
+    "status": "APK hashes (apk_sha256) and the 353 resolved release libraries (baseline-dependencies.txt, run 44843817876) recorded; the library count equals the OSV scan's",
+    "libraries": "docs/plus/build15/baseline-dependencies.txt"
+  },
+  "apk_sha256": {
+    "source": "GitHub release custom-14 asset digests (gh api repos/Mohammed4421/NuvioMobile/releases/tags/custom-14), read 2026-11-21",
+    "NuvioPlus-build14-arm64-v8a.apk": "43e4447b6a474ebd44bfde17b8bbb2c43d73b03cf2c62eeb6e1ecf4c276b31c5",
+    "NuvioPlus-build14-armeabi-v7a.apk": "5281be1729dcbf7937d3368e5ad2f44f66a99b470549626b328e0c0cb2e34fd4",
+    "NuvioPlus-build14-x86.apk": "bf68df8ec3cb1ec6fc9e213b169fb3903f18166af072f7551907f777df99f4b9",
+    "NuvioPlus-build14-x86_64.apk": "0438f738b326ecfec1eea78df8063db11d55529539f00d480e9df793524f0cc8"
   }
 }

@@ -15,7 +15,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[3]
 WORKFLOWS = ROOT / ".github" / "workflows"
 PLUS = ["plus-build.yml", "plus-ci.yml", "plus-sync.yml", "plus-pipeline.yml", "custom-android-build.yml",
-        "plus-release-key.yml", "requirements-gate.yml", "download-notification-test.yml"]
+        "plus-release-key.yml", "requirements-gate.yml", "download-notification-test.yml",
+        "baseline-dependencies.yml"]
 PINNED = re.compile(r"^[\w.-]+/[\w./-]+@[0-9a-f]{40}$")
 OWN_REUSABLE = re.compile(r"^(\./\.github/workflows/[\w-]+\.yml|Mohammed4421/NuvioMobile/\.github/workflows/[\w-]+\.yml@custom-subtitles)$")
 # Jobs allowed to write, and why.
