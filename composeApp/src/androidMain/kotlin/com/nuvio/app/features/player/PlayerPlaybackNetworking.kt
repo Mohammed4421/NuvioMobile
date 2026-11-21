@@ -196,8 +196,10 @@ internal object PlayerPlaybackNetworking {
     internal fun mayReceiveCredentials(origin: HttpUrl, target: HttpUrl): Boolean {
         if (origin.isHttps && !target.isHttps) return false
         if (origin.host == target.host) return true
-        val site = origin.topPrivateDomain() ?: return false
-        return site == target.topPrivateDomain()
+        // The public suffix list tells api.x.com and cdn.x.com apart from alice.github.io and
+        // bob.github.io. If OkHttp cannot load it, only the same host gets credentials (stricter).
+        val site = runCatching { origin.topPrivateDomain() }.getOrNull() ?: return false
+        return site == runCatching { target.topPrivateDomain() }.getOrNull()
     }
 
     fun createDataSourceFactory(

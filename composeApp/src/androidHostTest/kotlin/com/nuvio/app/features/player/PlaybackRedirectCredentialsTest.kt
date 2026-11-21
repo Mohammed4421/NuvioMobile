@@ -127,7 +127,11 @@ class PlaybackRedirectCredentialsTest {
     fun onlyTheSameSiteMayReceiveCredentials() {
         fun may(from: String, to: String) = PlayerPlaybackNetworking.mayReceiveCredentials(from.toHttpUrl(), to.toHttpUrl())
         assertTrue(may("https://api.provider.com/a", "https://api.provider.com/b"))
-        assertTrue(may("https://api.provider.com/a", "https://cdn.provider.com/b"))
+        // Same site, other host: allowed when OkHttp's public suffix list loads (on the device it is in
+        // the app's assets); without it the stricter same-host rule applies. Both outcomes are checked.
+        val suffixListLoads = runCatching { "https://api.provider.com/".toHttpUrl().topPrivateDomain() }.isSuccess
+        println("public suffix list available here: $suffixListLoads")
+        assertEquals(suffixListLoads, may("https://api.provider.com/a", "https://cdn.provider.com/b"))
         assertTrue(may("http://iptv.example.net/a", "http://iptv.example.net:8080/b"))
         assertFalse(may("https://api.provider.com/a", "https://provider.com.evil.net/b"))
         assertFalse(may("https://api.provider.com/a", "https://cdn.other.net/b"))
