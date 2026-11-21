@@ -55,7 +55,8 @@
         "toMpvSource"
       ],
       "test_files": [
-        "androidApp/src/androidTest/kotlin/com/nuvio/android/MpvSurfaceTest.kt"
+        "androidApp/src/androidTest/kotlin/com/nuvio/android/MpvSurfaceTest.kt",
+        "androidApp/src/androidTest/kotlin/com/nuvio/android/NetworkDropPlaybackTest.kt"
       ]
     },
     {

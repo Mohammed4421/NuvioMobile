@@ -9,7 +9,7 @@
 set -uo pipefail
 app="$1"; test_apk="$2"; label="$3"
 here="$(cd "$(dirname "$0")" && pwd)"
-classes="com.nuvio.android.SubtitlePlaybackTest,com.nuvio.android.SubtitleSettingsTest,com.nuvio.android.MpvSurfaceTest"
+classes="com.nuvio.android.SubtitlePlaybackTest,com.nuvio.android.SubtitleSettingsTest,com.nuvio.android.MpvSurfaceTest,com.nuvio.android.NetworkDropPlaybackTest"
 exec > >(tee -a "nuvio-device-tests-${label}.log") 2>&1
 adb wait-for-device
 host_env="$(bash "${here}/device-test-host.sh" "${app}" "${test_apk}")" || { echo "::error::${label}: the device test host could not be set up"; exit 1; }
