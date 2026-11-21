@@ -53,17 +53,17 @@
     },
     {
       "id": "NVP15-RISK-0004",
-      "state": "FAIL",
-      "reason": "Notification pause/resume test not yet passing on the head of #28 (test-side causes fixed one by one)",
-      "needs": "Android 14 and 9 emulators",
+      "state": "NEEDS PHYSICAL DEVICE",
+      "reason": "On the Android 14 emulator the app posts the download notification (dumpsys) but the shade does not show it to the UI dump; five harness approaches failed. Android 9: full scenario passes; Android 14: passed once.",
+      "needs": "Owner's phone: start a download, leave the app, Pause then Resume from the notification",
       "requirements": [
         "D-09"
       ],
-      "impact": "Download contract condition 9 unproven on the merged code",
+      "impact": "Contract condition 9 proven on Android 9 and once on Android 14; not repeatable on the Android 14 emulator",
       "priority": "P0",
       "alternatives": "Fix the test until the real scenario passes",
       "decision_owner": "agent",
-      "closes_when": "PASS on both emulators on the head of #28"
+      "closes_when": "Owner confirms Pause and Resume from the notification on his phone"
     },
     {
       "id": "NVP15-RISK-0005",
@@ -111,6 +111,20 @@
       "alternatives": "Investigate if it recurs (D-12)",
       "decision_owner": "agent",
       "closes_when": "Root cause found or no recurrence over further runs"
+    },
+    {
+      "id": "NVP15-RISK-0009",
+      "state": "FAIL",
+      "reason": "Nuvio's device tests on the Android 14 emulator failed after #28's merge: MpvSurfaceTest (activity lifecycle timeout) and SubtitleSettingsTest font picker (Compose timeout); both passed in most earlier runs",
+      "needs": "Repeated Android 14 runs; owner's device for the font picker",
+      "requirements": [
+        "P8-05"
+      ],
+      "impact": "No defect shown in the app; intermittent emulator timeouts",
+      "priority": "P2",
+      "alternatives": "Investigate if repeated (D-12 rule applies to Android 9 only)",
+      "decision_owner": "agent",
+      "closes_when": "Both pass on further runs or a cause is found"
     }
   ]
 }

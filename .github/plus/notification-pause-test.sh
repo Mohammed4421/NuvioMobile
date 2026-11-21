@@ -7,9 +7,13 @@
 #   4. tap Resume: it continues from where it stopped (the server sees a Range request from that
 #      offset, not a new download from zero);
 #   5. it completes and the file's SHA-256 equals the served file's.
-# Prints PASS or the failing step with the evidence. Usage: notification-pause-test.sh <debug apk> <label>
+# Prints PASS or the failing step with the evidence. Usage: notification-pause-test.sh <debug apk> <label> [stop-at-notification]
+# With "stop-at-notification" (Android 14 emulator: its shade does not show the app's low-priority
+# notification to the UI dump, five approaches tried in #28) the test checks the download runs in
+# the background and the app posts its notification (dumpsys), then stops: tapping Pause/Resume on
+# Android 14 is NOT TESTED here and stays on the owner's device list (NVP15-RISK-0009).
 set -uo pipefail
-apk="$1"; label="$2"
+apk="$1"; label="$2"; mode="${3:-full}"
 here="$(cd "$(dirname "$0")" && pwd)"
 pkg=com.nuviodebug.com
 id=nuvio-background-download-fixture
@@ -122,7 +126,7 @@ tap_notification_button() {
   height="$(adb shell wm size | sed -nE 's/.* [0-9]+x([0-9]+).*/\1/p' | tail -n 1 | tr -d '\r')"
   # The app must have posted the notification (system record), whatever the shade shows.
   wait_for 30 "the app's download notification to be posted" notification_posted
-  adb shell cmd statusbar expand-notifications; sleep 3
+  open_shade
   for step in 1 2 3 4 5 6; do
     point="$(find_node "$1")"
     [[ -n "${point}" ]] && break
@@ -130,10 +134,10 @@ tap_notification_button() {
     if [[ -z "${title}" ]]; then
       say "notification not on screen (step ${step}): scrolling the shade"
       if (( step % 2 == 1 )); then
-        adb shell input swipe 300 "$((height * 3 / 5))" 300 "$((height * 7 / 20))" 800
+        adb shell input swipe 300 "$((height * 3 / 4))" 300 "$((height / 4))" 400
       else
         # The swipe may have closed the shade or the quick settings: open the notifications again.
-        adb shell cmd statusbar collapse; sleep 1; adb shell cmd statusbar expand-notifications; sleep 1
+        adb shell cmd statusbar collapse; sleep 1; open_shade
       fi
       sleep 2
       continue
@@ -172,12 +176,6 @@ curl -s -o /dev/null -r 0-0 -w '%{http_code}' http://127.0.0.1:8765/fixture.bin 
 trap 'kill ${server} 2>/dev/null' EXIT
 adb wait-for-device
 adb install -r -g "${apk}" > /dev/null || fail "install failed"
-# Other dismissible notifications (system ones of a fresh emulator) are cleared first, so the
-# download's notification is near the top of the shade.
-adb shell cmd statusbar expand-notifications; sleep 3
-clear="$(find_node "Clear all")"
-[[ -n "${clear}" ]] && adb shell input tap ${clear}
-adb shell cmd statusbar collapse; sleep 1
 adb shell run-as "${pkg}" rm -f cache/download-test-ready
 adb shell am start -W -n "${pkg}/com.nuvio.android.BackgroundDownloadTestActivity" \
   --es downloadUrl "http://10.0.2.2:8765/fixture.bin" > /dev/null || fail "could not start the download activity"
@@ -192,6 +190,13 @@ sleep 8
 s1="$(part_size "${file}")"; sleep 5; s2="$(part_size "${file}")"
 [[ -n "${s1}" && -n "${s2}" && "${s2}" -gt "${s1}" ]] || fail "not downloading in the background (.part ${s1:-none} -> ${s2:-none})"
 say "downloading in the background: .part ${s1} -> ${s2} bytes"
+
+if [[ "${mode}" == stop-at-notification ]]; then
+  wait_for 30 "the app's download notification to be posted" notification_posted
+  say "notification posted by the app (dumpsys notification)"
+  say "NOT TESTED here: tapping Pause/Resume on the notification (owner's device, NVP15-RISK-0009)"
+  exit 0
+fi
 
 # 3. Pause from the notification.
 tap_notification_button "Pause"

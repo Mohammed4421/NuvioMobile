@@ -2439,14 +2439,22 @@
       "requirement": "Pausing one episode does not stop the rest of the season.",
       "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44891588380,
+          "commit": "2f95b7dec00aa867b5b776e832911f740e543137",
+          "what": "#28 final commit (merged): SeasonQueuePolicyTest, SeasonQueueStorageTest, race harness r1–r21 (pause/resume interleavings, pause all, held enqueue), SeasonPauseAndroidTest (job cancellation), all unit tests",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0124"
     },
     {
@@ -2457,14 +2465,22 @@
       "requirement": "Pausing a season does not stop other seasons.",
       "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44891588380,
+          "commit": "2f95b7dec00aa867b5b776e832911f740e543137",
+          "what": "#28 final commit (merged): SeasonQueuePolicyTest, SeasonQueueStorageTest, race harness r1–r21 (pause/resume interleavings, pause all, held enqueue), SeasonPauseAndroidTest (job cancellation), all unit tests",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0125"
     },
     {
@@ -2475,14 +2491,22 @@
       "requirement": "Pause all stops every download type of the current profile and starts nothing new until resume.",
       "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44891588380,
+          "commit": "2f95b7dec00aa867b5b776e832911f740e543137",
+          "what": "#28 final commit (merged): SeasonQueuePolicyTest, SeasonQueueStorageTest, race harness r1–r21 (pause/resume interleavings, pause all, held enqueue), SeasonPauseAndroidTest (job cancellation), all unit tests",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0126"
     },
     {
@@ -2493,14 +2517,22 @@
       "requirement": "Resume all does not resume downloads paused one by one.",
       "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44891588380,
+          "commit": "2f95b7dec00aa867b5b776e832911f740e543137",
+          "what": "#28 final commit (merged): SeasonQueuePolicyTest, SeasonQueueStorageTest, race harness r1–r21 (pause/resume interleavings, pause all, held enqueue), SeasonPauseAndroidTest (job cancellation), all unit tests",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0127"
     },
     {
@@ -2511,14 +2543,22 @@
       "requirement": "Resuming an episode while another downloads keeps queue order and concurrency limits.",
       "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44891588380,
+          "commit": "2f95b7dec00aa867b5b776e832911f740e543137",
+          "what": "#28 final commit (merged): SeasonQueuePolicyTest, SeasonQueueStorageTest, race harness r1–r21 (pause/resume interleavings, pause all, held enqueue), SeasonPauseAndroidTest (job cancellation), all unit tests",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0128"
     },
     {
@@ -2529,14 +2569,22 @@
       "requirement": "Partial files and real progress kept.",
       "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44891588380,
+          "commit": "2f95b7dec00aa867b5b776e832911f740e543137",
+          "what": "#28 final commit (merged): SeasonQueuePolicyTest, SeasonQueueStorageTest, race harness r1–r21 (pause/resume interleavings, pause all, held enqueue), SeasonPauseAndroidTest (job cancellation), all unit tests",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0129"
     },
     {
@@ -2547,14 +2595,22 @@
       "requirement": "No duplicate downloads.",
       "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44891588380,
+          "commit": "2f95b7dec00aa867b5b776e832911f740e543137",
+          "what": "#28 final commit (merged): SeasonQueuePolicyTest, SeasonQueueStorageTest, race harness r1–r21 (pause/resume interleavings, pause all, held enqueue), SeasonPauseAndroidTest (job cancellation), all unit tests",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0130"
     },
     {
@@ -2586,12 +2642,12 @@
       "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21.",
-        "Background notification on Android 14+ not run."
+        "Tapping Pause/Resume on the notification on Android 14: the emulator's shade does not show the notification to the UI dump (NVP15-RISK-0009); owner's device.",
+        "Android 9 full scenario passed in the runs of 8566b663 and 0bd16a6c (job Android 28); Android 14 full scenario passed once (run 44864116050, job Android 34)."
       ],
       "needs_physical_device": true,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test.",
+      "next": "Cite this PR's notification run (Android 9 full, Android 14 up to the notification); owner checks the tap on Android 14.",
       "nvp15": "NVP15-REQ-0132"
     },
     {
