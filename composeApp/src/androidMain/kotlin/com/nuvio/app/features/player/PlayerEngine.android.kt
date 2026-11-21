@@ -1602,14 +1602,20 @@ private fun LibmpvPlayerSurface(
     val lastPrepareKeys = remember { arrayOfNulls<Any>(5) }
     LaunchedEffect(playerViewRef, sourceUrl, sourceAudioUrl, sanitizedSourceHeaders, externalSubtitles) {
         val view = playerViewRef ?: return@LaunchedEffect
-        playbackDiagnostics.attempt += 1
-        playbackDiagnostics.prepareStartedAtMs = SystemClock.elapsedRealtime()
-        // Which input started this load (Build 15: the device tests saw the source opened more than once).
+        // Which input started this load. The device tests (#55) showed a second load 30-400 ms after
+        // the first with nothing changed, on Android 9 and 14: the same view was asked to open the same
+        // source again, which aborts the first open and repeats the request. Skip such a repeat.
         val prepareKeys = arrayOf<Any?>(view, sourceUrl, sourceAudioUrl, sanitizedSourceHeaders, externalSubtitles)
         val changed = listOf("view", "url", "audioUrl", "headers", "subtitles")
             .filterIndexed { index, _ -> lastPrepareKeys[index] != prepareKeys[index] }
             .joinToString(",")
+        if (changed.isEmpty()) {
+            Log.i(PLAYER_DIAGNOSTIC_TAG, "mpv_prepare_skipped attempt=${playbackDiagnostics.attempt} same view and source")
+            return@LaunchedEffect
+        }
         prepareKeys.copyInto(lastPrepareKeys)
+        playbackDiagnostics.attempt += 1
+        playbackDiagnostics.prepareStartedAtMs = SystemClock.elapsedRealtime()
         Log.i(
             PLAYER_DIAGNOSTIC_TAG,
             "mpv_prepare_begin attempt=${playbackDiagnostics.attempt} changed=$changed " +
@@ -1696,6 +1702,7 @@ private fun LibmpvPlayerSurface(
             },
             onRelease = { view ->
                 if (playerViewRef === view) playerViewRef = null
+                lastPrepareKeys.fill(null) // a released player loads its source again when shown
                 view.releaseMpv()
             },
         )

@@ -23,6 +23,9 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **The mpv player opens a stream once.** It opened the same source twice when playback
+  started (seen on Android 9 and 14), so the first connection was dropped and the request repeated.
+  The repeat is now skipped; a player shown again after it was closed still loads normally.
 - **Downloads in the library show the percentage first.** On a phone the card cut the line after
   "Downloading", so the percentage was hidden; it now reads "40% • Downloading".
 - **A download whose partial file was removed now says up front when storage is full.** The space

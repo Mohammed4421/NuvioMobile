@@ -35,7 +35,7 @@ python3 -I "${here}/instrumentation-results.py" "${label}" <<< "${out}" || statu
 # Every run: how many times libmpv was asked to open its source per test (a second open repeats the
 # network request at start). Recorded to compare with the failed run, where it opened twice.
 echo "${label}: libmpv source opens across the libmpv tests (one per test expected): $(adb logcat -d -s NuvioPlayerDiag:I | grep -c 'mpv_prepare_begin' || true)"
-adb logcat -d -v time -s NuvioPlayerDiag:I TestRunner:I | grep -E "mpv_prepare_begin|started: " | sed "s/^/${label}: /" || true
+adb logcat -d -v time -s NuvioPlayerDiag:I TestRunner:I | grep -E "mpv_prepare_begin|mpv_prepare_skipped|started: " | sed "s/^/${label}: /" || true
 if (( status != 0 )); then
   # Evidence for telling an app fault from the emulator: the player's and the system's lines.
   echo "::group::${label}: logcat after the failed tests (player, surface, activity, crashes)"
