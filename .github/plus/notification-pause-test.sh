@@ -55,7 +55,13 @@ part_size() { adb shell "run-as ${pkg} ls -l 'files/downloads/$1.part'" 2>/dev/n
 # Point (x y) of the first node of the current screen whose text or description is $1
 # (case-insensitive; Android 9 shows action labels in capitals).
 find_node() {
-  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+  # uiautomator dump sometimes writes nothing ("could not get idle state"): try again.
+  for _ in 1 2 3; do
+    adb shell rm -f /sdcard/ui.xml
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+    [[ -n "$(adb shell cat /sdcard/ui.xml 2>/dev/null | head -c 20)" ]] && break
+    sleep 2
+  done
   adb shell cat /sdcard/ui.xml | python3 -I -c '
 import re, sys
 ui = sys.stdin.read()
@@ -79,16 +85,20 @@ print(" | ".join(t for t in re.findall(r" text=\"([^\"]+)\"", sys.stdin.read()))
 # down on its title.
 tap_notification_button() {
   adb shell cmd statusbar expand-notifications; sleep 2
-  local point title
+  local point title=""
   point="$(find_node "$1")"
-  if [[ -z "${point}" ]]; then
+  # The swipe expands a collapsed notification and collapses an expanded one (the system may
+  # expand it by itself): try up to three times, looking for the action after each.
+  for _ in 1 2 3; do
+    [[ -n "${point}" ]] && break
     title="$(find_node "Background download test")"
-    [[ -n "${title}" ]] || fail "no download notification in the shade (texts: $(shade_texts))"
+    [[ -n "${title}" ]] || { sleep 2; point="$(find_node "$1")"; continue; }
     read -r x y <<< "${title}"
     say "expanding the notification at ${title}"
     adb shell input swipe "${x}" "${y}" "${x}" "$((y + 400))" 300; sleep 2
     point="$(find_node "$1")"
-  fi
+  done
+  [[ -n "${title:-}${point}" ]] || fail "no download notification in the shade (texts: $(shade_texts))"
   [[ -n "${point}" ]] || fail "no '$1' button in the notification shade (texts: $(shade_texts))"
   say "tapping '$1' at ${point}"
   adb shell input tap ${point}
