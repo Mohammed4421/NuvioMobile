@@ -36,6 +36,8 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | B15-SET-01 | Settings | Subtitle brightness slider and bottom-offset range | Diff review of `SubtitleAppearanceSettings.kt`; effect on the picture needs a device | — | KEEP; NEEDS PHYSICAL DEVICE | IMPLEMENTED |
 | B15-UI-02 | Subtitles (Arabic) | Colour codes (#FFFFFF) shown reversed in RTL | Reference screenshot (#47) | P2 | FIX (#47) | IMPLEMENTED |
 | B15-UI-04 | Playback settings (Arabic) | Decoder strings said فك التشفير (decryption) for decoding | Reference screenshots (#49) | P2 | FIX (#49) | IMPLEMENTED |
+| B15-UI-05 | Player panels (Arabic) | Delay and gain values shown as `0.000s+`, `dB 0` | Reference screenshots (#49) | P2 | FIX (#49) | IMPLEMENTED |
+| B15-UI-06 | Library downloads | Phone card cut the percentage ("Downloading • …") | Reference screenshot (#49) | P2 | FIX (#49) | IMPLEMENTED |
 
 ## Areas reviewed and still to review
 

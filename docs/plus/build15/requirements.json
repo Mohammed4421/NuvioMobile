@@ -1239,11 +1239,21 @@
       "mandatory": true,
       "requirement": "Security review: Storage of sensitive user data.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/security.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "what": "security.md 'Stored data': sign-ins and server passwords in app storage (several Keystore-encrypted), typed API keys plain in app-private preferences (Nuvio's design), allowBackup=false",
+          "result": "reviewed, no Build 15 finding",
+          "file": "docs/plus/build15/security.md"
+        }
+      ],
       "untested": [
-        "No written review against this item yet."
+        "Logs not audited line by line",
+        "Rooted-device extraction out of scope"
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
@@ -1257,11 +1267,22 @@
       "mandatory": true,
       "requirement": "Security review: Dependencies and known vulnerabilities.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        ".github/plus/osv-check.py",
+        ".github/workflows/plus-build.yml"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44894545343,
+          "commit": "346fb82df9741046dfed692f46aa296fca147614",
+          "what": "Stable build of 346fb82d, step 'Known vulnerabilities in the libraries of the release APK (OSV)': 353 libraries, 0 blocking, 0 reviewed, 0 low or moderate",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "No written review against this item yet."
+        "Native libraries (libmpv, FFmpeg) are not covered by OSV"
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
@@ -1349,10 +1370,21 @@
       "mandatory": true,
       "requirement": "OWASP MASVS/MASTG principles where relevant; actual coverage documented.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
-      "untested": [],
+      "paths": [
+        "docs/plus/build15/security.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "what": "security.md: MASVS coverage table (storage, crypto, network, platform, code, resilience, privacy) with what is and is not covered",
+          "result": "documented",
+          "file": "docs/plus/build15/security.md"
+        }
+      ],
+      "untested": [
+        "No MASTG test cases executed beyond the checks named in the table"
+      ],
       "needs_physical_device": false,
       "acceptance": "Coverage table in the security report.",
       "next": "Security report.",
