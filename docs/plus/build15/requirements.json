@@ -446,7 +446,7 @@
         {
           "kind": "review",
           "file": "docs/plus/build15/findings.json",
-          "what": "Deferred now: CI-02 (Low, Nuvio's tree, no runtime effect), UI-03 (Low, no measured impact; P5 start/memory within noise), BLD-01 (Low, trusted input). SUB-03 and DL-01 were fixed instead (#26, #52)",
+          "what": "Deferred now: CI-02 (Low, Nuvio's tree, no runtime effect), UI-03 (Low, no measured impact; P5 start/memory within noise), BLD-01 (Low, trusted input). SUB-03 and DL-01 were fixed instead (#37, #52)",
           "result": "documented"
         }
       ],
