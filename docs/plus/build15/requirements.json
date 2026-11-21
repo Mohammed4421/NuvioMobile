@@ -1441,7 +1441,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Plan/apply refuse incompatible targets.",
-      "next": "compatibility.json gained playback-credential-tls (#44): re-verify with the PortKit run of a new commit.",
+      "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
       "nvp15": "NVP15-REQ-0070"
     },
     {
@@ -1530,7 +1530,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every feature has a level.",
-      "next": "compatibility.json gained playback-credential-tls (#44): re-verify with the PortKit run of a new commit.",
+      "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
       "nvp15": "NVP15-REQ-0074"
     },
     {
@@ -1563,7 +1563,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each property has a test.",
-      "next": "compatibility.json gained playback-credential-tls (#44): re-verify with the PortKit run of a new commit.",
+      "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
       "nvp15": "NVP15-REQ-0075"
     },
     {
@@ -1576,7 +1576,7 @@
       "paths": [
         ".github/workflows/portkit.yml"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1584,12 +1584,19 @@
           "commit": "9519b3c8c4e806f2c93428c6336ed4123ca81be2",
           "what": "PR #23 checks",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44875726793,
+          "commit": "ab8def38ea8bfab7806968f07ca6b9d18ded8bdb",
+          "what": "PortKit transfer tests on #45's final commit (merged): lazy-key-collisions and subtitle-parser-worst-case transferred into upstream 1.0.0 and fork A, their tests passed (4+4 each), APK assembled; dry run, validate and check-evidence steps passed",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Both targets built and tested.",
-      "next": "portkit.yml now runs on every PR (required check): re-verify with the PortKit run of this commit.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0076"
     },
     {
@@ -1659,7 +1666,7 @@
         ".github/plus/lint-report.init.gradle",
         ".github/plus/detekt-cli.init.gradle"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1667,12 +1674,19 @@
           "commit": "8a571786e325a83961f704f18189bc7bb764e1ed",
           "what": "PR #40 static analysis: Android lint (androidApp: 14 findings in both builds, 0 new) and detekt on composeApp (Build 14: 7,799, head: 7,802; 6 new, all style: MagicNumber, LoopWithTooManyJumpStatements, reviewed: no defect); lint's TrustAllX509TrustManager is Nuvio's PlayerPlaybackNetworking (B15-SEC-04)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44875726774,
+          "commit": "ab8def38ea8bfab7806968f07ca6b9d18ded8bdb",
+          "what": "Static analysis on #45's final commit (merged): lint (androidApp) and detekt (composeApp) against Build 14, compare job always reporting; no blocking finding",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "static-analysis.yml changed (compare always reports): re-verify with its run on this commit.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0080"
     },
     {
