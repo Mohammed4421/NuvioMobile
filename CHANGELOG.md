@@ -26,6 +26,14 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Download screens, small polish:** a paused download without a known size no longer shows a moving
+  bar; a card without a poster shows a film or series icon; the empty message is centred; in the queue
+  the show's title is cut on its own so the season, episode and paused state stay visible; the queue
+  buttons move under the title on narrow screens; the Wi-Fi only switch has room from its text; an
+  episode can be removed while its source is being searched.
+- **Subtitle panel:** "Reset appearance" looks like the other buttons; the AutoSync buttons wrap on
+  narrow panels; loading lines shows a spinner and a failed load offers Retry; the − / + buttons have a
+  48 dp touch area.
 - **Choosing a subtitle while the video buffers no longer pauses it** (ExoPlayer), and a chosen
   add-on subtitle is no longer lost when the player reloads.
 - **A resumed download can no longer end up mixed or cut.** If the server sends another version of

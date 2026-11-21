@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -303,7 +304,7 @@ private fun LazyListScope.downloadsRootContent(
     }
 }
 
-private fun LazyListScope.downloadsSettingsContent(
+internal fun LazyListScope.downloadsSettingsContent(
     preferences: DownloadPreferencesState,
     onChooseFolder: (() -> Unit)?,
 ) {
@@ -362,7 +363,10 @@ private fun LazyListScope.downloadsSettingsContent(
                     )
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(
                             text = stringResource(Res.string.downloads_settings_wifi_only),
@@ -393,7 +397,7 @@ private fun PauseAllButton(allPaused: Boolean) {
     }
 }
 
-private fun LazyListScope.seasonQueueContent(
+internal fun LazyListScope.seasonQueueContent(
     entries: List<SeasonQueueEntry>,
     holds: SeasonQueueHolds,
     showPauseAll: Boolean,
@@ -403,16 +407,18 @@ private fun LazyListScope.seasonQueueContent(
     val pending = entries.filter { it.state != SeasonQueueEntryState.Downloading }
     if (pending.isEmpty()) return
     item(key = "season-queue-title") {
-        Row(
+        // On a narrow screen the buttons go under the title instead of squeezing it.
+        FlowRow(
             modifier = Modifier.fillMaxWidth().padding(end = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            itemVerticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(modifier = Modifier.weight(1f)) {
-                SectionTitle(stringResource(Res.string.downloads_section_queue))
-            }
-            if (showPauseAll) PauseAllButton(holds.allPausedProfiles.isNotEmpty())
-            TextButton(onClick = { SeasonDownloadQueue.clear() }) {
-                Text(stringResource(Res.string.downloads_queue_clear))
+            SectionTitle(stringResource(Res.string.downloads_section_queue))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (showPauseAll) PauseAllButton(holds.allPausedProfiles.isNotEmpty())
+                TextButton(onClick = { SeasonDownloadQueue.clear() }) {
+                    Text(stringResource(Res.string.downloads_queue_clear))
+                }
             }
         }
     }
@@ -425,17 +431,31 @@ private fun LazyListScope.seasonQueueContent(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 val seasonLabel = key.seasonNumber.toString().padStart(2, '0')
-                Text(
-                    text = "${seasonEntries.first().title} · " + stringResource(
-                        if (seasonPaused) Res.string.downloads_queue_season_paused else Res.string.downloads_queue_season,
-                        seasonLabel,
-                    ),
+                // The show's title may be long or in another script: it is cut on its own, so the
+                // season and its paused state always show.
+                Row(
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text(
+                        text = seasonEntries.first().title,
+                        modifier = Modifier.weight(1f, fill = false),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = stringResource(
+                            if (seasonPaused) Res.string.downloads_queue_season_paused else Res.string.downloads_queue_season,
+                            seasonLabel,
+                        ),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = if (seasonPaused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
                 IconButton(
                     onClick = {
                         if (seasonPaused) SeasonDownloadQueue.resumeSeason(key.parentMetaId, key.seasonNumber)
@@ -476,13 +496,25 @@ private fun LazyListScope.seasonQueueEntries(pending: List<SeasonQueueEntry>) {
                         entry.seasonNumber.toString().padStart(2, '0'),
                         entry.episodeNumber.toString().padStart(2, '0'),
                     )
-                    Text(
-                        text = "${entry.title} · $episodeLabel",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            text = entry.title,
+                            modifier = Modifier.weight(1f, fill = false),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = episodeLabel,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                        )
+                    }
                     entry.episodeTitle?.takeIf { it.isNotBlank() }?.let { episodeTitle ->
                         Text(
                             text = episodeTitle,
@@ -526,13 +558,13 @@ private fun LazyListScope.seasonQueueEntries(pending: List<SeasonQueueEntry>) {
                         )
                     }
                 }
-                if (entry.state != SeasonQueueEntryState.Searching) {
-                    IconButton(onClick = { SeasonDownloadQueue.remove(entry.id) }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Delete,
-                            contentDescription = stringResource(Res.string.downloads_queue_remove),
-                        )
-                    }
+                // Also while searching: remove() stops that search, so the episode is never
+                // downloaded and the rest of the queue goes on (queue harness r7).
+                IconButton(onClick = { SeasonDownloadQueue.remove(entry.id) }) {
+                    Icon(
+                        imageVector = Icons.Rounded.Delete,
+                        contentDescription = stringResource(Res.string.downloads_queue_remove),
+                    )
                 }
             }
         }

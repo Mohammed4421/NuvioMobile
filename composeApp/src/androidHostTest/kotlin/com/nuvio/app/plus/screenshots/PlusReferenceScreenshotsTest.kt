@@ -26,7 +26,16 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.LayoutDirection
 import com.nuvio.app.core.ui.NuvioTheme
 import com.nuvio.app.features.downloads.DownloadItem
+import com.nuvio.app.features.downloads.DownloadPreferencesState
 import com.nuvio.app.features.downloads.DownloadStatus
+import com.nuvio.app.features.downloads.SeasonKey
+import com.nuvio.app.features.downloads.SeasonPauseScope
+import com.nuvio.app.features.downloads.SeasonQueueEntry
+import com.nuvio.app.features.downloads.SeasonQueueEntryState
+import com.nuvio.app.features.downloads.SeasonQueueHolds
+import com.nuvio.app.features.downloads.SeasonQueueReference
+import com.nuvio.app.features.downloads.downloadsSettingsContent
+import com.nuvio.app.features.downloads.seasonQueueContent
 import com.nuvio.app.features.library.buildLibraryDownloadEntries
 import com.nuvio.app.features.library.libraryDownloadsContent
 import com.nuvio.app.features.player.AddonSubtitle
@@ -108,6 +117,63 @@ abstract class PlusReferenceScreenshots(private val device: String) {
                 entries = entries, activeCount = 2, queueCount = 0, columns = if (device.endsWith("tablet")) 5 else 3,
                 onManageClick = {}, onEntryClick = {}, onEntryLongClick = {},
             )
+        }
+    }
+
+    // P4 batch (owner, 2026-11-21): states and long or mixed titles on the download screens.
+    private fun longTitle() = text(
+        "The Extraordinarily Long Title Of A Series That Keeps Going",
+        "مسلسل The Long Night الطويل جدًا في عنوانه",
+    )
+
+    @Test fun libraryDownloadStates() = shoot("library-download-states") {
+        val entries = buildLibraryDownloadEntries(
+            items = listOf(
+                item("film-paused-unknown", null, DownloadStatus.Paused, downloaded = 70, total = null).copy(title = longTitle()),
+                item("film-failed", null, DownloadStatus.Failed).copy(title = text("Failed film", "فيلم فشل")),
+                item("show-mixed", 1, DownloadStatus.Completed).copy(title = text("Show", "عرض Mixed")),
+            ),
+            queue = emptyList(),
+        )
+        LazyColumn(Modifier.fillMaxSize()) {
+            libraryDownloadsContent(
+                entries = entries, activeCount = 1, queueCount = 0, columns = if (device.endsWith("tablet")) 5 else 3,
+                onManageClick = {}, onEntryClick = {}, onEntryLongClick = {},
+            )
+        }
+    }
+
+    @Test fun libraryDownloadsEmpty() = shoot("library-downloads-empty") {
+        LazyColumn(Modifier.fillMaxSize()) {
+            libraryDownloadsContent(
+                entries = emptyList(), activeCount = 0, queueCount = 0, columns = 3,
+                onManageClick = {}, onEntryClick = {}, onEntryLongClick = {},
+            )
+        }
+    }
+
+    @Test fun downloadsQueueAndSettings() = shoot("downloads-queue") {
+        val reference = SeasonQueueReference(addonId = "a", addonName = "Add-on", text = "1080p")
+        fun episode(n: Int, state: SeasonQueueEntryState, show: String, title: String, pausedBy: SeasonPauseScope = SeasonPauseScope.Episode) =
+            SeasonQueueEntry(
+                id = "$show-$n", contentType = "series", parentMetaId = show, parentMetaType = "series",
+                title = title, videoId = "$show:1:$n", seasonNumber = 1, episodeNumber = n,
+                episodeTitle = text("Episode $n with a long name that does not fit", "الحلقة $n: The Return"),
+                reference = reference, state = state, pausedBy = pausedBy, profileId = 1,
+            )
+        val entries = listOf(
+            episode(1, SeasonQueueEntryState.Searching, "show-a", longTitle()),
+            episode(2, SeasonQueueEntryState.Paused, "show-a", longTitle(), SeasonPauseScope.Season),
+            episode(3, SeasonQueueEntryState.Waiting, "show-a", longTitle()),
+            episode(1, SeasonQueueEntryState.NeedsChoice, "show-b", text("Short", "قصير")),
+        )
+        LazyColumn(Modifier.fillMaxSize()) {
+            seasonQueueContent(
+                entries = entries,
+                holds = SeasonQueueHolds(pausedSeasons = setOf(SeasonKey(1, "show-a", 1))),
+                showPauseAll = true,
+            )
+            downloadsSettingsContent(preferences = DownloadPreferencesState(wifiOnly = true), onChooseFolder = null)
         }
     }
 
