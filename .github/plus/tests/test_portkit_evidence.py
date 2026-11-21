@@ -137,3 +137,58 @@ class TestClasses(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FetchRun(unittest.TestCase):
+    """How check-evidence reads a run from GitHub: token first, the public run without it when the
+    token may not read Actions data, retries only for rate limits and server errors."""
+
+    def fetch(self, answers, token="t0ken"):
+        import io
+        import os
+        import urllib.error
+        calls = []
+
+        def urlopen(request, timeout):
+            calls.append(request.get_header("Authorization"))
+            answer = answers[len(calls) - 1]
+            if isinstance(answer, int):
+                headers = {"X-RateLimit-Remaining": "0"} if answer == -403 else {}
+                raise urllib.error.HTTPError(request.full_url, abs(answer), "error", headers, None)
+            return io.BytesIO(json.dumps(answer).encode())
+
+        saved = {k: os.environ.pop(k, None) for k in ("GH_TOKEN", "GITHUB_TOKEN")}
+        if token:
+            os.environ["GH_TOKEN"] = token
+        try:
+            try:
+                return portkit.github_run(7, urlopen=urlopen, sleep=lambda s: None), calls
+            except urllib.error.HTTPError as error:
+                return error.code, calls
+        finally:
+            os.environ.pop("GH_TOKEN", None)
+            for k, v in saved.items():
+                if v is not None:
+                    os.environ[k] = v
+
+    def test_reads_with_the_token_first(self):
+        self.assertEqual(({"id": 7}, ["Bearer t0ken"]), self.fetch([{"id": 7}]))
+
+    def test_a_token_without_access_falls_back_to_the_public_run(self):
+        for code in (401, 403, 404):
+            self.assertEqual(({"id": 7}, ["Bearer t0ken", None]), self.fetch([code, {"id": 7}]), code)
+
+    def test_without_a_token_reads_anonymously(self):
+        self.assertEqual(({"id": 7}, [None]), self.fetch([{"id": 7}], token=None))
+
+    def test_rate_limits_are_retried_not_mistaken_for_missing_access(self):
+        result, calls = self.fetch([-403, 429, {"id": 7}])
+        self.assertEqual(({"id": 7}, ["Bearer t0ken"] * 3), (result, calls))
+
+    def test_a_missing_run_is_not_reported_as_found(self):
+        self.assertEqual((404, ["Bearer t0ken", None]), self.fetch([404, 404]))
+
+    def test_rate_limits_that_never_clear_fail(self):
+        result, calls = self.fetch([-403] * 4 + [-403] * 4, token=None)
+        self.assertEqual((403, 4), (result, len(calls)))
+

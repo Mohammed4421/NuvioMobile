@@ -15,7 +15,6 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-private val SupportedLocalSubtitleExtensions = setOf("srt", "vtt", "webvtt", "ass", "ssa", "ttml", "dfxp")
 
 @Composable
 internal actual fun rememberLocalSubtitlePicker(
@@ -53,7 +52,10 @@ internal actual fun rememberLocalSubtitlePicker(
                         languageHint = guessLanguageFromSubtitleFileName(displayName).ifBlank { null },
                     )
                     require(text.isNotBlank()) { "Subtitle file is empty" }
-                    val target = localSubtitleTargetFile(context.cacheDir, displayName)
+                    val extension = requireNotNull(localSubtitleFileExtension(displayName, text)) {
+                        "This file is not a subtitle (SRT, VTT, ASS, SSA or TTML)"
+                    }
+                    val target = localSubtitleTargetFile(context.cacheDir, displayName, extension)
                     target.parentFile?.mkdirs()
                     target.writeText(text, Charsets.UTF_8)
                     PickedLocalSubtitle(url = Uri.fromFile(target).toString(), fileName = displayName)
@@ -66,14 +68,10 @@ internal actual fun rememberLocalSubtitlePicker(
 }
 
 /**
- * A stable, ASCII-only file name in the cache that keeps the original extension, which the
- * players use to pick the subtitle format.
+ * A stable, ASCII-only file name in the cache with the subtitle's extension (from
+ * [localSubtitleFileExtension]), which the players use to pick the subtitle format.
  */
-private fun localSubtitleTargetFile(cacheDir: File, displayName: String): File {
-    val extension = displayName.substringAfterLast('.', missingDelimiterValue = "")
-        .lowercase()
-        .takeIf { it in SupportedLocalSubtitleExtensions }
-        ?: "srt"
+private fun localSubtitleTargetFile(cacheDir: File, displayName: String, extension: String): File {
     val stem = displayName.substringBeforeLast('.', missingDelimiterValue = displayName)
         .replace(Regex("[^A-Za-z0-9._-]"), "_")
         .take(60)

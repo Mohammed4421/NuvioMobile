@@ -611,24 +611,36 @@ def rollback(target, branch):
 # on that commit; that the workflow at that commit transferred the feature into every target; and
 # that neither the feature's files nor PortKit's transfer machinery changed since.
 
-def github_run(run_id):
-    request = urllib.request.Request(f"https://api.github.com/repos/Mohammed4421/NuvioMobile/actions/runs/{run_id}",
-                                     headers={"Accept": "application/vnd.github+json"})
+def github_run(run_id, urlopen=urllib.request.urlopen, sleep=None):
+    """The transfer-test run [run_id] as GitHub's API returns it.
+
+    With a token (GH_TOKEN or GITHUB_TOKEN) it is read with that token first: a shared CI address
+    reading anonymously ran out of requests ("rate limit exceeded", run 44783639944), and a token has
+    its own, much larger allowance. A token that may not read Actions data (a caller that grants only
+    `contents: read`) is answered 401, 403 or 404; the run is public, so it is then read without it.
+    Rate limits and server errors are retried with growing waits; anything else is raised."""
+    import time
+    sleep = sleep or time.sleep
+    url = f"https://api.github.com/repos/Mohammed4421/NuvioMobile/actions/runs/{run_id}"
     token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
-    if token:
-        request.add_header("Authorization", f"Bearer {token}")
-    for attempt in range(4):
-        try:
-            with urllib.request.urlopen(request, timeout=30) as response:
-                return json.load(response)
-        except urllib.error.HTTPError as error:
-            if error.code not in (403, 429, 500, 502, 503, 504) or attempt == 3:
-                raise
-        except urllib.error.URLError:
-            if attempt == 3:
-                raise
-        import time
-        time.sleep(10 * (attempt + 1))
+    for use_token in ([True, False] if token else [False]):
+        for attempt in range(4):
+            request = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json"})
+            if use_token:
+                request.add_header("Authorization", f"Bearer {token}")
+            try:
+                with urlopen(request, timeout=30) as response:
+                    return json.load(response)
+            except urllib.error.HTTPError as error:
+                limited = error.code == 429 or (error.code == 403 and (error.headers or {}).get("X-RateLimit-Remaining") == "0")
+                if use_token and error.code in (401, 403, 404) and not limited:
+                    break  # this token may not read Actions data: read the public run without it
+                if not (limited or error.code >= 500) or attempt == 3:
+                    raise
+            except urllib.error.URLError:
+                if attempt == 3:
+                    raise
+            sleep(10 * (attempt + 1))
 
 
 def check_evidence(repo, fetch_run=github_run):

@@ -13,6 +13,13 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | B15-DL-01 | Downloads | Free-space check counts old progress when a `.part` document was deleted outside the app (K-03) | Code review of `executeToFolder` | P3 | DEFER (no data loss; needs a SAF provider test to change safely) | SPECIFIED |
 | B15-CI-02 | Repository | Gitlinks without `.gitmodules` entries (K-05) | CI teardown log | P3 | DEFER (Nuvio's tree; no build effect) | SPECIFIED |
 | B15-UI-03 | Localization | `runBlocking` resource reads in `LocalizedUiText` (Nuvio's code) | Code review only | — | DEFER until measured on a device (P5) | DISCOVERED |
+| B15-SUB-04 | Subtitles | Manual sync on a local subtitle: claim "loader is HTTP-only" is wrong (Android reads `file:` in `httpGetTextWithHeaders`); the real defect is the offline early return in `loadSubtitleAutoSyncCues` (`PlayerScreenRuntimeSubtitleActions.kt` l.75 @ b6d8776e) that blocks a local file with no network. iOS has no `file:` path | `LocalSubtitleSyncCuesTest` (local file + HTTP) | P1 | FIX (#24); iOS DEFER | IMPLEMENTED |
+| B15-SUB-05 | Subtitles | Subtitle gestures save every frame: `updateSubtitleGesture` (l.401–409 @ b6d8776e) calls `setSubtitleStyle` (l.687–709: 12 `apply()` writes + sync publish) | `SubtitleGestureSessionTest` (drag, cancel, lock, rotation/dispose keep the final value) | P2 | FIX (#25): live preview, one save at gesture end | IMPLEMENTED |
+| B15-SUB-06 | Subtitles | Unknown extension silently renamed `.srt` (`LocalSubtitlePicker.android.kt` l.36, l.76 @ b6d8776e) | `LocalSubtitleFormatTest` (content detection; non-subtitle refused; Windows-1256, ASS, SRT kept) | P2 | FIX (#26) | IMPLEMENTED |
+| B15-DL-02 | Downloads | Claimed race in `SeasonDownloadQueue` / `DownloadPreferences` (no Mutex). All writers run on Main: queue scope `Dispatchers.Main` (l.183), job service `Main.immediate`, preferences set from UI; search is the only `Default` work and returns to Main | Harness r1–r13 incl. two seasons at once, double start, pause/resume, remove during finish, profile switch, restart: no lost update, no duplicate enqueue | — | KEEP (risk unproven; no code change) | VERIFIED (harness) |
+| B15-EXT-01 | Localization | External claim: `%1$s` broken in `values-ar/strings_ratings.xml` | File read @ b6d8776e and b9369bb: placeholders correct (4 × `%1$s`) | — | KEEP (claim contradicted) | VERIFIED (review) |
+| B15-EXT-02 | Player | External claim: `touchGesturesEnabled` ignored | Checked through `playerSurfaceDragGestures` (`touchGesturesEnabledState`); covered by `PlayerSurfaceGesturesTest` | — | KEEP (claim contradicted) | VERIFIED (review) |
+| B15-EXT-03 | Architecture | External suggestion: move player state to a ViewModel | Design preference, no defect shown | — | KEEP (out of scope) | — |
 | B15-REL-01 | Release notes | Android 9 note missing in the Arabic part of custom-14 notes (K-02) | Release page | P3 | FIX by hand on the release page (session cannot edit releases); future notes carry the changelog text | SPECIFIED |
 
 ## Areas reviewed and still to review
@@ -20,7 +27,7 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | Area | State |
 |---|---|
 | Updater / identity / signing | Reviewed in Build 14 (device tests on Android 9 and 14, release gate) |
-| Season downloads, profiles | Race harness in CI (r1–r9); E1/r2 in Build 14 |
+| Season downloads, profiles | Race harness in CI (r1–r13; B15-DL-02); E1/r2 in Build 14 |
 | Subtitle parsing (player, auto-sync, local import) | Reviewed (B15-SUB-01..03) |
 | Add-on links | Confirmation since Build 14 |
 | Player engines, HDR, gestures | NEEDS PHYSICAL DEVICE |
