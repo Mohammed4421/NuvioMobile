@@ -79,19 +79,30 @@ class MpvSurfaceTest {
         }
     }
 
+    /**
+     * Waits for the test video's colour (or its absence) at the screen centre. On a timeout the
+     * message names the last colour seen, so a black or frozen surface is told apart from a slow one.
+     */
     private fun awaitVideoFrame(visible: Boolean = true) {
         val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
-        compose.waitUntil(15_000) {
-            val frame = automation.takeScreenshot() ?: return@waitUntil false
-            try {
-                val pixel = frame.getPixel(frame.width / 2, frame.height / 2)
-                val matchesVideo = Color.red(pixel) in 95..130 &&
-                    Color.green(pixel) in 115..150 &&
-                    Color.blue(pixel) in 125..160
-                matchesVideo == visible
-            } finally {
-                frame.recycle()
+        var lastPixel: Int? = null
+        try {
+            compose.waitUntil(15_000) {
+                val frame = automation.takeScreenshot() ?: return@waitUntil false
+                try {
+                    val pixel = frame.getPixel(frame.width / 2, frame.height / 2)
+                    lastPixel = pixel
+                    val matchesVideo = Color.red(pixel) in 95..130 &&
+                        Color.green(pixel) in 115..150 &&
+                        Color.blue(pixel) in 125..160
+                    matchesVideo == visible
+                } finally {
+                    frame.recycle()
+                }
             }
+        } catch (timeout: androidx.compose.ui.test.ComposeTimeoutException) {
+            val seen = lastPixel?.let { "rgb(${Color.red(it)}, ${Color.green(it)}, ${Color.blue(it)})" } ?: "no screenshot"
+            throw AssertionError("video ${if (visible) "frame" else "gone"} not seen in 15 s; last centre colour $seen", timeout)
         }
     }
 }
