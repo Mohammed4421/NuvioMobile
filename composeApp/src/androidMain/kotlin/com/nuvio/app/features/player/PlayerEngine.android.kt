@@ -1599,13 +1599,20 @@ private fun LibmpvPlayerSurface(
         }
     }
 
+    val lastPrepareKeys = remember { arrayOfNulls<Any>(5) }
     LaunchedEffect(playerViewRef, sourceUrl, sourceAudioUrl, sanitizedSourceHeaders, externalSubtitles) {
         val view = playerViewRef ?: return@LaunchedEffect
         playbackDiagnostics.attempt += 1
         playbackDiagnostics.prepareStartedAtMs = SystemClock.elapsedRealtime()
+        // Which input started this load (Build 15: the device tests saw the source opened more than once).
+        val prepareKeys = arrayOf<Any?>(view, sourceUrl, sourceAudioUrl, sanitizedSourceHeaders, externalSubtitles)
+        val changed = listOf("view", "url", "audioUrl", "headers", "subtitles")
+            .filterIndexed { index, _ -> lastPrepareKeys[index] != prepareKeys[index] }
+            .joinToString(",")
+        prepareKeys.copyInto(lastPrepareKeys)
         Log.i(
             PLAYER_DIAGNOSTIC_TAG,
-            "mpv_prepare_begin attempt=${playbackDiagnostics.attempt} " +
+            "mpv_prepare_begin attempt=${playbackDiagnostics.attempt} changed=$changed " +
                 "source=${diagnosticPlaybackSource(sourceUrl)} audioSource=${!sourceAudioUrl.isNullOrBlank()}",
         )
         val snapshot = PlayerPlaybackSnapshot()
