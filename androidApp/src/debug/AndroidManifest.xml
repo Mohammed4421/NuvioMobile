@@ -9,5 +9,9 @@
             android:name="com.nuvio.android.BackgroundDownloadTestActivity"
             android:exported="true"
             android:theme="@style/Theme.Nuvio" />
+        <!-- Debug builds only: sends a download notification action's own PendingIntent (notification test). -->
+        <receiver
+            android:name="com.nuvio.android.NotificationActionTestReceiver"
+            android:exported="true" />
     </application>
 </manifest>

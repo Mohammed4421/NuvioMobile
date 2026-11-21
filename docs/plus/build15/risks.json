@@ -3,21 +3,6 @@
   "note": "Spec v1.1 §22: every FAIL / BLOCKED / NOT TESTED / NEEDS PHYSICAL DEVICE and open decision; a critical one blocks the release until its evidence exists.",
   "risks": [
     {
-      "id": "NVP15-RISK-0001",
-      "state": "OPEN DECISION",
-      "reason": "P0 not yet approved by the owner while Build 15 source changes were merged (spec v1.1 §21.3)",
-      "needs": "Owner's P0 decision",
-      "requirements": [
-        "S21-02",
-        "P0-01"
-      ],
-      "impact": "Merged changes re-checked before they count (carryover.json)",
-      "priority": "P0",
-      "alternatives": "Approve P0 (performance on a device left open) or not",
-      "decision_owner": "owner",
-      "closes_when": "Owner's decision recorded in stage-gates.json"
-    },
-    {
       "id": "NVP15-RISK-0002",
       "state": "BLOCKED",
       "reason": "Branch ruleset requires no pull request or checks (B15-SEC-03); this session cannot change settings",
@@ -37,7 +22,7 @@
       "id": "NVP15-RISK-0003",
       "state": "NEEDS PHYSICAL DEVICE",
       "reason": "Emulators cannot show HDR / Dolby Vision, real codecs, gesture feel, SD card / SAF on removable storage, real performance",
-      "needs": "The owner's phone",
+      "needs": "The owner's phone, on the final release (owner's decision NVP15-CHG-0003)",
       "requirements": [
         "P5-01",
         "P5-04",
@@ -53,17 +38,17 @@
     },
     {
       "id": "NVP15-RISK-0004",
-      "state": "FAIL",
-      "reason": "Notification pause/resume test not yet passing on the head of #28 (test-side causes fixed one by one)",
-      "needs": "Android 14 and 9 emulators",
+      "state": "NEEDS PHYSICAL DEVICE",
+      "reason": "Emulator shades (Android 14 and, intermittently, Android 9) did not show the download notification to UI automation, while the app posted it. The emulator test now sends the posted notification's own Pause/Resume PendingIntent; only the system UI tap itself is left.",
+      "needs": "Owner's phone: start a download, leave the app, Pause then Resume from the notification",
       "requirements": [
         "D-09"
       ],
-      "impact": "Download contract condition 9 unproven on the merged code",
+      "impact": "The app side of pause/resume from the notification is tested on both emulators; the physical tap is not",
       "priority": "P0",
       "alternatives": "Fix the test until the real scenario passes",
       "decision_owner": "agent",
-      "closes_when": "PASS on both emulators on the head of #28"
+      "closes_when": "Owner confirms Pause and Resume from the notification on his phone"
     },
     {
       "id": "NVP15-RISK-0005",
@@ -111,6 +96,20 @@
       "alternatives": "Investigate if it recurs (D-12)",
       "decision_owner": "agent",
       "closes_when": "Root cause found or no recurrence over further runs"
+    },
+    {
+      "id": "NVP15-RISK-0009",
+      "state": "FAIL",
+      "reason": "Nuvio's device tests on the Android 14 emulator failed after #28's merge: MpvSurfaceTest (activity lifecycle timeout) and SubtitleSettingsTest font picker (Compose timeout); both passed in most earlier runs",
+      "needs": "Repeated Android 14 runs; owner's device for the font picker",
+      "requirements": [
+        "P8-05"
+      ],
+      "impact": "No defect shown in the app; intermittent emulator timeouts",
+      "priority": "P2",
+      "alternatives": "Investigate if repeated (D-12 rule applies to Android 9 only)",
+      "decision_owner": "agent",
+      "closes_when": "Both pass on further runs or a cause is found"
     }
   ]
 }

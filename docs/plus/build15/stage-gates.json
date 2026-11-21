@@ -4,7 +4,7 @@
   "gates": [
     {
       "stage": "P0",
-      "status": "AWAITING OWNER APPROVAL",
+      "status": "PASS",
       "commit_sha": null,
       "requirements": [
         "P0-01",
@@ -16,11 +16,13 @@
         "P0-07",
         "S21-02"
       ],
-      "critical_blockers": [
-        "NVP15-RISK-0001"
-      ],
-      "owner_approval": null,
-      "notes": "Baseline verified against its sources (check-baseline.py); performance on a device open."
+      "critical_blockers": [],
+      "owner_approval": {
+        "by": "owner",
+        "on": "2026-11-21",
+        "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
+      },
+      "notes": "Baseline verified against its sources (check-baseline.py); owner approved 2026-11-21 13:44; device performance values deferred to P5 on the final release (NVP15-CHG-0004)."
     },
     {
       "stage": "P1",

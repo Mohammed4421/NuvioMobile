@@ -134,12 +134,12 @@
       "changes_app_source": false
     },
     {
-      "source": "#28 (open)",
-      "state": "INCOMPLETE",
+      "source": "#28",
+      "state": "REUSE REVALIDATION NEEDED",
       "area": "Season pause / pause all (D-01..D-10, B15-DL-03)",
-      "tests_run": "Unit, harness r1–r21, SeasonPauseAndroidTest; notification pause/resume test passed once on Android 14",
+      "tests_run": "Unit, harness r1–r21, SeasonPauseAndroidTest (run 44891588380); notification scenario full on Android 9 (several runs), once on Android 14",
       "reusable": "—",
-      "to_complete": "Notification test passing on Android 14 and 9 on the head; then merge",
+      "to_complete": "Notification tap on Android 14 on the owner's phone (NVP15-RISK-0004)",
       "requirements": [
         "D-01",
         "D-02",
