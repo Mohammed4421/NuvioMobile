@@ -99,7 +99,10 @@ if best and abs(best[1] - y0) < 200:
 }
 
 notification_posted() {
-  adb shell dumpsys notification --noredact 2>/dev/null | tr -d '\r' | grep -q "pkg=${pkg}"
+  # Read first, then match: with pipefail, grep -q closing the pipe early fails the pipeline.
+  local records
+  records="$(adb shell dumpsys notification --noredact 2>/dev/null | tr -d '\r')"
+  [[ "${records}" == *"pkg=${pkg}"* ]]
 }
 
 # Opens the notification list as a user does: one finger from the top edge (cmd statusbar
