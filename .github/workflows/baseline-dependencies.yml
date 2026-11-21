@@ -5,6 +5,11 @@
 name: Baseline dependencies
 
 on:
+  # On a pull request that changes this file it lists the published Build 14 (custom-14, 18276c69),
+  # so the baseline's list comes from a run of the reviewed workflow.
+  pull_request:
+    branches: [custom-subtitles]
+    paths: [".github/workflows/baseline-dependencies.yml"]
   workflow_dispatch:
     inputs:
       commit:
@@ -39,7 +44,7 @@ jobs:
       - name: Check out the release
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
-          ref: ${{ inputs.commit }}
+          ref: ${{ inputs.commit || '18276c6944915b5b0110fd94d243cc94619281b9' }}
           path: app
 
       - name: Forget the checkout token
@@ -68,7 +73,7 @@ jobs:
 
       - name: List the resolved libraries
         env:
-          COMMIT: ${{ inputs.commit }}
+          COMMIT: ${{ inputs.commit || '18276c6944915b5b0110fd94d243cc94619281b9' }}
         run: |
           cd app
           [[ "$(git rev-parse HEAD)" == "${COMMIT}" ]] || { echo "::error::checked out $(git rev-parse HEAD), not ${COMMIT}"; exit 1; }
