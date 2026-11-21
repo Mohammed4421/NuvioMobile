@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "note": "Spec v1.1 §22: every FAIL / BLOCKED / NOT TESTED / NEEDS PHYSICAL DEVICE and open decision; a critical one blocks the release until its evidence exists.",
+  "risks": [
+    {
+      "id": "NVP15-RISK-0001",
+      "state": "OPEN DECISION",
+      "reason": "P0 not yet approved by the owner while Build 15 source changes were merged (spec v1.1 §21.3)",
+      "needs": "Owner's P0 decision",
+      "requirements": [
+        "S21-02",
+        "P0-01"
+      ],
+      "impact": "Merged changes re-checked before they count (carryover.json)",
+      "priority": "P0",
+      "alternatives": "Approve P0 (performance on a device left open) or not",
+      "decision_owner": "owner",
+      "closes_when": "Owner's decision recorded in stage-gates.json"
+    },
+    {
+      "id": "NVP15-RISK-0002",
+      "state": "BLOCKED",
+      "reason": "Branch ruleset requires no pull request or checks (B15-SEC-03); this session cannot change settings",
+      "needs": "Owner applies ruleset-proposal.md",
+      "requirements": [
+        "P6-10",
+        "S12-01",
+        "S16-10"
+      ],
+      "impact": "A failing change could reach the branch unchecked",
+      "priority": "P0",
+      "alternatives": "Apply the proposal; or accept the risk explicitly",
+      "decision_owner": "owner",
+      "closes_when": "Ruleset re-read shows the required checks"
+    },
+    {
+      "id": "NVP15-RISK-0003",
+      "state": "NEEDS PHYSICAL DEVICE",
+      "reason": "Emulators cannot show HDR / Dolby Vision, real codecs, gesture feel, SD card / SAF on removable storage, real performance",
+      "needs": "The owner's phone",
+      "requirements": [
+        "P5-01",
+        "P5-04",
+        "P8-06",
+        "P8-12",
+        "S16-04"
+      ],
+      "impact": "Player, subtitle and storage behaviour on real hardware unproven",
+      "priority": "P1",
+      "alternatives": "Owner's short device checklist",
+      "decision_owner": "owner",
+      "closes_when": "Device results recorded as evidence"
+    },
+    {
+      "id": "NVP15-RISK-0004",
+      "state": "FAIL",
+      "reason": "Notification pause/resume test not yet passing on the head of #28 (test-side causes fixed one by one)",
+      "needs": "Android 14 and 9 emulators",
+      "requirements": [
+        "D-09"
+      ],
+      "impact": "Download contract condition 9 unproven on the merged code",
+      "priority": "P0",
+      "alternatives": "Fix the test until the real scenario passes",
+      "decision_owner": "agent",
+      "closes_when": "PASS on both emulators on the head of #28"
+    },
+    {
+      "id": "NVP15-RISK-0005",
+      "state": "NOT TESTED",
+      "reason": "Upgrade 14→15 / 13→15 / 12→15 with the real key and Android 8 refusal run only in the release workflow, after the owner's signing approval",
+      "needs": "Release run (plus-release environment)",
+      "requirements": [
+        "P6-14",
+        "P6-15",
+        "P6-16",
+        "P6-17"
+      ],
+      "impact": "Data-keeping upgrade unproven until the release run",
+      "priority": "P0",
+      "alternatives": "None: needs the release key",
+      "decision_owner": "owner",
+      "closes_when": "Release run's upgrade job passes before publishing"
+    },
+    {
+      "id": "NVP15-RISK-0006",
+      "state": "OPEN DECISION",
+      "reason": "B15-SEC-04: playback accepted any certificate with tokens",
+      "needs": "Owner's merge approval (D-11 given); CI of #44",
+      "requirements": [
+        "P6-05",
+        "D-13"
+      ],
+      "impact": "Tokens readable on a hostile network until merged",
+      "priority": "P1",
+      "alternatives": "Keep; verify with tokens (chosen); verify always",
+      "decision_owner": "owner",
+      "closes_when": "#44 merged with its checks green"
+    },
+    {
+      "id": "NVP15-RISK-0007",
+      "state": "FAIL",
+      "reason": "B15-PLY-02: Nuvio's ExoPlayer add-on subtitle test failed once in 20 runs on Android 9",
+      "needs": "Repeated Android 9 runs",
+      "requirements": [
+        "P8-05",
+        "D-12"
+      ],
+      "impact": "Possibly a slow load of add-on subtitles on old devices",
+      "priority": "P2",
+      "alternatives": "Investigate if it recurs (D-12)",
+      "decision_owner": "agent",
+      "closes_when": "Root cause found or no recurrence over further runs"
+    }
+  ]
+}

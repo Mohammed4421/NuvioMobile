@@ -1,7 +1,7 @@
 {
   "schema": 2,
   "scope": "Nuvio Plus Build 15",
-  "note": "Every requirement of the Build 15 specification v1.0 (owner-approved 2026-11-21) and the owner's later decisions, by section. States follow spec §15. Evidence results follow spec §11. Work in open pull requests is IMPLEMENTED here until merged and verified. Technical restatement only.",
+  "note": "Every requirement of the Build 15 specification v1.1 (sections 1–18 of v1.0 kept, 19–25 added; owner: 'complete Build 15 according to v1.1', 2026-11-21 08:21) and the owner's later decisions, by section. States follow spec §15/§20.4; evidence results §11. Spec v1.1 §19.4 counterparts (JSON, one fact per file; NVP15-CHG-0001): requirement-register and acceptance-criteria = this file (nvp15, acceptance); audit-coverage = inventory.md; findings (NVP15-FND) = findings.json; traceability-matrix and evidence-index = check-requirements.py --matrix over this file; stage-gates = stage-gates.json; risks-and-blockers = risks.json; carryover-register = carryover.json; change requests = change-requests.json; release-scope-manifest = release-scope-manifest.json (P9); progress-report = the gate's output and each report. Technical restatement only.",
   "items": [
     {
       "id": "C-01",
@@ -16,7 +16,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every Build 15 change is a fix, test, tool or polish of an existing feature; exceptions are owner decisions.",
-      "next": "Season/all pause controls (#28) recorded as owner decision D-01, not a standalone feature."
+      "next": "Season/all pause controls (#28) recorded as owner decision D-01, not a standalone feature.",
+      "nvp15": "NVP15-REQ-0001"
     },
     {
       "id": "C-02",
@@ -31,7 +32,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each behaviour change links to a finding.",
-      "next": "Enforced per PR review."
+      "next": "Enforced per PR review.",
+      "nvp15": "NVP15-REQ-0002"
     },
     {
       "id": "C-03",
@@ -46,7 +48,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "No change of these kinds.",
-      "next": "Checked at release scope review."
+      "next": "Checked at release scope review.",
+      "nvp15": "NVP15-REQ-0003"
     },
     {
       "id": "P0-01",
@@ -59,7 +62,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -81,12 +84,20 @@
           "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
           "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44871076600,
+          "commit": "9229bdd774550ab9813f504d0398d971938f6a3f",
+          "what": "PR #38 requirements gate: check-baseline.py --online on the baseline.json that holds the emulator performance values (toolchain, release, APK sizes and SHA-256, v3 certificate, library count all match)",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Fields match GitHub and the release.",
-      "next": "baseline.json gained the emulator performance values: re-verify with check-baseline.py in the gate run of this commit."
+      "next": "Owner acceptance (P0 gate).",
+      "nvp15": "NVP15-REQ-0004"
     },
     {
       "id": "P0-02",
@@ -99,7 +110,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -114,6 +125,13 @@
           "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
           "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44871076600,
+          "commit": "9229bdd774550ab9813f504d0398d971938f6a3f",
+          "what": "PR #38 requirements gate: check-baseline.py --online on the baseline.json that holds the emulator performance values (toolchain, release, APK sizes and SHA-256, v3 certificate, library count all match)",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -121,7 +139,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "All toolchain and identity fields present with sources.",
-      "next": "baseline.json gained the emulator performance values: re-verify with check-baseline.py in the gate run of this commit."
+      "next": "Owner acceptance (P0 gate).",
+      "nvp15": "NVP15-REQ-0005"
     },
     {
       "id": "P0-03",
@@ -134,7 +153,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -149,12 +168,20 @@
           "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
           "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44871076600,
+          "commit": "9229bdd774550ab9813f504d0398d971938f6a3f",
+          "what": "PR #38 requirements gate: check-baseline.py --online on the baseline.json that holds the emulator performance values (toolchain, release, APK sizes and SHA-256, v3 certificate, library count all match)",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present with sources.",
-      "next": "baseline.json gained the emulator performance values: re-verify with check-baseline.py in the gate run of this commit."
+      "next": "Owner acceptance (P0 gate).",
+      "nvp15": "NVP15-REQ-0006"
     },
     {
       "id": "P0-04",
@@ -184,7 +211,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated Build 14 measurements on fixed devices.",
-      "next": "Measure on the owner's device."
+      "next": "Measure on the owner's device.",
+      "nvp15": "NVP15-REQ-0007"
     },
     {
       "id": "P0-05",
@@ -198,7 +226,7 @@
         "docs/plus/build15/baseline-dependencies.txt",
         ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -206,12 +234,20 @@
           "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
           "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44871076600,
+          "commit": "9229bdd774550ab9813f504d0398d971938f6a3f",
+          "what": "PR #38 requirements gate: check-baseline.py --online on the baseline.json that holds the emulator performance values (toolchain, release, APK sizes and SHA-256, v3 certificate, library count all match)",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "APK SHA-256 and a resolved dependency list for Build 14.",
-      "next": "baseline.json gained the emulator performance values: re-verify with check-baseline.py in the gate run of this commit."
+      "next": "Owner acceptance (P0 gate).",
+      "nvp15": "NVP15-REQ-0008"
     },
     {
       "id": "P0-06",
@@ -236,7 +272,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each pre-existing issue listed with source.",
-      "next": "—"
+      "next": "—",
+      "nvp15": "NVP15-REQ-0009"
     },
     {
       "id": "P0-07",
@@ -251,7 +288,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "P0-01..06 VERIFIED, then accepted.",
-      "next": "Close P0-04 and P0-05."
+      "next": "Close P0-04 and P0-05.",
+      "nvp15": "NVP15-REQ-0010"
     },
     {
       "id": "P1-01",
@@ -268,7 +306,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Every area listed with owner and review state; dependencies listed.",
-      "next": "Merge #32; add dependency inventory."
+      "next": "Merge #32; add dependency inventory.",
+      "nvp15": "NVP15-REQ-0011"
     },
     {
       "id": "P1-02",
@@ -285,7 +324,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "All critical areas reviewed with evidence.",
-      "next": "Deep audit of player engines and HDR paths."
+      "next": "Deep audit of player engines and HDR paths.",
+      "nvp15": "NVP15-REQ-0012"
     },
     {
       "id": "P1-03",
@@ -302,7 +342,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Each axis has findings or an explicit 'reviewed, none'.",
-      "next": "Add axis column to the audit register."
+      "next": "Add axis column to the audit register.",
+      "nvp15": "NVP15-REQ-0013"
     },
     {
       "id": "P1-04",
@@ -321,7 +362,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Every audit row carries all eleven fields.",
-      "next": "Convert audit.md to the full finding format."
+      "next": "Convert audit.md to the full finding format.",
+      "nvp15": "NVP15-REQ-0014"
     },
     {
       "id": "P1-05",
@@ -336,7 +378,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "P1-01..04 VERIFIED.",
-      "next": "After P1-04."
+      "next": "After P1-04.",
+      "nvp15": "NVP15-REQ-0015"
     },
     {
       "id": "P1-06",
@@ -353,7 +396,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each has a P2/P3 priority with documented risk (§14).",
-      "next": "Re-classify with §14 priorities."
+      "next": "Re-classify with §14 priorities.",
+      "nvp15": "NVP15-REQ-0016"
     },
     {
       "id": "P2-01",
@@ -370,7 +414,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Each decision cites a §5 criterion and evidence.",
-      "next": "Merge #33."
+      "next": "Merge #33.",
+      "nvp15": "NVP15-REQ-0017"
     },
     {
       "id": "P2-02",
@@ -385,7 +430,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each refactor PR states how each constraint holds.",
-      "next": "Apply to A-02/A-03."
+      "next": "Apply to A-02/A-03.",
+      "nvp15": "NVP15-REQ-0018"
     },
     {
       "id": "P2-03",
@@ -400,7 +446,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Report for A-02 and A-03 before implementation.",
-      "next": "Write after P4 baselines."
+      "next": "Write after P4 baselines.",
+      "nvp15": "NVP15-REQ-0019"
     },
     {
       "id": "P2-04",
@@ -417,7 +464,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "ADRs in the repository.",
-      "next": "Merge #33."
+      "next": "Merge #33.",
+      "nvp15": "NVP15-REQ-0020"
     },
     {
       "id": "P3-01",
@@ -434,7 +482,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "nvp15": "NVP15-REQ-0021"
     },
     {
       "id": "P3-02",
@@ -451,7 +500,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "nvp15": "NVP15-REQ-0022"
     },
     {
       "id": "P3-03",
@@ -468,7 +518,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "nvp15": "NVP15-REQ-0023"
     },
     {
       "id": "P3-04",
@@ -485,7 +536,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "nvp15": "NVP15-REQ-0024"
     },
     {
       "id": "P3-05",
@@ -502,7 +554,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "nvp15": "NVP15-REQ-0025"
     },
     {
       "id": "P3-06",
@@ -519,7 +572,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "nvp15": "NVP15-REQ-0026"
     },
     {
       "id": "P3-07",
@@ -534,7 +588,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "No journey VERIFIED by unit tests alone.",
-      "next": "Enforced by the gate (evidence kinds)."
+      "next": "Enforced by the gate (evidence kinds).",
+      "nvp15": "NVP15-REQ-0027"
     },
     {
       "id": "P4-01",
@@ -551,7 +606,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines."
+      "next": "After P4-10 baselines.",
+      "nvp15": "NVP15-REQ-0028"
     },
     {
       "id": "P4-02",
@@ -568,7 +624,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines."
+      "next": "After P4-10 baselines.",
+      "nvp15": "NVP15-REQ-0029"
     },
     {
       "id": "P4-03",
@@ -585,7 +642,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines."
+      "next": "After P4-10 baselines.",
+      "nvp15": "NVP15-REQ-0030"
     },
     {
       "id": "P4-04",
@@ -602,7 +660,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines."
+      "next": "After P4-10 baselines.",
+      "nvp15": "NVP15-REQ-0031"
     },
     {
       "id": "P4-05",
@@ -619,7 +678,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines."
+      "next": "After P4-10 baselines.",
+      "nvp15": "NVP15-REQ-0032"
     },
     {
       "id": "P4-06",
@@ -636,7 +696,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines."
+      "next": "After P4-10 baselines.",
+      "nvp15": "NVP15-REQ-0033"
     },
     {
       "id": "P4-07",
@@ -653,7 +714,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines."
+      "next": "After P4-10 baselines.",
+      "nvp15": "NVP15-REQ-0034"
     },
     {
       "id": "P4-08",
@@ -670,7 +732,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines."
+      "next": "After P4-10 baselines.",
+      "nvp15": "NVP15-REQ-0035"
     },
     {
       "id": "P4-09",
@@ -687,7 +750,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines."
+      "next": "After P4-10 baselines.",
+      "nvp15": "NVP15-REQ-0036"
     },
     {
       "id": "P4-10",
@@ -704,7 +768,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Baselines for the selected screens in all setups, kept as artifacts.",
-      "next": "Green #35, then add the remaining Plus screens."
+      "next": "Green #35, then add the remaining Plus screens.",
+      "nvp15": "NVP15-REQ-0037"
     },
     {
       "id": "P4-11",
@@ -719,7 +784,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "A check that compares new screenshots with baselines and reports differences.",
-      "next": "Add comparison after baselines exist."
+      "next": "Add comparison after baselines exist.",
+      "nvp15": "NVP15-REQ-0038"
     },
     {
       "id": "P4-12",
@@ -736,7 +802,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Screenshot test asserts Arabic text is rendered.",
-      "next": "Assert an Arabic string node in each Arabic screenshot."
+      "next": "Assert an Arabic string node in each Arabic screenshot.",
+      "nvp15": "NVP15-REQ-0039"
     },
     {
       "id": "P4-13",
@@ -751,7 +818,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every visual change has a reason and before/after.",
-      "next": "Applies to all P4 changes."
+      "next": "Applies to all P4 changes.",
+      "nvp15": "NVP15-REQ-0040"
     },
     {
       "id": "P5-01",
@@ -780,7 +848,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measure on the owner's device."
+      "next": "Measure on the owner's device.",
+      "nvp15": "NVP15-REQ-0041"
     },
     {
       "id": "P5-02",
@@ -797,7 +866,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Measurement method and limits (P5-10).",
+      "nvp15": "NVP15-REQ-0042"
     },
     {
       "id": "P5-03",
@@ -814,7 +884,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Measurement method and limits (P5-10).",
+      "nvp15": "NVP15-REQ-0043"
     },
     {
       "id": "P5-04",
@@ -843,7 +914,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measure on the owner's device."
+      "next": "Measure on the owner's device.",
+      "nvp15": "NVP15-REQ-0044"
     },
     {
       "id": "P5-05",
@@ -860,7 +932,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Measurement method and limits (P5-10).",
+      "nvp15": "NVP15-REQ-0045"
     },
     {
       "id": "P5-06",
@@ -877,7 +950,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Measurement method and limits (P5-10).",
+      "nvp15": "NVP15-REQ-0046"
     },
     {
       "id": "P5-07",
@@ -894,7 +968,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Measurement method and limits (P5-10).",
+      "nvp15": "NVP15-REQ-0047"
     },
     {
       "id": "P5-08",
@@ -911,7 +986,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Measurement method and limits (P5-10).",
+      "nvp15": "NVP15-REQ-0048"
     },
     {
       "id": "P5-09",
@@ -938,7 +1014,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Owner acceptance."
+      "next": "Owner acceptance.",
+      "nvp15": "NVP15-REQ-0049"
     },
     {
       "id": "P5-10",
@@ -967,7 +1044,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Documented method and raw results in the repository.",
-      "next": "Run on the owner's device."
+      "next": "Run on the owner's device.",
+      "nvp15": "NVP15-REQ-0050"
     },
     {
       "id": "P5-11",
@@ -994,7 +1072,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Limits file with values and reasons.",
-      "next": "Owner acceptance."
+      "next": "Owner acceptance.",
+      "nvp15": "NVP15-REQ-0051"
     },
     {
       "id": "P6-01",
@@ -1022,7 +1101,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Owner acceptance."
+      "next": "Owner acceptance.",
+      "nvp15": "NVP15-REQ-0052"
     },
     {
       "id": "P6-02",
@@ -1039,7 +1119,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Security report.",
+      "nvp15": "NVP15-REQ-0053"
     },
     {
       "id": "P6-03",
@@ -1067,7 +1148,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Owner acceptance."
+      "next": "Owner acceptance.",
+      "nvp15": "NVP15-REQ-0054"
     },
     {
       "id": "P6-04",
@@ -1084,7 +1166,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Security report.",
+      "nvp15": "NVP15-REQ-0055"
     },
     {
       "id": "P6-05",
@@ -1101,7 +1184,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Security report.",
+      "nvp15": "NVP15-REQ-0056"
     },
     {
       "id": "P6-06",
@@ -1118,7 +1202,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Security report.",
+      "nvp15": "NVP15-REQ-0057"
     },
     {
       "id": "P6-07",
@@ -1135,7 +1220,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Security report.",
+      "nvp15": "NVP15-REQ-0058"
     },
     {
       "id": "P6-08",
@@ -1152,7 +1238,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Security report.",
+      "nvp15": "NVP15-REQ-0059"
     },
     {
       "id": "P6-09",
@@ -1169,7 +1256,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Security report.",
+      "nvp15": "NVP15-REQ-0060"
     },
     {
       "id": "P6-10",
@@ -1188,7 +1276,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Owner applies or declines the proposal; then re-read the ruleset as evidence."
+      "next": "Owner applies or declines the proposal; then re-read the ruleset as evidence.",
+      "nvp15": "NVP15-REQ-0061"
     },
     {
       "id": "P6-11",
@@ -1203,7 +1292,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Coverage table in the security report.",
-      "next": "Security report."
+      "next": "Security report.",
+      "nvp15": "NVP15-REQ-0062"
     },
     {
       "id": "P6-12",
@@ -1220,7 +1310,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Seed covers all six data kinds.",
-      "next": "Extend the seeding script."
+      "next": "Extend the seeding script.",
+      "nvp15": "NVP15-REQ-0063"
     },
     {
       "id": "P6-13",
@@ -1237,7 +1328,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Content diff for all seeded data kinds.",
-      "next": "With P6-12."
+      "next": "With P6-12.",
+      "nvp15": "NVP15-REQ-0064"
     },
     {
       "id": "P6-14",
@@ -1252,7 +1344,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0065"
     },
     {
       "id": "P6-15",
@@ -1267,7 +1360,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0066"
     },
     {
       "id": "P6-16",
@@ -1282,7 +1376,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0067"
     },
     {
       "id": "P6-17",
@@ -1297,7 +1392,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0068"
     },
     {
       "id": "P6-18",
@@ -1312,7 +1408,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Release notes and in-app text checked.",
-      "next": "Release notes of the candidate."
+      "next": "Release notes of the candidate.",
+      "nvp15": "NVP15-REQ-0069"
     },
     {
       "id": "P7-01",
@@ -1344,7 +1441,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Plan/apply refuse incompatible targets.",
-      "next": "—"
+      "next": "—",
+      "nvp15": "NVP15-REQ-0070"
     },
     {
       "id": "P7-02",
@@ -1361,7 +1459,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Layout documented with the reason for differences.",
-      "next": "Add LICENSES/ and an ADR."
+      "next": "Add LICENSES/ and an ADR.",
+      "nvp15": "NVP15-REQ-0071"
     },
     {
       "id": "P7-03",
@@ -1380,7 +1479,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "validate checks every field.",
-      "next": "Field completeness check."
+      "next": "Field completeness check.",
+      "nvp15": "NVP15-REQ-0072"
     },
     {
       "id": "P7-04",
@@ -1397,7 +1497,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Each contract enforced by plan with a test.",
-      "next": "Licence and conflict contracts."
+      "next": "Licence and conflict contracts.",
+      "nvp15": "NVP15-REQ-0073"
     },
     {
       "id": "P7-05",
@@ -1429,7 +1530,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every feature has a level.",
-      "next": "—"
+      "next": "—",
+      "nvp15": "NVP15-REQ-0074"
     },
     {
       "id": "P7-06",
@@ -1461,7 +1563,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each property has a test.",
-      "next": "Map each property to its test."
+      "next": "Map each property to its test.",
+      "nvp15": "NVP15-REQ-0075"
     },
     {
       "id": "P7-07",
@@ -1486,7 +1589,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Both targets built and tested.",
-      "next": "—"
+      "next": "—",
+      "nvp15": "NVP15-REQ-0076"
     },
     {
       "id": "P7-08",
@@ -1503,7 +1607,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Ten named tests, each PASS on CI.",
-      "next": "Map and add the licence test."
+      "next": "Map and add the licence test.",
+      "nvp15": "NVP15-REQ-0077"
     },
     {
       "id": "P7-09",
@@ -1520,7 +1625,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "All seven outputs in portkit/.",
-      "next": "Complete outputs."
+      "next": "Complete outputs.",
+      "nvp15": "NVP15-REQ-0078"
     },
     {
       "id": "P7-10",
@@ -1537,7 +1643,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Every portable feature transferred and tested on both targets; others with documented reason.",
-      "next": "Prove or classify each remaining feature."
+      "next": "Prove or classify each remaining feature.",
+      "nvp15": "NVP15-REQ-0079"
     },
     {
       "id": "P8-01",
@@ -1565,7 +1672,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "Owner acceptance."
+      "next": "Owner acceptance.",
+      "nvp15": "NVP15-REQ-0080"
     },
     {
       "id": "P8-02",
@@ -1588,7 +1696,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0081"
     },
     {
       "id": "P8-03",
@@ -1605,7 +1714,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0082"
     },
     {
       "id": "P8-04",
@@ -1628,7 +1738,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0083"
     },
     {
       "id": "P8-05",
@@ -1645,7 +1756,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0084"
     },
     {
       "id": "P8-06",
@@ -1662,7 +1774,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0085"
     },
     {
       "id": "P8-07",
@@ -1689,7 +1802,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "Owner acceptance."
+      "next": "Owner acceptance.",
+      "nvp15": "NVP15-REQ-0086"
     },
     {
       "id": "P8-08",
@@ -1706,7 +1820,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0087"
     },
     {
       "id": "P8-09",
@@ -1723,7 +1838,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0088"
     },
     {
       "id": "P8-10",
@@ -1740,7 +1856,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "On the candidate.",
+      "nvp15": "NVP15-REQ-0089"
     },
     {
       "id": "P8-11",
@@ -1759,7 +1876,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Gate enforces it on every PR.",
-      "next": "Merge #31."
+      "next": "Merge #31.",
+      "nvp15": "NVP15-REQ-0090"
     },
     {
       "id": "P8-12",
@@ -1776,7 +1894,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Device matrix with results.",
-      "next": "Add API 36 emulator; physical device list for the owner."
+      "next": "Add API 36 emulator; physical device list for the owner.",
+      "nvp15": "NVP15-REQ-0091"
     },
     {
       "id": "P8-13",
@@ -1791,7 +1910,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Risk list in the readiness report.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0092"
     },
     {
       "id": "S12-01",
@@ -1808,7 +1928,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Ruleset read back from the API shows each rule.",
-      "next": "Proposal to the owner; verify by API after."
+      "next": "Proposal to the owner; verify by API after.",
+      "nvp15": "NVP15-REQ-0093"
     },
     {
       "id": "S12-02",
@@ -1823,14 +1944,15 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Manifest file plus a gate step that fails on any mismatch.",
-      "next": "Build after P8."
+      "next": "Build after P8.",
+      "nvp15": "NVP15-REQ-0094"
     },
     {
       "id": "S12-03",
       "spec": "Owner decision §12",
       "phase": "G",
       "mandatory": true,
-      "requirement": "Approval rules: final release approved by the owner (owner decision 2026-11-21 replaces per-merge approval); tests never disabled for a green result.",
+      "requirement": "Approval rules (spec v1.1 §12, §23.2): final merge approved by the owner (given in advance: D-11), signing and publishing each approved separately; tests never disabled for a green result.",
       "source": "Owner decision",
       "paths": [],
       "status": "SPECIFIED",
@@ -1838,7 +1960,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Merges only after all gates; release only after owner approval.",
-      "next": "Ongoing."
+      "next": "Ongoing.",
+      "nvp15": "NVP15-REQ-0095"
     },
     {
       "id": "S13-01",
@@ -1855,7 +1978,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every phase has its outputs in docs/plus/build15.",
-      "next": "Ongoing."
+      "next": "Ongoing.",
+      "nvp15": "NVP15-REQ-0096"
     },
     {
       "id": "S14-01",
@@ -1870,7 +1994,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Audit rows carry §14 priority.",
-      "next": "With P1-04."
+      "next": "With P1-04.",
+      "nvp15": "NVP15-REQ-0097"
     },
     {
       "id": "S15-01",
@@ -1889,7 +2014,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Gate prints the three figures with weights.",
-      "next": "Add weights."
+      "next": "Add weights.",
+      "nvp15": "NVP15-REQ-0098"
     },
     {
       "id": "S16-01",
@@ -1904,7 +2030,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "All approved mandatory requirements done.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0099"
     },
     {
       "id": "S16-02",
@@ -1919,7 +2046,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Relevant CI gates pass on the final commit.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0100"
     },
     {
       "id": "S16-03",
@@ -1934,7 +2062,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "No open release blockers.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0101"
     },
     {
       "id": "S16-04",
@@ -1949,7 +2078,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Critical function and upgrade tests pass.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0102"
     },
     {
       "id": "S16-05",
@@ -1964,7 +2094,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Data, signing and update safety proven.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0103"
     },
     {
       "id": "S16-06",
@@ -1979,7 +2110,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Visual polish meets the approved review criteria.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0104"
     },
     {
       "id": "S16-07",
@@ -1994,7 +2126,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "No performance regression outside approved limits.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0105"
     },
     {
       "id": "S16-08",
@@ -2009,7 +2142,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Mandatory PortKit tests pass.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0106"
     },
     {
       "id": "S16-09",
@@ -2024,7 +2158,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every unrun test and remaining risk documented.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0107"
     },
     {
       "id": "S16-10",
@@ -2039,7 +2174,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Source protection and release controls enabled.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0108"
     },
     {
       "id": "S16-11",
@@ -2054,7 +2190,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Build 14 vs Build 15 comparison delivered.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0109"
     },
     {
       "id": "S16-12",
@@ -2069,7 +2206,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Final owner approval.",
-      "next": "Readiness report."
+      "next": "Readiness report.",
+      "nvp15": "NVP15-REQ-0110"
     },
     {
       "id": "S17-01",
@@ -2084,7 +2222,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0111"
     },
     {
       "id": "S17-02",
@@ -2099,7 +2238,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0112"
     },
     {
       "id": "S17-03",
@@ -2114,7 +2254,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0113"
     },
     {
       "id": "S17-04",
@@ -2129,7 +2270,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0114"
     },
     {
       "id": "S17-05",
@@ -2144,7 +2286,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0115"
     },
     {
       "id": "S17-06",
@@ -2159,7 +2302,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0116"
     },
     {
       "id": "S17-07",
@@ -2174,7 +2318,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0117"
     },
     {
       "id": "S17-08",
@@ -2189,7 +2334,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0118"
     },
     {
       "id": "S17-09",
@@ -2204,7 +2350,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0119"
     },
     {
       "id": "S17-10",
@@ -2219,7 +2366,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0120"
     },
     {
       "id": "S17-11",
@@ -2234,7 +2382,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0121"
     },
     {
       "id": "S17-12",
@@ -2249,7 +2398,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0122"
     },
     {
       "id": "S17-13",
@@ -2264,7 +2414,8 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase."
+      "next": "By phase.",
+      "nvp15": "NVP15-REQ-0123"
     },
     {
       "id": "D-01",
@@ -2281,7 +2432,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test."
+      "next": "Merge #28 after the background notification test.",
+      "nvp15": "NVP15-REQ-0124"
     },
     {
       "id": "D-02",
@@ -2298,7 +2450,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test."
+      "next": "Merge #28 after the background notification test.",
+      "nvp15": "NVP15-REQ-0125"
     },
     {
       "id": "D-03",
@@ -2315,7 +2468,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test."
+      "next": "Merge #28 after the background notification test.",
+      "nvp15": "NVP15-REQ-0126"
     },
     {
       "id": "D-04",
@@ -2332,7 +2486,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test."
+      "next": "Merge #28 after the background notification test.",
+      "nvp15": "NVP15-REQ-0127"
     },
     {
       "id": "D-05",
@@ -2349,7 +2504,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test."
+      "next": "Merge #28 after the background notification test.",
+      "nvp15": "NVP15-REQ-0128"
     },
     {
       "id": "D-06",
@@ -2366,7 +2522,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test."
+      "next": "Merge #28 after the background notification test.",
+      "nvp15": "NVP15-REQ-0129"
     },
     {
       "id": "D-07",
@@ -2383,7 +2540,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test."
+      "next": "Merge #28 after the background notification test.",
+      "nvp15": "NVP15-REQ-0130"
     },
     {
       "id": "D-08",
@@ -2400,7 +2558,8 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test."
+      "next": "Merge #28 after the background notification test.",
+      "nvp15": "NVP15-REQ-0131"
     },
     {
       "id": "D-09",
@@ -2418,7 +2577,8 @@
       ],
       "needs_physical_device": true,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test."
+      "next": "Merge #28 after the background notification test.",
+      "nvp15": "NVP15-REQ-0132"
     },
     {
       "id": "D-10",
@@ -2435,7 +2595,361 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test."
+      "next": "Merge #28 after the background notification test.",
+      "nvp15": "NVP15-REQ-0133"
+    },
+    {
+      "id": "S19-01",
+      "spec": "Build 15 spec v1.1 §19.1–19.3",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Central register: every requirement of §1–18 (and §19–25) with a stable NVP15-REQ id; composite items split into testable acceptance criteria; nothing dropped or made optional without an owner decision.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        ".github/plus/check-requirements.py",
+        "docs/plus/build15/requirements.json"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Every item has a unique NVP15-REQ id, an acceptance criterion and mandatory=true unless the owner decided otherwise; the gate fails otherwise.",
+      "next": "Gate run of this commit.",
+      "nvp15": "NVP15-REQ-0134"
+    },
+    {
+      "id": "S19-02",
+      "spec": "Build 15 spec v1.1 §19.4",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Reference outputs or one clear counterpart each: requirement register, acceptance criteria, audit coverage, traceability matrix, evidence index, stage gates, risks and blockers, carry-over, release scope manifest, progress report; no fact kept in two conflicting files.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        ".github/plus/check-requirements.py",
+        "docs/plus/build15/stage-gates.json",
+        "docs/plus/build15/carryover.json",
+        "docs/plus/build15/risks.json",
+        "docs/plus/build15/change-requests.json"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Counterparts listed in the register note exist; the gate reads and cross-checks them.",
+      "next": "Release scope manifest at P9.",
+      "nvp15": "NVP15-REQ-0135"
+    },
+    {
+      "id": "S19-03",
+      "spec": "Build 15 spec v1.1 §19.5",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Coverage audit: every source, build and configuration file in scope examined at least initially, with examined and excluded files and the reasons; UNMAPPED/UNKNOWN items named.",
+      "source": "Build 15 spec v1.1",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "inventory.md covers every file: examined (initial or deep) or excluded with a reason; none left unexamined silently.",
+      "next": "Nuvio areas are listed as NUVIO (not reviewed): an initial pass is still due.",
+      "nvp15": "NVP15-REQ-0136"
+    },
+    {
+      "id": "S19-04",
+      "spec": "Build 15 spec v1.1 §19.5",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Every impactful pull request linked to requirement ids; every implemented requirement linked to a test or a documented reason it cannot be tested (a reason alone never makes it VERIFIED).",
+      "source": "Build 15 spec v1.1",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "PR descriptions or the register name the requirement ids of each impactful PR.",
+      "next": "From the next PRs on; earlier ones in carryover.json.",
+      "nvp15": "NVP15-REQ-0137"
+    },
+    {
+      "id": "S20-01",
+      "spec": "Build 15 spec v1.1 §20.1–20.2",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Evidence contract: each claim backed by evidence tied to the examined full commit, with command/scenario, environment, run link or raw log, time, and exact result; ran, inferred and untested kept apart.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Register evidence carries run, full commit, what and result; online gate checks each run succeeded on that commit.",
+      "next": "Environment and time come from the cited run.",
+      "nvp15": "NVP15-REQ-0138"
+    },
+    {
+      "id": "S20-02",
+      "spec": "Build 15 spec v1.1 §20.3",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Acceptance tests point to the final commit itself (or a build of it with a matching digest); a result is not reused after the source changed without impact analysis and re-test.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Stale-evidence check passes on the release commit; release run tests that commit.",
+      "next": "At P8/P9.",
+      "nvp15": "NVP15-REQ-0139"
+    },
+    {
+      "id": "S21-01",
+      "spec": "Build 15 spec v1.1 §21.1–21.2",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Carry-over register for earlier work (PRs, commits, tests): state REUSE VERIFIED / REUSE REVALIDATION NEEDED / INCOMPLETE / CONFLICTING / NOT APPLICABLE; nothing counted for Build 15 before it is checked against the new requirements and evidence.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        "docs/plus/build15/carryover.json"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "carryover.json lists every Build 15 pull request with its state, tests and what is still to re-check.",
+      "next": "Keep current at each merge.",
+      "nvp15": "NVP15-REQ-0140"
+    },
+    {
+      "id": "S21-02",
+      "spec": "Build 15 spec v1.1 §21.3",
+      "phase": "P0",
+      "mandatory": true,
+      "requirement": "Build 14 completeness not assumed; Build 15 source changes only after P0 is finished and approved by the owner.",
+      "source": "Build 15 spec v1.1",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Owner's P0 decision recorded in stage-gates.json; source changes before it listed in carryover.json for re-check.",
+      "next": "Owner's P0 decision (NVP15-RISK-0001).",
+      "nvp15": "NVP15-REQ-0141"
+    },
+    {
+      "id": "S22-01",
+      "spec": "Build 15 spec v1.1 §22.1–22.2",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Register of every FAIL / BLOCKED / NOT TESTED / NEEDS PHYSICAL DEVICE with reason, needed environment, affected requirements, impact, priority, alternatives, deciding party and closing criterion; critical data/upgrade/signing/security tests never turned into PASS by decision.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        "docs/plus/build15/risks.json",
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "risks.json holds each open item with every §22.1 field; the gate rejects an entry with an empty field.",
+      "next": "Keep current.",
+      "nvp15": "NVP15-REQ-0142"
+    },
+    {
+      "id": "S22-02",
+      "spec": "Build 15 spec v1.1 §22.3",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release gate states PASS / FAIL / BLOCKED / AWAITING OWNER APPROVAL only; no PASS with critical gaps.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        "docs/plus/build15/stage-gates.json",
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "stage-gates.json uses only these states; a PASS gate with unverified mandatory items or no owner decision fails the gate.",
+      "next": "At P9.",
+      "nvp15": "NVP15-REQ-0143"
+    },
+    {
+      "id": "S23-01",
+      "spec": "Build 15 spec v1.1 §23.2",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Separate explicit owner approvals for final merge, signing and publishing; silence is no approval; no single implicit approval for all three.",
+      "source": "Build 15 spec v1.1",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Merge approval recorded (D-11); signing and publishing asked separately at the release.",
+      "next": "Signing and publishing at P9.",
+      "nvp15": "NVP15-REQ-0144"
+    },
+    {
+      "id": "S23-02",
+      "spec": "Build 15 spec v1.1 §23.3",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Scope increase, standalone feature, or basic change of behaviour, identity, data, package id, keys or high-risk structure: documented change request before starting.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        "docs/plus/build15/change-requests.json"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "change-requests.json holds each such change with before, after, reason, impact and decision.",
+      "next": "Keep current.",
+      "nvp15": "NVP15-REQ-0145"
+    },
+    {
+      "id": "S24-01",
+      "spec": "Build 15 spec v1.1 §24.1–24.2",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "An acceptance file per stage P0–P9 linking goals, requirements, criteria, outputs, actual tests, open risks, SHA, gate decision and decision owner; no stage called complete before its gate.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        "docs/plus/build15/stage-gates.json",
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "stage-gates.json has P0–P9 with these fields; the gate checks states and PASS conditions.",
+      "next": "Update at each gate.",
+      "nvp15": "NVP15-REQ-0146"
+    },
+    {
+      "id": "S24-02",
+      "spec": "Build 15 spec v1.1 §24.4",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Progress report at each update: baseline and SHA, current stage and gate, totals of mandatory/accepted/unmet requirements, implementation/verification/acceptance with the method of each, critical blockers, unrun tests, changed PRs and CI, new evidence, pending approvals, next allowed step; no '100% ready' with an unaccepted mandatory stage.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "The gate prints the figures and method; chat reports follow the list.",
+      "next": "Each report.",
+      "nvp15": "NVP15-REQ-0147"
+    },
+    {
+      "id": "S25-01",
+      "spec": "Build 15 spec v1.1 §25.1–25.2",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "No silent removal: a change to an original requirement's meaning needs a change record (old text, new text, reason, impact, owner decision); the full review is not replaced by a sample.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        "docs/plus/build15/change-requests.json",
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "change-requests.json; MANDATORY list in the gate keeps every id.",
+      "next": "Keep current.",
+      "nvp15": "NVP15-REQ-0148"
+    },
+    {
+      "id": "S25-02",
+      "spec": "Build 15 spec v1.1 §25.3",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Automated consistency check of the register, traceability matrix, release scope manifest and evidence; a consistency failure on a critical requirement stops the next gate.",
+      "source": "Build 15 spec v1.1",
+      "paths": [
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "check-requirements.py (--online, --matrix) runs on every pull request and push.",
+      "next": "Manifest check at P9.",
+      "nvp15": "NVP15-REQ-0149"
+    },
+    {
+      "id": "S25-03",
+      "spec": "Build 15 spec v1.1 §25.4",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Final delivery adds the requirement and acceptance registers, carry-over, evidence and links, stage gate files and change requests, readable without the conversation; no secrets or real personal data in public outputs.",
+      "source": "Build 15 spec v1.1",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "All present in docs/plus/build15 at the release commit; secret scan clean.",
+      "next": "At P9.",
+      "nvp15": "NVP15-REQ-0150"
+    },
+    {
+      "id": "D-11",
+      "spec": "Owner decision 2026-11-21 08:32",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "Advance approval to merge pull requests into custom-subtitles once every mandatory check passes on their final commit; signing and publishing still need separate approvals.",
+      "source": "Owner decision",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Merges only with all checks green on the head; no signing or publishing without a new approval.",
+      "next": "—",
+      "nvp15": "NVP15-REQ-0151"
+    },
+    {
+      "id": "D-12",
+      "spec": "Owner decision 2026-11-21 08:31–08:32 (NVP15-CHG-0002)",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "Android 9 stays supported and tested on the emulator at lower priority: a real defect on it is fixed; a test unstable only on Android 9 is pursued only when playback, subtitles, downloads or upgrades are affected.",
+      "source": "Owner decision",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Android 9 jobs keep running; triage follows this rule.",
+      "next": "—",
+      "nvp15": "NVP15-REQ-0152"
+    },
+    {
+      "id": "D-13",
+      "spec": "Owner decision 2026-11-21 08:21",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "Viewing experience first: widest source compatibility, fast start, picture/sound/subtitle quality, smoothness, look and stability; security and test quality serve it and are not traded away.",
+      "source": "Owner decision",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Each change is judged on its effect on playback and sources; B15-SEC-04 fixed without losing sources (#44).",
+      "next": "Apply in every decision.",
+      "nvp15": "NVP15-REQ-0153"
     }
   ]
 }
