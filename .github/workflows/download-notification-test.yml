@@ -115,7 +115,7 @@ jobs:
         # Android 16 (API 36) and 17 (API 37) are compatibility runs (owner, 2026-11-21). A missing
         # system image fails here with NOT TESTED; it is never treated as a pass.
         env:
-          API: ${{ matrix.api }}
+          API: ${{ matrix.api == 37 && '37.0' || matrix.api }}
         run: |
           image="system-images;android-${API};google_apis;x86_64"
           listing="$("${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --list 2>/dev/null || true)"
@@ -138,7 +138,8 @@ jobs:
           # Android 14: Pause only (see the script's header); Android 9: the whole scenario.
           MODE: ${{ matrix.api >= 34 && 'pause-only' || 'full' }}
         with:
-          api-level: ${{ matrix.api }}
+          # Android 17's SDK packages are named android-37.0.
+          api-level: ${{ matrix.api == 37 && '37.0' || matrix.api }}
           arch: x86_64
           target: google_apis
           disable-animations: true
