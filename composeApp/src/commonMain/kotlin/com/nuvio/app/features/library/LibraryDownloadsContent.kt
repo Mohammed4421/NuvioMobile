@@ -374,9 +374,11 @@ private fun downloadEntryDetail(entry: LibraryDownloadEntry): String {
     val failed = entry.failedCount.takeIf { it > 0 && entry.activeState != DownloadStatus.Failed }
         ?.let { stringResource(Res.string.library_downloads_failed_count, it) }
     return when (entry.activeState) {
-        DownloadStatus.Downloading -> listOfNotNull(stringResource(Res.string.downloads_queue_downloading), progress, failed)
+        // The percentage comes first: on a narrow card the line is cut at the end, and the reference
+        // screenshot (English phone) showed "Downloading • …" with the percentage cut off.
+        DownloadStatus.Downloading -> listOfNotNull(progress, stringResource(Res.string.downloads_queue_downloading), failed)
             .joinToString(" • ")
-        DownloadStatus.Paused -> listOfNotNull(stringResource(Res.string.library_downloads_paused), progress, failed)
+        DownloadStatus.Paused -> listOfNotNull(progress, stringResource(Res.string.library_downloads_paused), failed)
             .joinToString(" • ")
         DownloadStatus.Failed -> stringResource(Res.string.downloads_status_failed)
         else -> when {

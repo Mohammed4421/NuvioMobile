@@ -2,6 +2,9 @@ package com.nuvio.app.plus.screenshots
 
 import android.app.Application
 import android.graphics.Bitmap
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,6 +13,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.SemanticsNode
@@ -24,12 +29,25 @@ import com.nuvio.app.features.downloads.DownloadItem
 import com.nuvio.app.features.downloads.DownloadStatus
 import com.nuvio.app.features.library.buildLibraryDownloadEntries
 import com.nuvio.app.features.library.libraryDownloadsContent
+import com.nuvio.app.features.player.AddonSubtitle
+import com.nuvio.app.features.player.AudioTrack
+import com.nuvio.app.features.player.AudioTrackModal
+import com.nuvio.app.features.player.PlayerControlsShell
+import com.nuvio.app.features.player.PlayerLayoutMetrics
+import com.nuvio.app.features.player.PlayerPlaybackSnapshot
+import com.nuvio.app.features.player.PlayerResizeMode
 import com.nuvio.app.features.player.PlayerSettingsStorage
+import com.nuvio.app.features.player.SubtitleAutoSyncUiState
+import com.nuvio.app.features.player.SubtitleModal
+import com.nuvio.app.features.player.SubtitleTrack
 import com.nuvio.app.features.player.SubtitleStyleState
+import com.nuvio.app.features.settings.SettingsPage
 import com.nuvio.app.features.settings.SubtitleAppearanceSettings
+import com.nuvio.app.features.settings.playbackSettingsContent
 import java.io.File
 import java.util.Locale
 import org.junit.After
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -90,6 +108,84 @@ abstract class PlusReferenceScreenshots(private val device: String) {
                 entries = entries, activeCount = 2, queueCount = 0, columns = if (device.endsWith("tablet")) 5 else 3,
                 onManageClick = {}, onEntryClick = {}, onEntryLongClick = {},
             )
+        }
+    }
+
+    // The playback settings that shape watching (P4: screens most used around playback).
+    @Test fun playbackSettings() = playbackPage("playback-settings", SettingsPage.Playback)
+    @Test fun playbackPlayerSettings() = playbackPage("playback-player", SettingsPage.PlaybackPlayer)
+    @Test fun playbackSubtitleSettings() = playbackPage("playback-subtitles", SettingsPage.PlaybackSubtitles)
+    @Test fun playbackVideoSettings() = playbackPage("playback-video", SettingsPage.PlaybackVideo)
+    @Test fun playbackAudioSettings() = playbackPage("playback-audio", SettingsPage.PlaybackAudio)
+
+    // The player itself (P4: player, its panels). The player is landscape only, so these run on the
+    // landscape setups; a portrait phone reports them as skipped, never as passed.
+    private val arabic get() = device.startsWith("ar")
+    private fun text(en: String, ar: String) = if (arabic) ar else en
+
+    @Test fun playerControls() = player("player-controls") {
+        BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) {
+            PlayerControlsShell(
+                title = text("Test series", "مسلسل تجريبي"),
+                streamTitle = text("Test stream", "بث تجريبي"),
+                providerName = text("Test add-on", "إضافة تجريبية"),
+                seasonNumber = 1, episodeNumber = 3, episodeTitle = text("The return", "العودة"),
+                playbackSnapshot = PlayerPlaybackSnapshot(isLoading = false, isPlaying = true, durationMs = 2_700_000,
+                    positionMs = 1_250_000, bufferedPositionMs = 1_600_000),
+                displayedPositionMs = 1_250_000,
+                metrics = PlayerLayoutMetrics.fromWidth(maxWidth),
+                resizeMode = PlayerResizeMode.Fit, isLocked = false,
+                onLockToggle = {}, onBack = {}, onTogglePlayback = {}, onSeekBack = {}, onSeekForward = {},
+                onResizeModeClick = {}, onSpeedClick = {}, onSubtitleClick = {}, onAudioClick = {},
+                onSourcesClick = {}, onEpisodesClick = {}, onScrubChange = {}, onScrubFinished = {},
+                horizontalSafePadding = 0.dp,
+            )
+        }
+    }
+
+    @Test fun playerSubtitles() = player("player-subtitles") {
+        Box(Modifier.fillMaxSize().background(Color.Black)) {
+            SubtitleModal(
+                visible = true,
+                subtitleTracks = listOf(
+                    SubtitleTrack(0, "0", text("English", "الإنجليزية"), "en", isSelected = true),
+                    SubtitleTrack(1, "1", text("Arabic", "العربية"), "ar"),
+                ),
+                selectedSubtitleIndex = 0,
+                addonSubtitles = listOf(AddonSubtitle("a1", "https://example.com/a.srt", "ar", text("Arabic subtitles", "ترجمة عربية"))),
+                selectedAddonSubtitleId = null, isLoadingAddonSubtitles = false,
+                preferredSubtitleLanguage = if (arabic) "ar" else "en", secondaryPreferredSubtitleLanguage = null,
+                subtitleStyle = SubtitleStyleState(), subtitleDelayMs = 0, selectedAddonSubtitle = null,
+                subtitleAutoSyncState = SubtitleAutoSyncUiState(),
+                onBuiltInTrackSelected = {}, onAddonSubtitleSelected = {}, onFetchAddonSubtitles = {}, onStyleChanged = {},
+                onSubtitleDelayChanged = {}, onSubtitleDelayReset = {}, onAutoSyncCapture = {}, onAutoSyncCueSelected = {},
+                onAutoSyncReload = {}, onDismiss = {},
+            )
+        }
+    }
+
+    @Test fun playerAudio() = player("player-audio") {
+        Box(Modifier.fillMaxSize().background(Color.Black)) {
+            AudioTrackModal(
+                visible = true,
+                audioTracks = listOf(
+                    AudioTrack(0, "0", text("English 5.1", "الإنجليزية ٥٫١"), "en", isSelected = true),
+                    AudioTrack(1, "1", text("Arabic stereo", "العربية ستيريو"), "ar"),
+                ),
+                selectedIndex = 0, onTrackSelected = {}, onDismiss = {},
+                showAudioDelay = true, showAudioAmplification = true,
+            )
+        }
+    }
+
+    private fun player(screen: String, content: @Composable () -> Unit) {
+        assumeTrue("the player is landscape only; $device is portrait", !device.endsWith("phone"))
+        shoot(screen, content)
+    }
+
+    private fun playbackPage(screen: String, page: SettingsPage) = shoot(screen) {
+        LazyColumn(Modifier.fillMaxSize()) {
+            playbackSettingsContent(isTablet = device.endsWith("tablet"), page = page, onPageChange = {})
         }
     }
 
@@ -173,3 +269,13 @@ class PlusReferenceScreenshotsEnglishTabletTest : PlusReferenceScreenshots("en-t
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], application = Application::class, qualifiers = "ar-ldrtl-w1280dp-h800dp-land-xhdpi")
 class PlusReferenceScreenshotsArabicTabletTest : PlusReferenceScreenshots("ar-tablet")
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], application = Application::class, qualifiers = "en-rUS-ldltr-w891dp-h411dp-land-xxhdpi")
+class PlusReferenceScreenshotsEnglishPhoneLandscapeTest : PlusReferenceScreenshots("en-phone-land")
+
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], application = Application::class, qualifiers = "ar-ldrtl-w891dp-h411dp-land-xxhdpi")
+class PlusReferenceScreenshotsArabicPhoneLandscapeTest : PlusReferenceScreenshots("ar-phone-land")
