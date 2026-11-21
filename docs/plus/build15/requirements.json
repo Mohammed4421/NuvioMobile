@@ -554,8 +554,8 @@
         },
         {
           "kind": "ci-run",
-          "run": 44935805121,
-          "commit": "6231bb66becd2164ddf57ec0119a51ef802876a5",
+          "run": 44937898526,
+          "commit": "ca557ac0ec78b3b6824ae6ee6e6a30b10ae0ea01",
           "what": "Nuvio device tests on Android 9, 14 and 16 emulators: SubtitlePlaybackTest, DeviceSubtitleStatesTest, MpvSurfaceTest, NetworkDropPlaybackTest (ExoPlayer and mpv), SubtitleSettingsTest (14, 16); Android 17 NOT TESTED (emulator image fault, device-test-matrix.md)",
           "result": "PASS"
         }
@@ -596,8 +596,8 @@
         },
         {
           "kind": "ci-run",
-          "run": 44935805120,
-          "commit": "6231bb66becd2164ddf57ec0119a51ef802876a5",
+          "run": 44937898514,
+          "commit": "ca557ac0ec78b3b6824ae6ee6e6a30b10ae0ea01",
           "what": "Download notification (Android 9 pause/resume; 14 and 16 pause) and interruptions (network loss, process death, no second transfer) on Android 9, 14, 16; Android 17 NOT TESTED",
           "result": "PASS"
         }
@@ -2117,15 +2117,15 @@
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44935805121,
-          "commit": "6231bb66becd2164ddf57ec0119a51ef802876a5",
+          "run": 44937898526,
+          "commit": "ca557ac0ec78b3b6824ae6ee6e6a30b10ae0ea01",
           "what": "Nuvio device tests on Android 9, 14 and 16 emulators: SubtitlePlaybackTest, DeviceSubtitleStatesTest, MpvSurfaceTest, NetworkDropPlaybackTest (ExoPlayer and mpv), SubtitleSettingsTest (14, 16); Android 17 NOT TESTED (emulator image fault, device-test-matrix.md)",
           "result": "PASS"
         },
         {
           "kind": "ci-run",
-          "run": 44935805120,
-          "commit": "6231bb66becd2164ddf57ec0119a51ef802876a5",
+          "run": 44937898514,
+          "commit": "ca557ac0ec78b3b6824ae6ee6e6a30b10ae0ea01",
           "what": "Download notification (Android 9 pause/resume; 14 and 16 pause) and interruptions (network loss, process death, no second transfer) on Android 9, 14, 16; Android 17 NOT TESTED",
           "result": "PASS"
         },

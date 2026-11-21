@@ -19,12 +19,12 @@ least one phone; the tablet and HDR rows are required when that hardware is avai
 | Reviews | The newest Nuvio release merged has an approved, complete review record | › Nuvio merge reviews complete |
 | Policy | Workflow security rules, review gate, release scripts | › Tests of the review gate and release scripts |
 
-### Emulator results by Android version (PR #63, commit `6231bb66`, 2026-11-21)
+### Emulator results by Android version (PR #63, commit `ca557ac0`, 2026-11-21)
 
 Emulators are `google_apis` x86_64 images. Device tests: `nuvio-device-tests.yml` run
-[44935805121](https://github.com/Mohammed4421/NuvioMobile/actions/runs/44935805121); notification and
+[44937898526](https://github.com/Mohammed4421/NuvioMobile/actions/runs/44937898526); notification and
 interruptions: `download-notification-test.yml` run
-[44935805120](https://github.com/Mohammed4421/NuvioMobile/actions/runs/44935805120).
+[44937898514](https://github.com/Mohammed4421/NuvioMobile/actions/runs/44937898514).
 
 | Check | Android 9 (28) | Android 14 (34) | Android 16 (36) | Android 17 (37) |
 |---|---|---|---|---|
