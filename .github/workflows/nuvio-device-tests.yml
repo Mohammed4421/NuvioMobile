@@ -142,7 +142,10 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          # Android 17 images abort SurfaceFlinger in the goldfish mapper under swiftshader_indirect
+          # ('Assertion failed: !rcEnc->featureInfo()->hasReadColorBufferDma'); swangle_indirect is
+          # the emulator's current software GPU path. Older images keep the mode they pass with.
+          emulator-options: -no-window -gpu ${{ matrix.api == 37 && 'swangle_indirect' || 'swiftshader_indirect' }} -noaudio -no-boot-anim -no-snapshot
           # Android 17's image did not boot within 600 s with the default 2 cores (run of 38f059c9).
           cores: ${{ matrix.api == 37 && 4 || 2 }}
           ram-size: ${{ matrix.api == 37 && '4096M' || '' }}
