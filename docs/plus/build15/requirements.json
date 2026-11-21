@@ -938,14 +938,20 @@
         "docs/plus/build15/security-surface.json",
         ".github/workflows/plus-build.yml"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Head APK surface: checked by the 'Attack surface' step of this pull request's checks; result not yet cited."
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44862492360,
+          "commit": "e3031b6de64dea7127177a98679ffe2fe1c9973d",
+          "what": "PR #39 checks: 'Attack surface against the reviewed list' on the 4 built APKs: 36 lines, equal to the reviewed Build 14 surface (exported components, providers, FileProvider paths, permissions, flags); no fixed-rule violation",
+          "result": "PASS"
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Cite the checks run of the head APK."
+      "next": "Owner acceptance."
     },
     {
       "id": "P6-02",
@@ -977,14 +983,20 @@
         "docs/plus/build15/security-surface.json",
         ".github/workflows/plus-build.yml"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Head APK surface: checked by the 'Attack surface' step of this pull request's checks; result not yet cited."
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44862492360,
+          "commit": "e3031b6de64dea7127177a98679ffe2fe1c9973d",
+          "what": "PR #39 checks: 'Attack surface against the reviewed list' on the 4 built APKs: 36 lines, equal to the reviewed Build 14 surface (exported components, providers, FileProvider paths, permissions, flags); no fixed-rule violation",
+          "result": "PASS"
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Cite the checks run of the head APK."
+      "next": "Owner acceptance."
     },
     {
       "id": "P6-04",
