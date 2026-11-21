@@ -2,7 +2,6 @@ package com.nuvio.android
 
 import android.content.ContentValues
 import android.graphics.Bitmap
-import android.os.Build
 import android.provider.MediaStore
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.activity.compose.setContent
@@ -39,21 +38,13 @@ class SubtitleSettingsTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
         val resolver = context.contentResolver
-        // Android 9 has no MediaStore.Downloads, and the app may not write shared storage there: the
-        // runner (.github/plus/nuvio-device-tests.sh) puts the same font in Download beforehand, where
-        // the system picker lists it. Android 10 and later: the test adds it itself, as before.
-        val uri = if (Build.VERSION.SDK_INT >= 29) {
-            requireNotNull(resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, "Subtitle test font.ttf")
-                put(MediaStore.MediaColumns.MIME_TYPE, "font/ttf")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "Download")
-            })).also { uri ->
-                context.assets.open("composeResources/nuvio.composeapp.generated.resources/font/jetbrains_sans_regular.ttf").use { input ->
-                    requireNotNull(resolver.openOutputStream(uri)).use(input::copyTo)
-                }
-            }
-        } else {
-            null
+        val uri = requireNotNull(resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "Subtitle test font.ttf")
+            put(MediaStore.MediaColumns.MIME_TYPE, "font/ttf")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "Download")
+        }))
+        context.assets.open("composeResources/nuvio.composeapp.generated.resources/font/jetbrains_sans_regular.ttf").use { input ->
+            requireNotNull(resolver.openOutputStream(uri)).use(input::copyTo)
         }
         val original = PlayerSettingsRepository.uiState.value.subtitleStyle
         try {
@@ -88,7 +79,7 @@ class SubtitleSettingsTest {
             compose.onNodeWithText("Reset appearance").performScrollTo().performClick()
             compose.runOnIdle { assertEquals(SubtitleAppearance(), PlayerSettingsRepository.uiState.value.subtitleStyle.appearance) }
         } finally {
-            uri?.let { resolver.delete(it, null, null) }
+            resolver.delete(uri, null, null)
             compose.runOnUiThread { PlayerSettingsRepository.setSubtitleStyle(original) }
         }
     }
