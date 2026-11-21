@@ -50,7 +50,8 @@
   },
   "reproducibility": {
     "dependencies": "resolved by Gradle from Google Maven and Maven Central (CI falls back to Google's Central mirror); no dependency lock or verification metadata yet",
-    "status": "PARTIAL: APK hashes recorded; resolved dependency versions of Build 14 not yet recorded (no lock or verification metadata)"
+    "status": "APK hashes (apk_sha256) and the 353 resolved release libraries (baseline-dependencies.txt, run 44843817876) recorded; the library count equals the OSV scan's",
+    "libraries": "docs/plus/build15/baseline-dependencies.txt"
   },
   "apk_sha256": {
     "source": "GitHub release custom-14 asset digests (gh api repos/Mohammed4421/NuvioMobile/releases/tags/custom-14), read 2026-11-21",
