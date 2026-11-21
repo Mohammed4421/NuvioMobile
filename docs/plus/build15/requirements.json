@@ -1576,7 +1576,7 @@
       "paths": [
         ".github/workflows/portkit.yml"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1589,7 +1589,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Both targets built and tested.",
-      "next": "—",
+      "next": "portkit.yml now runs on every PR (required check): re-verify with the PortKit run of this commit.",
       "nvp15": "NVP15-REQ-0076"
     },
     {

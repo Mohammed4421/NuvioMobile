@@ -5,18 +5,11 @@
 name: PortKit transfer tests
 
 on:
+  # Every pull request: the job is a required check, so it always reports. It transfers and builds
+  # only when the pull request changes PortKit or a file of a feature PortKit tests (the list in
+  # the first step); otherwise it passes at once and says so.
   pull_request:
     branches: [custom-subtitles]
-    paths:
-      - "portkit/**"
-      - ".github/plus/features.json"
-      - ".github/workflows/portkit.yml"
-      # The files of the features PortKit tests, so a change to them is tested again.
-      - "composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt"
-      - "composeApp/src/commonTest/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeysTest.kt"
-      - "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt"
-      - "composeApp/src/commonMain/kotlin/com/nuvio/app/features/autosync/AutoSyncSubtitleCueParser.kt"
-      - "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserWorstCaseTest.kt"
   workflow_dispatch:
 
 concurrency:
@@ -49,19 +42,52 @@ jobs:
           left="$(git config --list --includes | grep -ci 'authorization' || true)"
           if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
 
+      - name: Does this pull request touch PortKit or a feature it tests?
+        id: affected
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [[ -z "${PR}" ]]; then echo "run=true" >> "${GITHUB_OUTPUT}"; exit 0; fi
+          patterns=(
+            "portkit/**"
+            ".github/plus/features.json"
+            ".github/workflows/portkit.yml"
+            "composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt"
+            "composeApp/src/commonTest/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeysTest.kt"
+            "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt"
+            "composeApp/src/commonMain/kotlin/com/nuvio/app/features/autosync/AutoSyncSubtitleCueParser.kt"
+            "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserWorstCaseTest.kt"
+          )
+          changed="$(gh api "repos/${REPO}/pulls/${PR}/files" --paginate --jq '.[].filename')"
+          for file in ${changed}; do
+            for pattern in "${patterns[@]}"; do
+              # shellcheck disable=SC2053
+              if [[ "${file}" == ${pattern//\*\*/*} ]]; then
+                echo "PortKit affected by ${file}"; echo "run=true" >> "${GITHUB_OUTPUT}"; exit 0
+              fi
+            done
+          done
+          echo "::notice::This pull request changes neither PortKit nor a feature it tests; nothing to transfer."
+          echo "run=false" >> "${GITHUB_OUTPUT}"
+
       - name: Get the upstream release PortKit transfers into
+        if: steps.affected.outputs.run == 'true'
         run: |
           base="$(python3 -I -c 'import json; print(json.load(open("portkit/compatibility.json"))["upstream_base"]["commit"])')"
           [[ "${base}" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::portkit/compatibility.json has no valid upstream_base commit"; exit 1; }
           git fetch --no-tags --depth=1 https://github.com/NuvioMedia/NuvioMobile.git "${base}"
 
       - name: Plan checks
+        if: steps.affected.outputs.run == 'true'
         run: |
           python3 -I portkit/portkit.py validate
           echo "| Target | Features | Result | Detail |" > portkit-transfer.md
           echo "|---|---|---|---|" >> portkit-transfer.md
 
       - name: Set up Java
+        if: steps.affected.outputs.run == 'true'
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
@@ -70,39 +96,44 @@ jobs:
             21
 
       - name: Set up Gradle
+        if: steps.affected.outputs.run == 'true'
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           cache-read-only: true
 
       - name: Take the Sentry plugin from Maven Central
+        if: steps.affected.outputs.run == 'true'
         run: |
           mkdir -p "${HOME}/.gradle/init.d"
           cp .github/plus/plugins-from-central.init.gradle "${HOME}/.gradle/init.d/"
 
       - name: Portable features into upstream 1.0.0
+        if: steps.affected.outputs.run == 'true'
         run: |
           bash portkit/transfer-test.sh "upstream 1.0.0" - \
             lazy-key-collisions,subtitle-parser-worst-case \
             com.nuvio.app.core.ui.DuplicateSafeLazyKeysTest,com.nuvio.app.features.player.SubtitleParserWorstCaseTest
 
       - name: Portable features into fork fixture A
+        if: steps.affected.outputs.run == 'true'
         run: |
           bash portkit/transfer-test.sh "fork A (portkit/fixtures/fork-a.patch)" portkit/fixtures/fork-a.patch \
             lazy-key-collisions,subtitle-parser-worst-case \
             com.nuvio.app.core.ui.DuplicateSafeLazyKeysTest,com.nuvio.app.features.player.SubtitleParserWorstCaseTest
 
       - name: Evidence of verified features
+        if: steps.affected.outputs.run == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 -I portkit/portkit.py check-evidence
 
       - name: Report
-        if: always()
+        if: always() && steps.affected.outputs.run == 'true'
         run: |
           { echo "### PortKit transfer tests"; cat portkit-transfer.md 2>/dev/null || echo "no results"; } >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Keep the report
-        if: always()
+        if: always() && steps.affected.outputs.run == 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: portkit-transfer
