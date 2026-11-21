@@ -9,7 +9,7 @@
 set -uo pipefail
 app="$1"; test_apk="$2"; label="$3"
 here="$(cd "$(dirname "$0")" && pwd)"
-classes="com.nuvio.android.SubtitlePlaybackTest,com.nuvio.android.SubtitleSettingsTest,com.nuvio.android.MpvSurfaceTest"
+classes="com.nuvio.android.SubtitlePlaybackTest,com.nuvio.android.SubtitleSettingsTest,com.nuvio.android.MpvSurfaceTest,com.nuvio.android.NetworkDropPlaybackTest"
 exec > >(tee -a "nuvio-device-tests-${label}.log") 2>&1
 adb wait-for-device
 host_env="$(bash "${here}/device-test-host.sh" "${app}" "${test_apk}")" || { echo "::error::${label}: the device test host could not be set up"; exit 1; }
@@ -32,9 +32,9 @@ adb logcat -c || true
 out="$(adb shell "am instrument -w -r -e class '${classes}' '${NUVIO_TEST_RUNNER}'" 2>&1 | tr -d '\r')"
 status=0
 python3 -I "${here}/instrumentation-results.py" "${label}" <<< "${out}" || status=$?
-# Every run: how many times libmpv was asked to open its source per test (a second open repeats the
-# network request at start). Recorded to compare with the failed run, where it opened twice.
-echo "${label}: libmpv source opens across the libmpv tests (one per test expected): $(adb logcat -d -s NuvioPlayerDiag:I | grep -c 'mpv_prepare_begin' || true)"
+# Every run: how many times libmpv was asked to load its source. Two per start are normal (#55): the
+# first request is cancelled before it reaches mpv, and mpv starts the file once.
+echo "${label}: libmpv load requests across the libmpv tests (two per start are normal: the first is cancelled before it reaches mpv, see #55): $(adb logcat -d -s NuvioPlayerDiag:I | grep -c 'mpv_prepare_begin' || true)"
 if (( status != 0 )); then
   # Evidence for telling an app fault from the emulator: the player's and the system's lines.
   echo "::group::${label}: logcat after the failed tests (player, surface, activity, crashes)"
