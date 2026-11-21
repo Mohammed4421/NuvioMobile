@@ -870,6 +870,32 @@
       "refs": [
         "#49"
       ]
+    },
+    {
+      "id": "B15-UI-06",
+      "kind": "defect",
+      "area": "Library downloads",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryDownloadsContent.kt"
+      ],
+      "evidence": "Reference screenshot library-downloads-en-phone (#49): 'Downloading • …', percentage cut",
+      "root_cause": "Status word before the percentage on a one-line label",
+      "user_impact": "Download progress number hidden on phones",
+      "severity": "Low",
+      "alternatives": [
+        "Two lines",
+        "Percentage first"
+      ],
+      "chosen": "Percentage first",
+      "rationale": "Keeps card heights; the number is the useful part",
+      "compatibility": "Display only",
+      "tests_required": "Reference screenshot",
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#49"
+      ]
     }
   ]
 }
