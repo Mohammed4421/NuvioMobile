@@ -54,6 +54,18 @@ wait_for() {  # wait_for <seconds> <description> <command...>
   fail "timed out after ${seconds}s waiting for ${what} (state: $(state))"
 }
 status_is() { [[ "$(state | cut -f1)" == "$1" ]]; }
+# The download engine's own record (files/download-transfers/<sha256 of the file name>.json). After the
+# process died the engine finishes in the background; the downloads list catches up when the app next
+# loads it (restore), so the engine record is what tells whether the transfer itself completed.
+engine_status() {
+  local key
+  key="$(printf '%s' "${file}" | sha256sum | cut -d' ' -f1)"
+  adb shell run-as "${pkg}" cat "files/download-transfers/${key}.json" 2>/dev/null | python3 -I -c '
+import json, sys
+try: print(json.load(sys.stdin)["item"]["status"])
+except Exception: print("missing")'
+}
+engine_is() { [[ "$(engine_status)" == "$1" ]]; }
 start_download() {
   adb shell run-as "${pkg}" rm -f cache/download-test-ready
   : > "${work}/requests.log"
@@ -75,8 +87,9 @@ check_resumed_from() {  # check_resumed_from <requests before> <kept bytes>
   (( offset > 0 && offset <= $2 )) || fail "continued from byte ${offset}, expected 1..$2"
   say "continued from byte ${offset} of the kept $2"
 }
-check_complete() {
-  wait_for 300 "Completed" status_is Completed
+check_complete() {  # check_complete [engine]
+  if [[ "${1:-}" == engine ]]; then wait_for 300 "Completed (download engine)" engine_is Completed
+  else wait_for 300 "Completed" status_is Completed; fi
   local actual now
   # The same download, not a new one under another name (a replaced download gets a new file name).
   now="$(state | cut -f2)"
@@ -140,12 +153,12 @@ launcher="$(adb shell cmd package resolve-activity --brief -a android.intent.act
 [[ "${launcher}" == "${pkg}/"* ]] || fail "no launcher activity found: ${launcher}"
 adb shell am start -W -f 0x10008000 -n "${launcher}" > /dev/null || fail "could not open the app again"
 # Android may already have restarted the download job by itself; either way it must go on.
-going() { local size; size="$(part_size "${file}")"; status_is Completed || [[ -n "${size}" && "${size}" -gt "${kept}" ]]; }
+going() { local size; size="$(part_size "${file}")"; engine_is Completed || [[ -n "${size}" && "${size}" -gt "${kept}" ]]; }
 wait_for 180 "the download to continue after the process died" going
 check_resumed_from "${mark}" "${kept}"
 # Exactly one transfer after the process died: a second one from zero would write into the same file.
 from_zero="$(tail -n +"$(( mark + 1 ))" "${work}/requests.log" | grep -c '^GET range=- ' || true)"
 (( from_zero == 0 )) || fail "a second transfer started from byte 0 after the process died: $(tail -n +"$(( mark + 1 ))" "${work}/requests.log" | tr '\n' ';')"
-check_complete
+check_complete engine
 say "download engine log:"; adb logcat -d -v time -s NuvioDownload:I | sed "s/^/${label}:   /"
 say "${result}"
