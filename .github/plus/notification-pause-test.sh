@@ -191,7 +191,7 @@ curl -s -o /dev/null -r 0-0 -w '%{http_code}' http://127.0.0.1:8765/fixture.bin 
 : > "${work}/requests.log"
 trap 'kill ${server} 2>/dev/null' EXIT
 adb wait-for-device
-adb install -r -g "${apk}" > /dev/null || fail "install failed"
+out="$(adb install -r -g "${apk}" 2>&1)" || fail "install failed: $(tail -n 2 <<< "${out}" | tr '\n' ' ')"
 adb shell run-as "${pkg}" rm -f cache/download-test-ready
 adb shell am start -W -n "${pkg}/com.nuvio.android.BackgroundDownloadTestActivity" \
   --es downloadUrl "http://10.0.2.2:8765/fixture.bin" > /dev/null || fail "could not start the download activity"
