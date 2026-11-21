@@ -516,7 +516,7 @@
         "Require a pull request and the listed checks (proposal)",
         "Keep relying on the merge discipline of each session"
       ],
-      "chosen": "Owner applied the ruleset: pull request required (verified). Required status checks: added by the owner, but a re-read at 15:05 (Riyadh) on 2026-11-21 shows none (ruleset updated 13:40); the owner is asked to add them again",
+      "chosen": "Owner applied the ruleset: pull request and 6 required checks (re-read 2026-11-21 15:27, ruleset updated 15:27:23)",
       "rationale": "Spec §12; owner rule 5",
       "compatibility": "Settings only; no code",
       "tests_required": [
@@ -524,10 +524,11 @@
       ],
       "priority": "P1",
       "decision": "FIX",
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "refs": [
         "ruleset-proposal.md",
-        "ruleset 27721857 read 2026-11-21 15:05"
+        "ruleset 27721857 read 2026-11-21 15:27",
+        "#49 and #54 merged after the 6 required checks passed"
       ]
     },
     {

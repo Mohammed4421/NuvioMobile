@@ -3,22 +3,6 @@
   "note": "Spec v1.1 §22: every FAIL / BLOCKED / NOT TESTED / NEEDS PHYSICAL DEVICE and open decision; a critical one blocks the release until its evidence exists.",
   "risks": [
     {
-      "id": "NVP15-RISK-0002",
-      "state": "BLOCKED",
-      "reason": "Ruleset 27721857 requires a pull request (applied by the owner), but a re-read at 15:05 on 2026-11-21 lists no required status checks (ruleset updated 13:40); a merge with failing checks is not blocked by GitHub, only by this session following the rule",
-      "needs": "Owner applies ruleset-proposal.md",
-      "requirements": [
-        "P6-10",
-        "S12-01",
-        "S16-10"
-      ],
-      "impact": "A failing change could reach the branch unchecked",
-      "priority": "P0",
-      "alternatives": "Apply the proposal; or accept the risk explicitly",
-      "decision_owner": "owner",
-      "closes_when": "Ruleset re-read shows the required checks again"
-    },
-    {
       "id": "NVP15-RISK-0003",
       "state": "NEEDS PHYSICAL DEVICE",
       "reason": "Emulators cannot show HDR / Dolby Vision, real codecs, gesture feel, SD card / SAF on removable storage, real performance",

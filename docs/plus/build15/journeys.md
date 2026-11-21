@@ -9,9 +9,9 @@ every pull request), **emulator** (run in CI on Android 9 and 14), **device-test
 instrumented test exists in `androidApp/src/androidTest` but no workflow runs it), **NEEDS PHYSICAL
 DEVICE** (only a real phone can show it), **none**.
 
-Finding P3-F1: of the instrumented tests in `androidApp/src/androidTest`, CI runs only
-`UpdateArchiveDeviceTest` (`.github/plus/update-device-check.sh`). `BackgroundDownloadTest`,
-`SubtitlePlaybackTest`, `SubtitleSettingsTest` and `MpvSurfaceTest` exist but run nowhere.
+Finding P3-F1 (closed): `SubtitlePlaybackTest`, `SubtitleSettingsTest` and `MpvSurfaceTest` now run on
+every pull request on Android 9 and 14 (`nuvio-device-tests.sh`); `BackgroundDownloadTest` runs in the
+download notification test. Font import on Android 9 stays NOT TESTED (picker needs Android 10+).
 
 | ID | Journey | Must happen | Exceptional paths | Evidence today | Gap |
 |---|---|---|---|---|---|
@@ -41,3 +41,26 @@ Finding P3-F1: of the instrumented tests in `androidApp/src/androidTest`, CI run
 1. **P3-F1:** run the four existing instrumented tests on the CI emulator, or record why one cannot run there.
 2. Network-loss and Wi-Fi-only journeys (J-09, J-13) on the emulator with the network switched off mid-transfer.
 3. Device list for the owner: J-03–J-08, J-11, J-12 (rows marked NEEDS PHYSICAL DEVICE).
+
+## Six-case matrix (P3, 2026-11-21)
+
+Cases: **N** normal use · **F** expected failure · **I** cancel / interrupt · **R** resume / restore ·
+**P** persistence after restart · **D** no damage to related features. Evidence at `a0b3332c` (the
+last commit of #49, merged as 46814605):
+
+- **E1** Nuvio device tests, run 44904776284 (Android 9 and 14 emulators)
+- **E2** Download notification test, run 44904776282 (Android 9 full; Android 14 pause only)
+- **E3** Nuvio Plus checks, run 44904776470 (2241 host tests, race harness, update device check on
+  Android 9 and 14, reference screenshots)
+
+| Domain | N | F | I | R | P | D | Not covered here |
+|---|---|---|---|---|---|---|---|
+| Downloads / storage | PASS E2 (real transfer, SHA equal), E3 | PASS E3 (HTTP errors, 416, no space `DownloadFreeSpaceTest`) | PASS E2 (pause from the notification) | PASS E2 Android 9 (same byte, SHA equal); Android 14 NOT TESTED (real tap) | PASS E3 (harness r8, r17; process recreation) | PASS E3 (season policy, profiles) | Network loss and Wi-Fi only on an emulator; SD card / SAF on removable storage (device) |
+| Player / subtitles | PASS E1 (ExoPlayer and mpv play with styled captions) | PASS E3 (`PlaybackTlsTest`, `PlaybackRedirectCredentialsTest`) | PASS E1 (`MpvSurfaceTest`: stop / resume) | PASS E1 (seek restored after surface recreation) | PASS E3 (style migration and persistence tests) | PASS E3 | HDR / Dolby Vision, real codecs, gesture feel (device) |
+| Profiles / accounts | PASS E3 (downloads and queue per profile, harness r1–r13, r18) | NOT TESTED | PASS E3 (switch during a download, harness) | NOT TESTED | PASS E3 | PASS E3 | PIN, sign-in and sync are Nuvio's code, not changed in Build 15 |
+| Library / navigation | PASS E3 (`LibraryDownloadEntriesTest`, screenshots) | NOT TESTED | NOT TESTED | NOT TESTED | NOT TESTED | PASS E3 | Screen transitions, back and app lifecycle end to end |
+| Add-ons / networking | PASS E3 (`AddonLinkConfirmationTest`) | PASS E3 (bad link, cancel) | PASS E3 (cancel) | — | NOT TESTED | PASS E3 (credentials kept to the source site) | Timeouts and malformed responses beyond Nuvio's own tests |
+| Updater / identity | PASS E3 (update device check) | PASS E3 (wrong key, damaged archive) | NOT TESTED | — | PASS E3 (data kept on the emulator update) | PASS E3 | 14→15, 13→15, 12→15 with the real key: in the release run before publishing |
+
+No domain has all six cases PASS, so P3-01…P3-06 stay IMPLEMENTED. The rows that only a phone can show
+are the owner's final-release checks (NVP15-CHG-0003).
