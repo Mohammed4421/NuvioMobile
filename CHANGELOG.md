@@ -6,7 +6,10 @@ Newest first.
 
 ## Next build — Build 15: audit and polish
 
-### Changed
+### Changed- **Season downloads: an episode the first add-on lacks is taken from your other add-ons**, but only
+  in the same resolution and release type as the first episode, so the season stays consistent. If no
+  add-on has it in that quality, the episode still asks you to choose, as before (owner's choice).
+
 - **A paused episode no longer stops the rest of its season.** Pausing one episode of a season
   download now skips it: the next episodes go on, and the paused one keeps its place and its partial
   file and is never retried by itself. Resuming it while another episode downloads lets it continue
@@ -31,6 +34,14 @@ Newest first.
 - **Subtitle panel:** "Reset appearance" looks like the other buttons; the AutoSync buttons wrap on
   narrow panels; loading lines shows a spinner and a failed load offers Retry; the − / + buttons have a
   48 dp touch area.
+- **Choosing a subtitle while the video buffers no longer pauses it** (ExoPlayer), and a chosen
+  add-on subtitle is no longer lost when the player reloads.
+- **A resumed download can no longer end up mixed or cut.** If the server sends another version of
+  the file, or only part of the rest, the download starts again from the beginning instead of
+  appending.
+- **Arabic subtitle lines that start with an English word keep their punctuation in place** (mpv).
+- **Subtitles:** ASS files with long headers are recognised from any link, drawing commands are not
+  shown as text, and `&#39;`-style characters are shown correctly.
 - **Downloads in the library show the percentage first.** On a phone the card cut the line after
   "Downloading", so the percentage was hidden; it now reads "40% • Downloading".
 - **A download whose partial file was removed now says up front when storage is full.** The space

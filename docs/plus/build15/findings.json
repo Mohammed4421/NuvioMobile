@@ -897,6 +897,141 @@
       "refs": [
         "#49"
       ]
+    },
+    {
+      "id": "B15-DL-05",
+      "kind": "defect",
+      "area": "Downloads",
+      "files": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadTransfer.kt"
+      ],
+      "evidence": "Independent review GEM-DL-01/02, confirmed in the code: a 206 resume was appended when the server ignored If-Range and sent another version, or its range stopped before the end or had an unknown total (bytes a-b/*)",
+      "root_cause": "parseDownloadContentRange dropped the range end; the response validator was not compared",
+      "user_impact": "A resumed download could finish as a wrong or cut file without an error",
+      "severity": "Medium",
+      "alternatives": [
+        "Keep",
+        "Fix"
+      ],
+      "chosen": "Append only the same version to the end; otherwise start once more from zero; a body not matching its range is refused",
+      "rationale": "Confirmed against the code at 61291e21 before changing it",
+      "compatibility": "No stored format change",
+      "tests_required": "AndroidDownloadTransferTest (4 new cases)",
+      "priority": "P1",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "Gemini review 2026-11-21",
+        "#58"
+      ]
+    },
+    {
+      "id": "B15-PLY-03",
+      "kind": "defect",
+      "area": "Player (ExoPlayer)",
+      "files": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt"
+      ],
+      "evidence": "Independent review GEM-PLY-01, confirmed: a pending subtitle choice was taken on the first track change after a reload even without subtitle tracks, unlike the audio choice",
+      "root_cause": "Condition tracks.groups.isNotEmpty() instead of a text track",
+      "user_impact": "A chosen add-on subtitle could be lost after the player rebuilt its media item; likely cause of RISK-0007 (B15-PLY-02)",
+      "severity": "Medium",
+      "alternatives": [
+        "Keep",
+        "Fix"
+      ],
+      "chosen": "Wait for a text track (disabling still applies at once)",
+      "rationale": "Confirmed against the code at 61291e21 before changing it",
+      "compatibility": "No stored format change",
+      "tests_required": "SubtitlePlaybackTest on Android 9 and 14",
+      "priority": "P1",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "Gemini review 2026-11-21",
+        "#58"
+      ]
+    },
+    {
+      "id": "B15-PLY-04",
+      "kind": "defect",
+      "area": "Player (ExoPlayer)",
+      "files": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt"
+      ],
+      "evidence": "Independent review GEM-PLY-02, confirmed at three call sites (attach add-on subtitle, clear, clear and select): isPlaying used as the play intent",
+      "root_cause": "isPlaying is false while buffering or right after a seek",
+      "user_impact": "Choosing or removing a subtitle while the video buffered left it paused",
+      "severity": "Medium",
+      "alternatives": [
+        "Keep",
+        "Fix"
+      ],
+      "chosen": "Keep playWhenReady",
+      "rationale": "Confirmed against the code at 61291e21 before changing it",
+      "compatibility": "No stored format change",
+      "tests_required": "SubtitlePlaybackTest",
+      "priority": "P1",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "Gemini review 2026-11-21 (reported one site; three found)",
+        "#58"
+      ]
+    },
+    {
+      "id": "B15-SUB-07",
+      "kind": "defect",
+      "area": "Subtitles (Arabic)",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/StyledSubtitle.kt"
+      ],
+      "evidence": "Independent review GEM-SUB-01, confirmed for libmpv's plain text: an Arabic line starting with a Latin word was laid out left to right",
+      "root_cause": "First-strong-letter direction (ContentOrLtr) per line",
+      "user_impact": "End punctuation on the wrong side for such lines with mpv",
+      "severity": "Low",
+      "alternatives": [
+        "Keep",
+        "Fix"
+      ],
+      "chosen": "An RLM before lines with Arabic or Hebrew letters that carry no direction marks yet",
+      "rationale": "Confirmed against the code at 61291e21 before changing it",
+      "compatibility": "No stored format change",
+      "tests_required": "SubtitleLineDirectionTest",
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "Gemini review 2026-11-21",
+        "#58"
+      ]
+    },
+    {
+      "id": "B15-SUB-08",
+      "kind": "defect",
+      "area": "Subtitles (parsing)",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt"
+      ],
+      "evidence": "Independent review GEM-SUB-02, confirmed: ASS detected only with [Events] in the first 4096 characters; vector drawings kept as text; &#39; and &apos; not decoded",
+      "root_cause": "Detection sample and entity list",
+      "user_impact": "An ASS subtitle with a long header from a link without .ass was treated as SRT (refused or saved wrongly); drawing coordinates and &#39; in lines",
+      "severity": "Low",
+      "alternatives": [
+        "Keep",
+        "Fix"
+      ],
+      "chosen": "Detect [Script Info]; drop {\\\\p1}…{\\\\p0}; decode numeric entities",
+      "rationale": "Confirmed against the code at 61291e21 before changing it",
+      "compatibility": "No stored format change",
+      "tests_required": "SubtitleParserReviewTest",
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "Gemini review 2026-11-21",
+        "#58"
+      ]
     }
   ]
 }
