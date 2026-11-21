@@ -80,25 +80,57 @@ import re, sys
 print(" | ".join(t for t in re.findall(r" text=\"([^\"]+)\"", sys.stdin.read())))'
 }
 
-# Taps the action $1 of the download's notification in the notification shade. A low-priority
-# notification is shown collapsed (no actions) on newer Android: it is expanded first by a swipe
-# down on its title.
+# Point of the expand button of the notification whose title is at y=$1 (the nearest
+# android:id/expand_button to that title on the current screen), or nothing.
+expand_button_near() {
+  adb shell cat /sdcard/ui.xml | python3 -I -c '
+import re, sys
+y0 = int(sys.argv[1]); best = None
+for node in re.findall(r"<node [^>]*>", sys.stdin.read()):
+    if "resource-id=\"android:id/expand_button\"" not in node:
+        continue
+    b = [int(v) for v in re.findall(r"\d+", re.search(r"bounds=\"([^\"]*)\"", node).group(1))]
+    x, y = (b[0] + b[2]) // 2, (b[1] + b[3]) // 2
+    if best is None or abs(y - y0) < abs(best[1] - y0):
+        best = (x, y)
+if best and abs(best[1] - y0) < 200:
+    print(best[0], best[1])' "$1"
+}
+
+# Taps the action $1 of the download's notification. The shade can open with the quick settings
+# taking the screen (the notification below the fold) and low-priority notifications are shown
+# collapsed (no actions) on newer Android: scroll until the notification is on screen, then use
+# its expand button (a swipe on it as the fallback), checking for the action after each step.
 tap_notification_button() {
-  adb shell cmd statusbar expand-notifications; sleep 2
-  local point title=""
-  point="$(find_node "$1")"
-  # The swipe expands a collapsed notification and collapses an expanded one (the system may
-  # expand it by itself): try up to three times, looking for the action after each.
-  for _ in 1 2 3; do
+  local point="" title="" height
+  height="$(adb shell wm size | sed -nE 's/.* [0-9]+x([0-9]+).*/\1/p' | tail -n 1 | tr -d '\r')"
+  adb shell cmd statusbar expand-notifications; sleep 3
+  for step in 1 2 3 4 5 6; do
+    point="$(find_node "$1")"
     [[ -n "${point}" ]] && break
     title="$(find_node "Background download test")"
-    [[ -n "${title}" ]] || { sleep 2; point="$(find_node "$1")"; continue; }
+    if [[ -z "${title}" ]]; then
+      say "notification not on screen (step ${step}): scrolling the shade"
+      if (( step % 2 == 1 )); then
+        adb shell input swipe 300 "$((height * 3 / 4))" 300 "$((height / 4))" 400
+      else
+        # The swipe may have closed the shade or the quick settings: open the notifications again.
+        adb shell cmd statusbar collapse; sleep 1; adb shell cmd statusbar expand-notifications
+      fi
+      sleep 2
+      continue
+    fi
     read -r x y <<< "${title}"
-    say "expanding the notification at ${title}"
-    adb shell input swipe "${x}" "${y}" "${x}" "$((y + 400))" 300; sleep 2
-    point="$(find_node "$1")"
+    expand="$(expand_button_near "${y}")"
+    if [[ -n "${expand}" && "${step}" -lt 5 ]]; then
+      say "expanding the notification with its expand button at ${expand}"
+      adb shell input tap ${expand}
+    else
+      say "expanding the notification by a swipe at ${title}"
+      adb shell input swipe "${x}" "${y}" "${x}" "$((y + 400))" 300
+    fi
+    sleep 2
   done
-  [[ -n "${title:-}${point}" ]] || fail "no download notification in the shade (texts: $(shade_texts))"
   [[ -n "${point}" ]] || fail "no '$1' button in the notification shade (texts: $(shade_texts))"
   say "tapping '$1' at ${point}"
   adb shell input tap ${point}
