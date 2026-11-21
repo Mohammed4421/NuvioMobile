@@ -127,17 +127,18 @@
         "Re-read the document size before the check",
         "Keep as is"
       ],
-      "chosen": "Defer",
+      "chosen": "Count the partial file on storage (app folder: .part length; chosen folder: document size), not the saved progress",
       "rationale": "Needs a SAF provider test to change safely",
       "compatibility": "Plus file",
       "tests_required": [
         "SAF provider host test"
       ],
       "priority": "P3",
-      "decision": "DEFER",
-      "status": "SPECIFIED",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
       "refs": [
-        "known-issues K-03"
+        "known-issues K-03",
+        "#52 (independent review 2026-11-21); DownloadFreeSpaceTest covers the app folder; the chosen-folder path uses the document size, checked by code review only"
       ]
     },
     {
@@ -191,7 +192,8 @@
       "decision": "DEFER",
       "status": "DISCOVERED",
       "refs": [
-        "severity provisional until P5"
+        "severity provisional until P5",
+        "P5 performance compare (#38): cold/warm start and memory within noise of Build 14; frame timing not measured, so still DEFER, no change without evidence"
       ]
     },
     {
@@ -338,9 +340,10 @@
       ],
       "priority": "P2",
       "decision": "FIX",
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "refs": [
-        "#28"
+        "#28 (merged 9f2bcff8)",
+        "#48: notification pause/resume Android 9 full, run 44891588380; D-01..D-07 VERIFIED"
       ]
     },
     {
@@ -513,7 +516,7 @@
         "Require a pull request and the listed checks (proposal)",
         "Keep relying on the merge discipline of each session"
       ],
-      "chosen": "Proposal for the owner (this session cannot change repository settings)",
+      "chosen": "Owner applied the ruleset: pull request required (verified). Required status checks: added by the owner, but a re-read at 15:05 (Riyadh) on 2026-11-21 shows none (ruleset updated 13:40); the owner is asked to add them again",
       "rationale": "Spec §12; owner rule 5",
       "compatibility": "Settings only; no code",
       "tests_required": [
@@ -521,9 +524,10 @@
       ],
       "priority": "P1",
       "decision": "FIX",
-      "status": "SPECIFIED",
+      "status": "IMPLEMENTED",
       "refs": [
-        "ruleset-proposal.md"
+        "ruleset-proposal.md",
+        "ruleset 27721857 read 2026-11-21 15:05"
       ]
     },
     {
@@ -542,7 +546,7 @@
         "Verify certificates when the request carries an Authorization header; keep trust-all otherwise",
         "Verify certificates always (may break IPTV sources with self-signed certificates)"
       ],
-      "chosen": "Owner decision (substantive behaviour change outside what was approved)",
+      "chosen": "Owner: fix with the best safe solution (2026-11-21). #44: credentials only to verified certificates (local network exempt). #50: credentials stay within the source site on redirects; a token in the URL also needs a verified certificate",
       "rationale": "Changes which streams play; owner rule on high-risk changes",
       "compatibility": "Nuvio file",
       "tests_required": [
@@ -550,10 +554,12 @@
         "playback of an https stream with a valid certificate on the emulator"
       ],
       "priority": "P1",
-      "decision": "DEFER",
-      "status": "SPECIFIED",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
       "refs": [
-        "static-analysis run 44866405817"
+        "static-analysis run 44866405817",
+        "#44 (merged)",
+        "#50 (redirect follow-up, independent review 2026-11-21)"
       ]
     },
     {
@@ -787,6 +793,56 @@
       "refs": [
         "#34 run of a0ed03fd",
         "#34 (fix, 2a8ef3c3: Nuvio device tests passed on Android 14 and 9)"
+      ]
+    },
+    {
+      "id": "B15-UI-02",
+      "kind": "defect",
+      "area": "Subtitle settings (Arabic)",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/PlaybackSubtitleSettings.kt"
+      ],
+      "evidence": "Reference screenshot (P4, #47): colour codes such as #FFFFFF shown reversed in Arabic (RTL)",
+      "root_cause": "Bidi reordering of a LTR code inside RTL text",
+      "user_impact": "Colour values unreadable in Arabic",
+      "severity": "Low",
+      "alternatives": [
+        "Wrap in LTR isolate"
+      ],
+      "chosen": "Wrap the code in U+2066/U+2069",
+      "rationale": "Smallest change, no layout change",
+      "compatibility": "Display only",
+      "tests_required": "Screenshot assertion in the visual review",
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#47 (merged)"
+      ]
+    },
+    {
+      "id": "B15-UI-04",
+      "kind": "defect",
+      "area": "Playback settings (Arabic)",
+      "files": [
+        "composeApp/src/commonMain/composeResources/values-ar/strings.xml"
+      ],
+      "evidence": "Reference screenshots (P4, #49): decoder settings said فك التشفير (decryption) for decoding",
+      "root_cause": "Upstream translation",
+      "user_impact": "Misleading wording in the decoder settings",
+      "severity": "Low",
+      "alternatives": [
+        "Correct the strings"
+      ],
+      "chosen": "فك الترميز in the five decoder strings",
+      "rationale": "Correct term",
+      "compatibility": "Text only",
+      "tests_required": "Screenshots in Arabic",
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#49 (commit aa7205f3 names it UI-03 by mistake; this is UI-04)"
       ]
     }
   ]
