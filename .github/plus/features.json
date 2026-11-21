@@ -66,7 +66,8 @@
         "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenContent.kt",
         "commonMain/kotlin/com/nuvio/app/features/player/PlayerOverlays.kt",
         "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenSupport.kt",
-        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeUi.kt"
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeUi.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/SubtitleGestureSession.kt"
       ],
       "depends": [
         "subtitle-style"
@@ -80,6 +81,9 @@
         "SubtitleMove",
         "detectTransformGestures",
         "pinch"
+      ],
+      "test_files": [
+        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleGestureSessionTest.kt"
       ]
     },
     {
@@ -113,7 +117,8 @@
       ],
       "test_files": [
         "commonTest/kotlin/com/nuvio/app/features/player/LocalSubtitleFormatTest.kt",
-        "androidHostTest/kotlin/com/nuvio/app/features/player/DeviceSubtitleCacheTest.kt"
+        "androidHostTest/kotlin/com/nuvio/app/features/player/DeviceSubtitleCacheTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/player/LocalSubtitleSyncCuesTest.kt"
       ]
     },
     {
