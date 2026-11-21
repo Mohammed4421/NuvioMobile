@@ -11,7 +11,7 @@ Review states: REVIEWED (tested as a whole), PARTIAL (what is open is named), NO
 |---|---|---|---|---|---|
 | `.github/plus` | 54 (54/0/0) | 12 | REVIEWED | policy and script tests | every script has tests in .github/plus/tests |
 | `features/player` | 30 (8/22/0) | 226 | PARTIAL | B15-SUB-01 | subtitle parsing; offline sync (#24) and gestures (#25) merged without rows here; engines, HDR and playback not reviewed |
-| `features/downloads` | 23 (10/13/0) | 38 | PARTIAL | B15-DL-01 | season queue races (harness r1-r9 here); pause contract in open PR #28; SAF folder and free space partly |
+| `features/downloads` | 23 (10/13/0) | 38 | PARTIAL | B15-DL-01 | season queue races (harness r1-r9 here); pause contract merged in #28; SAF folder and free space partly |
 | `.github/workflows` | 13 (7/6/0) | 0 | REVIEWED | test_workflow_policy.py | security policy tested on every pull request |
 | `docs/plus` | 13 (13/0/0) | 0 | NOT REVIEWED | — | — |
 | `features/updater` | 10 (6/4/0) | 26 | PARTIAL | Build 14 release tests | reviewed and device-tested for Build 14; not re-audited |
