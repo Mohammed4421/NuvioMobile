@@ -85,6 +85,13 @@ object DownloadsRepository {
         _uiState.value = DownloadsUiState(updated)
     }
 
+    /** The user pauses or resumes a download (test helper). */
+    fun setStatus(downloadId: String, status: DownloadStatus) {
+        val updated = _uiState.value.items.map { if (it.id == downloadId) it.copy(status = status) else it }
+        write(loadedFor!!, updated)
+        _uiState.value = DownloadsUiState(updated)
+    }
+
     /** Downloads stored for [profile], loaded or not. */
     fun storedFor(profile: Int): List<DownloadItem> = read(profile)
 }
