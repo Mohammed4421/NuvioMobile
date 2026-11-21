@@ -394,16 +394,24 @@
       "requirement": "Each finding has: stable ID, files, reproducible evidence, root cause, user impact, severity Critical/High/Medium/Low, alternatives, chosen fix with reason, compatibility/maintenance impact, required tests, status; decision KEEP/FIX/REFACTOR/REMOVE/DEFER.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/audit.md"
+        ".github/plus/tests/test_audit_findings.py",
+        "docs/plus/build15/audit.md",
+        "docs/plus/build15/findings.json"
       ],
-      "status": "DISCOVERED",
-      "evidence": [],
-      "untested": [
-        "Current rows lack root cause, user impact, alternatives and use P1-P3 instead of Critical..Low."
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_audit_findings.py",
+          "name": "test_every_finding_has_every_field",
+          "what": "Every finding in findings.json has id, files, evidence, root cause, impact, severity, alternatives, chosen, rationale, compatibility, tests, priority, decision, status",
+          "result": "PASS"
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every audit row carries all eleven fields.",
-      "next": "Convert audit.md to the full finding format.",
+      "next": "Kept by the test on every PR",
       "nvp15": "NVP15-REQ-0014"
     },
     {
@@ -430,14 +438,24 @@
       "requirement": "Deferred findings (B15-SUB-03, DL-01, CI-02, UI-03) justified by the spec's priority rules.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/audit.md"
+        "docs/plus/build15/audit.md",
+        "docs/plus/build15/findings.json"
       ],
-      "status": "SPECIFIED",
-      "evidence": [],
-      "untested": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/findings.json",
+          "what": "Deferred now: CI-02 (Low, Nuvio's tree, no runtime effect), UI-03 (Low, no measured impact; P5 start/memory within noise), BLD-01 (Low, trusted input). SUB-03 and DL-01 were fixed instead (#37, #52)",
+          "result": "documented"
+        }
+      ],
+      "untested": [
+        "UI-03 frame timing on a device"
+      ],
       "needs_physical_device": false,
       "acceptance": "Each has a P2/P3 priority with documented risk (§14).",
-      "next": "Re-classify with §14 priorities.",
+      "next": "Owner sees the list in known-issues.md",
       "nvp15": "NVP15-REQ-0016"
     },
     {
@@ -515,15 +533,32 @@
       "mandatory": true,
       "requirement": "Player / Subtitles: formats, colours, brightness, movement; ExoPlayer and mpv; SDR/HDR; Dolby Vision where supported; switching during playback. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/journeys.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44904776284,
+          "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
+          "what": "Nuvio device tests on Android 9 and 14 emulators: SubtitlePlaybackTest (ExoPlayer, mpv), MpvSurfaceTest, SubtitleSettingsTest (14)",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44904776470,
+          "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
+          "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+        "HDR / Dolby Vision, real codecs, gesture feel: owner's device check"
       ],
       "needs_physical_device": true,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
       "nvp15": "NVP15-REQ-0021"
     },
     {
@@ -533,15 +568,34 @@
       "mandatory": true,
       "requirement": "Downloads / Storage: single and season downloads, quality, cancel and resume, network loss, SAF and .part files, out of space. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
+      "paths": [
+        "docs/plus/build15/journeys.md"
+      ],
       "status": "IMPLEMENTED",
-      "evidence": [],
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44904776282,
+          "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
+          "what": "Download notification test: Android 9 pause and resume from the notification, same byte, SHA equal; Android 14 pause",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44904776470,
+          "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
+          "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+        "Android 14 resume from the notification (real tap)",
+        "Network loss and Wi-Fi only on an emulator",
+        "SD card / SAF on removable storage"
       ],
       "needs_physical_device": true,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
       "nvp15": "NVP15-REQ-0022"
     },
     {
@@ -551,15 +605,25 @@
       "mandatory": true,
       "requirement": "Profiles / Accounts: data isolation and permissions, PIN, switching during operations, sync and sign-in. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/journeys.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44904776470,
+          "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
+          "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+        "Expected failures and restore for profiles; PIN, sign-in, sync (Nuvio's code)"
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
       "nvp15": "NVP15-REQ-0023"
     },
     {
@@ -569,15 +633,25 @@
       "mandatory": true,
       "requirement": "Library / Navigation: downloaded content state, posters, episode details, screen transitions, back, app lifecycle. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/journeys.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44904776470,
+          "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
+          "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+        "Failure, interrupt, restore and restart cases; transitions, back, lifecycle end to end"
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
       "nvp15": "NVP15-REQ-0024"
     },
     {
@@ -587,15 +661,25 @@
       "mandatory": true,
       "requirement": "Add-ons / Networking: install, confirm, remove; external links; malformed responses; timeouts; user information protection. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/journeys.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44904776470,
+          "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
+          "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+        "Persistence after restart; timeouts and malformed responses beyond Nuvio's tests"
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
       "nvp15": "NVP15-REQ-0025"
     },
     {
@@ -605,15 +689,25 @@
       "mandatory": true,
       "requirement": "Updater / Identity: version, package and signature checks; channels; modified archives; supported transition paths. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
+      "paths": [
+        "docs/plus/build15/journeys.md"
+      ],
       "status": "IMPLEMENTED",
-      "evidence": [],
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44904776470,
+          "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
+          "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+        "Interrupted update; 14/13/12 → 15 with the real key (release run)"
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list.",
+      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
       "nvp15": "NVP15-REQ-0026"
     },
     {
@@ -1921,15 +2015,24 @@
       "mandatory": true,
       "requirement": "Test layer: Security test report.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/security.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/security.md",
+          "what": "Security test report: credential TLS and redirect tests, OSV run, attack-surface check, MASVS coverage",
+          "result": "documented"
+        }
+      ],
       "untested": [
-        "Final run on the candidate pending."
+        "Native libraries; logs not audited"
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate.",
+      "next": "Confirmed on the candidate",
       "nvp15": "NVP15-REQ-0087"
     },
     {
@@ -2261,13 +2364,22 @@
       "mandatory": true,
       "requirement": "Release readiness: Every unrun test and remaining risk documented.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S16-09: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every unrun test and remaining risk documented.",
-      "next": "Readiness report.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0107"
     },
     {
@@ -2277,13 +2389,22 @@
       "mandatory": true,
       "requirement": "Release readiness: Source protection and release controls enabled.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S16-10: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Source protection and release controls enabled.",
-      "next": "Readiness report.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0108"
     },
     {
@@ -2293,13 +2414,22 @@
       "mandatory": true,
       "requirement": "Release readiness: Build 14 vs Build 15 comparison delivered.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S16-11: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Build 14 vs Build 15 comparison delivered.",
-      "next": "Readiness report.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0109"
     },
     {
@@ -2357,13 +2487,22 @@
       "mandatory": true,
       "requirement": "Deliverable: Audit report.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-03: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0113"
     },
     {
@@ -2373,13 +2512,22 @@
       "mandatory": true,
       "requirement": "Deliverable: Architecture decision records.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-04: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0114"
     },
     {
@@ -2389,13 +2537,22 @@
       "mandatory": true,
       "requirement": "Deliverable: Functional regression report.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-05: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0115"
     },
     {
@@ -2405,13 +2562,22 @@
       "mandatory": true,
       "requirement": "Deliverable: Visual review and screenshot baselines.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-06: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0116"
     },
     {
@@ -2421,13 +2587,22 @@
       "mandatory": true,
       "requirement": "Deliverable: Performance before/after.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-07: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0117"
     },
     {
@@ -2437,13 +2612,22 @@
       "mandatory": true,
       "requirement": "Deliverable: Security and data migration report.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-08: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0118"
     },
     {
@@ -2453,13 +2637,22 @@
       "mandatory": true,
       "requirement": "Deliverable: Device testing matrix.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-09: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0119"
     },
     {
@@ -2469,13 +2662,22 @@
       "mandatory": true,
       "requirement": "Deliverable: PortKit package, tests and compatibility matrix.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-10: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0120"
     },
     {
@@ -2485,13 +2687,22 @@
       "mandatory": true,
       "requirement": "Deliverable: Release readiness report.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-11: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0121"
     },
     {
@@ -2501,13 +2712,22 @@
       "mandatory": true,
       "requirement": "Deliverable: Known limitations and deferred issues.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-12: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0122"
     },
     {
@@ -2517,13 +2737,22 @@
       "mandatory": true,
       "requirement": "Deliverable: Upgrade, rollback and maintenance guide.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/release-readiness.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "release-readiness.md row S17-13: where the deliverable or condition lives",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Confirmed on the release candidate",
       "nvp15": "NVP15-REQ-0123"
     },
     {
