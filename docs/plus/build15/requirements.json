@@ -1419,15 +1419,19 @@
       "mandatory": true,
       "requirement": "Test layer: Static analysis report.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
+      "paths": [
+        ".github/workflows/static-analysis.yml",
+        ".github/plus/lint-compare.py",
+        ".github/plus/lint-report.init.gradle"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Final run on the candidate pending."
+        "Android lint of the head against Build 14 runs in static-analysis.yml; result not yet cited."
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "Cite the static-analysis.yml run; fix or review blocking findings."
     },
     {
       "id": "P8-02",
