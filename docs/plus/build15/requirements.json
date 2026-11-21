@@ -1421,12 +1421,13 @@
       "paths": [
         ".github/workflows/static-analysis.yml",
         ".github/plus/lint-compare.py",
-        ".github/plus/lint-report.init.gradle"
+        ".github/plus/lint-report.init.gradle",
+        ".github/plus/detekt-cli.init.gradle"
       ],
       "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Android lint of the head against Build 14 runs in static-analysis.yml; result not yet cited."
+        "Android lint reaches only androidApp (manifest, build files); composeApp is covered by detekt; results not yet cited."
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",

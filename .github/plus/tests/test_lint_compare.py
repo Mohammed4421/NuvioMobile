@@ -55,5 +55,24 @@ class Compare(unittest.TestCase):
         self.assertEqual(1, len(fixed))
 
 
+class Detekt(unittest.TestCase):
+    def report(self, root, *errors):
+        files = {}
+        for rule, f, line, msg in errors:
+            files.setdefault(f, []).append(f'<error line="{line}" severity="error" message="{msg}" source="detekt.{rule}"/>')
+        body = "".join(f'<file name="{root}/{f}">{"".join(e)}</file>' for f, e in files.items())
+        tmp = tempfile.NamedTemporaryFile("w", suffix=".xml", delete=False)
+        tmp.write(f'<?xml version="1.0"?><checkstyle version="4.3">{body}</checkstyle>')
+        tmp.close()
+        return lc.detekt_findings(tmp.name, root)
+
+    def test_moved_findings_match_and_new_ones_are_found(self):
+        base = self.report("/b14", ("MagicNumber", "A.kt", 3, "This expression contains a magic number 42"))
+        head = self.report("/h", ("MagicNumber", "A.kt", 9, "This expression contains a magic number 42"),
+                           ("UnsafeCallOnNullableType", "B.kt", 1, "Calling it on a nullable type"))
+        new, fixed, _ = lc.compare(base, head)
+        self.assertEqual((["UnsafeCallOnNullableType"], []), ([f["id"] for f in new], fixed))
+
+
 if __name__ == "__main__":
     unittest.main()

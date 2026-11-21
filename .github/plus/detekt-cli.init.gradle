@@ -1,0 +1,13 @@
+// CI only (static-analysis.yml). Android lint does not analyse composeApp (a Kotlin Multiplatform
+// library: Google issue 337010377, closed "won't do"), where almost all of the app's code is. This
+// fetches the detekt command-line analyser through Gradle, from Maven Central like every other
+// dependency of the build, and copies it to build/detekt-cli.jar. The project's build is unchanged.
+rootProject {
+    configurations.create('plusDetektCli') { transitive = false }
+    dependencies.add('plusDetektCli', 'io.gitlab.arturbosch.detekt:detekt-cli:1.23.8:all')
+    tasks.register('plusDetektCli', Copy) {
+        from(configurations.plusDetektCli)
+        into(layout.buildDirectory)
+        rename { 'detekt-cli.jar' }
+    }
+}

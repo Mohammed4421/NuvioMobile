@@ -4,7 +4,9 @@ matches findings by (issue id, file relative to its checkout, message with numbe
 finding that only moved lines is not new. Prints counts per severity, the new and the fixed findings
 (Markdown) and a JSON line. Exit 1 if the head adds a finding of severity Fatal or Error, or any
 finding in the Security category: those must be fixed or reviewed before merging.
-Usage: lint-compare.py <build 14 xml> <build 14 root> <head xml> <head root>"""
+With --detekt the reports are detekt's (checkstyle XML) and nothing blocks: the new findings are
+listed for review (detekt has no severity that means "wrong", only rule sets).
+Usage: lint-compare.py [--detekt] <build 14 xml> <build 14 root> <head xml> <head root>"""
 import collections
 import json
 import re
@@ -29,6 +31,19 @@ def findings(path, root):
     return out
 
 
+def detekt_findings(path, root):
+    root = root.rstrip("/") + "/"
+    out = []
+    for file in ET.parse(path).getroot().iter("file"):
+        name = file.get("name", "").replace(root, "")
+        for error in file.iter("error"):
+            rule = error.get("source", "").removeprefix("detekt.")
+            message = error.get("message", "")
+            out.append({"id": rule, "severity": error.get("severity", ""), "category": "detekt", "message": message,
+                        "file": name, "line": error.get("line"), "key": (rule, name, re.sub(r"\d+", "#", message))})
+    return out
+
+
 def compare(base, head):
     remaining = collections.Counter(f["key"] for f in base)
     new = []
@@ -49,9 +64,16 @@ def compare(base, head):
 
 
 def main():
-    base, head = findings(sys.argv[1], sys.argv[2]), findings(sys.argv[3], sys.argv[4])
+    args = sys.argv[1:]
+    detekt = args[0] == "--detekt"
+    if detekt:
+        args = args[1:]
+    read = detekt_findings if detekt else findings
+    base, head = read(args[0], args[1]), read(args[2], args[3])
     new, fixed, blocking = compare(base, head)
-    counts = lambda fs: dict(sorted(collections.Counter(f["severity"] for f in fs).items()))
+    if detekt:
+        blocking = []
+    counts = lambda fs: dict(sorted(collections.Counter(f["id" if detekt else "severity"] for f in fs).most_common(15)))
     print(f"Build 14: {len(base)} findings {counts(base)}; head: {len(head)} {counts(head)}; "
           f"new {len(new)}, fixed {len(fixed)}, blocking {len(blocking)}")
     # Where the findings are (top two path parts), so the report shows which modules lint covered.
@@ -60,7 +82,7 @@ def main():
     for place, n in sorted(where.items()):
         print(f"- {place}: {n}")
     print("\n#### All head findings\n")
-    for f in head:
+    for f in ([] if detekt else head):
         print(f"- {f['severity']} `{f['id']}` ({f['category']}) {f['file']}:{f['line']}: {f['message']}")
     for title, items in (("New in the head", new), ("Fixed since Build 14", fixed)):
         print(f"\n#### {title} ({len(items)})\n")

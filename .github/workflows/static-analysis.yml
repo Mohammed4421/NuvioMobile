@@ -55,6 +55,7 @@ jobs:
           sparse-checkout: |
             .github/plus/lint-report.init.gradle
             .github/plus/plugins-from-central.init.gradle
+            .github/plus/detekt-cli.init.gradle
 
       - name: Forget the checkout token (tools)
         run: |
@@ -108,6 +109,24 @@ jobs:
           mkdir -p ../out && cp lint-results.xml "../out/lint-${SIDE}.xml"
           echo "${GITHUB_WORKSPACE}/src" > "../out/root-${SIDE}.txt"
 
+      - name: Detekt (Kotlin code of composeApp, which lint does not reach)
+        working-directory: src
+        env:
+          SIDE: ${{ matrix.side }}
+          TOOLS: ${{ github.workspace }}/tools
+        run: |
+          set -o pipefail
+          ./gradlew -q -I "${TOOLS}/.github/plus/detekt-cli.init.gradle" plusDetektCli \
+            -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore
+          inputs="$(ls -d composeApp/src/*Main/kotlin | paste -sd, -)"
+          echo "Analysing ${inputs}"
+          # Exit code 2 means findings were reported; anything else non-zero is a failure of the tool.
+          java -jar build/detekt-cli.jar --input "${inputs}" --report "xml:../out/detekt-${SIDE}.xml" \
+            --build-upon-default-config --parallel > detekt.log 2>&1 || [[ $? -eq 2 ]] || {
+              tail -n 40 detekt.log | sed 's/^/::error::/'; exit 1; }
+          [[ -s "../out/detekt-${SIDE}.xml" ]] || { echo "::error::No detekt report written"; exit 1; }
+          tail -n 5 detekt.log
+
       - name: Keep the report
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -158,6 +177,9 @@ jobs:
           python3 -I .github/plus/lint-compare.py reports/lint-build14.xml "$(cat reports/root-build14.txt)" \
             reports/lint-head.xml "$(cat reports/root-head.txt)" | tee lint-compare.md || status=$?
           { echo "### Android lint: head against Build 14"; grep -v '^LINT ' lint-compare.md; } >> "${GITHUB_STEP_SUMMARY}"
+          python3 -I .github/plus/lint-compare.py --detekt reports/detekt-build14.xml "$(cat reports/root-build14.txt)" \
+            reports/detekt-head.xml "$(cat reports/root-head.txt)" | tee detekt-compare.md || status=$?
+          { echo "### detekt (composeApp Kotlin code): head against Build 14"; grep -v '^LINT ' detekt-compare.md; } >> "${GITHUB_STEP_SUMMARY}"
           exit "${status}"
 
       - name: Keep the comparison
@@ -165,6 +187,8 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: lint-compare
-          path: lint-compare.md
+          path: |
+            lint-compare.md
+            detekt-compare.md
           if-no-files-found: warn
           retention-days: 30
