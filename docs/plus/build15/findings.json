@@ -844,6 +844,32 @@
       "refs": [
         "#49 (commit aa7205f3 names it UI-03 by mistake; this is UI-04)"
       ]
+    },
+    {
+      "id": "B15-UI-05",
+      "kind": "defect",
+      "area": "Player panels (Arabic)",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/AudioTrackModal.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/SubtitleStylePanel.kt"
+      ],
+      "evidence": "Reference screenshots of the player panels (#49): Arabic showed '0.000s+' and 'dB 0'",
+      "root_cause": "Bidi reordering of signed values with units inside RTL text",
+      "user_impact": "Delay and boost values misread in Arabic",
+      "severity": "Low",
+      "alternatives": [
+        "LTR isolate"
+      ],
+      "chosen": "Wrap the values in U+2066/U+2069",
+      "rationale": "Same fix as B15-UI-02",
+      "compatibility": "Display only",
+      "tests_required": "Screenshot test asserts the isolated text",
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#49"
+      ]
     }
   ]
 }
