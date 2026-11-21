@@ -11,7 +11,8 @@
         "commonMain/kotlin/com/nuvio/app/features/player/StyledSubtitle.kt",
         "commonMain/kotlin/com/nuvio/app/features/player/SubtitleAppearanceControls.kt",
         "commonMain/kotlin/com/nuvio/app/features/settings/SubtitleAppearanceSettings.kt",
-        "commonMain/kotlin/com/nuvio/app/features/player/PlayerSettingsRepository.kt"
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerSettingsRepository.kt",
+        "commonMain/kotlin/com/nuvio/app/features/settings/PlaybackSubtitleSettings.kt"
       ],
       "depends": [
         "player-engines"

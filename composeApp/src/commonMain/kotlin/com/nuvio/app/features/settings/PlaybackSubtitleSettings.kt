@@ -231,7 +231,9 @@ internal fun subtitleColorLabel(color: Color): String {
     return if (color.alpha == 0f) {
         stringResource(Res.string.settings_playback_subtitle_color_transparent)
     } else {
-        color.toStorageHexString()
+        // Nuvio Plus: a colour code is read left to right in every language; without the isolate
+        // an Arabic screen showed "FFFFFFFF#".
+        "\u2066${color.toStorageHexString()}\u2069"
     }
 }
 

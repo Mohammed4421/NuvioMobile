@@ -63,10 +63,15 @@ abstract class PlusReferenceScreenshots(private val device: String) {
 
     @After fun restoreLocale() { Locale.setDefault(savedLocale) }
 
-    @Test fun subtitleAppearanceSettings() = shoot("subtitle-appearance") {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-            SubtitleAppearanceSettings(SubtitleStyleState(), isTablet = device.endsWith("tablet"), onStyleChanged = {})
+    @Test fun subtitleAppearanceSettings() {
+        shoot("subtitle-appearance") {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                SubtitleAppearanceSettings(SubtitleStyleState(), isTablet = device.endsWith("tablet"), onStyleChanged = {})
+            }
         }
+        // Colour codes stay left to right on Arabic screens ("#FFFFFFFF", not "FFFFFFFF#").
+        val texts = shownTexts(compose.onRoot(useUnmergedTree = true).fetchSemanticsNode())
+        assertTrue(texts.any { it == "\u2066#FFFFFFFF\u2069" }, "colour code not isolated left to right: $texts")
     }
 
     @Test fun libraryDownloads() = shoot("library-downloads") {
