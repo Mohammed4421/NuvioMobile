@@ -23,6 +23,8 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Downloads in the library show the percentage first.** On a phone the card cut the line after
+  "Downloading", so the percentage was hidden; it now reads "40% • Downloading".
 - **A download whose partial file was removed now says up front when storage is full.** The space
   check used the saved progress, so after the partial file was cleared it expected only the rest of
   the file, started again from zero and stopped later with a storage error. It now counts what is
