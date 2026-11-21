@@ -112,8 +112,12 @@ notification_posted() {
 # Opens the notification list as a user does: one finger from the top edge (cmd statusbar
 # expand-notifications opens the quick settings over the list on some Android 14 images).
 open_shade() {
+  # Both ways, the system command first: either has failed to open the shade on some runs.
+  adb shell cmd statusbar expand-notifications; sleep 3
+  [[ -n "$(find_node "Background download test")" ]] && return 0
   local width
   width="$(adb shell wm size | sed -nE 's/.* ([0-9]+)x[0-9]+.*/\1/p' | tail -n 1 | tr -d '\r')"
+  adb shell cmd statusbar collapse; sleep 1
   adb shell input swipe "$((width / 2))" 2 "$((width / 2))" "$((height * 2 / 3))" 500; sleep 3
 }
 
