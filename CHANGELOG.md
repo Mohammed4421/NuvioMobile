@@ -6,6 +6,22 @@ Newest first.
 
 ## Next build — Build 15: audit and polish
 
+### Changed
+- **A paused episode no longer stops the rest of its season.** Pausing one episode of a season
+  download now skips it: the next episodes go on, and the paused one keeps its place and its partial
+  file and is never retried by itself. Resuming it while another episode downloads lets it continue
+  right after that one, instead of running two downloads at once or stopping the current one.
+- **Pause a season, or pause everything.** In Downloads, each season in the queue has its own pause
+  button, which stops only that season. "Pause all" pauses every download of the current profile
+  (season episodes, films, single episodes) and starts nothing new until "Resume all": a download you
+  ask for meanwhile is added paused and starts with "Resume all". "Resume all" continues only what it
+  paused, not episodes, seasons or downloads you paused yourself (also one you resumed and paused again
+  meanwhile). Partial files are kept. Both are kept across app restarts and are per profile: other
+  profiles' downloads go on.
+- On Android 14 and later, an episode paused from its notification while the app is hidden lets the
+  next one start in the same background download when Android allows it (the episode was running
+  after an earlier one); otherwise the queue goes on when you open the app.
+
 ### Fixed
 - **Your add-on and debrid tokens are no longer sent to a server that cannot prove who it is.** With
   ExoPlayer, the player accepted any certificate, so on a hostile network (public Wi-Fi) a stream

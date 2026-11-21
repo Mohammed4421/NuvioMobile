@@ -56,6 +56,7 @@ jobs:
             .github/plus/lint-report.init.gradle
             .github/plus/plugins-from-central.init.gradle
             .github/plus/detekt-cli.init.gradle
+            .github/plus/gradle-retry.sh
 
       - name: Forget the checkout token (tools)
         run: |
@@ -95,9 +96,11 @@ jobs:
         working-directory: src
         env:
           SIDE: ${{ matrix.side }}
+          TOOLS: ${{ github.workspace }}/tools
         run: |
           set -o pipefail
-          bash .github/plus/gradle-retry.sh lint.log ./gradlew :androidApp:lintFullRelease \
+          # This pull request's retry script for both sides (Build 14's has no Maven Central mirror switch).
+          bash "${TOOLS}/.github/plus/gradle-retry.sh" lint.log ./gradlew :androidApp:lintFullRelease \
             -Dorg.gradle.jvmargs="-Xmx10g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m" \
             -Pkotlin.compiler.execution.strategy=in-process \
             -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore \
@@ -116,7 +119,8 @@ jobs:
           TOOLS: ${{ github.workspace }}/tools
         run: |
           set -o pipefail
-          ./gradlew -q -I "${TOOLS}/.github/plus/detekt-cli.init.gradle" plusDetektCli \
+          # Through the retry script too: Maven Central's 429 switches to its Google mirror.
+          bash "${TOOLS}/.github/plus/gradle-retry.sh" detekt-fetch.log ./gradlew -q -I "${TOOLS}/.github/plus/detekt-cli.init.gradle" plusDetektCli \
             -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore
           inputs="$(ls -d composeApp/src/*Main/kotlin | paste -sd, -)"
           echo "Analysing ${inputs}"

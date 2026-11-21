@@ -166,6 +166,8 @@ object DownloadsRepository {
             currentItems.removeAll { it.id == existing.id }
         }
 
+        // "Pause all" holds this profile: the download is added paused and starts with "resume all".
+        val held = SeasonDownloadQueue.holdsNewDownloads()
         val downloadId = nextDownloadId(now)
         val fileName = buildFileName(
             title = title,
@@ -206,7 +208,7 @@ object DownloadsRepository {
             sourceSubtitles = stream.externalSubtitles,
             localFileUri = null,
             fileName = fileName,
-            status = DownloadStatus.Downloading,
+            status = if (held) DownloadStatus.Paused else DownloadStatus.Downloading,
             downloadedBytes = 0L,
             totalBytes = null,
             errorMessage = null,
@@ -219,6 +221,10 @@ object DownloadsRepository {
         currentItems.add(0, item)
         publish(currentItems)
         persist()
+        if (held) {
+            SeasonDownloadQueue.holdUntilResumeAll(item.id)
+            return DownloadEnqueueResult.Held
+        }
         startDownload(item)
 
         return if (replacedExisting) {
@@ -251,10 +257,18 @@ object DownloadsRepository {
             .forEach(::pauseDownload)
     }
 
-    fun resumeDownload(downloadId: String) {
+    /**
+     * Continues a paused or failed download from its partial file. A paused season-queue episode
+     * resumed while another queue episode downloads waits for its turn instead (see
+     * [SeasonDownloadQueue.holdResume]); the queue itself passes [fromQueue] when that turn comes.
+     */
+    fun resumeDownload(downloadId: String, fromQueue: Boolean = false) {
         ensureLoaded()
         val item = _uiState.value.items.firstOrNull { it.id == downloadId } ?: return
         if (item.status != DownloadStatus.Paused && item.status != DownloadStatus.Failed) return
+        if (!fromQueue && item.status == DownloadStatus.Paused && SeasonDownloadQueue.holdResume(downloadId)) return
+        // Resumed on its own, even during "pause all": a later pause of it is the user's own.
+        if (!fromQueue) SeasonDownloadQueue.releaseFromPauseAll(downloadId)
 
         val reset = item.copy(
             status = DownloadStatus.Downloading,

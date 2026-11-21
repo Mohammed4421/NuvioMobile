@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "note": "Every Build 15 audit finding with the fields of spec §4. kind: defect (has a severity), review (no defect found), claim (external claim checked). Kept in step with audit.md by test_audit_findings.py. B15-DL-03 is added with the season-pause pull request (#28), which holds its audit row.",
+  "note": "Every Build 15 audit finding with the fields of spec §4. kind: defect (has a severity), review (no defect found), claim (external claim checked). Kept in step with audit.md by test_audit_findings.py.",
   "findings": [
     {
       "id": "B15-UI-01",
@@ -306,6 +306,41 @@
       "status": "VERIFIED",
       "refs": [
         "#27 (merged)"
+      ]
+    },
+    {
+      "id": "B15-DL-03",
+      "kind": "defect",
+      "area": "Downloads",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/SeasonDownloadQueue.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsRepository.kt",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsNotificationActionReceiver.kt",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt"
+      ],
+      "evidence": "Policy test and race harness r11 fail on the old code: a paused episode held every later episode of the profile, and resuming it while the queue ran started a second download",
+      "root_cause": "SeasonQueuePolicy.busy counted Paused items as running (design since Build 13, reversed by the owner's decision of 2026-11-20)",
+      "user_impact": "Pausing one episode stopped the rest of the season and other seasons; resume could start a duplicate download",
+      "severity": "High",
+      "alternatives": [
+        "Episode pause skips, season and 'pause all' hold (owner's contract)",
+        "Keep the Build 13 behaviour (one pause holds everything)"
+      ],
+      "chosen": "Owner's contract: episode pause skips; season pause holds that season; 'pause all' holds every download of the current profile and new ones until 'resume all', which never resumes one paused on its own",
+      "rationale": "Owner decision D-01 and the download contract",
+      "compatibility": "Stored queue format readable by Builds 12-14 (SeasonQueueStorageTest); Nuvio files registered in features.json",
+      "tests_required": [
+        "SeasonQueuePolicyTest",
+        "SeasonQueueStorageTest",
+        "SeasonPauseAndroidTest",
+        "race harness r11, r14-r21",
+        "notification pause/resume on Android 14 and 9 emulators"
+      ],
+      "priority": "P2",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#28"
       ]
     },
     {

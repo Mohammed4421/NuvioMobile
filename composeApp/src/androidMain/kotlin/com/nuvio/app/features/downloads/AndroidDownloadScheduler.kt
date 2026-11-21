@@ -113,9 +113,14 @@ internal class AndroidDownloadScheduler(val context: Context) {
             })
             .build()
 
+    @Volatile private var namespacedJobs: JobScheduler? = null
+
+    // One namespaced scheduler for the whole class, so schedule, lookup and cancel all go through the
+    // same object (Robolectric gives every forNamespace call its own empty job list).
     @RequiresApi(34)
-    private fun jobScheduler(): JobScheduler =
-        context.getSystemService(JobScheduler::class.java).forNamespace(JOB_NAMESPACE)
+    internal fun jobScheduler(): JobScheduler =
+        namespacedJobs ?: context.getSystemService(JobScheduler::class.java).forNamespace(JOB_NAMESPACE)
+            .also { namespacedJobs = it }
 
     fun restore(item: DownloadItem): DownloadItem {
         var transfer = store.get(item.fileName)?.takeIf { it.item.id == item.id }
