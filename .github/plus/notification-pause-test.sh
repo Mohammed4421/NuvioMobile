@@ -49,7 +49,8 @@ for value in re.findall(r"<string name=\"downloads_payload_[0-9]+\">(.*?)</strin
 print("missing\t-\t0")' "${id}"
 }
 # File names can contain spaces: quoted for the device shell.
-part_size() { adb shell "run-as ${pkg} stat -c %s 'files/downloads/$1.part'" 2>/dev/null | tr -d '\r' || true; }
+# Only commands that run-as can start on every Android version (Android 9 refuses 'test').
+part_size() { adb shell "run-as ${pkg} ls -l 'files/downloads/$1.part'" 2>/dev/null | tr -d '\r' | awk 'NF >= 5 && $1 ~ /^-/ {print $5; exit}' || true; }
 
 # Point (x y) of the first node of the current screen whose text or description is $1
 # (case-insensitive; Android 9 shows action labels in capitals).
@@ -114,7 +115,7 @@ adb install -r -g "${apk}" > /dev/null || fail "install failed"
 adb shell run-as "${pkg}" rm -f cache/download-test-ready
 adb shell am start -W -n "${pkg}/com.nuvio.android.BackgroundDownloadTestActivity" \
   --es downloadUrl "http://10.0.2.2:8765/fixture.bin" > /dev/null || fail "could not start the download activity"
-started() { [[ "$(state | cut -f1)" == Downloading ]] && adb shell run-as "${pkg}" test -f cache/download-test-ready; }
+started() { [[ "$(state | cut -f1)" == Downloading ]] && adb shell run-as "${pkg}" ls cache/download-test-ready > /dev/null 2>&1; }
 wait_for 60 "the download to start (activity checks done, status Downloading)" started
 IFS=$'\t' read -r status file _ <<< "$(state)"
 say "download started: ${file}"
@@ -150,7 +151,7 @@ say "resumed from byte ${offset} of the kept ${p1}"
 
 # 5. Completes with the exact bytes.
 wait_for 240 "Completed" bash -c "[[ \"\$(adb shell run-as ${pkg} cat shared_prefs/nuvio_downloads.xml)\" == *Completed* ]]"
-actual="$(adb shell "run-as ${pkg} sha256sum 'files/downloads/${file}'" 2>/dev/null | cut -d' ' -f1 | tr -d '\r')"
+actual="$(adb exec-out "run-as ${pkg} cat 'files/downloads/${file}'" 2>/dev/null | sha256sum | cut -d' ' -f1)"
 [[ "${actual}" == "${expected}" ]] || fail "completed file differs: ${actual:-missing} != ${expected}"
 say "completed; SHA-256 matches the served file"
 say "PASS"
