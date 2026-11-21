@@ -56,9 +56,10 @@
       "requirement": "baseline.json: Plus version and commit; Nuvio base version.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/baseline.json"
+        "docs/plus/build15/baseline.json",
+        ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -73,12 +74,19 @@
           "commit": "8e0876ddf07e7d7c647bdca1ebd361efa8982adc",
           "what": "PR #17 checks (known issues updated)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44862598814,
+          "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
+          "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Fields match GitHub and the release.",
-      "next": "Re-verify on the commit that adds the hashes and library list."
+      "next": "Owner acceptance."
     },
     {
       "id": "P0-02",
@@ -88,15 +96,23 @@
       "requirement": "baseline.json: Kotlin, Compose, Gradle, AGP versions; Android packages, signing certificates; target platforms.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/baseline.json"
+        "docs/plus/build15/baseline.json",
+        ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
           "run": 44735486746,
           "commit": "37999b3d71903ba21efe21d41084131ceff39942",
           "what": "PR #16 checks",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44862598814,
+          "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
+          "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
           "result": "PASS"
         }
       ],
@@ -105,7 +121,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "All toolchain and identity fields present with sources.",
-      "next": "Re-verify on the commit that adds the hashes and library list."
+      "next": "Owner acceptance."
     },
     {
       "id": "P0-03",
@@ -115,9 +131,10 @@
       "requirement": "baseline.json: test list and results; APK sizes and build outputs.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/baseline.json"
+        "docs/plus/build15/baseline.json",
+        ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -125,12 +142,19 @@
           "commit": "37999b3d71903ba21efe21d41084131ceff39942",
           "what": "PR #16 checks",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44862598814,
+          "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
+          "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present with sources.",
-      "next": "Re-verify on the commit that adds the hashes and library list."
+      "next": "Owner acceptance."
     },
     {
       "id": "P0-04",
@@ -160,14 +184,23 @@
       "source": "Build 15 spec v1.0",
       "paths": [
         "docs/plus/build15/baseline.json",
-        "docs/plus/build15/baseline-dependencies.txt"
+        "docs/plus/build15/baseline-dependencies.txt",
+        ".github/plus/check-baseline.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44862598814,
+          "commit": "2ab3c5f486fe69ee137becc1cc6ade9be35dbe1e",
+          "what": "PR #41 requirements gate: check-baseline.py --online (toolchain from Git history, release commit and date, APK sizes and SHA-256 against the release assets, v3 certificate of the published APK, library count)",
+          "result": "PASS"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "APK SHA-256 and a resolved dependency list for Build 14.",
-      "next": "Verify on this pull request's checks."
+      "next": "Owner acceptance."
     },
     {
       "id": "P0-06",
@@ -899,15 +932,26 @@
       "mandatory": true,
       "requirement": "Security review: Exported components.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
-      "untested": [
-        "No written review against this item yet."
+      "paths": [
+        ".github/plus/apk-manifest.py",
+        ".github/plus/security-surface.py",
+        "docs/plus/build15/security-surface.json",
+        ".github/workflows/plus-build.yml"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44862492360,
+          "commit": "e3031b6de64dea7127177a98679ffe2fe1c9973d",
+          "what": "PR #39 checks: 'Attack surface against the reviewed list' on the 4 built APKs: 36 lines, equal to the reviewed Build 14 surface (exported components, providers, FileProvider paths, permissions, flags); no fixed-rule violation",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Owner acceptance."
     },
     {
       "id": "P6-02",
@@ -933,15 +977,26 @@
       "mandatory": true,
       "requirement": "Security review: FileProvider and permissions.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
-      "untested": [
-        "No written review against this item yet."
+      "paths": [
+        ".github/plus/apk-manifest.py",
+        ".github/plus/security-surface.py",
+        "docs/plus/build15/security-surface.json",
+        ".github/workflows/plus-build.yml"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44862492360,
+          "commit": "e3031b6de64dea7127177a98679ffe2fe1c9973d",
+          "what": "PR #39 checks: 'Attack surface against the reviewed list' on the 4 built APKs: 36 lines, equal to the reviewed Build 14 surface (exported components, providers, FileProvider paths, permissions, flags); no fixed-rule violation",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Owner acceptance."
     },
     {
       "id": "P6-04",
@@ -1052,15 +1107,17 @@
       "mandatory": true,
       "requirement": "Security review: Branch protection and merge/release gates.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
+      "paths": [
+        "docs/plus/build15/ruleset-proposal.md"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "No written review against this item yet."
+        "Ruleset change needs the owner (session cannot edit settings); current ruleset requires no checks (B15-SEC-03)."
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report."
+      "next": "Owner applies or declines the proposal; then re-read the ruleset as evidence."
     },
     {
       "id": "P6-11",
@@ -1418,15 +1475,20 @@
       "mandatory": true,
       "requirement": "Test layer: Static analysis report.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
+      "paths": [
+        ".github/workflows/static-analysis.yml",
+        ".github/plus/lint-compare.py",
+        ".github/plus/lint-report.init.gradle",
+        ".github/plus/detekt-cli.init.gradle"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Final run on the candidate pending."
+        "Android lint reaches only androidApp (manifest, build files); composeApp is covered by detekt; results not yet cited."
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "Cite the static-analysis.yml run; fix or review blocking findings."
     },
     {
       "id": "P8-02",
