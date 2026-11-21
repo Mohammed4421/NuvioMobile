@@ -148,6 +148,9 @@ jobs:
           cores: ${{ matrix.api == 37 && 4 || 2 }}
           ram-size: ${{ matrix.api == 37 && '4096M' || '' }}
           emulator-boot-timeout: ${{ matrix.api == 37 && 1200 || 600 }}
+          # Android 17's default data partition could not hold the debug app (run of e228cded:
+          # "Requested internal only, but not enough space").
+          disk-size: ${{ matrix.api == 37 && '8G' || '' }}
           # Then the same download through the network going away and the app process dying.
           script: bash .github/plus/notification-pause-test.sh device-test/debug-app.apk "$LABEL" "$MODE" && bash .github/plus/download-interruptions-test.sh device-test/debug-app.apk "$LABEL"
 
