@@ -12,6 +12,10 @@
 # repository that gave the metadata, so the Maven Central mirror cannot step in, and it remembers the
 # miss, so those retries add --refresh-dependencies. A dependency that does not exist at all fails on
 # its metadata ("Could not find group:name:version.") and is not retried.
+# Maven Central answering 429 for every attempt (12 minutes, run 44866049229): Gradle disables the
+# repository for the build at the first 429, so the Google mirror of Maven Central, consulted only
+# after a "not found", is never asked. After a 429 the next attempts export
+# PLUS_CENTRAL_MIRROR_FIRST=1, which plugins-from-central.init.gradle reads to ask that mirror first.
 # Usage: gradle-retry.sh <log> <command...>        Exit status: the command's last exit status.
 set -uo pipefail
 log="$1"; shift
@@ -33,6 +37,7 @@ for attempt in $(seq 1 "${attempts}"); do
     exit "${status}"
   fi
   grep -qE "${missing_file}" "${log}" && refresh=(--refresh-dependencies)
+  grep -qE "status code 429" "${log}" && export PLUS_CENTRAL_MIRROR_FIRST=1
   if (( attempt < attempts )); then
     wait=$(( base * (1 << (attempt - 1)) + RANDOM % (base / 2 + 1) ))
     reason="$(grep -oE "status code 429|status code 50[0-9]|Read timed out|Connection reset|Could not find [^ ]+" "${log}" | head -n 1)"

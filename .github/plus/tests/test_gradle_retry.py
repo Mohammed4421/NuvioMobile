@@ -16,7 +16,7 @@ class GradleRetryTest(unittest.TestCase):
             calls = Path(temp, "calls")
             args = Path(temp, "args")
             lines = ["#!/usr/bin/env bash", f'n=$(($(cat "{calls}" 2>/dev/null || echo 0) + 1)); echo $n > "{calls}"',
-                     f'echo "$*" >> "{args}"']
+                     f'echo "$*" >> "{args}"', f'echo "${{PLUS_CENTRAL_MIRROR_FIRST:-0}}" >> "{args}.mirror"']
             for index, (text, status) in enumerate(outputs, start=1):
                 lines.append(f'if [ $n -eq {index} ]; then printf "%s\\n" {text!r}; exit {status}; fi')
             fake.write_text("\n".join(lines) + "\n")
@@ -24,6 +24,7 @@ class GradleRetryTest(unittest.TestCase):
             result = subprocess.run(["bash", str(SCRIPT), str(Path(temp, "out.log")), str(fake)], capture_output=True,
                                     text=True, env={**os.environ, "GRADLE_RETRY_WAIT": "0", **(env or {})})
             self.args = args.read_text().splitlines()
+            self.mirror_first = Path(f"{args}.mirror").read_text().split()
             return result.returncode, int(calls.read_text()), result.stderr
 
     def test_success_runs_once(self):
@@ -50,6 +51,15 @@ class GradleRetryTest(unittest.TestCase):
         for wait, low in zip(waits, (10, 20, 40, 80)):
             self.assertTrue(low <= wait <= low + 5, waits)
         self.assertIn("(status code 429)", stderr)
+
+    def test_after_a_rate_limit_the_mirror_is_asked_first(self):
+        too_many = "Could not GET 'https://repo.maven.apache.org/x.pom'. Received status code 429 from server: Too Many Requests"
+        self.run_with([(too_many, 1), ("BUILD SUCCESSFUL", 0)])
+        self.assertEqual(["0", "1"], self.mirror_first)
+
+    def test_other_download_failures_keep_the_repository_order(self):
+        self.run_with([("Could not download x.jar", 1), ("BUILD SUCCESSFUL", 0)], env={"PLUS_CENTRAL_MIRROR_FIRST": ""})
+        self.assertEqual(["0", "0"], self.mirror_first)
 
     def test_a_file_missing_after_its_metadata_is_retried_with_fresh_dependencies(self):
         missing = ("> Could not find guava-33.3.1-android.jar (com.google.guava:guava:33.3.1-android).\n"
