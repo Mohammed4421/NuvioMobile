@@ -23,6 +23,14 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Choosing a subtitle while the video buffers no longer pauses it** (ExoPlayer), and a chosen
+  add-on subtitle is no longer lost when the player reloads.
+- **A resumed download can no longer end up mixed or cut.** If the server sends another version of
+  the file, or only part of the rest, the download starts again from the beginning instead of
+  appending.
+- **Arabic subtitle lines that start with an English word keep their punctuation in place** (mpv).
+- **Subtitles:** ASS files with long headers are recognised from any link, drawing commands are not
+  shown as text, and `&#39;`-style characters are shown correctly.
 - **Downloads in the library show the percentage first.** On a phone the card cut the line after
   "Downloading", so the percentage was hidden; it now reads "40% • Downloading".
 - **A download whose partial file was removed now says up front when storage is full.** The space

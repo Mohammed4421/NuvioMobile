@@ -122,15 +122,32 @@ internal suspend fun transferAndroidDownloadTo(
                     if (!response.isSuccessful) throw DownloadHttpException(response.code)
                     val range = response.header("Content-Range")?.let(::parseDownloadContentRange)
                     val resumed = response.code == 206
-                    if (resumed && (range == null || range.first != offset)) {
+                    if (resumed && (range == null || range.start != offset)) {
                         throw IOException("Server returned an invalid download range")
+                    }
+                    val responseValidator = response.header("ETag")?.takeUnless { it.startsWith("W/") }
+                        ?: response.header("Last-Modified")
+                    // Appending is safe only for the same file to its end (independent review, GEM-DL-01/02):
+                    // a server that ignored If-Range and now serves another version, a range that stops
+                    // before the end, or one of unknown total would leave a wrong or cut file. Start once
+                    // more from zero (a full response), as for 416.
+                    val sameVersion = validator == null || responseValidator == null || responseValidator == validator
+                    val toTheEnd = range != null && range.total != null && range.end == range.total - 1L
+                    if (resumed && offset > 0L && (!sameVersion || !toTheEnd)) {
+                        if (!restarted) {
+                            offset = 0L
+                            restarted = true
+                            return@use
+                        }
+                        throw IOException("Server cannot resume this download safely")
                     }
                     val startingBytes = if (resumed) offset else 0L
                     val body = response.body ?: throw IOException("Download response is empty")
                     val contentLength = body.contentLength().takeIf { it >= 0L }
-                    val totalBytes = range?.second ?: contentLength?.let { startingBytes + it }
-                    val responseValidator = response.header("ETag")?.takeUnless { it.startsWith("W/") }
-                        ?: response.header("Last-Modified")
+                    if (resumed && range != null && contentLength != null && contentLength != range.length) {
+                        throw IOException("Server returned a body that does not match its range")
+                    }
+                    val totalBytes = range?.total ?: contentLength?.let { startingBytes + it }
                     onHeaders(totalBytes, responseValidator)
                     var downloaded = startingBytes
                     onProgress(downloaded, totalBytes)
@@ -170,13 +187,18 @@ internal suspend fun transferAndroidDownloadTo(
     }
 }
 
-internal fun parseDownloadContentRange(value: String): Pair<Long, Long?>? {
+/** A Content-Range header: bytes [start]-[end]/[total] ([total] null for "*"). */
+internal data class DownloadContentRange(val start: Long, val end: Long, val total: Long?) {
+    val length: Long get() = end - start + 1L
+}
+
+internal fun parseDownloadContentRange(value: String): DownloadContentRange? {
     val match = Regex("bytes (\\d+)-(\\d+)/(\\d+|\\*)").matchEntire(value.trim()) ?: return null
     val start = match.groupValues[1].toLongOrNull() ?: return null
     val end = match.groupValues[2].toLongOrNull() ?: return null
     val total = match.groupValues[3].toLongOrNull()
     if (end < start || (total != null && end >= total)) return null
-    return start to total
+    return DownloadContentRange(start, end, total)
 }
 
 /** Logcat tag of the download engine: one line per job start, stop and HTTP request (no URLs). */

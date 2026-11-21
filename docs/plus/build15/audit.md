@@ -38,6 +38,11 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | B15-UI-04 | Playback settings (Arabic) | Decoder strings said فك التشفير (decryption) for decoding | Reference screenshots (#49) | P2 | FIX (#49) | IMPLEMENTED |
 | B15-UI-05 | Player panels (Arabic) | Delay and gain values shown as `0.000s+`, `dB 0` | Reference screenshots (#49) | P2 | FIX (#49) | IMPLEMENTED |
 | B15-UI-06 | Library downloads | Phone card cut the percentage ("Downloading • …") | Reference screenshot (#49) | P2 | FIX (#49) | IMPLEMENTED |
+| B15-DL-05 | Downloads | Resume appended another version or a cut range (review GEM-DL-01/02) | Code; `AndroidDownloadTransferTest` | P1 | FIX (#58) | IMPLEMENTED |
+| B15-PLY-03 | Player | Pending subtitle choice taken before subtitle tracks exist (GEM-PLY-01) | Code; device tests | P1 | FIX (#58) | IMPLEMENTED |
+| B15-PLY-04 | Player | Subtitle change while buffering paused the video (GEM-PLY-02, 3 sites) | Code | P1 | FIX (#58) | IMPLEMENTED |
+| B15-SUB-07 | Subtitles | Arabic line starting with a Latin word laid out LTR in mpv text (GEM-SUB-01) | `SubtitleLineDirectionTest` | P2 | FIX (#58) | IMPLEMENTED |
+| B15-SUB-08 | Subtitles | Long ASS header, vector drawings, numeric entities (GEM-SUB-02) | `SubtitleParserReviewTest` | P2 | FIX (#58) | IMPLEMENTED |
 
 ## Areas reviewed and still to review
 
@@ -48,7 +53,7 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | Subtitle parsing (player, auto-sync, local import) | Reviewed (B15-SUB-01..03) |
 | Add-on links | Confirmation since Build 14 |
 | Player engines, HDR, gestures | NEEDS PHYSICAL DEVICE |
-| UI polish, RTL screenshots | Not started (P4) |
+| UI polish, RTL screenshots | Reference screenshots in every PR (#47, #49); fixes B15-UI-02, 04, 05, 06 |
 | Performance | Not measured (P5) |
 | PortKit | P7 step 1: foundation (registry, levels, policy, inventory) |
 

@@ -64,7 +64,7 @@ internal fun StyledSubtitleText(
         val paddingY = with(density) { (4.dp * scale).toPx() }
         val maxTextWidth = (constraints.maxWidth - paddingX * 2).toInt().coerceAtLeast(1)
         val layout = measurer.measure(
-            text = AnnotatedString(text),
+            text = AnnotatedString(withRightToLeftLineMarks(text)),
             style = TextStyle(
                 fontFamily = fontFamily,
                 fontSize = (style.fontSizeSp * scale).sp,
@@ -108,3 +108,20 @@ internal fun StyledSubtitleText(
         }
     }
 }
+
+/**
+ * Each line with Arabic or Hebrew letters starts right to left, even when its first word is Latin
+ * ("Netflix تقدم…."): the first strong letter decides a line's direction, so such a line was laid out
+ * left to right and its end punctuation moved (independent review GEM-SUB-01). Lines without them
+ * (English in a two-language subtitle) keep their own direction, and so do lines that already carry
+ * direction marks (ExoPlayer's cues, set by PlayerSubtitleRtlFix): only libmpv's plain text changes.
+ */
+internal fun withRightToLeftLineMarks(text: String): String =
+    text.split('\n').joinToString("\n") { line ->
+        if (line.any { it.isRightToLeftLetter() } && line.none { it.isDirectionMark() }) "\u200F$line" else line
+    }
+
+private fun Char.isDirectionMark(): Boolean = this in '\u200E'..'\u200F' || this in '\u202A'..'\u202E' || this in '\u2066'..'\u2069'
+
+private fun Char.isRightToLeftLetter(): Boolean =
+    this in '\u0590'..'\u08FF' || this in '\uFB1D'..'\uFDFF' || this in '\uFE70'..'\uFEFF'
