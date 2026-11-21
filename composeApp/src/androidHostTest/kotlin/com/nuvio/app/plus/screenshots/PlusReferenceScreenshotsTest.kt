@@ -12,6 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.SemanticsNode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
@@ -60,10 +63,15 @@ abstract class PlusReferenceScreenshots(private val device: String) {
 
     @After fun restoreLocale() { Locale.setDefault(savedLocale) }
 
-    @Test fun subtitleAppearanceSettings() = shoot("subtitle-appearance") {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-            SubtitleAppearanceSettings(SubtitleStyleState(), isTablet = device.endsWith("tablet"), onStyleChanged = {})
+    @Test fun subtitleAppearanceSettings() {
+        shoot("subtitle-appearance") {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                SubtitleAppearanceSettings(SubtitleStyleState(), isTablet = device.endsWith("tablet"), onStyleChanged = {})
+            }
         }
+        // Colour codes stay left to right on Arabic screens ("#FFFFFFFF", not "FFFFFFFF#").
+        val texts = shownTexts(compose.onRoot(useUnmergedTree = true).fetchSemanticsNode())
+        assertTrue(texts.any { it == "\u2066#FFFFFFFF\u2069" }, "colour code not isolated left to right: $texts")
     }
 
     @Test fun libraryDownloads() = shoot("library-downloads") {
@@ -96,9 +104,23 @@ abstract class PlusReferenceScreenshots(private val device: String) {
         val expected = if (device.startsWith("ar")) LayoutDirection.Rtl else LayoutDirection.Ltr
         assertEquals(expected, direction, "$screen on $device is not laid out in the expected direction")
         assertTrue(distinctColours(bitmap) > 1, "$screen on $device rendered as a single colour")
+        // Spec P4: the language shown, not only the device setting (P4-12). Arabic screens show
+        // Arabic letters; English ones show none (a missing translation falls back to English).
+        val texts = shownTexts(compose.onRoot(useUnmergedTree = true).fetchSemanticsNode())
+        val arabic = texts.filter { text -> text.any { it in '\u0600'..'\u06FF' } }
+        if (device.startsWith("ar")) {
+            assertTrue(arabic.size * 2 >= texts.count { t -> t.any { it.isLetter() } },
+                "$screen on $device: fewer than half of the labels are Arabic: $texts")
+        } else {
+            assertTrue(arabic.isEmpty(), "$screen on $device shows Arabic text: $arabic")
+        }
         val folder = File("build/reports/plus-screenshots").apply { mkdirs() }
         File(folder, "$screen-$device.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
+
+    private fun shownTexts(node: SemanticsNode): List<String> =
+        (node.config.getOrNull(SemanticsProperties.Text).orEmpty().map { it.text } +
+            node.children.flatMap { shownTexts(it) }).filter { it.isNotBlank() }
 
     private fun distinctColours(bitmap: Bitmap): Int {
         val seen = HashSet<Int>()

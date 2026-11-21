@@ -498,6 +498,23 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      - name: Show the reference screenshots in the log (visual review without artifact access)
+        if: always()
+        run: |
+          # Build 15, P4: each screenshot as a reduced JPEG in base64 between markers, so the review
+          # can read it from the job log through the API.
+          for png in composeApp/build/reports/plus-screenshots/*.png; do
+            [[ -f "${png}" ]] || continue
+            if command -v convert > /dev/null; then
+              convert "${png}" -resize '720x720>' -quality 70 /tmp/shot.jpg; data=/tmp/shot.jpg; kind=jpg
+            else
+              data="${png}"; kind=png
+            fi
+            echo "PLUS-SHOT-BEGIN $(basename "${png}" .png).${kind}"
+            base64 -w 0 "${data}"; echo
+            echo "PLUS-SHOT-END"
+          done
+
       - name: Keep the reference screenshots
         # Build 15, P4-01: Plus screens in English and Arabic, phone and tablet
         # (PlusReferenceScreenshotsTest), kept to compare later visual changes with.
