@@ -16,6 +16,7 @@ import com.nuvio.app.features.player.AndroidPlaybackEngine
 import com.nuvio.app.features.player.PlatformPlayerSurface
 import com.nuvio.app.features.player.PlayerEngineController
 import com.nuvio.app.features.player.PlayerPlaybackSnapshot
+import com.nuvio.app.features.player.SubtitleStyleState
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
@@ -59,7 +60,8 @@ class DeviceSubtitleStatesTest {
                     modifier = Modifier.fillMaxSize().background(Color.Black),
                     playbackEngine = engine,
                     playWhenReady = false,
-                    onControllerReady = { controller = it },
+                    // The player screen always applies the user's subtitle style; the overlay draws with it.
+                    onControllerReady = { controller = it; it.applySubtitleStyle(SubtitleStyleState.DEFAULT) },
                     onSnapshot = { snapshot = it },
                     onError = { error = it },
                 )
