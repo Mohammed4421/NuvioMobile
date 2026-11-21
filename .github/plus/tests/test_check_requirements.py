@@ -39,7 +39,7 @@ class Gate(unittest.TestCase):
                 items.append(dict(self.item(f"{phase}-99"), phase=phase))
         verified = next(i for i in items if i["id"] == "P0-01")
         verified.update(status="VERIFIED", paths=["app/"], evidence=[
-            {"kind": "ci-run", "run": 1, "commit": self.first, "result": "success"},
+            {"kind": "ci-run", "run": 1, "commit": self.first, "result": "PASS"},
             {"kind": "test", "file": "app/FeatureTest.kt", "name": "featureWorks"},
         ])
         self.register = {"items": items}
@@ -47,8 +47,8 @@ class Gate(unittest.TestCase):
 
     @staticmethod
     def item(rid):
-        return {"id": rid, "phase": rid.split("-")[0], "mandatory": True, "requirement": "r", "source": "s",
-                "paths": [], "status": "NOT STARTED", "evidence": [], "untested": [],
+        return {"id": rid, "spec": "spec", "phase": rid.split("-")[0] if rid.split("-")[0] in gate.PHASES + ["D", "G"] else "G", "mandatory": True, "requirement": "r", "source": "s",
+                "paths": [], "status": "DISCOVERED", "evidence": [], "untested": [],
                 "needs_physical_device": False, "acceptance": "a", "next": "n"}
 
     def p001(self, register=None):
@@ -89,9 +89,9 @@ class Gate(unittest.TestCase):
 
     def test_unknown_statuses_and_duplicate_ids_fail(self):
         self.p001()["status"] = "DONE"
-        self.register["items"].append(self.item("G-01"))
+        self.register["items"].append(self.item("C-01"))
         self.assertRejects("unknown status 'DONE'")
-        self.assertRejects("G-01: listed twice")
+        self.assertRejects("C-01: listed twice")
 
     # 2. Verified needs repeatable evidence.
     def test_verified_without_evidence_fails(self):
@@ -112,18 +112,21 @@ class Gate(unittest.TestCase):
     def test_accepted_needs_the_owners_acceptance(self):
         self.p001()["status"] = "ACCEPTED"
         self.assertRejects("ACCEPTED without the owner's acceptance")
-        self.p001()["accepted"] = {"by": "owner", "on": "2026-11-21", "ref": "https://github.com/x/pull/1"}
-        self.assertEqual([], self.problems())
+        self.p001()["accepted"] = {"by": "someone", "on": "2026-11-21", "ref": "https://github.com/x/pull/1"}
+        self.assertRejects("ACCEPTED without the owner's acceptance")
+        for by in ("owner", "delegated"):
+            self.p001()["accepted"]["by"] = by
+            self.assertEqual([], self.problems(), by)
 
     # 5. Failed or pending results presented as passing.
     def test_failed_or_pending_evidence_cannot_verify(self):
-        for result in ("failure", "pending", "cancelled", "skipped"):
+        for result in ("FAIL", "BLOCKED", "NOT TESTED", "NEEDS PHYSICAL DEVICE", "pending", "cancelled", "skipped"):
             register = copy.deepcopy(self.register)
             self.p001(register)["evidence"][0]["result"] = result
-            self.assertRejects(f"result '{result}' cannot support VERIFIED", register)
+            self.assertRejects(f"result '{result.lower()}' cannot support VERIFIED", register)
 
     def test_an_open_item_may_cite_a_failed_run(self):
-        self.p001()["status"] = "IN PROGRESS"
+        self.p001()["status"] = "IMPLEMENTED"
         self.p001()["evidence"][0]["result"] = "failure"
         self.assertEqual([], self.problems())
 
@@ -143,7 +146,7 @@ class Gate(unittest.TestCase):
         (self.repo / "app/Feature.kt").write_text("fun feature() = 2\n")
         git(self.repo, "commit", "-qam", "two")
         self.assertRejects("P0-01: changed after its evidence")
-        self.p001()["status"] = "IN PROGRESS"
+        self.p001()["status"] = "IMPLEMENTED"
         self.assertEqual([], self.problems())
 
     def test_a_change_outside_the_requirement_keeps_it_verified(self):

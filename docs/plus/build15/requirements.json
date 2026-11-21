@@ -1,14 +1,60 @@
 {
-  "schema": 1,
+  "schema": 2,
   "scope": "Nuvio Plus Build 15",
-  "note": "Technical restatement of the Build 15 requirements and the owner's decisions. Statuses describe this branch: work in open pull requests is IN PROGRESS here. Progress counts ACCEPTED items only. Checked by .github/plus/check-requirements.py.",
+  "note": "Every requirement of the Build 15 specification v1.0 (owner-approved 2026-11-21) and the owner's later decisions, by section. States follow spec §15. Evidence results follow spec §11. Work in open pull requests is IMPLEMENTED here until merged and verified. Technical restatement only.",
   "items": [
     {
+      "id": "C-01",
+      "spec": "Build 15 spec v1.0 §1.1",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "No new standalone user features (tests, tools, compatibility layers and fixes are allowed).",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Every Build 15 change is a fix, test, tool or polish of an existing feature; exceptions are owner decisions.",
+      "next": "Season/all pause controls (#28) recorded as owner decision D-01, not a standalone feature."
+    },
+    {
+      "id": "C-02",
+      "spec": "Build 15 spec v1.0 §1.2",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "No change to sound behaviour without evidence or a clear engineering reason.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Each behaviour change links to a finding.",
+      "next": "Enforced per PR review."
+    },
+    {
+      "id": "C-03",
+      "spec": "Build 15 spec v1.0 §2",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Out of scope: identity redesign, new feature systems, provider changes without defect, Package ID or signing key change, mass dependency upgrades without need, risky unrelated fixes, PortKit support for every future fork.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "No change of these kinds.",
+      "next": "Checked at release scope review."
+    },
+    {
       "id": "P0-01",
+      "spec": "Build 15 spec v1.0 §3",
       "phase": "P0",
       "mandatory": true,
-      "requirement": "Baseline record of the published Build 14: commit, toolchain, certificates, APK sizes, tests.",
-      "source": "Build 15 specification (summary; original text pending)",
+      "requirement": "baseline.json: Plus version and commit; Nuvio base version.",
+      "source": "Build 15 spec v1.0",
       "paths": [
         "docs/plus/build15/baseline.json"
       ],
@@ -19,24 +65,30 @@
           "run": 44735486746,
           "commit": "37999b3d71903ba21efe21d41084131ceff39942",
           "what": "PR #16 checks",
-          "result": "success"
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44749841046,
+          "commit": "8e0876ddf07e7d7c647bdca1ebd361efa8982adc",
+          "what": "PR #17 checks (known issues updated)",
+          "result": "PASS"
         }
       ],
-      "untested": [
-        "Performance is recorded as not measured."
-      ],
+      "untested": [],
       "needs_physical_device": false,
-      "acceptance": "Every field has a repeatable source.",
-      "next": "Add P5 measurements when they exist."
+      "acceptance": "Fields match GitHub and the release.",
+      "next": "—"
     },
     {
       "id": "P0-02",
+      "spec": "Build 15 spec v1.0 §3",
       "phase": "P0",
       "mandatory": true,
-      "requirement": "Known issues before Build 15, so none is attributed to Build 15.",
-      "source": "Build 15 specification (summary; original text pending)",
+      "requirement": "baseline.json: Kotlin, Compose, Gradle, AGP versions; Android packages, signing certificates; target platforms.",
+      "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/known-issues.md"
+        "docs/plus/build15/baseline.json"
       ],
       "status": "VERIFIED",
       "evidence": [
@@ -45,385 +97,1103 @@
           "run": 44735486746,
           "commit": "37999b3d71903ba21efe21d41084131ceff39942",
           "what": "PR #16 checks",
-          "result": "success"
-        },
-        {
-          "kind": "ci-run",
-          "run": 44749841046,
-          "commit": "8e0876ddf07e7d7c647bdca1ebd361efa8982adc",
-          "what": "PR #17 checks (updated the known issues)",
-          "result": "success"
-        }
-      ],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "Every pre-existing issue listed with its source.",
-      "next": "Owner review."
-    },
-    {
-      "id": "P1-01",
-      "phase": "P1",
-      "mandatory": true,
-      "requirement": "Full inventory of the project by area, owner (Nuvio or Plus) and review state.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [
-        {
-          "kind": "review",
-          "file": "docs/plus/build15-audit-phase1.md",
-          "what": "file counts only"
+          "result": "PASS"
         }
       ],
       "untested": [
-        "No area-by-area inventory yet."
+        "iOS targets not recorded."
       ],
       "needs_physical_device": false,
-      "acceptance": "A table of every area with owner, reviewed or not, and evidence.",
-      "next": "Generate the inventory and link it to the audit register."
+      "acceptance": "All toolchain and identity fields present with sources.",
+      "next": "Add iOS target versions."
     },
     {
-      "id": "P1-02",
-      "phase": "P1",
+      "id": "P0-03",
+      "spec": "Build 15 spec v1.0 §3",
+      "phase": "P0",
       "mandatory": true,
-      "requirement": "Deep audit of the critical Plus areas: updater, downloads, subtitles, profiles, players.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [
-        "Players, HDR and gestures not audited."
-      ],
-      "needs_physical_device": false,
-      "acceptance": "Each area has an audit row with evidence.",
-      "next": "Audit players, settings and library."
-    },
-    {
-      "id": "P1-03",
-      "phase": "P1",
-      "mandatory": true,
-      "requirement": "Audit register with an ID, evidence, decision and status per finding.",
-      "source": "Build 15 specification (summary; original text pending)",
+      "requirement": "baseline.json: test list and results; APK sizes and build outputs.",
+      "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/audit.md"
-      ],
-      "status": "IN PROGRESS",
-      "evidence": [
-        {
-          "kind": "review",
-          "file": "docs/plus/build15/audit.md",
-          "what": "register exists"
-        }
-      ],
-      "untested": [
-        "Rows of PR #24-#30 are not on this branch."
-      ],
-      "needs_physical_device": false,
-      "acceptance": "Every Build 15 change has a row.",
-      "next": "Add the missing rows."
-    },
-    {
-      "id": "P1-04",
-      "phase": "P1",
-      "mandatory": true,
-      "requirement": "Fix proven defects only, each with a test that fails before the fix.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [
-        "B15-SUB-06 (#26) and B15-DL-03 (#28) open; device subtitle cache has no PR."
-      ],
-      "needs_physical_device": false,
-      "acceptance": "Every fix has a failing-before test and passing CI.",
-      "next": "Finish #28 and the device subtitle cache."
-    },
-    {
-      "id": "P1-05",
-      "phase": "P1",
-      "mandatory": true,
-      "requirement": "Deferred findings (B15-SUB-03, DL-01, CI-02, UI-03) need a fix or the owner's documented exception.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [
-        "docs/plus/build15/audit.md"
-      ],
-      "status": "BLOCKED",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "Each is fixed or excepted by the owner.",
-      "next": "Present the exceptions to the owner."
-    },
-    {
-      "id": "P1-06",
-      "phase": "P1",
-      "mandatory": true,
-      "requirement": "External claims are judged against the code, with evidence.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [
-        "Recorded in PR #27, not on this branch."
-      ],
-      "needs_physical_device": false,
-      "acceptance": "Each claim has a verdict with evidence.",
-      "next": "Owner decision on #27."
-    },
-    {
-      "id": "P2-01",
-      "phase": "P2",
-      "mandatory": true,
-      "requirement": "Refactoring decisions only where the audit proves the need; no refactoring of sound parts.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "Every KEEP/REFACTOR decision is linked to a defect or a measurement.",
-      "next": "After P1-01."
-    },
-    {
-      "id": "P2-02",
-      "phase": "P2",
-      "mandatory": true,
-      "requirement": "Avoid conflicts with future Nuvio updates.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [
-        ".github/plus/features.json"
-      ],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [
-        "No transfer onto a newer Nuvio release."
-      ],
-      "needs_physical_device": false,
-      "acceptance": "A transfer onto the newest stable Nuvio release succeeds or each conflict is documented.",
-      "next": "With P7-02."
-    },
-    {
-      "id": "P3-01",
-      "phase": "P3",
-      "mandatory": true,
-      "requirement": "User-journey matrix covering every screen, tested end to end.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "Every journey has steps, expected result, actual result and evidence.",
-      "next": "Write the matrix after P1-01."
-    },
-    {
-      "id": "P3-02",
-      "phase": "P3",
-      "mandatory": true,
-      "requirement": "Exceptional paths: network failure, restart, state restore, partial downloads.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [
-        "Only the season download queue is covered (harness, emulator update)."
-      ],
-      "needs_physical_device": false,
-      "acceptance": "Each journey has its exceptional paths tested.",
-      "next": "Extend after P3-01."
-    },
-    {
-      "id": "P3-03",
-      "phase": "P3",
-      "mandatory": true,
-      "requirement": "Phone and tablet, both orientations.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "Screenshots and checks on defined sizes and orientations.",
-      "next": "Phone and tablet emulators."
-    },
-    {
-      "id": "P4-01",
-      "phase": "P4",
-      "mandatory": true,
-      "requirement": "Reference screenshots before any visual change, Arabic and English.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "One screenshot per screen x language x device x orientation.",
-      "next": "Capture automatically on emulators."
-    },
-    {
-      "id": "P4-02",
-      "phase": "P4",
-      "mandatory": true,
-      "requirement": "Consistency, spacing, alignment and interactions on every screen.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "Per-screen review with before/after screenshots.",
-      "next": "After P4-01."
-    },
-    {
-      "id": "P4-03",
-      "phase": "P4",
-      "mandatory": true,
-      "requirement": "Arabic and RTL issues.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "No clipping or wrong mirroring on any screen.",
-      "next": "With P4-01."
-    },
-    {
-      "id": "P4-04",
-      "phase": "P4",
-      "mandatory": true,
-      "requirement": "Accessibility.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "Touch sizes, contrast and descriptions checked.",
-      "next": "After P4-01."
-    },
-    {
-      "id": "P4-05",
-      "phase": "P4",
-      "mandatory": true,
-      "requirement": "Keep Nuvio's identity.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "No change to Nuvio's colours, logo or base type.",
-      "next": "Constraint on P4."
-    },
-    {
-      "id": "P5-01",
-      "phase": "P5",
-      "mandatory": true,
-      "requirement": "Repeated real measurements before and after.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
-      "untested": [
-        "Only the subtitle parser was measured (#17)."
-      ],
-      "needs_physical_device": true,
-      "acceptance": "At least 5 runs before and after on a fixed device.",
-      "next": "Relative emulator measurements and a physical-device protocol."
-    },
-    {
-      "id": "P5-02",
-      "phase": "P5",
-      "mandatory": true,
-      "requirement": "Smoothness, jank and resource use.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": true,
-      "acceptance": "Slow-frame counts and memory in numbers.",
-      "next": "With P5-01."
-    },
-    {
-      "id": "P6-01",
-      "phase": "P6",
-      "mandatory": true,
-      "requirement": "Security review.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [
-        "No systematic review yet."
-      ],
-      "needs_physical_device": false,
-      "acceptance": "A completed security checklist with evidence.",
-      "next": "Write the checklist."
-    },
-    {
-      "id": "P6-02",
-      "phase": "P6",
-      "mandatory": true,
-      "requirement": "Upgrade matrix 14->15 keeping user data, on Android 9 and 14.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "14->15 and 13->15 on Android 9 and 14 with seeded data.",
-      "next": "On the release candidate."
-    },
-    {
-      "id": "P6-03",
-      "phase": "P6",
-      "mandatory": true,
-      "requirement": "Storage stays readable by Builds 12-14.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [
-        "Covered in PR #28, not on this branch."
-      ],
-      "needs_physical_device": false,
-      "acceptance": "Build 14 reads what Build 15 writes.",
-      "next": "Owner decision on #28."
-    },
-    {
-      "id": "P6-04",
-      "phase": "P6",
-      "mandatory": true,
-      "requirement": "Identity, signing and update stay protected.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [
-        "androidApp/build.gradle.kts",
-        ".github/plus/check-update-compat.sh",
-        ".github/workflows/custom-android-build.yml"
+        "docs/plus/build15/baseline.json"
       ],
       "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44783639944,
-          "commit": "8c8098a8ca79043616b34df738945dfe2cb7e14e",
-          "what": "stable build with update check (attempt 2)",
-          "result": "success"
+          "run": 44735486746,
+          "commit": "37999b3d71903ba21efe21d41084131ceff39942",
+          "what": "PR #16 checks",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
-      "acceptance": "The release certificate 99c0a98c... and package com.nuvio.app.plus in the output.",
-      "next": "Check again in P8."
+      "acceptance": "Present with sources.",
+      "next": "—"
+    },
+    {
+      "id": "P0-04",
+      "spec": "Build 15 spec v1.0 §3",
+      "phase": "P0",
+      "mandatory": true,
+      "requirement": "baseline.json: approved performance measurements.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        "docs/plus/build15/baseline.json"
+      ],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Recorded as NOT MEASURED."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Repeated Build 14 measurements on fixed devices.",
+      "next": "P5 measurement harness on emulator + physical-device protocol."
+    },
+    {
+      "id": "P0-05",
+      "spec": "Build 15 spec v1.0 §3",
+      "phase": "P0",
+      "mandatory": true,
+      "requirement": "baseline.json: file and dependency fingerprints for reproduction.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        "docs/plus/build15/baseline.json"
+      ],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "No dependency lock or verification metadata; no APK hashes recorded."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "APK SHA-256 and a resolved dependency list for Build 14.",
+      "next": "Record hashes of custom-14 assets and a dependency report."
+    },
+    {
+      "id": "P0-06",
+      "spec": "Build 15 spec v1.0 §3",
+      "phase": "P0",
+      "mandatory": true,
+      "requirement": "Known issues before Build 15.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        "docs/plus/build15/known-issues.md"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44749841046,
+          "commit": "8e0876ddf07e7d7c647bdca1ebd361efa8982adc",
+          "what": "PR #17 checks",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Each pre-existing issue listed with source.",
+      "next": "—"
+    },
+    {
+      "id": "P0-07",
+      "spec": "Build 15 spec v1.0 §3",
+      "phase": "P0",
+      "mandatory": true,
+      "requirement": "P0 gate: baseline approved; GitHub and test state known and re-checkable.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "P0-01..06 VERIFIED, then accepted.",
+      "next": "Close P0-04 and P0-05."
+    },
+    {
+      "id": "P1-01",
+      "spec": "Build 15 spec v1.0 §4",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Coverage audit: inventory of all source, build, configuration and dependency files.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "In PR #32; dependencies not inventoried."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Every area listed with owner and review state; dependencies listed.",
+      "next": "Merge #32; add dependency inventory."
+    },
+    {
+      "id": "P1-02",
+      "spec": "Build 15 spec v1.0 §4",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Deep audit of high-risk, complex or Plus-overlapping areas on evidence.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Players/HDR/engines not deep-audited; Nuvio areas outside Plus not reviewed."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "All critical areas reviewed with evidence.",
+      "next": "Deep audit of player engines and HDR paths."
+    },
+    {
+      "id": "P1-03",
+      "spec": "Build 15 spec v1.0 §4",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Audit axes covered: architecture, behaviour, performance, security, concurrency, UX, accessibility/localisation/RTL, storage/migration, testability, upstream compatibility, portability.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Accessibility and performance axes not audited."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Each axis has findings or an explicit 'reviewed, none'.",
+      "next": "Add axis column to the audit register."
+    },
+    {
+      "id": "P1-04",
+      "spec": "Build 15 spec v1.0 §4",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Each finding has: stable ID, files, reproducible evidence, root cause, user impact, severity Critical/High/Medium/Low, alternatives, chosen fix with reason, compatibility/maintenance impact, required tests, status; decision KEEP/FIX/REFACTOR/REMOVE/DEFER.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        "docs/plus/build15/audit.md"
+      ],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Current rows lack root cause, user impact, alternatives and use P1-P3 instead of Critical..Low."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Every audit row carries all eleven fields.",
+      "next": "Convert audit.md to the full finding format."
+    },
+    {
+      "id": "P1-05",
+      "spec": "Build 15 spec v1.0 §4",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Exit: scope inventoried, findings prioritised, no critical area unreviewed.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "P1-01..04 VERIFIED.",
+      "next": "After P1-04."
+    },
+    {
+      "id": "P1-06",
+      "spec": "Build 15 spec v1.0 §4",
+      "phase": "P1",
+      "mandatory": true,
+      "requirement": "Deferred findings (B15-SUB-03, DL-01, CI-02, UI-03) justified by the spec's priority rules.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        "docs/plus/build15/audit.md"
+      ],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Each has a P2/P3 priority with documented risk (§14).",
+      "next": "Re-classify with §14 priorities."
+    },
+    {
+      "id": "P2-01",
+      "spec": "Build 15 spec v1.0 §5",
+      "phase": "P2",
+      "mandatory": true,
+      "requirement": "Architecture changes only when meeting §5 criteria (repeated defect, harmful coupling, measured performance, concurrency/state simplification, testability, upstream merge cost, PortKit enablement).",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Decisions in PR #33."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Each decision cites a §5 criterion and evidence.",
+      "next": "Merge #33."
+    },
+    {
+      "id": "P2-02",
+      "spec": "Build 15 spec v1.0 §5",
+      "phase": "P2",
+      "mandatory": true,
+      "requirement": "Refactoring constraints: visible behaviour kept, no data format change without migration, public interfaces with all callers reviewed, no refactor for line count, reviewable units, behaviour changes separate from moves/renames.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Each refactor PR states how each constraint holds.",
+      "next": "Apply to A-02/A-03."
+    },
+    {
+      "id": "P2-03",
+      "spec": "Build 15 spec v1.0 §5",
+      "phase": "P2",
+      "mandatory": true,
+      "requirement": "Wide refactoring: Before/After report with alternatives, risks, Android and KMP impact.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Report for A-02 and A-03 before implementation.",
+      "next": "Write after P4 baselines."
+    },
+    {
+      "id": "P2-04",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P2",
+      "mandatory": true,
+      "requirement": "Architecture Decision Records delivered.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "docs/plus/build15/architecture.md in #33."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "ADRs in the repository.",
+      "next": "Merge #33."
+    },
+    {
+      "id": "P3-01",
+      "spec": "Build 15 spec v1.0 §6",
+      "phase": "P3",
+      "mandatory": true,
+      "requirement": "Player / Subtitles: formats, colours, brightness, movement; ExoPlayer and mpv; SDR/HDR; Dolby Vision where supported; switching during playback. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+    },
+    {
+      "id": "P3-02",
+      "spec": "Build 15 spec v1.0 §6",
+      "phase": "P3",
+      "mandatory": true,
+      "requirement": "Downloads / Storage: single and season downloads, quality, cancel and resume, network loss, SAF and .part files, out of space. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+    },
+    {
+      "id": "P3-03",
+      "spec": "Build 15 spec v1.0 §6",
+      "phase": "P3",
+      "mandatory": true,
+      "requirement": "Profiles / Accounts: data isolation and permissions, PIN, switching during operations, sync and sign-in. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+    },
+    {
+      "id": "P3-04",
+      "spec": "Build 15 spec v1.0 §6",
+      "phase": "P3",
+      "mandatory": true,
+      "requirement": "Library / Navigation: downloaded content state, posters, episode details, screen transitions, back, app lifecycle. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+    },
+    {
+      "id": "P3-05",
+      "spec": "Build 15 spec v1.0 §6",
+      "phase": "P3",
+      "mandatory": true,
+      "requirement": "Add-ons / Networking: install, confirm, remove; external links; malformed responses; timeouts; user information protection. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+    },
+    {
+      "id": "P3-06",
+      "spec": "Build 15 spec v1.0 §6",
+      "phase": "P3",
+      "mandatory": true,
+      "requirement": "Updater / Identity: version, package and signature checks; channels; modified archives; supported transition paths. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Journey matrix in #33 is per journey, not per six cases; end-to-end runs missing."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
+      "next": "Restructure the journey matrix by the six cases; run on emulator; device rows to the owner list."
+    },
+    {
+      "id": "P3-07",
+      "spec": "Build 15 spec v1.0 §6",
+      "phase": "P3",
+      "mandatory": true,
+      "requirement": "Unit-test success is not taken as proof of journeys.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "No journey VERIFIED by unit tests alone.",
+      "next": "Enforced by the gate (evidence kinds)."
+    },
+    {
+      "id": "P4-01",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Spacing, sizes and alignment.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Not reviewed yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
+      "next": "After P4-10 baselines."
+    },
+    {
+      "id": "P4-02",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Interaction and button clarity.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Not reviewed yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
+      "next": "After P4-10 baselines."
+    },
+    {
+      "id": "P4-03",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Consistency of dialogs and alerts.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Not reviewed yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
+      "next": "After P4-10 baselines."
+    },
+    {
+      "id": "P4-04",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Visual hierarchy.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Not reviewed yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
+      "next": "After P4-10 baselines."
+    },
+    {
+      "id": "P4-05",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Loading, error and empty states.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Not reviewed yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
+      "next": "After P4-10 baselines."
+    },
+    {
+      "id": "P4-06",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Animations and transitions without excess.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Not reviewed yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
+      "next": "After P4-10 baselines."
+    },
+    {
+      "id": "P4-07",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Usability on phone and tablet.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Not reviewed yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
+      "next": "After P4-10 baselines."
+    },
+    {
+      "id": "P4-08",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Arabic, English and RTL.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Arabic strings test (B15-AR-01) in #32; RTL screenshots in #35 not yet green."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
+      "next": "After P4-10 baselines."
+    },
+    {
+      "id": "P4-09",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Accessibility: screen readers, focus, contrast, touch target size.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "Not reviewed yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
+      "next": "After P4-10 baselines."
+    },
+    {
+      "id": "P4-10",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Reference screenshots before changes, with data, language, size and theme fixed.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "#35: two screens; first run found the test environment lacked RTL support; fixed, re-running."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Baselines for the selected screens in all setups, kept as artifacts.",
+      "next": "Green #35, then add the remaining Plus screens."
+    },
+    {
+      "id": "P4-11",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Automated image comparison with human review of significant differences.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "A check that compares new screenshots with baselines and reports differences.",
+      "next": "Add comparison after baselines exist."
+    },
+    {
+      "id": "P4-12",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Arabic test checks the language actually displayed, not only that the system language command succeeded.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "#35 checks layout direction; displayed text language not asserted yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Screenshot test asserts Arabic text is rendered.",
+      "next": "Assert an Arabic string node in each Arabic screenshot."
+    },
+    {
+      "id": "P4-13",
+      "spec": "Build 15 spec v1.0 §7",
+      "phase": "P4",
+      "mandatory": true,
+      "requirement": "Design rule: keep the original style; alternative designs only with a clear reason and a testable improvement.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Every visual change has a reason and before/after.",
+      "next": "Applies to all P4 changes."
+    },
+    {
+      "id": "P5-01",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Cold and warm start.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Not measured."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Repeated before/after values on fixed devices within approved limits.",
+      "next": "Measurement method and limits (P5-10)."
+    },
+    {
+      "id": "P5-02",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Interaction response time.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Not measured."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Repeated before/after values on fixed devices within approved limits.",
+      "next": "Measurement method and limits (P5-10)."
+    },
+    {
+      "id": "P5-03",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Frame time and jank while scrolling and navigating.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Not measured."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Repeated before/after values on fixed devices within approved limits.",
+      "next": "Measurement method and limits (P5-10)."
+    },
+    {
+      "id": "P5-04",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Memory and resource use.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Not measured."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Repeated before/after values on fixed devices within approved limits.",
+      "next": "Measurement method and limits (P5-10)."
+    },
+    {
+      "id": "P5-05",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Video playback stability.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Not measured."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Repeated before/after values on fixed devices within approved limits.",
+      "next": "Measurement method and limits (P5-10)."
+    },
+    {
+      "id": "P5-06",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Dropped frames.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Not measured."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Repeated before/after values on fixed devices within approved limits.",
+      "next": "Measurement method and limits (P5-10)."
+    },
+    {
+      "id": "P5-07",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Background downloads.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Not measured."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Repeated before/after values on fixed devices within approved limits.",
+      "next": "Measurement method and limits (P5-10)."
+    },
+    {
+      "id": "P5-08",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "CPU in affecting scenarios.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Not measured."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Repeated before/after values on fixed devices within approved limits.",
+      "next": "Measurement method and limits (P5-10)."
+    },
+    {
+      "id": "P5-09",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "APK and dependency size.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Not measured."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Repeated before/after values on fixed devices within approved limits.",
+      "next": "Measurement method and limits (P5-10)."
+    },
+    {
+      "id": "P5-10",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Method: fixed devices and Android versions, fixed scenarios, repeated runs, values and variance kept, before/after, no improvement below noise.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": true,
+      "acceptance": "Documented method and raw results in the repository.",
+      "next": "Emulator harness for relative numbers; device protocol."
+    },
+    {
+      "id": "P5-11",
+      "spec": "Build 15 spec v1.0 §8",
+      "phase": "P5",
+      "mandatory": true,
+      "requirement": "Numeric limits set after P0 and P1, before performance changes, approved within the plan.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Limits file with values and reasons.",
+      "next": "After first measurements."
+    },
+    {
+      "id": "P6-01",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review: Exported components.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "No written review against this item yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-02",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review: Deep links and add-on confirmation.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "No written review against this item yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-03",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review: FileProvider and permissions.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "No written review against this item yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-04",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review: Content and files from external sources.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "No written review against this item yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-05",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review: Storage of sensitive user data.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "No written review against this item yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-06",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review: Dependencies and known vulnerabilities.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "No written review against this item yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-07",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review: GitHub Actions permissions.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "No written review against this item yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-08",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review: Separation of test code from signing secrets.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "No written review against this item yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-09",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review: APK integrity and signing keys.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "No written review against this item yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-10",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Security review: Branch protection and merge/release gates.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "No written review against this item yet."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-11",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "OWASP MASVS/MASTG principles where relevant; actual coverage documented.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Coverage table in the security report.",
+      "next": "Security report."
+    },
+    {
+      "id": "P6-12",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Realistic test data: subtitle and player settings, several profiles, download history and season queue, library and databases, local settings, URI/SAF permissions.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Only the season queue is seeded (#28)."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Seed covers all six data kinds.",
+      "next": "Extend the seeding script."
+    },
+    {
+      "id": "P6-13",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Data content checked before and after update, not only presence.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Content check covers the season queue only."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Content diff for all seeded data kinds.",
+      "next": "With P6-12."
+    },
+    {
+      "id": "P6-14",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Upgrade matrix: Build 14 → Build 15.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P6-15",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Upgrade matrix: Build 13 → Build 15 if direct update is supported.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P6-16",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Upgrade matrix: Build 12 → Build 15 if the old-key transition stays supported.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P6-17",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Upgrade matrix: Android 8: safe refusal of the unsupported release.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P6-18",
+      "spec": "Build 15 spec v1.0 §9",
+      "phase": "P6",
+      "mandatory": true,
+      "requirement": "Unsupported update paths are stated to users, never presented as data-keeping updates.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Release notes and in-app text checked.",
+      "next": "Release notes of the candidate."
     },
     {
       "id": "P7-01",
+      "spec": "Build 15 spec v1.0 §10.1",
       "phase": "P7",
       "mandatory": true,
-      "requirement": "PortKit transfer tool that actually works (validate, plan, apply, rollback).",
-      "source": "Build 15 specification (summary; original text pending)",
+      "requirement": "Source package moving eligible Plus features selectively; detects incompatibility instead of forcing writes.",
+      "source": "Build 15 spec v1.0",
       "paths": [
         "portkit/"
       ],
@@ -434,204 +1204,1069 @@
           "run": 44770118786,
           "commit": "9519b3c8c4e806f2c93428c6336ed4123ca81be2",
           "what": "PR #23 checks",
-          "result": "success"
-        },
-        {
-          "kind": "test",
-          "file": ".github/plus/tests/test_portkit.py",
-          "name": "test_identity_and_signing_are_never_portable",
-          "result": "pass"
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
-      "acceptance": "Each command proven by tests and a transfer build.",
-      "next": "-"
+      "acceptance": "Plan/apply refuse incompatible targets.",
+      "next": "—"
     },
     {
       "id": "P7-02",
+      "spec": "Build 15 spec v1.0 §10.2",
       "phase": "P7",
       "mandatory": true,
-      "requirement": "Prove the transfer of every portable feature onto truly compatible targets.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [
-        "portkit/compatibility.json"
-      ],
-      "status": "IN PROGRESS",
+      "requirement": "Package layout (README, LICENSES, manifest, compatibility, features, adapters, patches, tools, tests, fixtures, reports); JSON instead of YAML allowed if better organised.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "12 of 14 features have no evidence; no newer Nuvio target."
+        "No LICENSES/; JSON layout decision undocumented as an ADR."
       ],
       "needs_physical_device": false,
-      "acceptance": "Every feature classified with evidence or a reason it cannot move.",
-      "next": "Classify the 12 remaining features."
+      "acceptance": "Layout documented with the reason for differences.",
+      "next": "Add LICENSES/ and an ADR."
     },
     {
       "id": "P7-03",
+      "spec": "Build 15 spec v1.0 §10.3",
       "phase": "P7",
       "mandatory": true,
-      "requirement": "Transfer tests do not fail on transient network errors.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [],
-      "status": "IN PROGRESS",
+      "requirement": "Feature registry per feature: ID, files, dependencies, supported versions, source sets, data formats, integration points, non-transferable files, tests, limits and known conflicts; starts from .github/plus/features.json.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        ".github/plus/features.json"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Fixed in PR #29, not on this branch."
+        "Not every field present for every feature."
       ],
       "needs_physical_device": false,
-      "acceptance": "No transient Maven error fails a check.",
-      "next": "Owner decision on #29."
+      "acceptance": "validate checks every field.",
+      "next": "Field completeness check."
+    },
+    {
+      "id": "P7-04",
+      "spec": "Build 15 spec v1.0 §10.4",
+      "phase": "P7",
+      "mandatory": true,
+      "requirement": "Compatibility contracts: target project and version, structure and dependencies, source sets and modules, paths and integration signatures, Gradle/Kotlin/Compose, Android and other platforms, dependencies and licence, conflicts with target fork additions.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Licence and fork-addition conflicts not checked."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Each contract enforced by plan with a test.",
+      "next": "Licence and conflict contracts."
+    },
+    {
+      "id": "P7-05",
+      "spec": "Build 15 spec v1.0 §10.5",
+      "phase": "P7",
+      "mandatory": true,
+      "requirement": "Support levels: Portable, Adapter Required, Manual Integration, Unsupported.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        "portkit/compatibility.json"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44770118786,
+          "commit": "9519b3c8c4e806f2c93428c6336ed4123ca81be2",
+          "what": "PR #23 checks",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Every feature has a level.",
+      "next": "—"
+    },
+    {
+      "id": "P7-06",
+      "spec": "Build 15 spec v1.0 §10.6",
+      "phase": "P7",
+      "mandatory": true,
+      "requirement": "Safety: dry-run; no overwrite of unknown changes; refuse dirty projects or isolated worktree; fingerprints/contracts before apply; repeatable; no partial changes; idempotent re-run; full diff; no secrets; rollback only of proven PortKit changes.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        "portkit/"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44770118786,
+          "commit": "9519b3c8c4e806f2c93428c6336ed4123ca81be2",
+          "what": "PR #23 checks",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Each property has a test.",
+      "next": "Map each property to its test."
+    },
+    {
+      "id": "P7-07",
+      "spec": "Build 15 spec v1.0 §10.7",
+      "phase": "P7",
+      "mandatory": true,
+      "requirement": "Targets: clean pinned official Nuvio; independent test fork with deliberate differences.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        ".github/workflows/portkit.yml"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44770118786,
+          "commit": "9519b3c8c4e806f2c93428c6336ed4123ca81be2",
+          "what": "PR #23 checks",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Both targets built and tested.",
+      "next": "—"
+    },
+    {
+      "id": "P7-08",
+      "spec": "Build 15 spec v1.0 §10.7",
+      "phase": "P7",
+      "mandatory": true,
+      "requirement": "Ten mandatory tests: compatibility check, single feature, feature set with dependencies, dry-run without change, re-apply without duplication, unsupported target refused, modified-file conflict, unsafe partial transfer prevented, resulting build and feature tests, licence and copyright notices kept.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Licence test missing; tests not mapped one by one."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Ten named tests, each PASS on CI.",
+      "next": "Map and add the licence test."
+    },
+    {
+      "id": "P7-09",
+      "spec": "Build 15 spec v1.0 §10.8",
+      "phase": "P7",
+      "mandatory": true,
+      "requirement": "Outputs: package and tools, Arabic and English docs, per-feature compatibility record, real application examples, diffs and reports, tests and results, limits and unsupported cases.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Real examples and per-feature records incomplete."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "All seven outputs in portkit/.",
+      "next": "Complete outputs."
+    },
+    {
+      "id": "P7-10",
+      "spec": "Build 15 spec v1.0 §10.8",
+      "phase": "P7",
+      "mandatory": true,
+      "requirement": "Acceptance: successful use on the approved test targets, not patch files alone.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "2 of 14 features verified; the remaining 12 classified but unproven."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Every portable feature transferred and tested on both targets; others with documented reason.",
+      "next": "Prove or classify each remaining feature."
     },
     {
       "id": "P8-01",
+      "spec": "Build 15 spec v1.0 §11",
       "phase": "P8",
       "mandatory": true,
-      "requirement": "Regression, function and update tests on emulators on the candidate.",
-      "source": "Owner directive 2026-11-20, section 3",
+      "requirement": "Test layer: Static analysis report.",
+      "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "NOT STARTED",
+      "status": "DISCOVERED",
       "evidence": [],
-      "untested": [],
+      "untested": [
+        "Final run on the candidate pending."
+      ],
       "needs_physical_device": false,
-      "acceptance": "All checks on the exact candidate commit.",
+      "acceptance": "Layer result on the candidate SHA with log.",
       "next": "On the candidate."
     },
     {
       "id": "P8-02",
+      "spec": "Build 15 spec v1.0 §11",
       "phase": "P8",
       "mandatory": true,
-      "requirement": "Physical-device tests: players, HDR, gestures, SD card, pause from notification in background on Android 14+.",
-      "source": "Owner directive 2026-11-20, section 3",
+      "requirement": "Test layer: Unit test results.",
+      "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "NOT STARTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44783639944,
+          "commit": "8c8098a8ca79043616b34df738945dfe2cb7e14e",
+          "what": "stable build and unit tests",
+          "result": "PASS"
+        }
+      ],
       "untested": [],
-      "needs_physical_device": true,
-      "acceptance": "Owner's results or screenshots per row.",
-      "next": "Send the owner a short list."
+      "needs_physical_device": false,
+      "acceptance": "Layer result on the candidate SHA with log.",
+      "next": "On the candidate."
     },
     {
-      "id": "P9-01",
-      "phase": "P9",
+      "id": "P8-03",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
       "mandatory": true,
-      "requirement": "Release with the owner's two approvals.",
-      "source": "Build 15 specification (summary; original text pending)",
+      "requirement": "Test layer: Integration tests between components.",
+      "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "BLOCKED",
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Final run on the candidate pending."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Layer result on the candidate SHA with log.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P8-04",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Test layer: Race/concurrency scenarios.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44783639944,
+          "commit": "8c8098a8ca79043616b34df738945dfe2cb7e14e",
+          "what": "stable build and unit tests",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Layer result on the candidate SHA with log.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P8-05",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Test layer: Emulator tests with runs, logs and screenshots.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Final run on the candidate pending."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Layer result on the candidate SHA with log.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P8-06",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Test layer: Physical device results with details.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Final run on the candidate pending."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Layer result on the candidate SHA with log.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P8-07",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Test layer: Performance regression before/after.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Final run on the candidate pending."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Layer result on the candidate SHA with log.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P8-08",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Test layer: Security test report.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [
+        "Final run on the candidate pending."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Layer result on the candidate SHA with log.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P8-09",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Test layer: PortKit transfer and compatibility matrix.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Final run on the candidate pending."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Layer result on the candidate SHA with log.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P8-10",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Test layer: Release/upgrade: APK integrity, upgrade and data.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Final run on the candidate pending."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Layer result on the candidate SHA with log.",
+      "next": "On the candidate."
+    },
+    {
+      "id": "P8-11",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Every result linked to a test, environment, commit SHA and log; states PASS/FAIL/BLOCKED/NOT TESTED/NEEDS PHYSICAL DEVICE; CI success never stands for an unrun test.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Gate in #31."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Gate enforces it on every PR.",
+      "next": "Merge #31."
+    },
+    {
+      "id": "P8-12",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "Devices: emulators Android 9, 14 and a recent version; a physical device for player, HDR and external storage.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Android 9 and 14 emulators run; no recent-version emulator; no physical device."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Device matrix with results.",
+      "next": "Add API 36 emulator; physical device list for the owner."
+    },
+    {
+      "id": "P8-13",
+      "spec": "Build 15 spec v1.0 §11",
+      "phase": "P8",
+      "mandatory": true,
+      "requirement": "An untested critical data-protection or update-safety test blocks approval; non-critical gaps go to an owner risk-acceptance list.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
       "evidence": [],
       "untested": [],
       "needs_physical_device": false,
-      "acceptance": "Every mandatory item ACCEPTED or excepted by the owner.",
-      "next": "After P8."
+      "acceptance": "Risk list in the readiness report.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S12-01",
+      "spec": "Build 15 spec v1.0 §12",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "custom-subtitles protection enabled and verified; no direct push or unauthorised force push; required checks where GitHub supports it; single-owner workflow kept; plus-release approval gates verified.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Ruleset blocks deletion and force push only; required checks and pull-request rule need the owner in settings."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Ruleset read back from the API shows each rule.",
+      "next": "Proposal to the owner; verify by API after."
+    },
+    {
+      "id": "S12-02",
+      "spec": "Build 15 spec v1.0 §12",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release Scope Manifest (version, mandatory requirement IDs, required PRs and merge state, approval tests, final branch ref, PortKit version) compared by the release gate with GitHub evidence, test results and the exact commit; release refused when incomplete or the branch moved.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "DISCOVERED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Manifest file plus a gate step that fails on any mismatch.",
+      "next": "Build after P8."
+    },
+    {
+      "id": "S12-03",
+      "spec": "Owner decision §12",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Approval rules: final release approved by the owner (owner decision 2026-11-21 replaces per-merge approval); tests never disabled for a green result.",
+      "source": "Owner decision",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Merges only after all gates; release only after owner approval.",
+      "next": "Ongoing."
+    },
+    {
+      "id": "S13-01",
+      "spec": "Build 15 spec v1.0 §13",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Each phase's outputs saved in the repository so work resumes without session memory.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        "docs/plus/build15/"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Every phase has its outputs in docs/plus/build15.",
+      "next": "Ongoing."
+    },
+    {
+      "id": "S14-01",
+      "spec": "Build 15 spec v1.0 §14",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Priorities P0 Release Blocker .. P3 Optional applied to findings; deferred P2/P3 list does not block release when criteria are met and risks documented.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Audit rows carry §14 priority.",
+      "next": "With P1-04."
+    },
+    {
+      "id": "S15-01",
+      "spec": "Build 15 spec v1.0 §15",
+      "phase": "G",
+      "mandatory": true,
+      "requirement": "Progress shown as implementation, verification and acceptance percentages weighted by effort and risk, with critical blockers and unrun tests.",
+      "source": "Build 15 spec v1.0",
+      "paths": [
+        ".github/plus/check-requirements.py"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "Weights not defined; counts used."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Gate prints the three figures with weights.",
+      "next": "Add weights."
+    },
+    {
+      "id": "S16-01",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: All approved mandatory requirements done.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "All approved mandatory requirements done.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-02",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: Relevant CI gates pass on the final commit.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Relevant CI gates pass on the final commit.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-03",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: No open release blockers.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "No open release blockers.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-04",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: Critical function and upgrade tests pass.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Critical function and upgrade tests pass.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-05",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: Data, signing and update safety proven.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Data, signing and update safety proven.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-06",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: Visual polish meets the approved review criteria.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Visual polish meets the approved review criteria.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-07",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: No performance regression outside approved limits.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "No performance regression outside approved limits.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-08",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: Mandatory PortKit tests pass.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Mandatory PortKit tests pass.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-09",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: Every unrun test and remaining risk documented.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Every unrun test and remaining risk documented.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-10",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: Source protection and release controls enabled.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Source protection and release controls enabled.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-11",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: Build 14 vs Build 15 comparison delivered.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Build 14 vs Build 15 comparison delivered.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S16-12",
+      "spec": "Build 15 spec v1.0 §16",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Release readiness: Final owner approval.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Final owner approval.",
+      "next": "Readiness report."
+    },
+    {
+      "id": "S17-01",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Build 15 source and commit SHA.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-02",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Final release after approvals.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-03",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Audit report.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-04",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Architecture decision records.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-05",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Functional regression report.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-06",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Visual review and screenshot baselines.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-07",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Performance before/after.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-08",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Security and data migration report.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-09",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Device testing matrix.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-10",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: PortKit package, tests and compatibility matrix.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-11",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Release readiness report.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-12",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Known limitations and deferred issues.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
+    },
+    {
+      "id": "S17-13",
+      "spec": "Build 15 spec v1.0 §17",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Deliverable: Upgrade, rollback and maintenance guide.",
+      "source": "Build 15 spec v1.0",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [],
+      "needs_physical_device": false,
+      "acceptance": "Present in the repository or release.",
+      "next": "By phase."
     },
     {
       "id": "D-01",
+      "spec": "Owner decision 2026-11-21 §7",
       "phase": "D",
       "mandatory": true,
-      "requirement": "Pause all: current profile only; every download type; nothing new starts until resume all; partial files kept; downloads paused on their own are not resumed.",
-      "source": "Owner decision",
+      "requirement": "Pausing one episode does not stop the rest of the season.",
+      "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IN PROGRESS",
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Implemented in PR #28; pause from the notification in the background on Android 14+ needs a device."
+        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
-      "needs_physical_device": true,
-      "acceptance": "A test per condition that fails without the change; full CI; device check.",
-      "next": "CI of #28, then owner review."
+      "needs_physical_device": false,
+      "acceptance": "Test per condition PASS on the merged commit.",
+      "next": "Merge #28 after the background notification test."
     },
     {
       "id": "D-02",
+      "spec": "Owner decision 2026-11-21 §7",
       "phase": "D",
       "mandatory": true,
-      "requirement": "No merge and no release without the owner's new approval.",
-      "source": "Owner decision",
+      "requirement": "Pausing a season does not stop other seasons.",
+      "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "No merge after the directive.",
-      "next": "Ongoing."
-    },
-    {
-      "id": "G-01",
-      "phase": "G",
-      "mandatory": true,
-      "requirement": "No merge with a failing check; no test disabled.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "Ongoing.",
-      "next": "Ongoing."
-    },
-    {
-      "id": "G-02",
-      "phase": "G",
-      "mandatory": true,
-      "requirement": "custom-subtitles accepts changes only through pull requests with required checks.",
-      "source": "Build 15 specification (summary; original text pending)",
-      "paths": [],
-      "status": "BLOCKED",
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "The ruleset blocks deletion and force push only."
+        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
       "needs_physical_device": false,
-      "acceptance": "The ruleset requires a pull request and the required checks.",
-      "next": "Owner sets the ruleset (the session cannot change settings)."
+      "acceptance": "Test per condition PASS on the merged commit.",
+      "next": "Merge #28 after the background notification test."
     },
     {
-      "id": "G-05",
-      "phase": "G",
+      "id": "D-03",
+      "spec": "Owner decision 2026-11-21 §7",
+      "phase": "D",
       "mandatory": true,
-      "requirement": "A sanitized requirements register with automated checks, proposed as a required check.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [
-        "docs/plus/build15/requirements.json",
-        ".github/plus/check-requirements.py"
-      ],
-      "status": "IN PROGRESS",
+      "requirement": "Pause all stops every download type of the current profile and starts nothing new until resume.",
+      "source": "Owner decision 2026-11-21 §7",
+      "paths": [],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "This change."
+        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
       "needs_physical_device": false,
-      "acceptance": "The gate rejects every false claim its tests describe.",
-      "next": "CI of this pull request."
+      "acceptance": "Test per condition PASS on the merged commit.",
+      "next": "Merge #28 after the background notification test."
     },
     {
-      "id": "G-06",
-      "phase": "G",
+      "id": "D-04",
+      "spec": "Owner decision 2026-11-21 §7",
+      "phase": "D",
       "mandatory": true,
-      "requirement": "Traceability kept current at the end of every stage.",
-      "source": "Owner directive 2026-11-20, section 3",
+      "requirement": "Resume all does not resume downloads paused one by one.",
+      "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IN PROGRESS",
-      "evidence": [],
-      "untested": [],
-      "needs_physical_device": false,
-      "acceptance": "Updated each stage.",
-      "next": "Ongoing."
-    },
-    {
-      "id": "G-07",
-      "phase": "G",
-      "mandatory": true,
-      "requirement": "The stable branch's checks are green and do not fail on GitHub's anonymous rate limit.",
-      "source": "Owner directive 2026-11-20, section 3",
-      "paths": [],
-      "status": "IN PROGRESS",
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Durable fix in PR #30, not on this branch."
+        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
       ],
       "needs_physical_device": false,
-      "acceptance": "The evidence step never fails on a rate limit.",
-      "next": "Owner decision on #30."
+      "acceptance": "Test per condition PASS on the merged commit.",
+      "next": "Merge #28 after the background notification test."
+    },
+    {
+      "id": "D-05",
+      "spec": "Owner decision 2026-11-21 §7",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "Resuming an episode while another downloads keeps queue order and concurrency limits.",
+      "source": "Owner decision 2026-11-21 §7",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Test per condition PASS on the merged commit.",
+      "next": "Merge #28 after the background notification test."
+    },
+    {
+      "id": "D-06",
+      "spec": "Owner decision 2026-11-21 §7",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "Partial files and real progress kept.",
+      "source": "Owner decision 2026-11-21 §7",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Test per condition PASS on the merged commit.",
+      "next": "Merge #28 after the background notification test."
+    },
+    {
+      "id": "D-07",
+      "spec": "Owner decision 2026-11-21 §7",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "No duplicate downloads.",
+      "source": "Owner decision 2026-11-21 §7",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Test per condition PASS on the merged commit.",
+      "next": "Merge #28 after the background notification test."
+    },
+    {
+      "id": "D-08",
+      "spec": "Owner decision 2026-11-21 §7",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "Wi-Fi, SAF, profiles and Android limits respected.",
+      "source": "Owner decision 2026-11-21 §7",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Test per condition PASS on the merged commit.",
+      "next": "Merge #28 after the background notification test."
+    },
+    {
+      "id": "D-09",
+      "spec": "Owner decision 2026-11-21 §7",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "Pause and resume from notifications in the background tested.",
+      "source": "Owner decision 2026-11-21 §7",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21.",
+        "Background notification on Android 14+ not run."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "Test per condition PASS on the merged commit.",
+      "next": "Merge #28 after the background notification test."
+    },
+    {
+      "id": "D-10",
+      "spec": "Owner decision 2026-11-21 §7",
+      "phase": "D",
+      "mandatory": true,
+      "requirement": "Upgrade keeps the data.",
+      "source": "Owner decision 2026-11-21 §7",
+      "paths": [],
+      "status": "IMPLEMENTED",
+      "evidence": [],
+      "untested": [
+        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
+      ],
+      "needs_physical_device": false,
+      "acceptance": "Test per condition PASS on the merged commit.",
+      "next": "Merge #28 after the background notification test."
     }
   ]
 }
