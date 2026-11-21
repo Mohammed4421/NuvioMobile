@@ -12,7 +12,8 @@
         "commonMain/kotlin/com/nuvio/app/features/player/SubtitleAppearanceControls.kt",
         "commonMain/kotlin/com/nuvio/app/features/settings/SubtitleAppearanceSettings.kt",
         "commonMain/kotlin/com/nuvio/app/features/player/PlayerSettingsRepository.kt",
-        "commonMain/kotlin/com/nuvio/app/features/settings/PlaybackSubtitleSettings.kt"
+        "commonMain/kotlin/com/nuvio/app/features/settings/PlaybackSubtitleSettings.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/SubtitleStylePanel.kt"
       ],
       "depends": [
         "player-engines"
@@ -33,6 +34,7 @@
       "test_files": [
         "commonTest/kotlin/com/nuvio/app/features/player/PlusSubtitleMigrationTest.kt",
         "commonTest/kotlin/com/nuvio/app/features/player/SubtitleAppearanceTest.kt",
+        "androidApp/src/androidTest/kotlin/com/nuvio/android/DeviceSubtitleStatesTest.kt",
         "commonTest/kotlin/com/nuvio/app/features/player/SubtitleLineDirectionTest.kt"
       ]
     },
