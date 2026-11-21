@@ -32,7 +32,8 @@
       ],
       "test_files": [
         "commonTest/kotlin/com/nuvio/app/features/player/PlusSubtitleMigrationTest.kt",
-        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleAppearanceTest.kt"
+        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleAppearanceTest.kt",
+        "androidApp/src/androidTest/kotlin/com/nuvio/android/DeviceSubtitleStatesTest.kt"
       ]
     },
     {
