@@ -394,16 +394,24 @@
       "requirement": "Each finding has: stable ID, files, reproducible evidence, root cause, user impact, severity Critical/High/Medium/Low, alternatives, chosen fix with reason, compatibility/maintenance impact, required tests, status; decision KEEP/FIX/REFACTOR/REMOVE/DEFER.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/audit.md"
+        ".github/plus/tests/test_audit_findings.py",
+        "docs/plus/build15/audit.md",
+        "docs/plus/build15/findings.json"
       ],
-      "status": "DISCOVERED",
-      "evidence": [],
-      "untested": [
-        "Current rows lack root cause, user impact, alternatives and use P1-P3 instead of Critical..Low."
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_audit_findings.py",
+          "name": "test_every_finding_has_every_field",
+          "what": "Every finding in findings.json has id, files, evidence, root cause, impact, severity, alternatives, chosen, rationale, compatibility, tests, priority, decision, status",
+          "result": "PASS"
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every audit row carries all eleven fields.",
-      "next": "Convert audit.md to the full finding format.",
+      "next": "Kept by the test on every PR",
       "nvp15": "NVP15-REQ-0014"
     },
     {
@@ -430,14 +438,24 @@
       "requirement": "Deferred findings (B15-SUB-03, DL-01, CI-02, UI-03) justified by the spec's priority rules.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/audit.md"
+        "docs/plus/build15/audit.md",
+        "docs/plus/build15/findings.json"
       ],
-      "status": "SPECIFIED",
-      "evidence": [],
-      "untested": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/findings.json",
+          "what": "Deferred now: CI-02 (Low, Nuvio's tree, no runtime effect), UI-03 (Low, no measured impact; P5 start/memory within noise), BLD-01 (Low, trusted input). SUB-03 and DL-01 were fixed instead (#26, #52)",
+          "result": "documented"
+        }
+      ],
+      "untested": [
+        "UI-03 frame timing on a device"
+      ],
       "needs_physical_device": false,
       "acceptance": "Each has a P2/P3 priority with documented risk (§14).",
-      "next": "Re-classify with §14 priorities.",
+      "next": "Owner sees the list in known-issues.md",
       "nvp15": "NVP15-REQ-0016"
     },
     {
@@ -1997,15 +2015,24 @@
       "mandatory": true,
       "requirement": "Test layer: Security test report.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "paths": [
+        "docs/plus/build15/security.md"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/security.md",
+          "what": "Security test report: credential TLS and redirect tests, OSV run, attack-surface check, MASVS coverage",
+          "result": "documented"
+        }
+      ],
       "untested": [
-        "Final run on the candidate pending."
+        "Native libraries; logs not audited"
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate.",
+      "next": "Confirmed on the candidate",
       "nvp15": "NVP15-REQ-0087"
     },
     {
