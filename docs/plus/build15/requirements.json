@@ -795,14 +795,22 @@
       "requirement": "Arabic test checks the language actually displayed, not only that the system language command succeeded.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44893001137,
+          "commit": "a53de257451bb3534ed06f36375cd42826edd4ee",
+          "what": "#47: PlusReferenceScreenshots tests check the shown language (Arabic screens show Arabic labels, English none) and the left-to-right colour code on Arabic screens; all passed",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "#35 checks layout direction; displayed text language not asserted yet."
       ],
       "needs_physical_device": false,
       "acceptance": "Screenshot test asserts Arabic text is rendered.",
-      "next": "Assert an Arabic string node in each Arabic screenshot.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0039"
     },
     {
@@ -1088,7 +1096,7 @@
         "docs/plus/build15/security-surface.json",
         ".github/workflows/plus-build.yml"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1096,12 +1104,19 @@
           "commit": "e3031b6de64dea7127177a98679ffe2fe1c9973d",
           "what": "PR #39 checks: 'Attack surface against the reviewed list' on the 4 built APKs: 36 lines, equal to the reviewed Build 14 surface (exported components, providers, FileProvider paths, permissions, flags); no fixed-rule violation",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44893001137,
+          "commit": "a53de257451bb3534ed06f36375cd42826edd4ee",
+          "what": "#47 final commit (merged): attack surface of the 4 built APKs equals the reviewed list (36 lines), no fixed-rule violation",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "plus-build.yml changed (#47): re-verify with the attack-surface step of this PR's run.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0052"
     },
     {
@@ -1135,7 +1150,7 @@
         "docs/plus/build15/security-surface.json",
         ".github/workflows/plus-build.yml"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1143,12 +1158,19 @@
           "commit": "e3031b6de64dea7127177a98679ffe2fe1c9973d",
           "what": "PR #39 checks: 'Attack surface against the reviewed list' on the 4 built APKs: 36 lines, equal to the reviewed Build 14 surface (exported components, providers, FileProvider paths, permissions, flags); no fixed-rule violation",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44893001137,
+          "commit": "a53de257451bb3534ed06f36375cd42826edd4ee",
+          "what": "#47 final commit (merged): attack surface of the 4 built APKs equals the reviewed list (36 lines), no fixed-rule violation",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "plus-build.yml changed (#47): re-verify with the attack-surface step of this PR's run.",
+      "next": "Owner acceptance.",
       "nvp15": "NVP15-REQ-0054"
     },
     {
