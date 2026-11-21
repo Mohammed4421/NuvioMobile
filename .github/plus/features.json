@@ -32,7 +32,8 @@
       ],
       "test_files": [
         "commonTest/kotlin/com/nuvio/app/features/player/PlusSubtitleMigrationTest.kt",
-        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleAppearanceTest.kt"
+        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleAppearanceTest.kt",
+        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleLineDirectionTest.kt"
       ]
     },
     {
@@ -170,7 +171,8 @@
       ],
       "test_files": [
         "commonTest/kotlin/com/nuvio/app/features/downloads/PlusDownloadsMigrationTest.kt",
-        "androidHostTest/kotlin/com/nuvio/app/features/downloads/DownloadFreeSpaceTest.kt"
+        "androidHostTest/kotlin/com/nuvio/app/features/downloads/DownloadFreeSpaceTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/downloads/AndroidDownloadTransferTest.kt"
       ]
     },
     {
@@ -419,7 +421,8 @@
         "[^{}]*"
       ],
       "test_files": [
-        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserWorstCaseTest.kt"
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserWorstCaseTest.kt",
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserReviewTest.kt"
       ]
     },
     {

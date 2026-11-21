@@ -22,12 +22,8 @@
     },
     "subtitle-parser-worst-case": {
       "level": "portable",
-      "verified": true,
-      "reason": "two Nuvio files, no new API",
-      "evidence": {
-        "run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/44875726793",
-        "commit": "ab8def38ea8bfab7806968f07ca6b9d18ded8bdb"
-      }
+      "verified": false,
+      "reason": "two Nuvio files, no new API"
     },
     "subtitle-style": {
       "level": "adapter-required",
