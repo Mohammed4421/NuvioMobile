@@ -717,15 +717,20 @@
       "mandatory": true,
       "requirement": "Cold and warm start.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
+      "paths": [
+        ".github/plus/measure-app.sh",
+        ".github/plus/measure-compare.py",
+        ".github/workflows/performance-compare.yml"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Not measured."
+        "Emulator before/after (Build 14 against the head, Android 14 and 9) runs in performance-compare.yml; result not yet cited.",
+        "Real-device values: NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Cite the performance-compare.yml run, then set limits (P5-11)."
     },
     {
       "id": "P5-02",
@@ -768,15 +773,20 @@
       "mandatory": true,
       "requirement": "Memory and resource use.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
+      "paths": [
+        ".github/plus/measure-app.sh",
+        ".github/plus/measure-compare.py",
+        ".github/workflows/performance-compare.yml"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Not measured."
+        "Emulator before/after (Build 14 against the head, Android 14 and 9) runs in performance-compare.yml; result not yet cited.",
+        "Real-device values: NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Cite the performance-compare.yml run, then set limits (P5-11)."
     },
     {
       "id": "P5-05",
@@ -853,15 +863,19 @@
       "mandatory": true,
       "requirement": "APK and dependency size.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
+      "paths": [
+        ".github/plus/measure-app.sh",
+        ".github/plus/measure-compare.py",
+        ".github/workflows/performance-compare.yml"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Not measured."
+        "Before/after APK size runs in performance-compare.yml; result not yet cited."
       ],
       "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Cite the performance-compare.yml run, then set limits (P5-11)."
     },
     {
       "id": "P5-10",
@@ -870,13 +884,17 @@
       "mandatory": true,
       "requirement": "Method: fixed devices and Android versions, fixed scenarios, repeated runs, values and variance kept, before/after, no improvement below noise.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
+      "paths": [
+        ".github/plus/measure-app.sh",
+        ".github/plus/measure-compare.py",
+        ".github/workflows/performance-compare.yml"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [],
       "needs_physical_device": true,
       "acceptance": "Documented method and raw results in the repository.",
-      "next": "Emulator harness for relative numbers; device protocol."
+      "next": "Cite the performance-compare.yml run, then set limits (P5-11)."
     },
     {
       "id": "P5-11",
