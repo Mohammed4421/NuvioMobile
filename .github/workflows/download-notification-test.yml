@@ -91,8 +91,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 28 and 34 as before (28 is a required check); 36 (Android 16) and 37 (Android 17) for compatibility.
-        api: [34, 28, 36, 37]
+        # 28 and 34 as before (28 is a required check); 36 (Android 16) for compatibility.
+        # Android 17 (37) is NOT TESTED here: on the android-37.0 google_apis image system_server loses
+        # its services right after boot (SurfaceFlinger abort in the goldfish mapper with
+        # swiftshader_indirect; 'Can't find service: settings/input' with swangle_indirect) before the
+        # app is installed (PR #63 runs). The 37 settings below stay so it can be re-added to the list
+        # when a fixed image ships; until then Android 17 needs a real device.
+        api: [34, 28, 36]
     steps:
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0

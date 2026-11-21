@@ -19,6 +19,36 @@ least one phone; the tablet and HDR rows are required when that hardware is avai
 | Reviews | The newest Nuvio release merged has an approved, complete review record | › Nuvio merge reviews complete |
 | Policy | Workflow security rules, review gate, release scripts | › Tests of the review gate and release scripts |
 
+### Emulator results by Android version (PR #63, commit `6231bb66`, 2026-11-21)
+
+Emulators are `google_apis` x86_64 images. Device tests: `nuvio-device-tests.yml` run
+[44935805121](https://github.com/Mohammed4421/NuvioMobile/actions/runs/44935805121); notification and
+interruptions: `download-notification-test.yml` run
+[44935805120](https://github.com/Mohammed4421/NuvioMobile/actions/runs/44935805120).
+
+| Check | Android 9 (28) | Android 14 (34) | Android 16 (36) | Android 17 (37) |
+|---|---|---|---|---|
+| Subtitles shown and cleared, ExoPlayer and mpv (`SubtitlePlaybackTest`) | pass | pass | pass | NOT TESTED |
+| Device subtitle: off/on, delay, missing file, both engines (`DeviceSubtitleStatesTest`) | pass | pass | pass | NOT TESTED |
+| mpv video after seek and surface recreation (`MpvSurfaceTest`) | pass | pass | pass | NOT TESTED |
+| Playback resumes after the connection drops, both engines (`NetworkDropPlaybackTest`) | pass | pass | pass | NOT TESTED |
+| Custom font through the system picker (`SubtitleSettingsTest`) | not run (needs Android 10+) | pass | pass | NOT TESTED |
+| Download notification: pause and resume | pass | pause only ¹ | pause only ¹ | NOT TESTED |
+| Download: network loss, process death, no second transfer | pass | pass | pass | NOT TESTED |
+
+¹ On Android 14+ a download is a user-initiated job; Resume from the notification needs a real tap
+(device row D22).
+
+Android 17: the `android-37.0` image boots, but system_server loses its services before the app is
+installed — SurfaceFlinger aborts in the emulator's goldfish mapper with `swiftshader_indirect`
+(`Assertion failed: !rcEnc->featureInfo()->hasReadColorBufferDma`), and with `swangle_indirect`
+`settings` and `input` are missing during the runner's own setup (jobs 136937937703, 136943916116).
+That is the emulator image, not the app; it is removed from the matrices until a fixed image ships.
+Nothing is claimed for Android 17: it needs a real device.
+
+Android 16 fix found by these runs: the ExoPlayer snapshot loop ran off the main thread under the
+test recomposer ("Player is accessed on the wrong thread"); it is now pinned to the main thread.
+
 ## On a real device (by a person)
 
 | # | Area | Steps | Expected | Required |

@@ -551,6 +551,13 @@
           "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
           "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44935805121,
+          "commit": "6231bb66becd2164ddf57ec0119a51ef802876a5",
+          "what": "Nuvio device tests on Android 9, 14 and 16 emulators: SubtitlePlaybackTest, DeviceSubtitleStatesTest, MpvSurfaceTest, NetworkDropPlaybackTest (ExoPlayer and mpv), SubtitleSettingsTest (14, 16); Android 17 NOT TESTED (emulator image fault, device-test-matrix.md)",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -585,6 +592,13 @@
           "run": 44904776470,
           "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
           "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44935805120,
+          "commit": "6231bb66becd2164ddf57ec0119a51ef802876a5",
+          "what": "Download notification (Android 9 pause/resume; 14 and 16 pause) and interruptions (network loss, process death, no second transfer) on Android 9, 14, 16; Android 17 NOT TESTED",
           "result": "PASS"
         }
       ],
@@ -2100,13 +2114,34 @@
       "source": "Build 15 spec v1.0",
       "paths": [],
       "status": "IMPLEMENTED",
-      "evidence": [],
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44935805121,
+          "commit": "6231bb66becd2164ddf57ec0119a51ef802876a5",
+          "what": "Nuvio device tests on Android 9, 14 and 16 emulators: SubtitlePlaybackTest, DeviceSubtitleStatesTest, MpvSurfaceTest, NetworkDropPlaybackTest (ExoPlayer and mpv), SubtitleSettingsTest (14, 16); Android 17 NOT TESTED (emulator image fault, device-test-matrix.md)",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44935805120,
+          "commit": "6231bb66becd2164ddf57ec0119a51ef802876a5",
+          "what": "Download notification (Android 9 pause/resume; 14 and 16 pause) and interruptions (network loss, process death, no second transfer) on Android 9, 14, 16; Android 17 NOT TESTED",
+          "result": "PASS"
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/device-test-matrix.md",
+          "what": "Per-version emulator results (Android 9, 14, 16, 17) and the Android 17 image fault"
+        }
+      ],
       "untested": [
-        "Android 9 and 14 emulators run; no recent-version emulator; no physical device."
+        "Android 17 (API 37): the emulator image loses system services after boot; NOT TESTED, needs a real device.",
+        "No physical device run (player, HDR, external storage): NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": true,
       "acceptance": "Device matrix with results.",
-      "next": "Add API 36 emulator; physical device list for the owner.",
+      "next": "Owner's physical device on the release candidate; re-add API 37 when a fixed emulator image ships.",
       "nvp15": "NVP15-REQ-0091"
     },
     {
