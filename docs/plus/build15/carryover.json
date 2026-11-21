@@ -326,9 +326,9 @@
       "source": "#44",
       "state": "REUSE REVALIDATION NEEDED",
       "area": "Credentials only to verified servers (B15-SEC-04)",
-      "tests_run": "PlaybackTlsTest (6 tests incl. badssl.com real servers) passed; Nuvio device tests Android 14 and 9 passed; static analysis did not run (NVP15-RISK-0008)",
+      "tests_run": "PlaybackTlsTest (6 tests incl. badssl.com real servers) passed; Nuvio device tests Android 14 and 9 passed; static analysis did not run (NVP15-RISK-0008); static analysis after merge: run 44873782415 (29c51385), 23 new detekt style warnings in PlayerPlaybackNetworking.kt, no defect",
       "reusable": "—",
-      "to_complete": "Static analysis on the branch; owner's sources on his device",
+      "to_complete": "Owner's sources on his device",
       "requirements": [
         "P6-05",
         "D-13"
@@ -346,6 +346,24 @@
         "C-03"
       ],
       "changes_app_source": true
+    },
+    {
+      "source": "#45",
+      "state": "REUSE VERIFIED",
+      "area": "Spec v1.1 traceability; PortKit required check always reports; static-analysis compare always reports",
+      "tests_run": "All checks of ab8def38",
+      "reusable": "Registers and gate",
+      "to_complete": "—",
+      "requirements": [
+        "S19-01",
+        "S19-02",
+        "S21-01",
+        "S22-01",
+        "S24-01",
+        "P7-07",
+        "P8-01"
+      ],
+      "changes_app_source": false
     }
   ]
 }

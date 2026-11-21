@@ -13,13 +13,21 @@
   "features": {
     "lazy-key-collisions": {
       "level": "portable",
-      "verified": false,
-      "reason": "one Nuvio file, self-contained change; re-verifying after portkit.yml changed (#45)"
+      "verified": true,
+      "reason": "one Nuvio file, self-contained change",
+      "evidence": {
+        "run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/44875726793",
+        "commit": "ab8def38ea8bfab7806968f07ca6b9d18ded8bdb"
+      }
     },
     "subtitle-parser-worst-case": {
       "level": "portable",
-      "verified": false,
-      "reason": "two Nuvio files, no new API; re-verifying after portkit.yml changed (#45)"
+      "verified": true,
+      "reason": "two Nuvio files, no new API",
+      "evidence": {
+        "run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/44875726793",
+        "commit": "ab8def38ea8bfab7806968f07ca6b9d18ded8bdb"
+      }
     },
     "subtitle-style": {
       "level": "adapter-required",

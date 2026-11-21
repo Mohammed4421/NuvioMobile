@@ -111,21 +111,6 @@
       "alternatives": "Investigate if it recurs (D-12)",
       "decision_owner": "agent",
       "closes_when": "Root cause found or no recurrence over further runs"
-    },
-    {
-      "id": "NVP15-RISK-0008",
-      "state": "NOT TESTED",
-      "reason": "#44 merged by auto-merge while its static analysis had failed (Maven Central download) and the skipped required comparison counted as passed",
-      "needs": "Static analysis run on custom-subtitles after #44 (dispatched 2026-11-21)",
-      "requirements": [
-        "P8-01",
-        "S12-01"
-      ],
-      "impact": "PlayerPlaybackNetworking.kt change not yet lint/detekt-checked; its unit tests (6, real servers included) passed",
-      "priority": "P1",
-      "alternatives": "Re-run on the branch; fix the workflow so a skipped comparison fails (done in #45)",
-      "decision_owner": "agent",
-      "closes_when": "Static analysis run on a commit containing #44 passes"
     }
   ]
 }
