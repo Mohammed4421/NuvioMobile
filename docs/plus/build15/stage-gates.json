@@ -1,0 +1,241 @@
+{
+  "schema": 1,
+  "note": "Spec v1.1 §24 and Appendix B: one gate per stage. PASS only when every mandatory requirement of the stage is VERIFIED or ACCEPTED and the owner's decision is recorded.",
+  "gates": [
+    {
+      "stage": "P0",
+      "status": "AWAITING OWNER APPROVAL",
+      "commit_sha": null,
+      "requirements": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P0-04",
+        "P0-05",
+        "P0-06",
+        "P0-07",
+        "S21-02"
+      ],
+      "critical_blockers": [
+        "NVP15-RISK-0001"
+      ],
+      "owner_approval": null,
+      "notes": "Baseline verified against its sources (check-baseline.py); performance on a device open."
+    },
+    {
+      "stage": "P1",
+      "status": "BLOCKED",
+      "commit_sha": null,
+      "requirements": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04",
+        "P1-05",
+        "P1-06",
+        "S19-03",
+        "S19-03"
+      ],
+      "critical_blockers": [],
+      "owner_approval": null,
+      "notes": "Initial pass of Nuvio areas still due (S19-03)."
+    },
+    {
+      "stage": "P2",
+      "status": "BLOCKED",
+      "commit_sha": null,
+      "requirements": [
+        "P2-01",
+        "P2-02",
+        "P2-03",
+        "P2-04"
+      ],
+      "critical_blockers": [],
+      "owner_approval": null,
+      "notes": "architecture.md exists; ADRs and owner approval of high-risk changes due."
+    },
+    {
+      "stage": "P3",
+      "status": "BLOCKED",
+      "commit_sha": null,
+      "requirements": [
+        "P3-01",
+        "P3-02",
+        "P3-03",
+        "P3-04",
+        "P3-05",
+        "P3-06",
+        "P3-07"
+      ],
+      "critical_blockers": [
+        "NVP15-RISK-0004"
+      ],
+      "owner_approval": null,
+      "notes": "Journeys need real runs."
+    },
+    {
+      "stage": "P4",
+      "status": "BLOCKED",
+      "commit_sha": null,
+      "requirements": [
+        "P4-01",
+        "P4-02",
+        "P4-03",
+        "P4-04",
+        "P4-05",
+        "P4-06",
+        "P4-07",
+        "P4-08",
+        "P4-09",
+        "P4-10",
+        "P4-11",
+        "P4-12",
+        "P4-13"
+      ],
+      "critical_blockers": [],
+      "owner_approval": null,
+      "notes": "Reference screenshots exist; comparison and polish due."
+    },
+    {
+      "stage": "P5",
+      "status": "BLOCKED",
+      "commit_sha": null,
+      "requirements": [
+        "P5-01",
+        "P5-02",
+        "P5-03",
+        "P5-04",
+        "P5-05",
+        "P5-06",
+        "P5-07",
+        "P5-08",
+        "P5-09",
+        "P5-10",
+        "P5-11"
+      ],
+      "critical_blockers": [
+        "NVP15-RISK-0003"
+      ],
+      "owner_approval": null,
+      "notes": "Emulator before/after and limits done (#38); device values due."
+    },
+    {
+      "stage": "P6",
+      "status": "BLOCKED",
+      "commit_sha": null,
+      "requirements": [
+        "P6-01",
+        "P6-02",
+        "P6-03",
+        "P6-04",
+        "P6-05",
+        "P6-06",
+        "P6-07",
+        "P6-08",
+        "P6-09",
+        "P6-10",
+        "P6-11",
+        "P6-12",
+        "P6-13",
+        "P6-14",
+        "P6-15",
+        "P6-16",
+        "P6-17",
+        "P6-18"
+      ],
+      "critical_blockers": [
+        "NVP15-RISK-0002",
+        "NVP15-RISK-0005",
+        "NVP15-RISK-0006"
+      ],
+      "owner_approval": null,
+      "notes": "Attack surface verified; upgrade matrix runs at release."
+    },
+    {
+      "stage": "P7",
+      "status": "BLOCKED",
+      "commit_sha": null,
+      "requirements": [
+        "P7-01",
+        "P7-02",
+        "P7-03",
+        "P7-04",
+        "P7-05",
+        "P7-06",
+        "P7-07",
+        "P7-08",
+        "P7-09",
+        "P7-10"
+      ],
+      "critical_blockers": [],
+      "owner_approval": null,
+      "notes": "Transfers verified for two features only."
+    },
+    {
+      "stage": "P8",
+      "status": "BLOCKED",
+      "commit_sha": null,
+      "requirements": [
+        "P8-01",
+        "P8-02",
+        "P8-03",
+        "P8-04",
+        "P8-05",
+        "P8-06",
+        "P8-07",
+        "P8-08",
+        "P8-09",
+        "P8-10",
+        "P8-11",
+        "P8-12",
+        "P8-13",
+        "S20-02"
+      ],
+      "critical_blockers": [
+        "NVP15-RISK-0003"
+      ],
+      "owner_approval": null,
+      "notes": "Static analysis and performance layers verified."
+    },
+    {
+      "stage": "P9",
+      "status": "BLOCKED",
+      "commit_sha": null,
+      "requirements": [
+        "S12-02",
+        "S16-01",
+        "S16-02",
+        "S16-03",
+        "S16-04",
+        "S16-05",
+        "S16-06",
+        "S16-07",
+        "S16-08",
+        "S16-09",
+        "S16-10",
+        "S16-11",
+        "S16-12",
+        "S17-01",
+        "S17-02",
+        "S17-03",
+        "S17-04",
+        "S17-05",
+        "S17-06",
+        "S17-07",
+        "S17-08",
+        "S17-09",
+        "S17-10",
+        "S17-11",
+        "S17-12",
+        "S17-13",
+        "S22-02",
+        "S25-03"
+      ],
+      "critical_blockers": [
+        "NVP15-RISK-0005"
+      ],
+      "owner_approval": null,
+      "notes": "Release scope manifest due; merge (D-11), signing and publishing approvals separate."
+    }
+  ]
+}

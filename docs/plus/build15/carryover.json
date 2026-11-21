@@ -1,0 +1,351 @@
+{
+  "schema": 1,
+  "note": "Spec v1.1 §21: earlier work and its state for Build 15. Nothing here counts as Build 15 progress until its requirement is VERIFIED in requirements.json.",
+  "entries": [
+    {
+      "source": "#14 (Build 14)",
+      "state": "NOT APPLICABLE",
+      "area": "Build 14 update check on Android 9",
+      "tests_run": "Build 14 release run 44727757154",
+      "reusable": "Baseline only",
+      "to_complete": "—",
+      "requirements": [
+        "P0-01"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#15",
+      "state": "REUSE REVALIDATION NEEDED",
+      "area": "Lists: duplicate-safe lazy keys (B15-UI-01)",
+      "tests_run": "DuplicateSafeLazyKeysTest, 20,000 random lists; CI 44735358734",
+      "reusable": "Fix and test",
+      "to_complete": "Merged before the owner's P0 decision (spec v1.1 §21.3): counted for Build 15 only after re-check on the final commit.",
+      "requirements": [
+        "C-02"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#16",
+      "state": "REUSE VERIFIED",
+      "area": "P0 baseline and known issues",
+      "tests_run": "check-baseline.py (#41) on every gate run",
+      "reusable": "baseline.json, known-issues.md",
+      "to_complete": "Owner's P0 decision",
+      "requirements": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P0-06"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#17",
+      "state": "REUSE REVALIDATION NEEDED",
+      "area": "Subtitle parsers on malformed input (B15-SUB-01)",
+      "tests_run": "SubtitleParserWorstCaseTest, 60,000 random files",
+      "reusable": "Fix and test",
+      "to_complete": "Merged before the owner's P0 decision (spec v1.1 §21.3): counted for Build 15 only after re-check on the final commit.",
+      "requirements": [
+        "C-02"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#18",
+      "state": "REUSE VERIFIED",
+      "area": "P1 audit register",
+      "tests_run": "test_audit_findings.py",
+      "reusable": "audit.md, findings.json",
+      "to_complete": "—",
+      "requirements": [
+        "P1-02",
+        "P1-03"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#19–#23",
+      "state": "REUSE REVALIDATION NEEDED",
+      "area": "PortKit tools, safety, transfer tests",
+      "tests_run": "PortKit tests and transfer runs (upstream and a fork)",
+      "reusable": "Package and tests",
+      "to_complete": "Two features transfer-verified; others not yet (P7-08, P7-10)",
+      "requirements": [
+        "P7-01",
+        "P7-02",
+        "P7-03",
+        "P7-04",
+        "P7-05",
+        "P7-06",
+        "P7-07",
+        "P7-08"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#24",
+      "state": "REUSE REVALIDATION NEEDED",
+      "area": "Offline manual sync of local subtitles (B15-SUB-04)",
+      "tests_run": "LocalSubtitleSyncCuesTest",
+      "reusable": "Fix and test",
+      "to_complete": "Merged before the owner's P0 decision (spec v1.1 §21.3): counted for Build 15 only after re-check on the final commit.",
+      "requirements": [
+        "C-02"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#25",
+      "state": "REUSE REVALIDATION NEEDED",
+      "area": "Subtitle gestures stored once (B15-SUB-05)",
+      "tests_run": "SubtitleGestureSessionTest; feel on a device not tested",
+      "reusable": "Fix and test",
+      "to_complete": "Merged before the owner's P0 decision (spec v1.1 §21.3): counted for Build 15 only after re-check on the final commit. Gesture feel: NEEDS PHYSICAL DEVICE.",
+      "requirements": [
+        "C-02"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#26",
+      "state": "REUSE REVALIDATION NEEDED",
+      "area": "Local subtitle real format (B15-SUB-06)",
+      "tests_run": "LocalSubtitleFormatTest",
+      "reusable": "Fix and test",
+      "to_complete": "Merged before the owner's P0 decision (spec v1.1 §21.3): counted for Build 15 only after re-check on the final commit.",
+      "requirements": [
+        "C-02"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#27",
+      "state": "REUSE VERIFIED",
+      "area": "Race harness r10–r13 (B15-DL-02: no defect)",
+      "tests_run": "Harness in CI",
+      "reusable": "Harness",
+      "to_complete": "—",
+      "requirements": [
+        "P8-04"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#28 (open)",
+      "state": "INCOMPLETE",
+      "area": "Season pause / pause all (D-01..D-10, B15-DL-03)",
+      "tests_run": "Unit, harness r1–r21, SeasonPauseAndroidTest; notification pause/resume test passed once on Android 14",
+      "reusable": "—",
+      "to_complete": "Notification test passing on Android 14 and 9 on the head; then merge",
+      "requirements": [
+        "D-01",
+        "D-02",
+        "D-03",
+        "D-04",
+        "D-05",
+        "D-06",
+        "D-07",
+        "D-08",
+        "D-09",
+        "D-10"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#29, #30",
+      "state": "REUSE VERIFIED",
+      "area": "CI robustness (Gradle file 404, GitHub rate limit)",
+      "tests_run": "test_gradle_retry.py, PortKit evidence tests",
+      "reusable": "Scripts",
+      "to_complete": "—",
+      "requirements": [
+        "S12-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#31",
+      "state": "REUSE VERIFIED",
+      "area": "Requirements register and gate",
+      "tests_run": "test_check_requirements.py; gate on every PR and push",
+      "reusable": "Register and gate",
+      "to_complete": "Extended to v1.1 here",
+      "requirements": [
+        "S15-01",
+        "S19-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#32",
+      "state": "REUSE VERIFIED",
+      "area": "Inventory and review states",
+      "tests_run": "test_build15_inventory.py",
+      "reusable": "inventory.md",
+      "to_complete": "Initial pass of Nuvio areas (S19-03)",
+      "requirements": [
+        "P1-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#33",
+      "state": "REUSE VERIFIED",
+      "area": "Structure decisions and journey matrix",
+      "tests_run": "—",
+      "reusable": "architecture.md, journeys.md",
+      "to_complete": "Journeys need real runs (P3)",
+      "requirements": [
+        "P2-01",
+        "P3-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#34",
+      "state": "REUSE REVALIDATION NEEDED",
+      "area": "Nuvio device tests on emulators; mpv main-thread fix (B15-PLY-01)",
+      "tests_run": "Nuvio device tests Android 14 and 9",
+      "reusable": "Workflow and fix",
+      "to_complete": "Merged before the owner's P0 decision (spec v1.1 §21.3): counted for Build 15 only after re-check on the final commit. Intermittent B15-PLY-02 open.",
+      "requirements": [
+        "P8-05"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#35",
+      "state": "REUSE VERIFIED",
+      "area": "Reference screenshots EN/AR, phone/tablet; RTL fix",
+      "tests_run": "PlusReferenceScreenshotsTest",
+      "reusable": "Screenshots",
+      "to_complete": "Arabic text assertions and image comparison (P4-11, P4-12)",
+      "requirements": [
+        "P4-01"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#36, #41",
+      "state": "REUSE VERIFIED",
+      "area": "Build 14 hashes, libraries, baseline check",
+      "tests_run": "check-baseline.py --online",
+      "reusable": "baseline.json",
+      "to_complete": "—",
+      "requirements": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P0-05"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#37",
+      "state": "REUSE REVALIDATION NEEDED",
+      "area": "Device subtitle cache cleanup (B15-SUB-03)",
+      "tests_run": "DeviceSubtitleCacheTest",
+      "reusable": "Fix and test",
+      "to_complete": "Merged before the owner's P0 decision (spec v1.1 §21.3): counted for Build 15 only after re-check on the final commit.",
+      "requirements": [
+        "C-02"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#38",
+      "state": "REUSE VERIFIED",
+      "area": "Performance before/after and limits",
+      "tests_run": "performance-compare.yml runs 44866182786, 44868996463",
+      "reusable": "Scripts, limits",
+      "to_complete": "Device values (NVP15-RISK-0003)",
+      "requirements": [
+        "P5-01",
+        "P5-04",
+        "P5-09",
+        "P5-10",
+        "P5-11",
+        "P8-07"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#39",
+      "state": "REUSE VERIFIED",
+      "area": "Release APK attack surface",
+      "tests_run": "security-surface.py on the built APKs (run 44862492360)",
+      "reusable": "Check and list",
+      "to_complete": "—",
+      "requirements": [
+        "P6-01",
+        "P6-03"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#40",
+      "state": "REUSE VERIFIED",
+      "area": "Static analysis (lint + detekt)",
+      "tests_run": "Static analysis run 44866405817",
+      "reusable": "Workflow",
+      "to_complete": "—",
+      "requirements": [
+        "P8-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#42",
+      "state": "REUSE VERIFIED",
+      "area": "Ruleset proposal (B15-SEC-03), B15-SEC-02",
+      "tests_run": "—",
+      "reusable": "Proposal",
+      "to_complete": "Owner applies the ruleset",
+      "requirements": [
+        "P6-10",
+        "S12-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#43",
+      "state": "REUSE REVALIDATION NEEDED",
+      "area": "mpv caption after a delay change (B15-PLY-01)",
+      "tests_run": "Nuvio device tests Android 14 and 9",
+      "reusable": "Fix",
+      "to_complete": "Merged before the owner's P0 decision (spec v1.1 §21.3): counted for Build 15 only after re-check on the final commit.",
+      "requirements": [
+        "C-02"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#44",
+      "state": "REUSE REVALIDATION NEEDED",
+      "area": "Credentials only to verified servers (B15-SEC-04)",
+      "tests_run": "PlaybackTlsTest (6 tests incl. badssl.com real servers) passed; Nuvio device tests Android 14 and 9 passed; static analysis did not run (NVP15-RISK-0008)",
+      "reusable": "—",
+      "to_complete": "Static analysis on the branch; owner's sources on his device",
+      "requirements": [
+        "P6-05",
+        "D-13"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#2 (draft)",
+      "state": "NOT APPLICABLE",
+      "area": "Nuvio 1.1.0-beta.2 trial",
+      "tests_run": "—",
+      "reusable": "—",
+      "to_complete": "Never merged into Build 15 (owner rule 9)",
+      "requirements": [
+        "C-03"
+      ],
+      "changes_app_source": true
+    }
+  ]
+}

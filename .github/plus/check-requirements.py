@@ -47,7 +47,7 @@ BAD_RESULTS = {"fail", "failed", "failure", "blocked", "not tested", "needs phys
 FIELDS = {"id": str, "spec": str, "phase": str, "mandatory": bool, "requirement": str, "source": str, "paths": list,
           "status": str, "evidence": list, "untested": list, "needs_physical_device": bool,
           "acceptance": str, "next": str}
-# Every requirement of the Build 15 specification v1.0 (docs/plus/build15/requirements.json, by section)
+# Every requirement of the Build 15 specification v1.1 (docs/plus/build15/requirements.json, by section)
 # and the owner's later decisions. Removing one from
 # the register, or marking it optional, fails the gate; adding new ones is always allowed.
 MANDATORY = [
@@ -65,8 +65,19 @@ MANDATORY = [
     "S17-01", "S17-02", "S17-03", "S17-04", "S17-05", "S17-06", "S17-07", "S17-08", "S17-09", "S17-10",
     "S17-11", "S17-12", "S17-13", "D-01", "D-02", "D-03", "D-04", "D-05", "D-06", "D-07",
     "D-08", "D-09", "D-10",
+    # Spec v1.1 §19–25 and later owner decisions.
+    "S19-01", "S19-02", "S19-03", "S19-04", "S20-01", "S20-02", "S21-01", "S21-02", "S22-01", "S22-02",
+    "S23-01", "S23-02", "S24-01", "S24-02", "S25-01", "S25-02", "S25-03", "D-11", "D-12", "D-13",
 ]
 SHA = re.compile(r"^[0-9a-f]{40}$")
+# Spec v1.1 §19.2: stable NVP15 identifiers, never reused.
+NVP15_REQ = re.compile(r"^NVP15-REQ-\d{4}$")
+# Spec v1.1 §19.4 counterparts kept next to the register (one fact, one file).
+SIDE = {"stage_gates": "docs/plus/build15/stage-gates.json", "carryover": "docs/plus/build15/carryover.json",
+        "risks": "docs/plus/build15/risks.json", "changes": "docs/plus/build15/change-requests.json"}
+GATE_STATES = {"PASS", "FAIL", "BLOCKED", "AWAITING OWNER APPROVAL"}  # §22.3; no "PASS WITH CRITICAL GAPS"
+CARRYOVER_STATES = {"REUSE VERIFIED", "REUSE REVALIDATION NEEDED", "INCOMPLETE", "CONFLICTING", "NOT APPLICABLE"}
+RISK_STATES = {"FAIL", "BLOCKED", "NOT TESTED", "NEEDS PHYSICAL DEVICE", "OPEN DECISION"}
 
 
 def git(repo, *args):
@@ -107,9 +118,76 @@ def check(register, repo, fetch_run=None):
     for phase in PHASES:
         if not any(isinstance(i, dict) and i.get("phase") == phase for i in items):
             problems.append(f"{phase}: no requirement")
+    nvp = {}
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        code = item.get("nvp15")
+        if not isinstance(code, str) or not NVP15_REQ.match(code):
+            problems.append(f"{item.get('id')}: no NVP15-REQ-#### identifier (spec v1.1 §19.2)")
+        elif code in nvp:
+            problems.append(f"{item.get('id')}: {code} also used by {nvp[code]}")
+        else:
+            nvp[code] = item.get("id")
+    problems += check_side(repo, seen)
     for item in items:
         if isinstance(item, dict) and all(isinstance(item.get(f), k) for f, k in FIELDS.items()):
             problems += check_item(item, repo, fetch_run)
+    return problems
+
+
+def check_side(repo, seen):
+    """The stage gates, carry-over, risk and change registers: present, well formed, and every
+    requirement they name is in the register. A gate is PASS only when every mandatory requirement
+    of its phase is VERIFIED or ACCEPTED and the owner's decision is recorded."""
+    problems = []
+    loaded = {}
+    for key, rel in SIDE.items():
+        try:
+            loaded[key] = json.loads(Path(repo, rel).read_text())
+        except (OSError, ValueError) as error:
+            problems.append(f"{rel}: {error}")
+    def refs(where, ids):
+        for rid in ids or []:
+            if rid not in seen:
+                problems.append(f"{where}: unknown requirement {rid}")
+    for gate in loaded.get("stage_gates", {}).get("gates", []):
+        where = f"stage gate {gate.get('stage')}"
+        if gate.get("stage") not in PHASES:
+            problems.append(f"{where}: unknown stage")
+        if gate.get("status") not in GATE_STATES:
+            problems.append(f"{where}: status {gate.get('status')!r} is not one of {sorted(GATE_STATES)}")
+        if gate.get("status") == "PASS":
+            open_items = [i["id"] for i in seen.values() if i.get("phase") == gate.get("stage") and i.get("mandatory")
+                          and i.get("status") not in ("VERIFIED", "ACCEPTED")]
+            if open_items:
+                problems.append(f"{where}: PASS with mandatory requirements not verified: {', '.join(open_items)}")
+            if not gate.get("owner_approval"):
+                problems.append(f"{where}: PASS without the owner's decision")
+        refs(where, gate.get("requirements"))
+    for entry in loaded.get("carryover", {}).get("entries", []):
+        where = f"carry-over {entry.get('source')}"
+        if entry.get("state") not in CARRYOVER_STATES:
+            problems.append(f"{where}: state {entry.get('state')!r} is not one of {sorted(CARRYOVER_STATES)}")
+        refs(where, entry.get("requirements"))
+    for risk in loaded.get("risks", {}).get("risks", []):
+        where = f"risk {risk.get('id')}"
+        if not re.match(r"^NVP15-RISK-\d{4}$", str(risk.get("id"))):
+            problems.append(f"{where}: no NVP15-RISK-#### identifier")
+        if risk.get("state") not in RISK_STATES:
+            problems.append(f"{where}: state {risk.get('state')!r} is not one of {sorted(RISK_STATES)}")
+        for field in ("reason", "needs", "impact", "priority", "decision_owner", "closes_when"):
+            if not str(risk.get(field, "")).strip():
+                problems.append(f"{where}: field '{field}' empty (spec v1.1 §22.1)")
+        refs(where, risk.get("requirements"))
+    for change in loaded.get("changes", {}).get("changes", []):
+        where = f"change {change.get('id')}"
+        if not re.match(r"^NVP15-CHG-\d{4}$", str(change.get("id"))):
+            problems.append(f"{where}: no NVP15-CHG-#### identifier")
+        for field in ("before", "after", "reason", "impact", "decision"):
+            if not str(change.get(field, "")).strip():
+                problems.append(f"{where}: field '{field}' empty (spec v1.1 §25.1)")
+        refs(where, change.get("requirements"))
     return problems
 
 
@@ -215,6 +293,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", default=".")
     parser.add_argument("--online", action="store_true", help="also read every cited run from GitHub")
+    parser.add_argument("--matrix", action="store_true", help="print the traceability matrix (CSV) and exit")
     args = parser.parse_args()
     path = Path(args.repo, REGISTER)
     try:
@@ -222,6 +301,17 @@ def main():
     except (OSError, ValueError) as error:
         print(f"::error::{REGISTER}: {error}")
         return 1
+    if args.matrix:
+        import csv
+        writer = csv.writer(sys.stdout)
+        writer.writerow(["nvp15", "id", "spec", "mandatory", "status", "evidence_runs", "evidence_commits", "untested", "physical_device"])
+        for i in register["items"]:
+            ev = [e for e in i.get("evidence", []) if isinstance(e, dict)]
+            writer.writerow([i.get("nvp15"), i.get("id"), i.get("spec"), i.get("mandatory"), i.get("status"),
+                             " ".join(str(e.get("run", e.get("file", ""))) for e in ev),
+                             " ".join(str(e.get("commit", ""))[:12] for e in ev),
+                             len(i.get("untested", [])), i.get("needs_physical_device")])
+        return 0
     problems = check(register, args.repo, github_run if args.online else None)
     for problem in problems:
         print(f"::error::{problem}")
@@ -233,7 +323,8 @@ def main():
     untested = sum(len(i.get("untested", [])) for i in items)
     device = sum(1 for i in items if i.get("needs_physical_device") and i.get("status") not in ("VERIFIED", "ACCEPTED"))
     print("Register: " + ", ".join(f"{st} {n}" for st, n in counts.items()))
-    # Spec §15: three separate figures (by count; effort/risk weights are not defined yet), never one.
+    # Spec §15/§24.4: three separate figures, each = requirements in that state or beyond / all
+    # requirements, counted equally (no effort/risk weights are approved), never one figure.
     print(f"Implementation {100 * implemented // total}% | verification {100 * verified // total}% | "
           f"acceptance {100 * counts['ACCEPTED'] // total}% (of {len(items)}); "
           f"untested parts listed: {untested}; open items needing a physical device: {device}")

@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "note": "Spec v1.1 §23.3 and §25.1: changes of scope or of an original requirement's meaning.",
+  "changes": [
+    {
+      "id": "NVP15-CHG-0001",
+      "requirements": [
+        "S19-02"
+      ],
+      "before": "§19.4: YAML/CSV files under .github/plus/build15/",
+      "after": "JSON counterparts in docs/plus/build15/ (one fact per file), named in requirements.json's note",
+      "reason": "The register, gate and tests already use JSON there; §19.4 allows counterparts",
+      "impact": "None on scope; the gate reads them",
+      "decision": "Allowed by §19.4 (no owner decision needed)"
+    },
+    {
+      "id": "NVP15-CHG-0002",
+      "requirements": [
+        "D-12",
+        "P8-12"
+      ],
+      "before": "§11: Android 9 and 14 emulators, failures equally blocking and pursued",
+      "after": "Android 9 stays supported and tested; Android-9-only test instability pursued only when playback, subtitles, downloads or upgrades are affected",
+      "reason": "Owner: Android 9 matters little now; its support (minSdk 28) is kept",
+      "impact": "Less effort on Android 9 test flakiness; real defects still fixed",
+      "decision": "Owner 2026-11-21 08:32 ('تمام اكمل' to the recommended option)"
+    }
+  ]
+}
