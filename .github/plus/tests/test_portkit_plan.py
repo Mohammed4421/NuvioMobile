@@ -34,7 +34,8 @@ def upstream_tree(paths):
 
 def tree_digest(directory):
     digest = hashlib.sha256()
-    for path in sorted(p for p in Path(directory).rglob("*") if p.is_file()):
+    files = (p for p in Path(directory).rglob("*") if p.is_file() and ".git" not in p.relative_to(directory).parts)
+    for path in sorted(files):
         digest.update(str(path.relative_to(directory)).encode() + b"\0" + path.read_bytes())
     return digest.hexdigest()
 

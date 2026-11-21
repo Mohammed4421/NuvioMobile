@@ -43,3 +43,19 @@ internal fun guessLanguageFromSubtitleFileName(fileName: String): String {
     // Only accept tokens that map to a language the app can name, so "web" or "hd" stay unknown.
     return normalizeLanguageCode(lastToken)?.takeIf { languageLabelResForCode(it) != null } ?: ""
 }
+
+/** Extensions the players accept for a subtitle file. */
+internal val LocalSubtitleExtensions = setOf("srt", "vtt", "webvtt", "ass", "ssa", "ttml", "dfxp")
+
+/**
+ * The extension to store a picked subtitle under (the players choose the format by it), or null
+ * when the file is not a subtitle. A supported extension is kept. Otherwise (`.txt`, no extension)
+ * the format is read from the text, and the file is accepted only if that format yields lines:
+ * an ASS file named `.txt` is stored as `.ass`, never passed to the SRT reader as `.srt`.
+ */
+internal fun localSubtitleFileExtension(displayName: String, text: String): String? {
+    val named = displayName.substringAfterLast('.', missingDelimiterValue = "").lowercase()
+    if (named in LocalSubtitleExtensions) return named
+    val detected = PlayerSubtitleCueParser.fileExtension(text, sourceUrl = "")
+    return detected.takeIf { PlayerSubtitleCueParser.parse(text, "subtitle.$it").isNotEmpty() }
+}
