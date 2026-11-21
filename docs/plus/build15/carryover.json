@@ -323,12 +323,12 @@
       "changes_app_source": true
     },
     {
-      "source": "#44 (open)",
-      "state": "INCOMPLETE",
+      "source": "#44",
+      "state": "REUSE REVALIDATION NEEDED",
       "area": "Credentials only to verified servers (B15-SEC-04)",
-      "tests_run": "PlaybackTlsTest incl. real servers",
+      "tests_run": "PlaybackTlsTest (6 tests incl. badssl.com real servers) passed; Nuvio device tests Android 14 and 9 passed; static analysis did not run (NVP15-RISK-0008)",
       "reusable": "—",
-      "to_complete": "CI result, then merge",
+      "to_complete": "Static analysis on the branch; owner's sources on his device",
       "requirements": [
         "P6-05",
         "D-13"

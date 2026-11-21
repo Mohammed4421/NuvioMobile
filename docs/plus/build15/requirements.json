@@ -1659,7 +1659,7 @@
         ".github/plus/lint-report.init.gradle",
         ".github/plus/detekt-cli.init.gradle"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1672,7 +1672,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "Owner acceptance.",
+      "next": "static-analysis.yml changed (compare always reports): re-verify with its run on this commit.",
       "nvp15": "NVP15-REQ-0080"
     },
     {
