@@ -9,9 +9,14 @@
 #   4. tap Resume: it continues from where it stopped (the server sees a Range request from that
 #      offset, not a new download from zero);
 #   5. it completes and the file's SHA-256 equals the served file's.
-# Prints PASS or the failing step with the evidence. Usage: notification-pause-test.sh <debug apk> <label>
+# Android 14 (third argument "pause-only"): a download started by Resume is a user-initiated job,
+# which Android 14 lets an app schedule from the background only with the exemption a real tap on
+# the notification gives; the receiver's own send has none ("Android could not start the
+# download", run of 6013f429). So on Android 14 the test checks Pause and stops; Resume from the
+# notification there is a device check (it passed once with a real tap, run 44864116050).
+# Prints PASS or the failing step with the evidence. Usage: notification-pause-test.sh <debug apk> <label> [pause-only]
 set -uo pipefail
-apk="$1"; label="$2"
+apk="$1"; label="$2"; mode="${3:-full}"
 here="$(cd "$(dirname "$0")" && pwd)"
 pkg=com.nuviodebug.com
 id=nuvio-background-download-fixture
@@ -212,6 +217,11 @@ IFS=$'\t' read -r status _ _ <<< "$(state)"
 [[ "${status}" == Paused ]] || fail "status after pause: ${status}"
 say "paused from the notification: status ${status}, .part kept at ${p1} bytes and not growing"
 requests_before="$(wc -l < "${work}/requests.log")"
+if [[ "${mode}" == pause-only ]]; then
+  say "NOT TESTED here: Resume from the notification on Android 14 (needs a real tap; device check)"
+  say "PASS (pause only)"
+  exit 0
+fi
 
 # 4. Resume from the notification: continues from the kept bytes.
 send_notification_action "Resume"

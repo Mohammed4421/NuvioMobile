@@ -2705,7 +2705,8 @@
       "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "The screen tap on the notification button (system UI) on a device: the emulator test sends the posted notification's own Pause/Resume PendingIntent (NotificationActionTestReceiver), because emulator shades did not reliably show the notification to UI automation (NVP15-RISK-0004)."
+        "Android 14: Resume from the notification needs the exemption a real tap gives (the test's self-sent PendingIntent is refused: 'Android could not start the download', run of 6013f429); it passed once with a real tap (run 44864116050). Device check (NVP15-RISK-0004).",
+        "The system UI tap itself on both versions: device check."
       ],
       "needs_physical_device": true,
       "acceptance": "Test per condition PASS on the merged commit.",

@@ -82,7 +82,7 @@ jobs:
           retention-days: 7
 
   emulator:
-    name: Notification pause/resume (Android ${{ matrix.api }})
+    name: Notification pause/resume (Android ${{ matrix.api }}${{ matrix.api == 34 && ', pause only' || '' }})
     needs: build
     timeout-minutes: 60
     runs-on: ubuntu-24.04
@@ -120,13 +120,15 @@ jobs:
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
           LABEL: android-${{ matrix.api }}
+          # Android 14: Pause only (see the script's header); Android 9: the whole scenario.
+          MODE: ${{ matrix.api == 34 && 'pause-only' || 'full' }}
         with:
           api-level: ${{ matrix.api }}
           arch: x86_64
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
-          script: bash .github/plus/notification-pause-test.sh device-test/debug-app.apk "$LABEL"
+          script: bash .github/plus/notification-pause-test.sh device-test/debug-app.apk "$LABEL" "$MODE"
 
       - name: Keep the log
         if: always()
