@@ -26,7 +26,9 @@ fail() {
     echo "== files"; adb shell run-as "${pkg}" ls -la files/downloads
     echo "== jobs"; adb shell dumpsys jobscheduler "${pkg}" | head -n 80
     echo "== connectivity"; adb shell dumpsys connectivity | grep -iE "NetworkAgentInfo|Active default network" | head -n 10
-    echo "== log"; adb logcat -d -t 400 | grep -iE "nuvio|download|AndroidRuntime" | tail -n 120; } > "notification-pause-${label}-state.txt" 2>&1
+    echo "== log"; adb logcat -d -t 400 | grep -iE "nuvio|download|AndroidRuntime" | tail -n 120
+    echo "== server"; cat "${work}/server.log" 2>/dev/null; } > "notification-pause-${label}-state.txt" 2>&1
+  sed 's/^/  /' "notification-pause-${label}-state.txt"
   exit 1
 }
 
@@ -41,11 +43,12 @@ for value in re.findall(r"<string name=\"downloads_payload_[0-9]+\">(.*?)</strin
     items = payload.get("items", payload) if isinstance(payload, dict) else payload
     for item in items:
         if item.get("videoId") == sys.argv[1]:
-            print(item.get("status"), item.get("fileName"), item.get("downloadedBytes", 0))
+            print(item.get("status"), item.get("fileName"), item.get("downloadedBytes", 0), sep="\t")
             sys.exit(0)
-print("missing - 0")' "${id}"
+print("missing\t-\t0")' "${id}"
 }
-part_size() { adb shell run-as "${pkg}" stat -c %s "files/downloads/$1.part" 2>/dev/null | tr -d '\r' || true; }
+# File names can contain spaces: quoted for the device shell.
+part_size() { adb shell "run-as ${pkg} stat -c %s 'files/downloads/$1.part'" 2>/dev/null | tr -d '\r' || true; }
 
 # Taps the button whose text is $1 (case-insensitive) in the expanded notification shade.
 tap_notification_button() {
@@ -78,8 +81,11 @@ wait_for() {  # wait_for <seconds> <description> <command...>
 # 1. Fixture: 24 MB served at 300 KB/s (about 80 s), resumable.
 head -c 25165824 /dev/urandom > "${work}/fixture.bin"
 expected="$(sha256sum "${work}/fixture.bin" | cut -d' ' -f1)"
-python3 -I "${here}/slow-fixture-server.py" 8765 "${work}/fixture.bin" 307200 "${work}/requests.log" &
+python3 -I "${here}/slow-fixture-server.py" 8765 "${work}/fixture.bin" 307200 "${work}/requests.log" > "${work}/server.log" 2>&1 &
 server=$!
+for _ in $(seq 1 20); do curl -s -o /dev/null -r 0-0 http://127.0.0.1:8765/fixture.bin && break; sleep 0.5; done
+curl -s -o /dev/null -r 0-0 -w '%{http_code}' http://127.0.0.1:8765/fixture.bin | grep -q 206 || fail "the fixture server does not answer"
+: > "${work}/requests.log"
 trap 'kill ${server} 2>/dev/null' EXIT
 adb wait-for-device
 adb install -r -g "${apk}" > /dev/null || fail "install failed"
@@ -87,7 +93,7 @@ adb shell run-as "${pkg}" rm -f cache/download-test-ready
 adb shell am start -W -n "${pkg}/com.nuvio.android.BackgroundDownloadTestActivity" \
   --es downloadUrl "http://10.0.2.2:8765/fixture.bin" > /dev/null || fail "could not start the download activity"
 wait_for 90 "the download to start" adb shell run-as "${pkg}" test -f cache/download-test-ready
-read -r status file _ <<< "$(state)"
+IFS=$'\t' read -r status file _ <<< "$(state)"
 [[ "${status}" == Downloading ]] || fail "download not running after start: ${status}"
 say "download started: ${file}"
 
@@ -104,14 +110,15 @@ wait_for 20 "Paused" bash -c "[[ \"\$(adb shell run-as ${pkg} cat shared_prefs/n
 sleep 3; p1="$(part_size "${file}")"; sleep 8; p2="$(part_size "${file}")"
 [[ -n "${p1}" && "${p1}" == "${p2}" ]] || fail ".part kept changing after pause (${p1:-none} -> ${p2:-none})"
 [[ "${p1}" -ge "${s2}" ]] || fail ".part shrank after pause (${s2} -> ${p1})"
-read -r status _ _ <<< "$(state)"
+IFS=$'\t' read -r status _ _ <<< "$(state)"
 [[ "${status}" == Paused ]] || fail "status after pause: ${status}"
 say "paused from the notification: status ${status}, .part kept at ${p1} bytes and not growing"
 requests_before="$(wc -l < "${work}/requests.log")"
 
 # 4. Resume from the notification: continues from the kept bytes.
 tap_notification_button "Resume"
-wait_for 30 "the .part to grow after resume" bash -c "[[ \$(adb shell run-as ${pkg} stat -c %s files/downloads/${file}.part 2>/dev/null | tr -d '\r') -gt ${p1} ]]"
+grown() { local size; size="$(part_size "${file}")"; [[ -n "${size}" && "${size}" -gt "${p1}" ]]; }
+wait_for 30 "the .part to grow after resume" grown
 resume_request="$(tail -n +"$((requests_before + 1))" "${work}/requests.log" | grep '^GET' | head -1)"
 say "request after resume: ${resume_request}"
 offset="$(sed -nE 's/.*range=bytes=([0-9]+)-.*-> 206 .*/\1/p' <<< "${resume_request}")"
@@ -121,7 +128,7 @@ say "resumed from byte ${offset} of the kept ${p1}"
 
 # 5. Completes with the exact bytes.
 wait_for 240 "Completed" bash -c "[[ \"\$(adb shell run-as ${pkg} cat shared_prefs/nuvio_downloads.xml)\" == *Completed* ]]"
-actual="$(adb shell run-as "${pkg}" sha256sum "files/downloads/${file}" 2>/dev/null | cut -d' ' -f1 | tr -d '\r')"
+actual="$(adb shell "run-as ${pkg} sha256sum 'files/downloads/${file}'" 2>/dev/null | cut -d' ' -f1 | tr -d '\r')"
 [[ "${actual}" == "${expected}" ]] || fail "completed file differs: ${actual:-missing} != ${expected}"
 say "completed; SHA-256 matches the served file"
 say "PASS"
