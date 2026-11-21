@@ -16,8 +16,8 @@ read -r test_package runner target < <("${aapt2}" dump xmltree --file AndroidMan
   | python3 -I "${here}/apk-instrumentation.py") || fail "Could not read the device test's instrumentation"
 [[ "${target}" == "${host}" ]] || fail "The device test targets ${target}, but the debug app is ${host}"
 [[ "${host}" != com.nuvio.app.plus ]] || fail "The device test host must not be the release package"
-adb install -r "${app}" > /dev/null 2>&1 || fail "The debug app (device test host ${host}) could not be installed"
-adb install -r "${test_apk}" > /dev/null 2>&1 || fail "The device test (${test_package}) could not be installed"
+out="$(adb install -r "${app}" 2>&1)" || fail "The debug app (device test host ${host}) could not be installed: $(grep -m 3 -E "Failure|Exception|Error" <<< "${out}" | tr '\n' ' ')"
+out="$(adb install -r "${test_apk}" 2>&1)" || fail "The device test (${test_package}) could not be installed: $(grep -m 3 -E "Failure|Exception|Error" <<< "${out}" | tr '\n' ' ')"
 listed="$(adb shell pm list instrumentation | tr -d '\r')"
 grep -qxF "instrumentation:${test_package}/${runner} (target=${host})" <<< "${listed}" \
   || fail "The device does not list ${test_package}/${runner} for ${host}: ${listed}"
