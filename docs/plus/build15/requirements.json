@@ -1324,7 +1324,7 @@
       "paths": [
         "portkit/"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1344,7 +1344,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Plan/apply refuse incompatible targets.",
-      "next": "—"
+      "next": "compatibility.json gained playback-credential-tls (#44): re-verify with the PortKit run of the new commit."
     },
     {
       "id": "P7-02",
@@ -1409,7 +1409,7 @@
       "paths": [
         "portkit/compatibility.json"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1429,7 +1429,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every feature has a level.",
-      "next": "—"
+      "next": "compatibility.json gained playback-credential-tls (#44): re-verify with the PortKit run of the new commit."
     },
     {
       "id": "P7-06",
@@ -1441,7 +1441,7 @@
       "paths": [
         "portkit/"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1461,7 +1461,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each property has a test.",
-      "next": "Map each property to its test."
+      "next": "compatibility.json gained playback-credential-tls (#44): re-verify with the PortKit run of the new commit."
     },
     {
       "id": "P7-07",
