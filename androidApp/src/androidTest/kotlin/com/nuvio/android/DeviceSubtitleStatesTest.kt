@@ -16,6 +16,7 @@ import com.nuvio.app.features.player.AndroidPlaybackEngine
 import com.nuvio.app.features.player.PlatformPlayerSurface
 import com.nuvio.app.features.player.PlayerEngineController
 import com.nuvio.app.features.player.PlayerPlaybackSnapshot
+import com.nuvio.app.features.player.SubtitleAppearance
 import com.nuvio.app.features.player.SubtitleStyleState
 import org.junit.Assert.assertNull
 import org.junit.Rule
@@ -49,6 +50,10 @@ class DeviceSubtitleStatesTest {
         val subtitle = File(cache, "picked-${engine.name}.srt")
         instrumentation.context.assets.open("subtitles/captions.srt").use { input -> subtitle.outputStream().use(input::copyTo) }
         val subtitleUri = Uri.fromFile(subtitle).toString()
+        // The text assertions below inspect Compose semantics. Native subtitles are rendered by
+        // a non-Compose view, so use a known, explicitly enabled styled overlay for this test.
+        // Test native/default styling separately with a visual or pixel-level assertion.
+        val semanticsStyle = SubtitleStyleState.DEFAULT.copy(appearance = SubtitleAppearance(fontId = "serif"))
         var controller: PlayerEngineController? = null
         var snapshot = PlayerPlaybackSnapshot()
         var error: String? = null
@@ -60,8 +65,8 @@ class DeviceSubtitleStatesTest {
                     modifier = Modifier.fillMaxSize().background(Color.Black),
                     playbackEngine = engine,
                     playWhenReady = false,
-                    // The player screen always applies the user's subtitle style; the overlay draws with it.
-                    onControllerReady = { controller = it; it.applySubtitleStyle(SubtitleStyleState.DEFAULT) },
+                    // Applying DEFAULT alone does not force the styled Compose overlay.
+                    onControllerReady = { controller = it; it.applySubtitleStyle(semanticsStyle) },
                     onSnapshot = { snapshot = it },
                     onError = { error = it },
                 )
