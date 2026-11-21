@@ -1,0 +1,52 @@
+# Build 15 requirements gate: the register (docs/plus/build15/requirements.json) may not claim more
+# than its evidence shows. Runs the gate's own tests, then the gate against the whole branch history
+# (stale evidence) and against GitHub (every cited run succeeded, on the commit the register names).
+# Meant as a required check of custom-subtitles. Reads only; no secret, no Gradle, no write permission.
+name: Build 15 requirements gate
+
+on:
+  pull_request:
+    branches: [custom-subtitles]
+  push:
+    branches: [custom-subtitles]
+  workflow_dispatch:
+
+concurrency:
+  group: requirements-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: Build 15 requirements gate
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read  # the gate reads the CI runs the register cites
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0  # stale evidence is found by comparing with the commits the register cites
+
+      - name: Forget the checkout token
+        # Inline, not a script of the commit: nothing of the commit has run yet. (persist-credentials:
+        # false is not used because actions/checkout then fails on Nuvio's libass-android gitlink,
+        # which has no URL in .gitmodules.)
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Tests of the gate
+        run: python3 -I -m unittest discover -s .github/plus/tests -p 'test_check_requirements.py' -v
+
+      - name: Gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I .github/plus/check-requirements.py --online
