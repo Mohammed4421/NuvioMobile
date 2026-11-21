@@ -23,6 +23,14 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Download screens, small polish:** a paused download without a known size no longer shows a moving
+  bar; a card without a poster shows a film or series icon; the empty message is centred; in the queue
+  the show's title is cut on its own so the season, episode and paused state stay visible; the queue
+  buttons move under the title on narrow screens; the Wi-Fi only switch has room from its text; an
+  episode can be removed while its source is being searched.
+- **Subtitle panel:** "Reset appearance" looks like the other buttons; the AutoSync buttons wrap on
+  narrow panels; loading lines shows a spinner and a failed load offers Retry; the − / + buttons have a
+  48 dp touch area.
 - **Downloads in the library show the percentage first.** On a phone the card cut the line after
   "Downloading", so the percentage was hidden; it now reads "40% • Downloading".
 - **A download whose partial file was removed now says up front when storage is full.** The space

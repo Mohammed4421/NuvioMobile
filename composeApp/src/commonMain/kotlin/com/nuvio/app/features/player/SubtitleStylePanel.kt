@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.nuvio.app.core.ui.nuvio
 import nuvio.composeapp.generated.resources.Res
+import nuvio.composeapp.generated.resources.action_retry
 import nuvio.composeapp.generated.resources.compose_player_auto_sync
 import nuvio.composeapp.generated.resources.compose_player_capture_line
 import nuvio.composeapp.generated.resources.compose_player_loading_lines
@@ -118,13 +121,9 @@ fun SubtitleStylePanel(
             onReload = onAutoSyncReload,
         )
 
-        Text(
-            text = stringResource(Res.string.subtitle_reset_appearance),
-            modifier = Modifier.clip(RoundedCornerShape(12.dp))
-                .clickable { onStyleChanged(style.resetAppearance()) }
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            color = Color.White,
-            style = MaterialTheme.typography.bodyMedium,
+        SubtitleTextAction(
+            label = stringResource(Res.string.subtitle_reset_appearance),
+            onClick = { onStyleChanged(style.resetAppearance()) },
         )
     }
 }
@@ -226,11 +225,11 @@ private fun SubtitleStepperButton(
         }
     }
 
+    // A 48 dp touch target around the same 40 dp button (accessibility minimum; the look is unchanged).
     Box(
         modifier = Modifier
-            .size(40.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White.copy(alpha = 0.08f))
+            .size(48.dp)
+            .clip(RoundedCornerShape(14.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = LocalIndication.current,
@@ -240,12 +239,20 @@ private fun SubtitleStepperButton(
             },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(20.dp),
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White.copy(alpha = 0.08f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(20.dp),
+            )
+        }
     }
 }
 
@@ -266,7 +273,11 @@ private fun SubtitleAutoSyncSection(
     }
 
     SubtitleStyleSection(title = stringResource(Res.string.compose_player_auto_sync)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Wraps onto a second line when the panel is narrow (long translations).
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             SubtitleTextAction(
                 label = stringResource(Res.string.compose_player_reload),
                 enabled = selectedAddonSubtitle != null,
@@ -285,7 +296,10 @@ private fun SubtitleAutoSyncSection(
             }
 
             state.isLoading -> {
-                SubtitleHelperText(stringResource(Res.string.compose_player_loading_lines))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
+                    SubtitleHelperText(stringResource(Res.string.compose_player_loading_lines))
+                }
             }
 
             state.errorMessage != null -> {
@@ -294,6 +308,7 @@ private fun SubtitleAutoSyncSection(
                     color = tokens.colors.danger,
                     style = MaterialTheme.typography.bodySmall,
                 )
+                SubtitleTextAction(label = stringResource(Res.string.action_retry), onClick = onReload)
             }
 
             capturedPositionMs != null && nearestCues.isEmpty() -> {

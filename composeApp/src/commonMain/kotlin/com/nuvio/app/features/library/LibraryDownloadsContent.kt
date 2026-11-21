@@ -21,8 +21,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Tv
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +41,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -165,11 +168,13 @@ internal fun LazyListScope.libraryDownloadsContent(
                     text = stringResource(Res.string.downloads_empty_title),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
                 )
                 Text(
                     text = stringResource(Res.string.library_downloads_empty_message),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
                 )
             }
         }
@@ -291,6 +296,14 @@ private fun DownloadPosterTile(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                 )
+            } else {
+                // No poster (local or unknown title): a quiet placeholder instead of an empty card.
+                Icon(
+                    imageVector = if (entry.isSeries) Icons.Rounded.Tv else Icons.Rounded.Movie,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier.align(Alignment.Center).size(40.dp),
+                )
             }
             val badge = when {
                 state == DownloadStatus.Downloading -> Icons.Rounded.Download
@@ -322,11 +335,18 @@ private fun DownloadPosterTile(
                             color = MaterialTheme.colorScheme.primary,
                             trackColor = Color.White.copy(alpha = 0.25f),
                         )
-                    } else {
+                    } else if (state == DownloadStatus.Downloading) {
+                        // Size not known yet: moving bar while it really downloads.
                         LinearProgressIndicator(
                             modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
                             color = MaterialTheme.colorScheme.primary,
                             trackColor = Color.White.copy(alpha = 0.25f),
+                        )
+                    } else {
+                        // Paused with no known progress: a still, empty track (a moving bar said "working").
+                        Box(
+                            Modifier.fillMaxWidth().height(4.dp).clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.25f)),
                         )
                     }
                 }
