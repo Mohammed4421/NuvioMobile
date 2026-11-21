@@ -119,6 +119,63 @@ class AndroidDownloadTransferTest {
         }
     }
 
+    // Independent review (GEM-DL-01/02): a resume is appended only for the same version, to the end.
+    private fun resumeAgainst(first: MockResponse): Pair<String, List<String?>> = runBlocking {
+        MockWebServer().use { server ->
+            server.enqueue(first)
+            server.enqueue(MockResponse().setHeader("ETag", "\"version-2\"").setBody("brand new file"))
+            val directory = temporary.newFolder()
+            File(directory, "video.mkv.part").writeText("hello")
+            val output = transferAndroidDownload(downloadItem(server.url("/video").toString()), directory,
+                "\"version-1\"", onHeaders = { _, _ -> }, onProgress = { _, _ -> })
+            output.readText() to List(server.requestCount) { server.takeRequest().getHeader("Range") }
+        }
+    }
+
+    @Test
+    fun aServerIgnoringIfRangeWithAnotherVersionStartsOverInsteadOfAppending() {
+        val (content, ranges) = resumeAgainst(MockResponse().setResponseCode(206).setHeader("ETag", "\"version-2\"")
+            .setHeader("Content-Range", "bytes 5-10/11").setBody(" world"))
+        assertEquals("brand new file", content)
+        assertEquals(listOf("bytes=5-", null), ranges)
+    }
+
+    @Test
+    fun aRangeOfUnknownTotalStartsOverInsteadOfEndingEarly() {
+        val (content, _) = resumeAgainst(MockResponse().setResponseCode(206).setHeader("ETag", "\"version-1\"")
+            .setHeader("Content-Range", "bytes 5-7/*").setBody(" wo"))
+        assertEquals("brand new file", content)
+    }
+
+    @Test
+    fun aRangeStoppingBeforeTheEndStartsOver() {
+        val (content, _) = resumeAgainst(MockResponse().setResponseCode(206).setHeader("ETag", "\"version-1\"")
+            .setHeader("Content-Range", "bytes 5-7/11").setBody(" wo"))
+        assertEquals("brand new file", content)
+    }
+
+    @Test
+    fun aBodyLongerOrShorterThanItsRangeIsRefusedAndThePartialKept(): Unit = runBlocking {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setResponseCode(206).setHeader("ETag", "\"version-1\"")
+                .setHeader("Content-Range", "bytes 5-10/11").setBody(" world and more"))
+            val directory = temporary.newFolder()
+            val partial = File(directory, "video.mkv.part").apply { writeText("hello") }
+            assertFailsWith<IOException> {
+                transferAndroidDownload(downloadItem(server.url("/video").toString()), directory,
+                    "\"version-1\"", onHeaders = { _, _ -> }, onProgress = { _, _ -> })
+            }
+            assertEquals("hello", partial.readText())
+        }
+    }
+
+    @Test
+    fun contentRangeKeepsItsEnd() {
+        assertEquals(DownloadContentRange(100, 199, null), parseDownloadContentRange("bytes 100-199/*"))
+        assertEquals(100L, parseDownloadContentRange("bytes 100-199/1000")?.length)
+        assertNull(parseDownloadContentRange("bytes 5-4/10"))
+    }
+
     @Test
     fun retryPolicyDistinguishesTransientAndPermanentFailures() {
         assertTrue(shouldRetryAndroidDownload(IOException("connection lost"), 0))
