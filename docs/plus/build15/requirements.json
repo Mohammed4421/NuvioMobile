@@ -56,7 +56,8 @@
       "requirement": "baseline.json: Plus version and commit; Nuvio base version.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/baseline.json"
+        "docs/plus/build15/baseline.json",
+        ".github/plus/check-baseline.py"
       ],
       "status": "IMPLEMENTED",
       "evidence": [
@@ -78,7 +79,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Fields match GitHub and the release.",
-      "next": "Re-verify on the commit that adds the hashes and library list."
+      "next": "Cite the requirements-gate run of the commit adding check-baseline.py."
     },
     {
       "id": "P0-02",
@@ -88,7 +89,8 @@
       "requirement": "baseline.json: Kotlin, Compose, Gradle, AGP versions; Android packages, signing certificates; target platforms.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/baseline.json"
+        "docs/plus/build15/baseline.json",
+        ".github/plus/check-baseline.py"
       ],
       "status": "IMPLEMENTED",
       "evidence": [
@@ -105,7 +107,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "All toolchain and identity fields present with sources.",
-      "next": "Re-verify on the commit that adds the hashes and library list."
+      "next": "Cite the requirements-gate run of the commit adding check-baseline.py."
     },
     {
       "id": "P0-03",
@@ -115,7 +117,8 @@
       "requirement": "baseline.json: test list and results; APK sizes and build outputs.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/baseline.json"
+        "docs/plus/build15/baseline.json",
+        ".github/plus/check-baseline.py"
       ],
       "status": "IMPLEMENTED",
       "evidence": [
@@ -130,7 +133,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present with sources.",
-      "next": "Re-verify on the commit that adds the hashes and library list."
+      "next": "Cite the requirements-gate run of the commit adding check-baseline.py."
     },
     {
       "id": "P0-04",
@@ -160,14 +163,15 @@
       "source": "Build 15 spec v1.0",
       "paths": [
         "docs/plus/build15/baseline.json",
-        "docs/plus/build15/baseline-dependencies.txt"
+        "docs/plus/build15/baseline-dependencies.txt",
+        ".github/plus/check-baseline.py"
       ],
       "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "APK SHA-256 and a resolved dependency list for Build 14.",
-      "next": "Verify on this pull request's checks."
+      "next": "Cite the requirements-gate run of the commit adding check-baseline.py."
     },
     {
       "id": "P0-06",
