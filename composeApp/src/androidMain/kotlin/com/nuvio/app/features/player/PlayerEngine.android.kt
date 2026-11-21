@@ -2153,6 +2153,9 @@ private class NuvioLibmpvView(
                         delayMs.coerceIn(SUBTITLE_DELAY_MIN_MS, SUBTITLE_DELAY_MAX_MS) / 1000.0,
                     )
                 }
+                // Read sub-text again: while paused mpv may not report a sub-text change for a new
+                // delay, and the styled overlay kept the old caption (B15-PLY-01, Android 9).
+                updateStyledSubtitle()
             }
 
             override val supportsAudioDelay = true

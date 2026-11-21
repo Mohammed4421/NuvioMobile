@@ -435,6 +435,63 @@
       ]
     },
     {
+      "id": "B15-SEC-02",
+      "kind": "defect",
+      "area": "Network",
+      "files": [
+        "composeApp/src/androidMain/res/xml/network_security_config.xml",
+        "docs/plus/build15/security-surface.json"
+      ],
+      "evidence": "Release APK of Build 14: application usesCleartextTraffic=true and base-config cleartextTrafficPermitted=true (security-surface.py on the published x86_64 APK)",
+      "root_cause": "Upstream Nuvio allows plain http for all hosts",
+      "user_impact": "Traffic to http add-ons or servers can be read or changed on the network; https traffic is unaffected",
+      "severity": "Low",
+      "alternatives": [
+        "Keep (add-ons and self-hosted servers on the local network are often http)",
+        "Allow http only for local addresses (breaks remote http add-ons that work today)"
+      ],
+      "chosen": "Keep, recorded as accepted risk; any change of the rule fails security-surface.py until reviewed",
+      "rationale": "Owner rule 10: no change of working features outside the scope without need; no evidence of a Plus-specific risk",
+      "compatibility": "No change",
+      "tests_required": [
+        "security-surface.py on every built APK"
+      ],
+      "priority": "P3",
+      "decision": "KEEP",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#39"
+      ]
+    },
+    {
+      "id": "B15-SEC-03",
+      "kind": "defect",
+      "area": "Repository",
+      "files": [
+        "docs/plus/build15/ruleset-proposal.md"
+      ],
+      "evidence": "Ruleset 27721857 (read 2026-11-21) only blocks deletion and force push of custom-subtitles; no required pull request or status checks; plus-ci.yml states that branch protection requires nuvio-plus/checks",
+      "root_cause": "Required checks were never added to the ruleset",
+      "user_impact": "A merge or push with failing or pending checks is not stopped by GitHub (owner rule 5 depends on discipline)",
+      "severity": "High",
+      "alternatives": [
+        "Require a pull request and the listed checks (proposal)",
+        "Keep relying on the merge discipline of each session"
+      ],
+      "chosen": "Proposal for the owner (this session cannot change repository settings)",
+      "rationale": "Spec §12; owner rule 5",
+      "compatibility": "Settings only; no code",
+      "tests_required": [
+        "Re-read the ruleset after the owner applies it"
+      ],
+      "priority": "P1",
+      "decision": "FIX",
+      "status": "SPECIFIED",
+      "refs": [
+        "ruleset-proposal.md"
+      ]
+    },
+    {
       "id": "B15-AND-01",
       "kind": "review",
       "area": "Manifest",
@@ -653,18 +710,18 @@
         "Fix the test environment",
         "Report upstream"
       ],
-      "chosen": "None yet: measure first",
-      "rationale": "Severity provisional until reproduced",
+      "chosen": "(a) Back on Dispatchers.Main.immediate before touching the view, in both effects that follow snapshot()",
+      "rationale": "In the app the effects already resume on the main thread, so Main.immediate does not dispatch and behaviour is unchanged; it removes the dependence on the dispatcher the effect runs under",
       "compatibility": "Nuvio file",
       "tests_required": [
-        "Repeated SubtitlePlaybackTest runs",
-        "dispatcher check in the app"
+        "SubtitlePlaybackTest on Android 14 and 9 (passed once after the fix; repeated runs still to show the intermittent failure is gone)"
       ],
       "priority": "P1",
-      "decision": "DEFER",
-      "status": "DISCOVERED",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
       "refs": [
-        "#34 run of a0ed03fd"
+        "#34 run of a0ed03fd",
+        "#34 (fix, 2a8ef3c3: Nuvio device tests passed on Android 14 and 9)"
       ]
     }
   ]
