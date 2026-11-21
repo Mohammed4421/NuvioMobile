@@ -26,7 +26,9 @@ import com.nuvio.app.features.library.buildLibraryDownloadEntries
 import com.nuvio.app.features.library.libraryDownloadsContent
 import com.nuvio.app.features.player.PlayerSettingsStorage
 import com.nuvio.app.features.player.SubtitleStyleState
+import com.nuvio.app.features.settings.SettingsPage
 import com.nuvio.app.features.settings.SubtitleAppearanceSettings
+import com.nuvio.app.features.settings.playbackSettingsContent
 import java.io.File
 import java.util.Locale
 import org.junit.After
@@ -90,6 +92,19 @@ abstract class PlusReferenceScreenshots(private val device: String) {
                 entries = entries, activeCount = 2, queueCount = 0, columns = if (device.endsWith("tablet")) 5 else 3,
                 onManageClick = {}, onEntryClick = {}, onEntryLongClick = {},
             )
+        }
+    }
+
+    // The playback settings that shape watching (P4: screens most used around playback).
+    @Test fun playbackSettings() = playbackPage("playback-settings", SettingsPage.Playback)
+    @Test fun playbackPlayerSettings() = playbackPage("playback-player", SettingsPage.PlaybackPlayer)
+    @Test fun playbackSubtitleSettings() = playbackPage("playback-subtitles", SettingsPage.PlaybackSubtitles)
+    @Test fun playbackVideoSettings() = playbackPage("playback-video", SettingsPage.PlaybackVideo)
+    @Test fun playbackAudioSettings() = playbackPage("playback-audio", SettingsPage.PlaybackAudio)
+
+    private fun playbackPage(screen: String, page: SettingsPage) = shoot(screen) {
+        LazyColumn(Modifier.fillMaxSize()) {
+            playbackSettingsContent(isTablet = device.endsWith("tablet"), page = page, onPageChange = {})
         }
     }
 
