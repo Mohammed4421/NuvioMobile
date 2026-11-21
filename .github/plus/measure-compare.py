@@ -51,13 +51,14 @@ def compare(values, before, after):
 def main():
     before, after = sys.argv[1], sys.argv[2]
     rows, problems = compare(parse(sys.stdin.read().splitlines()), before, after)
+    num = lambda v: f"{v:.0f}" if abs(v) >= 1000 else f"{v:g}"
     print(f"| Metric | {before} median (n, min–max, sd) | {after} median (n, min–max, sd) | Change | Noise margin | Verdict |")
     print("|---|---|---|---|---|---|")
     for r in rows:
         fb, fa = r["before"], r["after"]
-        print(f"| {r['metric']} | {r['before_median']:g} ({fb['n']}, {fb['min']:g}–{fb['max']:g}, {fb['stdev']}) | "
-              f"{r['after_median']:g} ({fa['n']}, {fa['min']:g}–{fa['max']:g}, {fa['stdev']}) | "
-              f"{r['change']:+g} ({r['change_pct']} %) | {r['noise_margin']} | {r['verdict']} |")
+        print(f"| {r['metric']} | {num(r['before_median'])} ({fb['n']}, {num(fb['min'])}–{num(fb['max'])}, {fb['stdev']}) | "
+              f"{num(r['after_median'])} ({fa['n']}, {num(fa['min'])}–{num(fa['max'])}, {fa['stdev']}) | "
+              f"{'+' if r['change'] >= 0 else '-'}{num(abs(r['change']))} ({r['change_pct']} %) | {r['noise_margin']} | {r['verdict']} |")
     print("COMPARE " + json.dumps(rows))
     for p in problems:
         print(f"::error::{p}")

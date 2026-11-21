@@ -69,6 +69,17 @@ jobs:
           {
             echo "Checks run: ${run} ($(gh api "repos/${REPO}/actions/runs/${run}" --jq .head_sha))"
             (cd apks && sha256sum build14.apk head.apk)
+            # Size of each APK and of the entries that make it up (dex stored, libraries compressed).
+            python3 -I -c '
+          import sys, zipfile
+          for path in sys.argv[1:]:
+              z = zipfile.ZipFile(path)
+              dex = sum(i.file_size for i in z.infolist() if i.filename.endswith(".dex"))
+              libs = sum(i.compress_size for i in z.infolist() if i.filename.endswith(".so"))
+              res = sum(i.compress_size for i in z.infolist() if i.filename.startswith("res/") or i.filename == "resources.arsc")
+              import os
+              print(f"{os.path.basename(path)}: {os.path.getsize(path)} bytes; dex {dex}; native libraries {libs} (compressed); resources {res}; {len(z.infolist())} entries")
+          ' apks/build14.apk apks/head.apk
           } | tee apks/source.txt
 
       - name: Keep the APKs
