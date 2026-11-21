@@ -164,16 +164,20 @@
       "requirement": "baseline.json: approved performance measurements.",
       "source": "Build 15 spec v1.0",
       "paths": [
+        ".github/plus/measure-compare.py",
+        ".github/plus/performance-limits.json",
+        ".github/workflows/performance-compare.yml",
         "docs/plus/build15/baseline.json"
       ],
-      "status": "DISCOVERED",
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Recorded as NOT MEASURED."
+        "Run of the commit that sets the limits not yet cited.",
+        "Real-device values: NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated Build 14 measurements on fixed devices.",
-      "next": "P5 measurement harness on emulator + physical-device protocol."
+      "next": "Cite the performance-compare.yml run of this commit."
     },
     {
       "id": "P0-05",
@@ -935,13 +939,19 @@
       "mandatory": true,
       "requirement": "Numeric limits set after P0 and P1, before performance changes, approved within the plan.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
+      "paths": [
+        ".github/plus/measure-compare.py",
+        ".github/plus/performance-limits.json",
+        ".github/workflows/performance-compare.yml"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
-      "untested": [],
+      "untested": [
+        "Run of the commit that sets the limits not yet cited."
+      ],
       "needs_physical_device": false,
       "acceptance": "Limits file with values and reasons.",
-      "next": "After first measurements."
+      "next": "Cite the performance-compare.yml run of this commit."
     },
     {
       "id": "P6-01",
@@ -1499,14 +1509,20 @@
         ".github/plus/lint-report.init.gradle",
         ".github/plus/detekt-cli.init.gradle"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Android lint reaches only androidApp (manifest, build files); composeApp is covered by detekt; results not yet cited."
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44866405817,
+          "commit": "8a571786e325a83961f704f18189bc7bb764e1ed",
+          "what": "PR #40 static analysis: Android lint (androidApp: 14 findings in both builds, 0 new) and detekt on composeApp (Build 14: 7,799, head: 7,802; 6 new, all style: MagicNumber, LoopWithTooManyJumpStatements, reviewed: no defect); lint's TrustAllX509TrustManager is Nuvio's PlayerPlaybackNetworking (B15-SEC-04)",
+          "result": "PASS"
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "Cite the static-analysis.yml run; fix or review blocking findings."
+      "next": "Owner acceptance."
     },
     {
       "id": "P8-02",
@@ -1612,15 +1628,19 @@
       "mandatory": true,
       "requirement": "Test layer: Performance regression before/after.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
+      "paths": [
+        ".github/plus/measure-compare.py",
+        ".github/plus/performance-limits.json",
+        ".github/workflows/performance-compare.yml"
+      ],
+      "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Final run on the candidate pending."
+        "Run of the commit that sets the limits not yet cited."
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "Cite the performance-compare.yml run of this commit."
     },
     {
       "id": "P8-08",

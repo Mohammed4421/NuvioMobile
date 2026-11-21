@@ -6,7 +6,9 @@ the median. A change is reported as a difference only when it exceeds the noise 
 larger standard deviation of the two builds, and at least 5 % of the before median; otherwise
 'within noise'. Prints a Markdown table and a JSON line. Exit 1 if a metric has fewer than three
 values for either build (too few to tell noise from change).
-Usage: measure-compare.py <before label> <after label> < measure lines"""
+With --limits <json> (max_increase_percent per metric), a change reported "higher" by more than
+its limit is an error too (exit 1).
+Usage: measure-compare.py [--limits <json>] <before label> <after label> < measure lines"""
 import json
 import statistics
 import sys
@@ -48,9 +50,22 @@ def compare(values, before, after):
     return rows, problems
 
 
+def over_limits(rows, limits):
+    return [f"{r['metric']} grew {r['change_pct']} % (limit {limits[r['metric']]} %)" for r in rows
+            if r["verdict"] == "higher" and r["metric"] in limits and r["change_pct"] is not None
+            and r["change_pct"] > limits[r["metric"]]]
+
+
 def main():
-    before, after = sys.argv[1], sys.argv[2]
+    args = sys.argv[1:]
+    limits = {}
+    if args[:1] == ["--limits"]:
+        with open(args[1], encoding="utf-8") as f:
+            limits = json.load(f)["max_increase_percent"]
+        args = args[2:]
+    before, after = args[0], args[1]
     rows, problems = compare(parse(sys.stdin.read().splitlines()), before, after)
+    problems += over_limits(rows, limits)
     num = lambda v: f"{v:.0f}" if abs(v) >= 1000 else f"{v:g}"
     print(f"| Metric | {before} median (n, min–max, sd) | {after} median (n, min–max, sd) | Change | Noise margin | Verdict |")
     print("|---|---|---|---|---|---|")

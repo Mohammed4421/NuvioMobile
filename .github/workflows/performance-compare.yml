@@ -4,7 +4,7 @@
 # with the noise margin (.github/plus/measure-compare.py). The head APK is the one the pull request's
 # own "Nuvio Plus checks" run built and signed (no new build, no secret). Emulator numbers describe
 # the relative change only; real-device performance stays NEEDS PHYSICAL DEVICE.
-# A difference is reported (warning), not failed: the numeric limits are set from these baselines.
+# A difference above the noise is a warning; above its limit (.github/plus/performance-limits.json) it fails.
 name: Performance compare
 on:
   pull_request:
@@ -14,6 +14,7 @@ on:
       - .github/workflows/performance-compare.yml
       - .github/plus/measure-app.sh
       - .github/plus/measure-compare.py
+      - .github/plus/performance-limits.json
   workflow_dispatch:
     inputs:
       checks_run:
@@ -142,7 +143,7 @@ jobs:
           set -o pipefail
           cat apks/source.txt
           status=0
-          python3 -I .github/plus/measure-compare.py build14 head < measure.log | tee compare.md || status=$?
+          python3 -I .github/plus/measure-compare.py --limits .github/plus/performance-limits.json build14 head < measure.log | tee compare.md || status=$?
           { echo "### Android ${API}: Build 14 against the head (emulator, relative only)"; cat apks/source.txt; echo; grep -v '^COMPARE ' compare.md; } >> "${GITHUB_STEP_SUMMARY}"
           sed -n 's/^COMPARE //p' compare.md | python3 -I -c '
           import json, sys

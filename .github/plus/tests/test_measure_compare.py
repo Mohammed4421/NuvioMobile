@@ -42,5 +42,22 @@ class Compare(unittest.TestCase):
         self.assertEqual("higher", r["verdict"])
 
 
+class Limits(unittest.TestCase):
+    def test_a_rise_above_noise_and_limit_fails_and_one_within_passes(self):
+        rows, _ = mc.compare(mc.parse(lines("b14", "cold_start_ms", [1000, 1010, 990]) + lines("b15", "cold_start_ms", [1300, 1310, 1290])), "b14", "b15")
+        self.assertEqual(1, len(mc.over_limits(rows, {"cold_start_ms": 10})))
+        self.assertEqual([], mc.over_limits(rows, {"cold_start_ms": 40}))
+
+    def test_noise_never_breaks_a_limit(self):
+        rows, _ = mc.compare(mc.parse(lines("b14", "pss_kb", [900, 1100, 1000]) + lines("b15", "pss_kb", [1000, 1200, 1100])), "b14", "b15")
+        self.assertEqual("within noise", rows[0]["verdict"])
+        self.assertEqual([], mc.over_limits(rows, {"pss_kb": 1}))
+
+    def test_the_repository_limits_cover_every_measured_metric(self):
+        import json
+        limits = json.loads((Path(__file__).resolve().parents[1] / "performance-limits.json").read_text())["max_increase_percent"]
+        self.assertEqual({"cold_start_ms", "warm_start_ms", "pss_kb", "apk_bytes"}, set(limits))
+
+
 if __name__ == "__main__":
     unittest.main()
