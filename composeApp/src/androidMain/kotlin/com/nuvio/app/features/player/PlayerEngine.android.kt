@@ -856,7 +856,13 @@ private fun ExoPlayerSurface(
                         Log.d(TAG, "onTracksChanged: restored pending audio selection=$restored")
                     }
                 }
-                if (pendingSubtitleTrackIndex.isNotEmpty() && tracks.groups.isNotEmpty()) {
+                // Like the audio selection above, a subtitle choice waits for the subtitle tracks: the
+                // first track change after a reload can carry only video and audio (independent review
+                // GEM-PLY-01), and taking the choice then lost it.
+                val pendingSubtitle = pendingSubtitleTrackIndex.firstOrNull()
+                if (pendingSubtitle != null &&
+                    ((pendingSubtitle < 0 && tracks.groups.isNotEmpty()) || tracks.groups.any { it.type == C.TRACK_TYPE_TEXT })
+                ) {
                     val idx = pendingSubtitleTrackIndex.removeAt(0)
                     Log.d(TAG, "onTracksChanged: applying pending subtitle selection index=$idx")
                     exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
@@ -1118,7 +1124,9 @@ private fun ExoPlayerSurface(
                     }
                     subtitleSelectionJob = coroutineScope.launch {
                         val currentPosition = exoPlayer.currentPosition
-                        val wasPlaying = exoPlayer.isPlaying
+                        // isPlaying is false while buffering or right after a seek; playWhenReady is the user's intent
+                        // (independent review GEM-PLY-02: attaching a subtitle while buffering paused the video).
+                        val wasPlaying = exoPlayer.playWhenReady
                         val currentMediaItem = exoPlayer.currentMediaItem ?: run {
                             Log.e(TAG, "setSubtitleUri: currentMediaItem is null, aborting")
                             return@launch
@@ -1163,7 +1171,9 @@ private fun ExoPlayerSurface(
                     selectedExternalSubtitleMimeType = null
                     attachedAddonSubtitleConfig = null
                     val currentPosition = exoPlayer.currentPosition
-                    val wasPlaying = exoPlayer.isPlaying
+                    // isPlaying is false while buffering or right after a seek; playWhenReady is the user's intent
+                    // (independent review GEM-PLY-02: attaching a subtitle while buffering paused the video).
+                    val wasPlaying = exoPlayer.playWhenReady
                     val currentMediaItem = exoPlayer.currentMediaItem ?: return
                     if (currentMediaItem.localConfiguration?.subtitleConfigurations?.isNotEmpty() == true) {
                         preserveAudioSelectionForReload("clearExternalSubtitle")
@@ -1186,7 +1196,9 @@ private fun ExoPlayerSurface(
                     selectedExternalSubtitleMimeType = null
                     attachedAddonSubtitleConfig = null
                     val currentPosition = exoPlayer.currentPosition
-                    val wasPlaying = exoPlayer.isPlaying
+                    // isPlaying is false while buffering or right after a seek; playWhenReady is the user's intent
+                    // (independent review GEM-PLY-02: attaching a subtitle while buffering paused the video).
+                    val wasPlaying = exoPlayer.playWhenReady
                     val currentMediaItem = exoPlayer.currentMediaItem ?: return
                     if (currentMediaItem.localConfiguration?.subtitleConfigurations?.isNotEmpty() == true) {
                         pendingSubtitleTrackIndex.clear()

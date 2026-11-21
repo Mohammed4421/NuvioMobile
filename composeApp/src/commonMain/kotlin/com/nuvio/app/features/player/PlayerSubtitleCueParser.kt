@@ -57,6 +57,8 @@ object PlayerSubtitleCueParser {
             sourcePath.endsWith(".vtt") || sourcePath.endsWith(".webvtt") || text.trimStart().startsWith("WEBVTT") ->
                 SubtitleFormatHint.WebVtt
             sourcePath.endsWith(".ass") || sourcePath.endsWith(".ssa") ||
+                // Long style or embedded-font sections can push [Events] past the sample (GEM-SUB-02).
+                sample.trimStart().startsWith("[script info]") ||
                 (sample.contains("[events]") && sample.contains("dialogue:")) ->
                 SubtitleFormatHint.Ass
             sourcePath.endsWith(".ttml") || sourcePath.endsWith(".dfxp") || sourcePath.endsWith(".xml") ||
@@ -212,6 +214,8 @@ object PlayerSubtitleCueParser {
         if (end - start <= 0) return null
         val body = normalizeCueText(
             parts[textIndex]
+                // Vector drawings ({\p1}m 0 0 l 100 0{\p0}) are shapes, not words (review GEM-SUB-02).
+                .replace(Regex("""\{[^{}]*\\p[1-9][^{}]*}.*?(\{[^{}]*\\p0[^{}]*}|$)"""), "")
                 .replace(Regex("""\{[^{}]*}"""), "")
                 .replace("\\N", "\n")
                 .replace("\\n", "\n")
@@ -331,6 +335,15 @@ object PlayerSubtitleCueParser {
             .replace("&lt;", "<")
             .replace("&gt;", ">")
             .replace("&quot;", "\"")
+            .replace("&apos;", "'")
+            .replace(Regex("""&#(\d{1,6});""")) { match ->
+                match.groupValues[1].toIntOrNull()?.takeIf { it in 1..0x10FFFF }
+                    ?.let { codePointToString(it) } ?: match.value
+            }
+            .replace(Regex("""&#[xX]([0-9a-fA-F]{1,6});""")) { match ->
+                match.groupValues[1].toIntOrNull(16)?.takeIf { it in 1..0x10FFFF }
+                    ?.let { codePointToString(it) } ?: match.value
+            }
             .lines()
             .map { it.replace(Regex("""[ \t]+"""), " ").trim() }
             .filter { it.isNotBlank() }
@@ -363,3 +376,11 @@ object PlayerSubtitleCueParser {
         return paragraphs
     }
 }
+
+private fun codePointToString(codePoint: Int): String =
+    if (codePoint < 0x10000) {
+        codePoint.toChar().toString()
+    } else {
+        val offset = codePoint - 0x10000
+        charArrayOf((0xD800 + (offset shr 10)).toChar(), (0xDC00 + (offset and 0x3FF)).toChar()).concatToString()
+    }
