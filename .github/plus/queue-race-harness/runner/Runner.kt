@@ -17,6 +17,11 @@ fun main(args: Array<String>) {
         listOf("r6_abaOldAnswerFirst"),
         listOf("r7_removeThenLateAnswer"),
         listOf("r8_restartPhase1", "r8_restartPhase2"),
+        listOf("r9_twoSeasonsStartedTogether"),
+        listOf("r10_sameSeasonStartedTwice"),
+        listOf("r11_pauseAndResume"),
+        listOf("r12_finishWhileAnEpisodeIsRemoved"),
+        listOf("r13_profileSwitchWhileTwoSeasonsRun"),
     )
     var failed = 0
     for (steps in plan) {
