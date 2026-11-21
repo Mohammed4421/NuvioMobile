@@ -23,10 +23,18 @@ if (( sdk < 29 )); then
   classes="${classes/,com.nuvio.android.SubtitleSettingsTest/}"
   echo "${label}: SubtitleSettingsTest.importsPreviewsAndRemovesACustomFontThroughTheSystemPicker: NOT TESTED (needs Android 10+ to place a picker-visible file)"
 fi
+# Finish the app's ahead-of-time compilation before the tests: in one failed run (PR #51) the system
+# compiled the app (dex2oat) during MpvSurfaceTest, and libmpv went quiet for 33 s after start-file.
+# Installed apps on a phone are compiled before use, so this is not hiding an app delay.
+adb shell cmd package compile -m speed -f "${NUVIO_TEST_HOST}" > /dev/null 2>&1 || true
+adb shell cmd package compile -m speed -f "${NUVIO_TEST_RUNNER%%/*}" > /dev/null 2>&1 || true
 adb logcat -c || true
 out="$(adb shell "am instrument -w -r -e class '${classes}' '${NUVIO_TEST_RUNNER}'" 2>&1 | tr -d '\r')"
 status=0
 python3 -I "${here}/instrumentation-results.py" "${label}" <<< "${out}" || status=$?
+# Every run: how many times libmpv was asked to open its source per test (a second open repeats the
+# network request at start). Recorded to compare with the failed run, where it opened twice.
+echo "${label}: libmpv source opens across the libmpv tests (one per test expected): $(adb logcat -d -s NuvioPlayerDiag:I | grep -c 'mpv_prepare_begin' || true)"
 if (( status != 0 )); then
   # Evidence for telling an app fault from the emulator: the player's and the system's lines.
   echo "::group::${label}: logcat after the failed tests (player, surface, activity, crashes)"
