@@ -54,6 +54,14 @@ def main():
     counts = lambda fs: dict(sorted(collections.Counter(f["severity"] for f in fs).items()))
     print(f"Build 14: {len(base)} findings {counts(base)}; head: {len(head)} {counts(head)}; "
           f"new {len(new)}, fixed {len(fixed)}, blocking {len(blocking)}")
+    # Where the findings are (top two path parts), so the report shows which modules lint covered.
+    where = collections.Counter("/".join(f["file"].split("/")[:2]) or "(no file)" for f in head)
+    print("\n#### Head findings by location\n")
+    for place, n in sorted(where.items()):
+        print(f"- {place}: {n}")
+    print("\n#### All head findings\n")
+    for f in head:
+        print(f"- {f['severity']} `{f['id']}` ({f['category']}) {f['file']}:{f['line']}: {f['message']}")
     for title, items in (("New in the head", new), ("Fixed since Build 14", fixed)):
         print(f"\n#### {title} ({len(items)})\n")
         for f in items[:200]:
