@@ -1,63 +1,105 @@
 {
-  "purpose": "Build 15 P0 baseline: the published Build 14 that Build 15 is measured against. Facts only; each has its source.",
-  "nuvio_plus": {
-    "build": 14,
-    "tag": "custom-14",
-    "commit": "18276c6944915b5b0110fd94d243cc94619281b9",
-    "version_code": 1014,
-    "release_run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/44727757154",
-    "published": "2026-11-20"
+ "purpose": "Build 15 P0 baseline: the published Build 14 that Build 15 is measured against. Facts only; each has its source.",
+ "nuvio_plus": {
+  "build": 14,
+  "tag": "custom-14",
+  "commit": "18276c6944915b5b0110fd94d243cc94619281b9",
+  "version_code": 1014,
+  "release_run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/44727757154",
+  "published": "2026-11-20"
+ },
+ "upstream": {
+  "repo": "NuvioMedia/NuvioMobile",
+  "version": "1.0.0",
+  "commit": "511ebd5f175dd39e31b9cc0e7b259259e887cf6f",
+  "note": "latest stable; 1.1.0 betas not merged (PR #2 kept as draft)"
+ },
+ "toolchain": {
+  "kotlin": "2.4.10",
+  "compose_multiplatform": "1.13.0-beta01",
+  "agp": "9.2.0",
+  "gradle": "9.4.1",
+  "compileSdk": "37.1",
+  "targetSdk": 36,
+  "minSdk_source": 24,
+  "minSdk_release": 28,
+  "source": "gradle/libs.versions.toml, gradle-wrapper.properties"
+ },
+ "identity": {
+  "package": "com.nuvio.app.plus",
+  "signing": "APK Signature Scheme v3 only, lineage old -> release",
+  "release_certificate_sha256": "99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35",
+  "old_public_certificate_sha256": "40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a",
+  "verified": "v3 certificate of the published arm64-v8a APK read on 2026-11-20"
+ },
+ "apk_sizes_bytes": {
+  "arm64-v8a": 60455466,
+  "armeabi-v7a": 58808916,
+  "x86": 60873132,
+  "x86_64": 61848043
+ },
+ "tests_at_baseline": {
+  "plus_script_tests": "116 (python, .github/plus/tests)",
+  "ci_jobs": "build, unit tests (androidHostTest), review-gate/release script tests, test signing, update check, emulator Android 14 + in-app update check Android 14 and 9",
+  "release_upgrade": "Android 8 refused; Android 9 and 14 from build 13 and build 12, data kept, foreign/old-key/damaged refused (run 44727757154)",
+  "osv": "353 libraries of the release APK, 0 blocking"
+ },
+ "performance": {
+  "status": "MEASURED ON EMULATORS ONLY (real devices: NEEDS PHYSICAL DEVICE)",
+  "source": "performance-compare.yml run 44866182786 (commit ce5e165c), published Build 14 x86_64 APK, Android 14 and 9 google_apis x86_64 emulators, 10 values per metric, alternating with the head",
+  "android_14": {
+   "cold_start_ms_median": 284,
+   "cold_start_ms_range": [
+    261,
+    597
+   ],
+   "warm_start_ms_median": 50.5,
+   "warm_start_ms_range": [
+    28,
+    107
+   ],
+   "pss_kb_median": 57070,
+   "pss_kb_range": [
+    56930,
+    58197
+   ]
   },
-  "upstream": {
-    "repo": "NuvioMedia/NuvioMobile",
-    "version": "1.0.0",
-    "commit": "511ebd5f175dd39e31b9cc0e7b259259e887cf6f",
-    "note": "latest stable; 1.1.0 betas not merged (PR #2 kept as draft)"
+  "android_9": {
+   "cold_start_ms_median": 325,
+   "cold_start_ms_range": [
+    287,
+    336
+   ],
+   "warm_start_ms_median": 58.5,
+   "warm_start_ms_range": [
+    38,
+    66
+   ],
+   "pss_kb_median": 62418,
+   "pss_kb_range": [
+    61067,
+    63655
+   ]
   },
-  "toolchain": {
-    "kotlin": "2.4.10",
-    "compose_multiplatform": "1.13.0-beta01",
-    "agp": "9.2.0",
-    "gradle": "9.4.1",
-    "compileSdk": "37.1",
-    "targetSdk": 36,
-    "minSdk_source": 24,
-    "minSdk_release": 28,
-    "source": "gradle/libs.versions.toml, gradle-wrapper.properties"
+  "apk_x86_64": {
+   "bytes": 61848043,
+   "dex_bytes": 22847144,
+   "native_libraries_compressed_bytes": 26887919,
+   "resources_bytes": 1652675
   },
-  "identity": {
-    "package": "com.nuvio.app.plus",
-    "signing": "APK Signature Scheme v3 only, lineage old -> release",
-    "release_certificate_sha256": "99c0a98cc1700bd1186018e480eab670daaf55d4d8c5316d7cf03d788d431e35",
-    "old_public_certificate_sha256": "40335e3135578dd858dc434717b9344015b62872dcb861d52474c38a1f99f48a",
-    "verified": "v3 certificate of the published arm64-v8a APK read on 2026-11-20"
-  },
-  "apk_sizes_bytes": {
-    "arm64-v8a": 60455466,
-    "armeabi-v7a": 58808916,
-    "x86": 60873132,
-    "x86_64": 61848043
-  },
-  "tests_at_baseline": {
-    "plus_script_tests": "116 (python, .github/plus/tests)",
-    "ci_jobs": "build, unit tests (androidHostTest), review-gate/release script tests, test signing, update check, emulator Android 14 + in-app update check Android 14 and 9",
-    "release_upgrade": "Android 8 refused; Android 9 and 14 from build 13 and build 12, data kept, foreign/old-key/damaged refused (run 44727757154)",
-    "osv": "353 libraries of the release APK, 0 blocking"
-  },
-  "performance": {
-    "status": "NOT MEASURED",
-    "note": "no repeatable device measurements exist yet; P5 needs fixed physical devices before limits are set"
-  },
-  "reproducibility": {
-    "dependencies": "resolved by Gradle from Google Maven and Maven Central (CI falls back to Google's Central mirror); no dependency lock or verification metadata yet",
-    "status": "APK hashes (apk_sha256) and the 353 resolved release libraries (baseline-dependencies.txt, run 44843817876) recorded; the library count equals the OSV scan's",
-    "libraries": "docs/plus/build15/baseline-dependencies.txt"
-  },
-  "apk_sha256": {
-    "source": "GitHub release custom-14 asset digests (gh api repos/Mohammed4421/NuvioMobile/releases/tags/custom-14), read 2026-11-21",
-    "NuvioPlus-build14-arm64-v8a.apk": "43e4447b6a474ebd44bfde17b8bbb2c43d73b03cf2c62eeb6e1ecf4c276b31c5",
-    "NuvioPlus-build14-armeabi-v7a.apk": "5281be1729dcbf7937d3368e5ad2f44f66a99b470549626b328e0c0cb2e34fd4",
-    "NuvioPlus-build14-x86.apk": "bf68df8ec3cb1ec6fc9e213b169fb3903f18166af072f7551907f777df99f4b9",
-    "NuvioPlus-build14-x86_64.apk": "0438f738b326ecfec1eea78df8063db11d55529539f00d480e9df793524f0cc8"
-  }
+  "limits": ".github/plus/performance-limits.json",
+  "note": "cold start = am start -W TotalTime after force-stop; memory = dumpsys meminfo TOTAL PSS 10 s after a cold start. Emulator values compare builds with each other only."
+ },
+ "reproducibility": {
+  "dependencies": "resolved by Gradle from Google Maven and Maven Central (CI falls back to Google's Central mirror); no dependency lock or verification metadata yet",
+  "status": "APK hashes (apk_sha256) and the 353 resolved release libraries (baseline-dependencies.txt, run 44843817876) recorded; the library count equals the OSV scan's",
+  "libraries": "docs/plus/build15/baseline-dependencies.txt"
+ },
+ "apk_sha256": {
+  "source": "GitHub release custom-14 asset digests (gh api repos/Mohammed4421/NuvioMobile/releases/tags/custom-14), read 2026-11-21",
+  "NuvioPlus-build14-arm64-v8a.apk": "43e4447b6a474ebd44bfde17b8bbb2c43d73b03cf2c62eeb6e1ecf4c276b31c5",
+  "NuvioPlus-build14-armeabi-v7a.apk": "5281be1729dcbf7937d3368e5ad2f44f66a99b470549626b328e0c0cb2e34fd4",
+  "NuvioPlus-build14-x86.apk": "bf68df8ec3cb1ec6fc9e213b169fb3903f18166af072f7551907f777df99f4b9",
+  "NuvioPlus-build14-x86_64.apk": "0438f738b326ecfec1eea78df8063db11d55529539f00d480e9df793524f0cc8"
+ }
 }

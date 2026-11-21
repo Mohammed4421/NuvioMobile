@@ -59,7 +59,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -86,7 +86,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Fields match GitHub and the release.",
-      "next": "Owner acceptance."
+      "next": "baseline.json gained the emulator performance values: re-verify with check-baseline.py in the gate run of this commit."
     },
     {
       "id": "P0-02",
@@ -99,7 +99,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -121,7 +121,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "All toolchain and identity fields present with sources.",
-      "next": "Owner acceptance."
+      "next": "baseline.json gained the emulator performance values: re-verify with check-baseline.py in the gate run of this commit."
     },
     {
       "id": "P0-03",
@@ -134,7 +134,7 @@
         "docs/plus/build15/baseline.json",
         ".github/plus/check-baseline.py"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -154,7 +154,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present with sources.",
-      "next": "Owner acceptance."
+      "next": "baseline.json gained the emulator performance values: re-verify with check-baseline.py in the gate run of this commit."
     },
     {
       "id": "P0-04",
@@ -164,16 +164,27 @@
       "requirement": "baseline.json: approved performance measurements.",
       "source": "Build 15 spec v1.0",
       "paths": [
+        ".github/plus/measure-compare.py",
+        ".github/plus/performance-limits.json",
+        ".github/workflows/performance-compare.yml",
         "docs/plus/build15/baseline.json"
       ],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44868996463,
+          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
+          "what": "Emulator before/after with limits on Android 14 and 9: within noise and limits",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Recorded as NOT MEASURED."
+        "Real-device values: NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated Build 14 measurements on fixed devices.",
-      "next": "P5 measurement harness on emulator + physical-device protocol."
+      "next": "Measure on the owner's device."
     },
     {
       "id": "P0-05",
@@ -187,7 +198,7 @@
         "docs/plus/build15/baseline-dependencies.txt",
         ".github/plus/check-baseline.py"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -200,7 +211,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "APK SHA-256 and a resolved dependency list for Build 14.",
-      "next": "Owner acceptance."
+      "next": "baseline.json gained the emulator performance values: re-verify with check-baseline.py in the gate run of this commit."
     },
     {
       "id": "P0-06",
@@ -749,15 +760,27 @@
       "mandatory": true,
       "requirement": "Cold and warm start.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "paths": [
+        ".github/plus/measure-app.sh",
+        ".github/plus/measure-compare.py",
+        ".github/workflows/performance-compare.yml"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44868996463,
+          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
+          "what": "Emulator before/after with limits on Android 14 and 9: within noise and limits",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Not measured."
+        "Real-device values: NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Measure on the owner's device."
     },
     {
       "id": "P5-02",
@@ -800,15 +823,27 @@
       "mandatory": true,
       "requirement": "Memory and resource use.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "paths": [
+        ".github/plus/measure-app.sh",
+        ".github/plus/measure-compare.py",
+        ".github/workflows/performance-compare.yml"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44868996463,
+          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
+          "what": "Emulator before/after with limits on Android 14 and 9: within noise and limits",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Not measured."
+        "Real-device values: NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Measure on the owner's device."
     },
     {
       "id": "P5-05",
@@ -885,15 +920,25 @@
       "mandatory": true,
       "requirement": "APK and dependency size.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
-      "untested": [
-        "Not measured."
+      "paths": [
+        ".github/plus/measure-app.sh",
+        ".github/plus/measure-compare.py",
+        ".github/workflows/performance-compare.yml"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44868996463,
+          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
+          "what": "performance-compare.yml: APK x86_64 61,848,043 bytes for Build 14 and the head (dex +876 bytes, absorbed by the alignment before the native libraries); limit +5 %",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10)."
+      "next": "Owner acceptance."
     },
     {
       "id": "P5-10",
@@ -902,13 +947,27 @@
       "mandatory": true,
       "requirement": "Method: fixed devices and Android versions, fixed scenarios, repeated runs, values and variance kept, before/after, no improvement below noise.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
-      "untested": [],
+      "paths": [
+        ".github/plus/measure-app.sh",
+        ".github/plus/measure-compare.py",
+        ".github/workflows/performance-compare.yml"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44868996463,
+          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
+          "what": "Method run: Build 14 and head on the same Android 14 and 9 emulators, alternating blocks, 10 values per metric, median/spread/noise margin per metric; real devices NEEDS PHYSICAL DEVICE",
+          "result": "PASS"
+        }
+      ],
+      "untested": [
+        "Same method on the owner's physical device: NEEDS PHYSICAL DEVICE."
+      ],
       "needs_physical_device": true,
       "acceptance": "Documented method and raw results in the repository.",
-      "next": "Emulator harness for relative numbers; device protocol."
+      "next": "Run on the owner's device."
     },
     {
       "id": "P5-11",
@@ -917,13 +976,25 @@
       "mandatory": true,
       "requirement": "Numeric limits set after P0 and P1, before performance changes, approved within the plan.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "paths": [
+        ".github/plus/measure-compare.py",
+        ".github/plus/performance-limits.json",
+        ".github/workflows/performance-compare.yml"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44868996463,
+          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
+          "what": "Limits applied (performance-limits.json): all changes within noise and within limits on Android 14 and 9 (cold start 294 -> 281.5 ms and 458.5 -> 434 ms, memory 56.8 -> 56.8 MB and 60.9 -> 61.6 MB)",
+          "result": "PASS"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Limits file with values and reasons.",
-      "next": "After first measurements."
+      "next": "Owner acceptance."
     },
     {
       "id": "P6-01",
@@ -1481,14 +1552,20 @@
         ".github/plus/lint-report.init.gradle",
         ".github/plus/detekt-cli.init.gradle"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Android lint reaches only androidApp (manifest, build files); composeApp is covered by detekt; results not yet cited."
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44866405817,
+          "commit": "8a571786e325a83961f704f18189bc7bb764e1ed",
+          "what": "PR #40 static analysis: Android lint (androidApp: 14 findings in both builds, 0 new) and detekt on composeApp (Build 14: 7,799, head: 7,802; 6 new, all style: MagicNumber, LoopWithTooManyJumpStatements, reviewed: no defect); lint's TrustAllX509TrustManager is Nuvio's PlayerPlaybackNetworking (B15-SEC-04)",
+          "result": "PASS"
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "Cite the static-analysis.yml run; fix or review blocking findings."
+      "next": "Owner acceptance."
     },
     {
       "id": "P8-02",
@@ -1594,15 +1671,25 @@
       "mandatory": true,
       "requirement": "Test layer: Performance regression before/after.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
-      "untested": [
-        "Final run on the candidate pending."
+      "paths": [
+        ".github/plus/measure-compare.py",
+        ".github/plus/performance-limits.json",
+        ".github/workflows/performance-compare.yml"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44868996463,
+          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
+          "what": "Limits applied (performance-limits.json): all changes within noise and within limits on Android 14 and 9 (cold start 294 -> 281.5 ms and 458.5 -> 434 ms, memory 56.8 -> 56.8 MB and 60.9 -> 61.6 MB)",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate."
+      "next": "Owner acceptance."
     },
     {
       "id": "P8-08",
