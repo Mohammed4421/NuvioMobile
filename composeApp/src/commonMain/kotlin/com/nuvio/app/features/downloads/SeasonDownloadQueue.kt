@@ -796,28 +796,37 @@ object SeasonDownloadQueue {
         if (searchTargets.isEmpty()) return emptyList()
 
         val debridSettings = DebridSettingsRepository.snapshot()
-        val streams = mutableListOf<StreamItem>()
-        withTimeoutOrNull(searchTimeoutMs) {
-            StreamSearchSessions.search(
-                profileId = ProfileRepository.activeProfileId,
-                targets = StreamSearchTargets(
-                    type = type,
-                    videoId = entry.videoId,
-                    season = entry.seasonNumber,
-                    episode = entry.episodeNumber,
-                    streamAddons = searchTargets,
-                    serverSources = emptyList(),
-                    pluginProviderGroups = emptyList(),
-                ),
-                forceRefresh = false,
-            ).collect { completion ->
-                if (completion is StreamLoadCompletion.Addon) {
-                    DebridStreamPresentation.apply(listOf(completion.group), debridSettings)
-                        .forEach { streams += it.streams }
+        suspend fun matches(addons: List<InstalledStreamAddonTarget>): List<StreamItem> {
+            val streams = mutableListOf<StreamItem>()
+            withTimeoutOrNull(searchTimeoutMs) {
+                StreamSearchSessions.search(
+                    profileId = ProfileRepository.activeProfileId,
+                    targets = StreamSearchTargets(
+                        type = type,
+                        videoId = entry.videoId,
+                        season = entry.seasonNumber,
+                        episode = entry.episodeNumber,
+                        streamAddons = addons,
+                        serverSources = emptyList(),
+                        pluginProviderGroups = emptyList(),
+                    ),
+                    forceRefresh = false,
+                ).collect { completion ->
+                    if (completion is StreamLoadCompletion.Addon) {
+                        DebridStreamPresentation.apply(listOf(completion.group), debridSettings)
+                            .forEach { streams += it.streams }
+                    }
                 }
             }
+            return SeasonStreamMatcher.rank(streams, entry.reference).take(3)
         }
-        return SeasonStreamMatcher.rank(streams, entry.reference).take(3)
+        val fromPreferred = matches(searchTargets)
+        if (fromPreferred.isNotEmpty() || preferred.isEmpty()) return fromPreferred
+        // Owner's choice (2026-11-21): when that add-on has nothing for this episode, the other
+        // add-ons are asked too, and rank() still accepts only the same resolution and release type
+        // as the first episode; with no such source the episode asks the user, as before.
+        val others = targets.filterNot { it in preferred }
+        return if (others.isEmpty()) emptyList() else matches(others)
     }
 
     private fun needsDownload(entry: SeasonQueueEntry): Boolean {

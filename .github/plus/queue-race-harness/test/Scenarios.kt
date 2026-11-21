@@ -472,4 +472,43 @@ object Scenarios {
         check(statusOf(e1.id) == DownloadStatus.Paused, "E1 lost its pause")
         return result("a download job continues nothing during pause all") { "A=${eps(A)} log=${Downloads.log}" }
     }
+
+    // Owner's choice (2026-11-21): an episode the first add-on lacks comes from another add-on, but
+    // only in the same resolution and release type; otherwise it asks the user (NeedsChoice).
+    private fun twoAddons(otherName: String) {
+        com.nuvio.app.features.addons.AddonRepository.uiState.value = com.nuvio.app.features.addons.AddonsUiState(listOf(
+            com.nuvio.app.features.streams.Addon(com.nuvio.app.features.streams.Manifest("addon", "Addon"), "Addon"),
+            com.nuvio.app.features.streams.Addon(com.nuvio.app.features.streams.Manifest("other", "Other"), "Other"),
+        ))
+        com.nuvio.app.features.streams.StreamSearchSessions.answer = { addon, videoId ->
+            when {
+                addon == "addon" && videoId.endsWith(":2") -> emptyList()
+                addon == "addon" -> listOf(StreamItem(name = "Show 1080p WEB", addonId = "addon", playableDirectUrl = "https://x/$videoId.mkv"))
+                else -> listOf(StreamItem(name = "Show $otherName", addonId = "other", playableDirectUrl = "https://y/$videoId.mkv"))
+            }
+        }
+    }
+
+    @JvmStatic fun r22_missingEpisodeComesFromAnotherAddonInTheSameQuality(): String {
+        boot()
+        twoAddons("S01E02 1080p WEB")
+        Meta.cached = season(3)
+        startSeason(); TestMain.drain()
+        Downloads.finish(Downloads.storedFor(A).first().id); TestMain.drain()
+        check(dl(A).contains("tt1:E2"), "E2 not downloaded from the other add-on: ${dl(A)} queue=${eps(A)}")
+        val asked = com.nuvio.app.features.streams.StreamSearchSessions.askedAddons
+        check(asked.any { it == listOf("addon") } && asked.any { it == listOf("other") }, "add-ons asked: $asked")
+        return result("missing episode, other add-on, same quality") { "A=${eps(A)} dl=${dl(A)} asked=$asked" }
+    }
+
+    @JvmStatic fun r23_anotherAddonInAnotherQualityAsksTheUser(): String {
+        boot()
+        twoAddons("S01E02 720p WEB")
+        Meta.cached = season(3)
+        startSeason(); TestMain.drain()
+        Downloads.finish(Downloads.storedFor(A).first().id); TestMain.drain()
+        check(!dl(A).contains("tt1:E2"), "E2 downloaded in another quality: ${dl(A)}")
+        check(eps(A).contains("E2:NeedsChoice"), "E2 does not ask the user: ${eps(A)}")
+        return result("missing episode, other add-on only in another quality") { "A=${eps(A)} dl=${dl(A)}" }
+    }
 }
