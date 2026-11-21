@@ -30,6 +30,10 @@ class Gate(unittest.TestCase):
         (self.repo / "app").mkdir()
         (self.repo / "app/Feature.kt").write_text("fun feature() = 1\n")
         (self.repo / "app/FeatureTest.kt").write_text("fun featureWorks() {}\n")
+        (self.repo / "docs/plus/build15").mkdir(parents=True)
+        for rel, key in ((gate.SIDE["stage_gates"], "gates"), (gate.SIDE["carryover"], "entries"),
+                         (gate.SIDE["risks"], "risks"), (gate.SIDE["changes"], "changes")):
+            (self.repo / rel).write_text(json.dumps({key: []}))
         git(self.repo, "add", "-A")
         git(self.repo, "commit", "-q", "-m", "one")
         self.first = git(self.repo, "rev-parse", "HEAD")
@@ -42,6 +46,8 @@ class Gate(unittest.TestCase):
             {"kind": "ci-run", "run": 1, "commit": self.first, "result": "PASS"},
             {"kind": "test", "file": "app/FeatureTest.kt", "name": "featureWorks"},
         ])
+        for number, entry in enumerate(items, start=1):
+            entry["nvp15"] = f"NVP15-REQ-{number:04d}"
         self.register = {"items": items}
         self.runs = {1: {"conclusion": "success", "head_sha": self.first}}
 
@@ -171,6 +177,48 @@ class Gate(unittest.TestCase):
     def test_a_run_that_cannot_be_read_fails_online(self):
         del self.runs[1]
         self.assertRejects("could not read run 1", online=True)
+
+
+class Traceability(Gate):
+    """Spec v1.1 §19–25: identifiers and the side registers."""
+
+    def side(self, key, entries):
+        rel = gate.SIDE[key]
+        name = {"stage_gates": "gates", "carryover": "entries", "risks": "risks", "changes": "changes"}[key]
+        (self.repo / rel).write_text(json.dumps({name: entries}))
+
+    def test_a_missing_or_repeated_identifier_fails(self):
+        items = self.register["items"]
+        items[1]["nvp15"] = items[0]["nvp15"]
+        del items[2]["nvp15"]
+        problems = " | ".join(self.problems())
+        self.assertIn("also used by", problems)
+        self.assertIn("no NVP15-REQ-#### identifier", problems)
+
+    def test_a_gate_cannot_pass_with_open_requirements_or_without_the_owner(self):
+        self.side("stage_gates", [{"stage": "P0", "status": "PASS", "requirements": ["P0-01"], "owner_approval": None}])
+        problems = " | ".join(self.problems())
+        self.assertIn("PASS with mandatory requirements not verified", problems)
+        self.assertIn("PASS without the owner's decision", problems)
+
+    def test_only_the_spec_gate_states_are_allowed(self):
+        self.side("stage_gates", [{"stage": "P1", "status": "PASS WITH CRITICAL GAPS"}])
+        self.assertTrue(any("is not one of" in p for p in self.problems()))
+
+    def test_a_risk_needs_every_field_and_known_requirements(self):
+        self.side("risks", [{"id": "NVP15-RISK-0001", "state": "BLOCKED", "reason": "x", "needs": "", "impact": "i",
+                             "priority": "P0", "decision_owner": "owner", "closes_when": "c", "requirements": ["NO-SUCH"]}])
+        problems = " | ".join(self.problems())
+        self.assertIn("field 'needs' empty", problems)
+        self.assertIn("unknown requirement NO-SUCH", problems)
+
+    def test_carryover_states_follow_the_spec(self):
+        self.side("carryover", [{"source": "#1", "state": "DONE", "requirements": ["P0-01"]}])
+        self.assertTrue(any("carry-over #1" in p for p in self.problems()))
+
+    def test_the_real_side_registers_hold(self):
+        register = json.loads((ROOT / gate.REGISTER).read_text())
+        self.assertEqual([], [p for p in gate.check_side(ROOT, {i["id"]: i for i in register["items"]})])
 
 
 if __name__ == "__main__":

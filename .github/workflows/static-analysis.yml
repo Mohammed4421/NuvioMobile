@@ -147,11 +147,20 @@ jobs:
   compare:
     name: Lint findings against Build 14
     needs: lint
+    # Always reports: this is a required check, and GitHub counts a skipped required check as
+    # passed (#44 merged while 'Lint (head)' had failed and this job was skipped).
+    if: always()
     timeout-minutes: 10
     runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
+      - name: Both lint runs finished
+        env:
+          LINT: ${{ needs.lint.result }}
+        run: |
+          [[ "${LINT}" == success ]] || { echo "::error::Lint of Build 14 or of the head did not finish (${LINT}); no comparison"; exit 1; }
+
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 

@@ -527,6 +527,36 @@
       ]
     },
     {
+      "id": "B15-SEC-04",
+      "kind": "defect",
+      "area": "Player networking",
+      "files": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerPlaybackNetworking.kt"
+      ],
+      "evidence": "Android lint TrustAllX509TrustManager (static-analysis run 44866405817) in composeApp; source: trustAllManager accepts every certificate and playbackHostnameVerifier every host name for the playback OkHttp client, which also adds the stream's Authorization header",
+      "root_cause": "Upstream Nuvio choice for stream hosts with broken or self-signed certificates",
+      "user_impact": "On a hostile network (public Wi-Fi) a stream request can be intercepted; an Authorization header sent with it (debrid or add-on token) can be read",
+      "severity": "High",
+      "alternatives": [
+        "Keep, as accepted risk",
+        "Verify certificates when the request carries an Authorization header; keep trust-all otherwise",
+        "Verify certificates always (may break IPTV sources with self-signed certificates)"
+      ],
+      "chosen": "Owner decision (substantive behaviour change outside what was approved)",
+      "rationale": "Changes which streams play; owner rule on high-risk changes",
+      "compatibility": "Nuvio file",
+      "tests_required": [
+        "Unit test of the client's trust choice",
+        "playback of an https stream with a valid certificate on the emulator"
+      ],
+      "priority": "P1",
+      "decision": "DEFER",
+      "status": "SPECIFIED",
+      "refs": [
+        "static-analysis run 44866405817"
+      ]
+    },
+    {
       "id": "B15-AND-01",
       "kind": "review",
       "area": "Manifest",

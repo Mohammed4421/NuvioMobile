@@ -413,6 +413,27 @@
       "test_files": [
         "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserWorstCaseTest.kt"
       ]
+    },
+    {
+      "id": "playback-credential-tls",
+      "title": "Playback sends credentials only to servers with a valid certificate",
+      "since": "Build 15",
+      "files": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerPlaybackNetworking.kt"
+      ],
+      "depends": [],
+      "data": "none",
+      "tests": [
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackTlsTest.kt"
+      ],
+      "keywords": [
+        "TokenSafeTrustManager",
+        "carriesCredentials",
+        "isLocalNetworkHost"
+      ],
+      "test_files": [
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackTlsTest.kt"
+      ]
     }
   ]
 }
