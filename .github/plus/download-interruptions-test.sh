@@ -30,6 +30,7 @@ fail() {
     echo "== jobs"; adb shell dumpsys jobscheduler | grep -A12 "${pkg}" | head -n 60
     echo "== crashes"; adb logcat -d -b crash 2>/dev/null | tail -n 60
     echo "== app log"; adb logcat -d 2>/dev/null | grep -E "com\.nuviodebug|nuvio|AndroidRuntime|WM-|Download" | tail -n 80
+    echo "== download engine log"; adb logcat -d -v time -s NuvioDownload:I
   } 2>&1 | sed 's/^/  /'
   exit 1
 }
@@ -143,4 +144,5 @@ check_resumed_from "${mark}" "${kept}"
 from_zero="$(tail -n +"$(( mark + 1 ))" "${work}/requests.log" | grep -c '^GET range=- ' || true)"
 (( from_zero == 0 )) || fail "a second transfer started from byte 0 after the process died: $(tail -n +"$(( mark + 1 ))" "${work}/requests.log" | tr '\n' ';')"
 check_complete
+say "download engine log:"; adb logcat -d -v time -s NuvioDownload:I | sed "s/^/${label}:   /"
 say "${result}"
