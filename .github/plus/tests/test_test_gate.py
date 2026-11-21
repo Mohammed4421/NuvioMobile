@@ -37,6 +37,12 @@ class TestGateTest(unittest.TestCase):
         self.assertIn("Fails: A", out)
         self.assertIn("failures not compared", summary)
 
+    def test_skipped_tests_are_listed_and_not_counted_as_passed(self):
+        code, _, summary = self.run_gate({"total": 10, "failed": [], "skipped": ["T > net"]})
+        self.assertEqual(0, code)
+        self.assertIn("9 of 10 passed, 1 skipped (not run, not passed)", summary)
+        self.assertIn("`T > net`", summary)
+
     def test_no_tests_at_all_blocks(self):
         self.assertEqual(1, self.run_gate({"total": 0, "failed": []})[0])
 

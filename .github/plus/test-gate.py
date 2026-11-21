@@ -27,12 +27,17 @@ new = sorted(failed - set(nuvio["failed"]))
 baseline = (f"Nuvio {tag} itself: {nuvio['total'] - len(nuvio['failed'])} of {nuvio['total']}" if compared
             else "Nuvio baseline not run: no Nuvio Plus test failed" if not failed
             else "Nuvio baseline missing: failures not compared")
-lines = [f"- Unit tests: {plus['total'] - len(failed)} of {plus['total']} passed ({baseline})."]
+skipped = sorted(set(plus.get("skipped", [])))
+lines = [f"- Unit tests: {plus['total'] - len(failed) - len(skipped)} of {plus['total']} passed"
+         + (f", {len(skipped)} skipped (not run, not passed)" if skipped else "") + f" ({baseline})."]
 new_title = "Failing only in Nuvio Plus" if compared else "Failing (not compared with Nuvio)"
 for title, names in ((new_title, new), (f"Failing in Nuvio Plus and in Nuvio {tag}", inherited)):
     if names:
         lines.append(f"  {title}:")
         lines += [f"  - `{name}`" for name in names]
+if skipped:
+    lines.append("  Skipped (an assumption or @Ignore; not counted as passed):")
+    lines += [f"  - `{name}`" for name in skipped[:50]]
 with open("checks-tests.md", "w") as file:
     file.write("\n".join(lines) + "\n")
 print("\n".join(lines))

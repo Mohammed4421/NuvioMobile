@@ -1421,7 +1421,7 @@
       "paths": [
         "portkit/"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1441,7 +1441,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Plan/apply refuse incompatible targets.",
-      "next": "—",
+      "next": "compatibility.json gained playback-credential-tls (#44): re-verify with the PortKit run of a new commit.",
       "nvp15": "NVP15-REQ-0070"
     },
     {
@@ -1510,7 +1510,7 @@
       "paths": [
         "portkit/compatibility.json"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1530,7 +1530,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every feature has a level.",
-      "next": "—",
+      "next": "compatibility.json gained playback-credential-tls (#44): re-verify with the PortKit run of a new commit.",
       "nvp15": "NVP15-REQ-0074"
     },
     {
@@ -1543,7 +1543,7 @@
       "paths": [
         "portkit/"
       ],
-      "status": "VERIFIED",
+      "status": "IMPLEMENTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1563,7 +1563,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each property has a test.",
-      "next": "Map each property to its test.",
+      "next": "compatibility.json gained playback-credential-tls (#44): re-verify with the PortKit run of a new commit.",
       "nvp15": "NVP15-REQ-0075"
     },
     {

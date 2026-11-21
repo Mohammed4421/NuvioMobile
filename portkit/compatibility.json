@@ -88,6 +88,11 @@
       "level": "unsupported",
       "verified": false,
       "reason": "build configuration of Nuvio Plus (CI script)"
+    },
+    "playback-credential-tls": {
+      "level": "portable",
+      "verified": false,
+      "reason": "one Nuvio file, no new API; transfer test not yet run"
     }
   },
   "shared_files": {
