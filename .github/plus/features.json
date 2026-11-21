@@ -93,6 +93,7 @@
       "files": [
         "commonMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.kt",
         "androidMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.android.kt",
+        "androidMain/kotlin/com/nuvio/app/features/player/DeviceSubtitleCache.kt",
         "iosMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.ios.kt",
         "commonMain/kotlin/com/nuvio/app/features/player/SubtitleModal.kt",
         "commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeSubtitleActions.kt",
@@ -104,7 +105,7 @@
       "depends": [
         "player-engines"
       ],
-      "data": "copies in cache/device-subtitles",
+      "data": "copies in cache/device-subtitles; each import removes the copies of earlier runs and keeps this run's",
       "tests": [
         "SubtitleAppearanceTest (language from file name)"
       ],
@@ -116,6 +117,7 @@
       ],
       "test_files": [
         "commonTest/kotlin/com/nuvio/app/features/player/LocalSubtitleFormatTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/player/DeviceSubtitleCacheTest.kt",
         "androidHostTest/kotlin/com/nuvio/app/features/player/LocalSubtitleSyncCuesTest.kt"
       ]
     },
