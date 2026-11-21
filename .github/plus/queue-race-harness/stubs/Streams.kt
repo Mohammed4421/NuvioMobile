@@ -43,13 +43,23 @@ data class StreamSearchTargets(
 object StreamSearchSessions {
     /** Profile id each search was made for. */
     val searchedFor = mutableListOf<Pair<Int, String>>()
+    /** Add-ons each search asked, in order. */
+    val askedAddons = mutableListOf<List<String>>()
+    /** When set, the streams one add-on answers for one episode (the default answers one 1080p stream). */
+    var answer: ((addonId: String, videoId: String) -> List<StreamItem>)? = null
     fun search(profileId: Int, targets: StreamSearchTargets, forceRefresh: Boolean): Flow<StreamLoadCompletion> = flow {
         searchedFor += profileId to targets.videoId
-        emit(
-            StreamLoadCompletion.Addon(
-                StreamGroup(listOf(StreamItem(name = "Show 1080p WEB", addonId = "addon", playableDirectUrl = "https://x/${targets.videoId}.mkv"))),
-            ),
-        )
+        askedAddons += targets.streamAddons.map { it.addonId }
+        val custom = answer
+        if (custom == null) {
+            emit(
+                StreamLoadCompletion.Addon(
+                    StreamGroup(listOf(StreamItem(name = "Show 1080p WEB", addonId = "addon", playableDirectUrl = "https://x/${targets.videoId}.mkv"))),
+                ),
+            )
+        } else {
+            targets.streamAddons.forEach { emit(StreamLoadCompletion.Addon(StreamGroup(custom(it.addonId, targets.videoId)))) }
+        }
     }
 }
 

@@ -30,6 +30,8 @@ fun main(args: Array<String>) {
         listOf("r19_newDownloadsWaitForResumeAll"),
         listOf("r20_singlePauseDuringPauseAllIsKept"),
         listOf("r21_backgroundJobStartsNothingDuringPauseAll"),
+        listOf("r22_missingEpisodeComesFromAnotherAddonInTheSameQuality"),
+        listOf("r23_anotherAddonInAnotherQualityAsksTheUser"),
     )
     var failed = 0
     for (steps in plan) {
