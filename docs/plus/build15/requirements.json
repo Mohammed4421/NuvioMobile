@@ -3814,7 +3814,14 @@
       "source": "Owner decision",
       "paths": [],
       "status": "IMPLEMENTED",
-      "evidence": [],
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/risks.json",
+          "what": "Closed NVP15-RISK-0007/0009: no failure without a cause in 85 Android 9/14/16 device-test jobs since #51",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Android 9 jobs keep running; triage follows this rule.",
