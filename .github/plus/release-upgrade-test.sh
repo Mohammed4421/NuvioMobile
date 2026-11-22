@@ -52,7 +52,7 @@ partial="/data/data/${package}/files/downloads/Plus_Seed_Show_S01E01_seedd1.mkv.
 seed_user_data() {
   local owner file
   rm -rf seed-in seed-out; mkdir -p seed-in
-  for file in nuvio_addons.xml nuvio_player_settings.xml nuvio_downloads.xml; do
+  for file in $(python3 -I "${here}/seed-user-data.py" files); do
     adb pull "${prefs_dir}/${file}" "seed-in/${file}" > /dev/null 2>&1 || true
   done
   python3 -I "${here}/seed-user-data.py" seed seed-in seed-out > /dev/null || fail "Could not write the user data"
@@ -69,7 +69,7 @@ seed_user_data() {
 check_user_data() {
   local file
   rm -rf seed-after; mkdir -p seed-after
-  for file in nuvio_addons.xml nuvio_player_settings.xml nuvio_downloads.xml; do
+  for file in $(python3 -I "${here}/seed-user-data.py" files); do
     adb pull "${prefs_dir}/${file}" "seed-after/${file}" > /dev/null 2>&1 || true
   done
   python3 -I "${here}/seed-user-data.py" check seed-after || fail "User data lost or changed in the update from $1 (see above)"

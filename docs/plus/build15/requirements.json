@@ -1795,15 +1795,33 @@
       "mandatory": true,
       "requirement": "Realistic test data: subtitle and player settings, several profiles, download history and season queue, library and databases, local settings, URI/SAF permissions.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "paths": [
+        ".github/plus/seed-user-data.py",
+        ".github/plus/seed-season-queue.py"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_seed_user_data.py",
+          "name": "test_six_kinds_and_two_profiles_are_seeded",
+          "what": "the six kinds for two profiles",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45006219617,
+          "commit": "07c4851f0261e68c60933555e6585d859f91ff13",
+          "what": "Emulator update test (Nuvio Plus checks): previous release with the six kinds of seeded data for two profiles, updated in place; every value kept ('Kept: add-ons (one with a token) and their on/off state for two profiles; subtitle language, size, engine and brightness; the theme of each profile; the library of each profile; the download folder ... and Wi-Fi only'; downloads, queue and partial file kept)",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Only the season queue is seeded (#28)."
+        "The system grant of the picked folder cannot be created by adb (needs the picker); the stored folder address is checked. The grant on a phone: PRV-05."
       ],
       "needs_physical_device": false,
       "acceptance": "Seed covers all six data kinds.",
-      "next": "Extend the seeding script.",
+      "next": "The release run applies the same data to the updates from Builds 12, 13 and 14.",
       "nvp15": "NVP15-REQ-0063",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1814,15 +1832,38 @@
       "mandatory": true,
       "requirement": "Data content checked before and after update, not only presence.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Content check covers the season queue only."
+      "paths": [
+        ".github/plus/seed-user-data.py",
+        ".github/plus/seed-season-queue.py"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_seed_user_data.py",
+          "name": "test_a_title_lost_from_a_profiles_library_is_reported",
+          "what": "content compared after the update; each kind of loss reported",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_seed_user_data.py",
+          "name": "test_the_app_rewriting_the_library_in_its_own_form_is_fine",
+          "what": "JSON compared by meaning",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45006219617,
+          "commit": "07c4851f0261e68c60933555e6585d859f91ff13",
+          "what": "Emulator update test (Nuvio Plus checks): previous release with the six kinds of seeded data for two profiles, updated in place; every value kept ('Kept: add-ons (one with a token) and their on/off state for two profiles; subtitle language, size, engine and brightness; the theme of each profile; the library of each profile; the download folder ... and Wi-Fi only'; downloads, queue and partial file kept)",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Content diff for all seeded data kinds.",
-      "next": "With P6-12.",
+      "next": "Kept by the update tests.",
       "nvp15": "NVP15-REQ-0064",
       "release_class": "PRE-RELEASE REQUIRED"
     },
