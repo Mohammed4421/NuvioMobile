@@ -1568,15 +1568,52 @@
       "mandatory": true,
       "requirement": "Security review: Deep links and add-on confirmation.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "paths": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/addons/AddonLinkConfirmationTest.kt",
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/core/deeplink/AppUrlBridgeTest.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/core/deeplink",
+        "androidApp/src/main/AndroidManifest.xml"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": "composeApp/src/commonTest/kotlin/com/nuvio/app/features/addons/AddonLinkConfirmationTest.kt",
+          "name": "aLinkAloneInstallsNothing",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/commonTest/kotlin/com/nuvio/app/features/addons/AddonLinkConfirmationTest.kt",
+          "name": "theUserIsShownTheHostNotThePathOrToken",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/commonTest/kotlin/com/nuvio/app/core/deeplink/AppUrlBridgeTest.kt",
+          "name": "does not treat reserved auth link as addon install",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45010158735,
+          "commit": "b13d8143c6ed025e37321c4ce8dc6e5e70b3029b",
+          "result": "PASS",
+          "what": "Nuvio Plus checks: 2332 host tests, 0 failing (includes the tests above); exported components equal to the reviewed list"
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/security.md",
+          "result": "PASS",
+          "what": "security.md, 'Deep links and add-on confirmation'"
+        }
+      ],
       "untested": [
-        "No written review against this item yet."
+        "An add-on the user confirms is trusted like any add-on (Nuvio's model, not changed)."
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report.",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0053",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1638,15 +1675,60 @@
       "mandatory": true,
       "requirement": "Security review: Content and files from external sources.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "paths": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/LocalSubtitlePicker.android.kt",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/DeviceSubtitleCache.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/SubtitleFonts.kt",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/SubtitleFonts.android.kt",
+        "composeApp/src/androidFullHostTest/kotlin/com/nuvio/app/features/updater/UpdateArchiveCheckTest.kt"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserWorstCaseTest.kt",
+          "name": "malformedSubtitlesAreParsedQuicklyByThePlayerParser",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleAppearanceTest.kt",
+          "name": "fontImportRejectsTruncatedTablesAndUnsupportedContainers",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/DeviceSubtitleCacheTest.kt",
+          "name": "repeatedImportsInOneRunKeepEveryFileAPlayerMayShow",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidFullHostTest/kotlin/com/nuvio/app/features/updater/UpdateArchiveCheckTest.kt",
+          "name": "aDamagedFileIsRefused",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45010158735,
+          "commit": "b13d8143c6ed025e37321c4ce8dc6e5e70b3029b",
+          "result": "PASS",
+          "what": "Nuvio Plus checks: 2332 host tests, 0 failing (includes the tests above)"
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/security.md",
+          "result": "PASS",
+          "what": "security.md, 'Content and files from external sources'"
+        }
+      ],
       "untested": [
-        "No written review against this item yet."
+        "Media containers and codecs parsed by ExoPlayer and libmpv/FFmpeg (native code) not audited.",
+        "Add-on responses beyond Nuvio's own tests: P3-05."
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report.",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0055",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1730,15 +1812,54 @@
       "mandatory": true,
       "requirement": "Security review: GitHub Actions permissions.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "No written review against this item yet."
+      "paths": [
+        ".github/plus/tests/test_workflow_policy.py",
+        ".github/workflows"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_the_workflow_default_token_is_read_only",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_only_listed_jobs_may_write",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_jobs_that_run_project_code_cannot_write_or_sign",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_external_actions_are_pinned_by_commit",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45010158735,
+          "commit": "b13d8143c6ed025e37321c4ce8dc6e5e70b3029b",
+          "result": "PASS",
+          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' (test_workflow_policy.py on every workflow of the commit)"
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/security.md",
+          "result": "PASS",
+          "what": "security.md, 'GitHub Actions permissions'"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report.",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0058",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1749,15 +1870,56 @@
       "mandatory": true,
       "requirement": "Security review: Separation of test code from signing secrets.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "No written review against this item yet."
+      "paths": [
+        ".github/plus/tests/test_workflow_policy.py",
+        ".github/workflows",
+        ".github/plus/sign-apks.sh",
+        ".github/plus/prepare-build.sh"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_no_signing_secret_reaches_files_of_the_commit",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_only_release_signing_reads_the_release_key",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_the_release_identity_check_runs_no_code_of_the_commit",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_the_checks_must_have_used_the_test_key",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45010158735,
+          "commit": "b13d8143c6ed025e37321c4ce8dc6e5e70b3029b",
+          "result": "PASS",
+          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts'"
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/security.md",
+          "result": "PASS",
+          "what": "security.md, 'Test code and signing secrets'"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report.",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0059",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1768,15 +1930,59 @@
       "mandatory": true,
       "requirement": "Security review: APK integrity and signing keys.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
+      "paths": [
+        ".github/plus/tests/test_workflow_policy.py",
+        ".github/workflows/custom-android-build.yml",
+        ".github/plus/release-verify.py",
+        ".github/plus/apk-certs.py",
+        "composeApp/src/androidFullHostTest/kotlin/com/nuvio/app/features/updater/UpdateArchiveCheckTest.kt"
+      ],
       "status": "IMPLEMENTED",
-      "evidence": [],
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_the_release_key_is_pinned",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_release_signing_needs_the_review_gate_and_signs_v3_only",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_release_verify.py",
+          "name": "test_changed_contents_are_refused",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidFullHostTest/kotlin/com/nuvio/app/features/updater/UpdateArchiveCheckTest.kt",
+          "name": "anotherSigningKeyIsRefused",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45010158735,
+          "commit": "b13d8143c6ed025e37321c4ce8dc6e5e70b3029b",
+          "result": "PASS",
+          "what": "Nuvio Plus checks: policy, release-verify and apk-certs tests, and the in-app update check tests"
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/security.md",
+          "result": "PASS",
+          "what": "security.md, 'APK integrity and signing keys'"
+        }
+      ],
       "untested": [
-        "No written review against this item yet."
+        "release-verify on the signed Build 16 candidate: release run (needs the owner's signing approval)."
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report.",
+      "next": "Release run of the candidate.",
       "nvp15": "NVP15-REQ-0060",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1983,13 +2189,41 @@
       "mandatory": true,
       "requirement": "Unsupported update paths are stated to users, never presented as data-keeping updates.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
-      "untested": [],
+      "paths": [
+        ".github/plus/publish-release.sh",
+        "composeApp/src/commonMain/composeResources/values/strings.xml",
+        "composeApp/src/androidFull/kotlin/com/nuvio/app/features/updater/AndroidAppUpdaterPlatform.kt"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_publish_release.py",
+          "name": "test_the_notes_say_how_to_update_from_build_13_and_from_build_12_in_both_languages",
+          "result": "PASS",
+          "what": "Every release's notes state, in English and Arabic: from build 13 on an in-place update keeps the data; from build 12 or earlier the old updater cannot install it (manual install over the old app, Android 9+); Android 7 and 8 cannot install it and stay on build 12"
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidFullHostTest/kotlin/com/nuvio/app/features/updater/UpdateArchiveCheckTest.kt",
+          "name": "anotherSigningKeyIsRefused",
+          "result": "PASS",
+          "what": "In the app, an update that cannot keep the data is refused with its reason (other key, other app, not newer, unreadable), never installed: strings updates_archive_* in English and Arabic"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45013083333,
+          "commit": "77c4d1a4b61a846eb044cf2ef3325e65d6c3e3f0",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on this pull request: release script tests (notes text) and host tests (update refusals)"
+        }
+      ],
+      "untested": [
+        "The published notes of Build 16 itself: release run (needs the owner's publishing approval)."
+      ],
       "needs_physical_device": false,
       "acceptance": "Release notes and in-app text checked.",
-      "next": "Release notes of the candidate.",
+      "next": "Read the published Build 16 notes after the release run.",
       "nvp15": "NVP15-REQ-0069",
       "release_class": "PRE-RELEASE REQUIRED"
     },

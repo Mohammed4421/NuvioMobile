@@ -40,6 +40,61 @@ libraries (libmpv, FFmpeg), which come from Nuvio's prebuilt packages.
 Exported components, permissions and manifest flags of the release APK are compared with the
 reviewed list (`security-surface.json`) in every build: equal to Build 14.
 
+## Deep links and add-on confirmation (P6-02)
+
+| Point | State | Evidence |
+|---|---|---|
+| Exported entry points | Launcher activity and the `nuvio://` deep links (auth, add-on install, title details); equal to Build 14 | security-surface check (P6-03) |
+| Add-on install from a link | A link only opens a confirmation; nothing is installed until the user confirms, and then once | `AddonLinkConfirmationTest.aLinkAloneInstallsNothing`, `confirmingInstallsTheLinkedAddonOnce` |
+| What the user is shown | The add-on's host, not its path or token | `AddonLinkConfirmationTest.theUserIsShownTheHostNotThePathOrToken` |
+| Links that look like an install but are not | The reserved auth link and a `stremio://` link without a host are not treated as installs | `AppUrlBridgeTest` (`does not treat reserved auth link…`, `does not treat non-host stremio link…`) |
+| Not covered | A malicious add-on that the user confirms is trusted like any add-on (Nuvio's model) | — |
+
+## Content and files from external sources (P6-04)
+
+| Source | Protection | Evidence |
+|---|---|---|
+| Subtitle file picked on the device | Read through the system picker only; at most 10 MB (`MaxLocalSubtitleBytes`); empty or non-subtitle files refused; stored as UTF-8 in the app cache under a sanitised, unique name (no path from the file name is used) | `LocalSubtitleFormatTest`, `DeviceSubtitleCacheTest`, `SubtitleCharsetDetectorTest` |
+| Malformed or hostile subtitle text | Parsed in linear time; an unclosed tag does not swallow the text after it | `SubtitleParserWorstCaseTest` (also a PortKit feature, verified on both targets) |
+| Font picked on the device | Only `.ttf`/`.otf`, size limit, table directory checked before Android loads it | `SubtitleAppearanceTest.fontImportRejectsTruncatedTablesAndUnsupportedContainers`, `SubtitleFontImportTest` |
+| Downloaded update APK | Installed only if it is this package, newer, signed with the installed or pinned key, and readable; an unreadable installed app refuses instead of skipping the check | `UpdateArchiveCheckTest` (16 cases) |
+| Streams and their credentials | See "Network and credentials" | `PlaybackTlsTest`, `PlaybackRedirectCredentialsTest` |
+| Not covered | Media containers and codecs are parsed by ExoPlayer and libmpv/FFmpeg (native code, not audited here); add-on responses beyond Nuvio's own tests (P3-05) | — |
+
+## GitHub Actions permissions (P6-07)
+
+Checked on every pull request by `test_workflow_policy.py` (job "Tests of the review gate and release scripts"):
+
+| Rule | Test |
+|---|---|
+| Every workflow's default token is read-only | `test_the_workflow_default_token_is_read_only` |
+| Only listed jobs may write, and only what they need | `test_only_listed_jobs_may_write`, `test_callers_grant_what_the_called_jobs_ask` |
+| Jobs that run Gradle or other code of the commit cannot write or sign | `test_jobs_that_run_project_code_cannot_write_or_sign` |
+| Secrets are never inherited; only the release workflow passes one | `test_secrets_are_never_inherited`, `test_only_the_publishing_workflow_passes_secrets` |
+| External actions pinned by commit; runners pinned; no `pull_request_target`; no expressions inside scripts | `test_external_actions_are_pinned_by_commit`, `test_runners_are_pinned`, `test_pull_request_target_is_not_used`, `test_no_expressions_inside_scripts` |
+| Checkouts keep no credentials unless the job pushes | `test_checkouts_keep_no_credentials_unless_the_job_pushes` |
+
+## Test code and signing secrets (P6-08)
+
+| Rule | Test |
+|---|---|
+| No signing secret reaches the build workflow or the scripts it runs; the checks get only the public app settings | `test_no_signing_secret_reaches_files_of_the_commit`, `test_only_public_app_settings_pass` |
+| The test key's presence is the only thing read about the old keystore secret | `test_the_signing_key_secret_is_only_tested_for_presence` |
+| Only the release-signing job reads the release key, in the protected environment, in one step that runs no file of the commit and prints nothing of the key | `test_only_release_signing_reads_the_release_key` |
+| The release identity check runs no code of the commit | `test_the_release_identity_check_runs_no_code_of_the_commit` |
+| The checks themselves must have used the public test key | `test_the_checks_must_have_used_the_test_key` |
+
+## APK integrity and signing keys (P6-09)
+
+| Rule | Evidence |
+|---|---|
+| Release certificate pinned (SHA-256 `99c0a98c…431e35`); the public test key never publishes | `test_the_release_key_is_pinned`, `test_the_public_key_never_publishes` |
+| Release signs only the APKs the checks built, v3 only with the key lineage (rollback flag not set), minimum Android 9 | `test_release_signing_needs_the_review_gate_and_signs_v3_only` |
+| After signing: the certificate, the lineage and the APK contents are verified against the checked build; v2-only, another key or changed contents are refused | `release-verify.py`, `test_release_verify.py` (8 cases), `apk-certs.py`, `test_apk_certs.py` |
+| Publishing waits for the owner after every test; a moved branch is neither signed nor published | `test_publishing_waits_for_the_owner_after_every_test`, `test_a_branch_that_moved_is_neither_signed_nor_published` |
+| The app refuses an update with another key, another package, an older version or a damaged file | `UpdateArchiveCheckTest` |
+| Upgrade from Builds 12, 13 and 14 with the real key | release run of the candidate (P6-14..16), not yet run for Build 16 |
+
 ## OWASP MASVS (P6-11), coverage stated honestly
 
 | MASVS area | Covered here | Not covered |
