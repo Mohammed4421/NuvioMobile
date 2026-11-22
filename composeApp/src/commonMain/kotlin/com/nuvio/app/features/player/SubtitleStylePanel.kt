@@ -51,6 +51,8 @@ import nuvio.composeapp.generated.resources.compose_player_select_addon_subtitle
 import nuvio.composeapp.generated.resources.compose_player_style
 import nuvio.composeapp.generated.resources.compose_player_subtitle_delay
 import nuvio.composeapp.generated.resources.subtitle_reset_appearance
+import nuvio.composeapp.generated.resources.subtitle_stepper_decrease
+import nuvio.composeapp.generated.resources.subtitle_stepper_increase
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.abs
 import kotlinx.coroutines.delay
@@ -168,6 +170,7 @@ internal fun SubtitleStyleStepper(
     ) {
         SubtitleStepperButton(
             icon = Icons.Rounded.Remove,
+            label = stringResource(Res.string.subtitle_stepper_decrease),
             onClick = onDecrease,
             enabled = enabled,
             onHold = onDecreaseHold,
@@ -190,6 +193,7 @@ internal fun SubtitleStyleStepper(
         }
         SubtitleStepperButton(
             icon = Icons.Rounded.Add,
+            label = stringResource(Res.string.subtitle_stepper_increase),
             onClick = onIncrease,
             enabled = enabled,
             onHold = onIncreaseHold,
@@ -200,6 +204,7 @@ internal fun SubtitleStyleStepper(
 @Composable
 private fun SubtitleStepperButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
     onClick: () -> Unit,
     enabled: Boolean,
     onHold: ((heldMs: Long) -> Unit)? = null,
@@ -251,7 +256,8 @@ private fun SubtitleStepperButton(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = null,
+                // Read by screen readers with the stepper's title ("Subtitle delay, Increase").
+                contentDescription = label,
                 tint = Color.White,
                 modifier = Modifier.size(20.dp),
             )

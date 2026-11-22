@@ -2571,6 +2571,8 @@
     <string name="downloads_settings_location_change">اختيار مجلد</string>
     <string name="downloads_settings_location_reset">استخدام ذاكرة التطبيق</string>
     <string name="downloads_settings_location_hint">يُطبَّق على التنزيلات الجديدة. الملفات في المجلد المختار تبقى بعد حذف التطبيق وتفتحها التطبيقات الأخرى.</string>
+    <string name="subtitle_stepper_decrease">إنقاص</string>
+    <string name="subtitle_stepper_increase">زيادة</string>
     <string name="downloads_settings_wifi_only">Wi-Fi فقط</string>
     <string name="downloads_settings_wifi_only_description">التنزيلات الجديدة تنتظر شبكة Wi-Fi.</string>
     <string name="downloads_location_failed">تعذّر استخدام هذا المجلد. اختر مجلدًا آخر.</string>
