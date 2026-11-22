@@ -1,4 +1,5 @@
-# Build 15, P5 / P0-04: start-up time, memory and APK size of the pull request's release APK against
+# Build 15, P5 / P0-04: start-up time, memory, APK size, scrolling jank and touch-to-frame time of the
+# pull request's release APK against
 # the published Build 14 APK, on the same emulator, measured in alternating blocks (14, head, 14,
 # head, ...) so drift of the emulator affects both alike (.github/plus/measure-app.sh), then compared
 # with the noise margin (.github/plus/measure-compare.py). The head APK is the one the pull request's
@@ -14,6 +15,7 @@ on:
       - .github/workflows/performance-compare.yml
       - .github/plus/measure-app.sh
       - .github/plus/measure-compare.py
+      - .github/plus/framestats-input.py
       - .github/plus/performance-limits.json
   workflow_dispatch:
     inputs:
