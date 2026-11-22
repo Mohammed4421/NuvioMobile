@@ -514,6 +514,8 @@ jobs:
             base64 -w 0 "${data}"; echo
             echo "PLUS-SHOT-END"
           done
+          # P4-09: controls under 48 dp or without a label, per screen and setup (report only).
+          cat composeApp/build/reports/plus-a11y/*.txt 2>/dev/null | sed -e '/^$/d' -e 's/^/PLUS-A11Y /' || true
 
       - name: Keep the reference screenshots
         # Build 15, P4-01: Plus screens in English and Arabic, phone and tablet

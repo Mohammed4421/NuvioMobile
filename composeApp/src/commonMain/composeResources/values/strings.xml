@@ -2618,6 +2618,8 @@
     <string name="downloads_settings_location_change">Choose folder</string>
     <string name="downloads_settings_location_reset">Use app storage</string>
     <string name="downloads_settings_location_hint">Applies to new downloads. Files in a chosen folder stay after the app is removed and can be opened by other apps.</string>
+    <string name="subtitle_stepper_decrease">Decrease</string>
+    <string name="subtitle_stepper_increase">Increase</string>
     <string name="downloads_settings_wifi_only">Wi-Fi only</string>
     <string name="downloads_settings_wifi_only_description">New downloads wait for Wi-Fi.</string>
     <string name="downloads_location_failed">Couldn&apos;t use this folder. Choose another one.</string>

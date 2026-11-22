@@ -269,10 +269,7 @@ private fun DownloadPosterTile(
     val state = entry.activeState
     val detail = downloadEntryDetail(entry)
     Column(
-        modifier = modifier.semantics(mergeDescendants = true) {
-            // Read the state out, not only its icon or color.
-            contentDescription = "${entry.title}, $detail"
-        },
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box(
@@ -287,12 +284,15 @@ private fun DownloadPosterTile(
                     onLongClick = onLongClick,
                     zoomImageUrl = entry.poster,
                     zoomCornerRadius = style.cornerRadiusDp.dp,
-                ),
+                )
+                // The poster is what a screen reader focuses and activates: it reads the title and
+                // the state, not only the badge's icon or colour.
+                .semantics { contentDescription = "${entry.title}, $detail" },
         ) {
             if (entry.poster != null) {
                 AsyncImage(
                     model = entry.poster,
-                    contentDescription = entry.title,
+                    contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                 )

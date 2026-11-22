@@ -38,6 +38,10 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | B15-UI-04 | Playback settings (Arabic) | Decoder strings said فك التشفير (decryption) for decoding | Reference screenshots (#49) | P2 | FIX (#49) | IMPLEMENTED |
 | B15-UI-05 | Player panels (Arabic) | Delay and gain values shown as `0.000s+`, `dB 0` | Reference screenshots (#49) | P2 | FIX (#49) | IMPLEMENTED |
 | B15-UI-06 | Library downloads | Phone card cut the percentage ("Downloading • …") | Reference screenshot (#49) | P2 | FIX (#49) | IMPLEMENTED |
+| B15-UI-07 | Settings (Nuvio) | Each `SettingsSwitchRow` switch is a second, unlabelled screen-reader stop | P4-09 report (#68) | P2 | DEFER (Nuvio's component) | DISCOVERED |
+| B15-UI-08 | Library downloads | Tappable poster had no label (title and state were on its parent) | P4-09 report (#68) | P2 | FIX (#68) | IMPLEMENTED |
+| B15-UI-09 | Subtitle/audio panels, downloads settings | Stepper − and + and the Wi-Fi only switch had no label | P4-09 report (#68) | P2 | FIX (#68) | IMPLEMENTED |
+| B15-UI-10 | Subtitle/audio panels | Arabic showed '0.000s+' and 'dB 0' | Reference screenshots (Arabic) | P2 | FIX (#67) | IMPLEMENTED |
 | B15-DL-05 | Downloads | Resume appended another version or a cut range (review GEM-DL-01/02) | Code; `AndroidDownloadTransferTest` | P1 | FIX (#58) | IMPLEMENTED |
 | B15-PLY-03 | Player | Pending subtitle choice taken before subtitle tracks exist (GEM-PLY-01) | Code; device tests | P1 | FIX (#58) | IMPLEMENTED |
 | B15-PLY-04 | Player | Subtitle change while buffering paused the video (GEM-PLY-02, 3 sites) | Code | P1 | FIX (#58) | IMPLEMENTED |
