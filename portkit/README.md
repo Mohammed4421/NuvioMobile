@@ -10,6 +10,7 @@ turns true for a feature only after the transfer tests pass for it in CI. No fea
 |---|---|
 | `../.github/plus/features.json` | The one feature registry (also used by the upstream review): files, test files, removed files, dependencies |
 | `compatibility.json` | PortKit's level for each feature (portable, adapter-required, manual, unsupported), the upstream base, and the owners of files several features change |
+| `LICENSES/GPL-3.0.txt` | The licence of Nuvio Plus and of every file PortKit transfers (the GPL-3.0 text of `../LICENSE`); a target must carry the same licence (`target_contract`), and PortKit never transfers or edits a target's `LICENSE` or its notices (`test_portkit_licence.py`) |
 | `policy.json` | What is never transferred: signing keys, secrets, `local.properties`, CI and release pipelines |
 | `portkit.py` | `validate` (registry, levels and policy agree), `inventory` (what each feature changes against upstream) and `plan` (dry run on a target: what a transfer would do, as a report and a diff; writes nothing) |
 | `reports/inventory.md` | The current inventory |
@@ -64,7 +65,7 @@ python3 portkit/portkit.py rollback --target ../my-nuvio-fork --branch portkit/l
 
 ### Examples
 
-A transfer that works (official Nuvio 1.0.0, both verified features):
+A transfer that works (official Nuvio 1.0.0, two of the verified features):
 
 ```text
 $ python3 portkit/portkit.py apply --target ../nuvio --branch portkit/fixes lazy-key-collisions subtitle-parser-worst-case
@@ -100,7 +101,7 @@ with Gradle and runs the transferred tests; every one must run and pass. Results
 
 Identity (package, signing, release pipeline) and the updater are never transferred: a target
 keeps its own identity, keys and update source. Transferred code stays under GPL-3.0 with its
-notices.
+notices; a target without the GPL-3.0 `LICENSE` is refused before anything is planned.
 
 ---
 
@@ -110,13 +111,15 @@ notices.
 
 أداة PortKit تنقل ميزات Nuvio Plus إلى مشروع Nuvio متوافق، سواء النسخة الرسمية أو أي Fork منها، ميزةً ميزة، ولا تكتب فوق تعديلات المشروع الهدف.
 
-**الحالة: الأساس، والتجربة دون تعديل، والتطبيق الآمن.**
+**الحالة: الأساس، والتجربة دون تعديل، والتطبيق الآمن، واختبارات النقل.**
 - **التخطيط (`plan`):** يعرض ما سيتغير في المشروع الهدف ملفًا ملفًا مع Diff كامل، ولا يكتب فيه شيئًا.
 - **التطبيق (`apply`):** يكتب على فرع جديد في المشروع الهدف عبر Worktree مستقل، ولا يلمس نسخة العمل الأصلية. أي فشل لا يترك فرعًا ولا تعديلًا.
 - **التراجع (`rollback`):** يعيد فقط الملفات التي ما زالت تحمل ما كتبه PortKit نفسه.
-- **ما يأتي لاحقًا:** اختبارات النقل التي تبني المشروع الناتج. لا تُعلَّم أي ميزة «مُتحقَّق منها» قبل نجاح اختبار نقلها.
+- **اختبارات النقل:** تنقل الميزات إلى مشروعين هدفين، وتبني الناتج، وتشغّل اختباراته. لا تُعلَّم أي ميزة «مُتحقَّق منها» قبل نجاح اختبار نقلها.
 
-**لا يُنقل أبدًا:** مفاتيح التوقيع، والأسرار، و`local.properties`، وخطوط البناء والنشر. كذلك هوية التطبيق والمحدّث لا يُنقلان؛ فالمشروع الهدف يحتفظ بهويته ومفاتيحه ومصدر تحديثاته.
+**لا يُنقل أبدًا:** مفاتيح التوقيع، والأسرار، و`local.properties`، وخطوط البناء والنشر، ولا ملف الترخيص `LICENSE` في المشروع الهدف ولا عبارات حقوق النشر فيه. كذلك هوية التطبيق والمحدّث لا يُنقلان؛ فالمشروع الهدف يحتفظ بهويته ومفاتيحه ومصدر تحديثاته.
+
+**الترخيص:** Nuvio Plus مرخّص بـ GPL-3.0 (النص في `LICENSES/GPL-3.0.txt`)، ويُرفض أي مشروع هدف لا يحمل الترخيص نفسه قبل أي تخطيط.
 
 **الاستخدام باختصار:**
 1. **الفحص:** `validate` يتأكد من اتساق السجل.
@@ -124,7 +127,7 @@ notices.
 3. **النقل:** `apply` ينقل إلى فرع جديد.
 4. **التراجع:** `rollback` عند الحاجة.
 
-**الميزات القابلة للنقل الآن:** ميزتان فقط من 14، تحقق منهما اختبار بناء فعلي على Nuvio 1.0.0 الرسمي وعلى Fork مختلف. هما `lazy-key-collisions` و`subtitle-parser-worst-case`.
+**الميزات القابلة للنقل الآن:** ثلاث ميزات من 15، تحقق منها اختبار بناء فعلي على Nuvio 1.0.0 الرسمي وعلى Fork مختلف: `lazy-key-collisions` و`subtitle-parser-worst-case` و`playback-credential-tls`.
 
 **الميزات الأخرى:** مرفوضة في النقل الفعلي حتى تُكتب لها محوّلات وتنجح اختباراتها. التفاصيل في `reports/compatibility-matrix.md`، ونتائج الاختبارات في `reports/test-report.md`.
 
