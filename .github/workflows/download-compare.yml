@@ -1,0 +1,186 @@
+# Build 15, P5-07: a background download of Build 14 against the head on the same emulators. Both
+# debug apps are built here, in one job: the head from this commit, Build 14 from its release tag
+# custom-14 as it is (its debug BackgroundDownloadTestActivity, which starts the download, is the
+# same file as the head's, so no harness patch). Then .github/plus/download-compare.sh downloads the
+# same 64 MiB from a local server, with the app in the background, in alternating blocks, and
+# .github/plus/measure-compare.py compares wall time, CPU per MiB and memory with the noise margin and
+# the limits in .github/plus/download-limits.json. Emulator, debug apps: relative change only.
+name: Download compare
+on:
+  pull_request:
+    branches: [custom-subtitles]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - .github/workflows/download-compare.yml
+      - .github/plus/download-compare.sh
+      - .github/plus/download-limits.json
+      - .github/plus/measure-compare.py
+      - .github/plus/slow-fixture-server.py
+      - androidApp/src/debug/**
+      - composeApp/src/androidMain/kotlin/com/nuvio/app/features/downloads/**
+      - composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/**
+  workflow_dispatch:
+
+concurrency:
+  group: download-compare-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the Build 14 and head debug apps
+    timeout-minutes: 150
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Forget the checkout token
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Set up Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-read-only: true
+
+      - name: Take the Sentry plugin from Maven Central
+        run: |
+          mkdir -p "${HOME}/.gradle/init.d"
+          cp ".github/plus/plugins-from-central.init.gradle" "${HOME}/.gradle/init.d/"
+
+      - name: Head
+        run: |
+          set -o pipefail
+          bash .github/plus/prepare-build.sh "$(bash .github/plus/next-build-number.sh)"
+          bash .github/plus/gradle-retry.sh head-build.log ./gradlew :androidApp:assembleFullDebug \
+            -Dorg.gradle.jvmargs="-Xmx10g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m" \
+            -Pkotlin.compiler.execution.strategy=in-process \
+            -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore --stacktrace || {
+              { grep -E "^e: " head-build.log || true; } | head -n 8 | sed 's/^/::error::/'
+              exit 1
+            }
+          mkdir -p download
+          cp "$(find androidApp/build/outputs/apk/full/debug -name '*.apk' | head -n 1)" download/head-app.apk
+
+      - name: Build 14 (release tag custom-14), unchanged
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "refs/tags/custom-14:refs/tags/custom-14"
+          echo "Build 14 source: $(git rev-parse 'custom-14^{commit}')"
+          mkdir ../build14
+          git archive custom-14 | tar -x -C ../build14
+          # The download is started by the debug activity; it must be the one the head uses.
+          for f in androidApp/src/debug/kotlin/com/nuvio/android/BackgroundDownloadTestActivity.kt; do
+            cmp "${f}" "../build14/${f}" || { echo "::error::Build 14's ${f} differs from the head's"; exit 1; }
+          done
+          cd ../build14
+          bash .github/plus/prepare-build.sh 14
+          bash .github/plus/gradle-retry.sh build14.log ./gradlew :androidApp:assembleFullDebug \
+            -Dorg.gradle.jvmargs="-Xmx10g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=2048m" \
+            -Pkotlin.compiler.execution.strategy=in-process \
+            -Pnuvio.android.distribution=full -Pnuvio.ios.distribution=appstore --stacktrace || {
+              { grep -E "^e: " build14.log || true; } | head -n 8 | sed 's/^/::error::/'
+              exit 1
+            }
+          cp "$(find androidApp/build/outputs/apk/full/debug -name '*.apk' | head -n 1)" "${GITHUB_WORKSPACE}/download/build14-app.apk"
+
+      - name: Keep the APKs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: download-compare-apks
+          path: download
+          if-no-files-found: error
+          retention-days: 3
+
+  measure:
+    name: Background download (Android ${{ matrix.api }})
+    needs: build
+    timeout-minutes: 75
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [34, 28]
+    steps:
+      - name: Check out
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Forget the checkout token
+        run: |
+          git config --local --unset-all 'http.https://github.com/.extraheader' || true
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $2}' | xargs -r rm -f
+          { git config --local --get-regexp '^includeif\.' || true; } | awk '{print $1}' | xargs -r -n1 git config --local --unset-all
+          left="$(git config --list --includes | grep -ci 'authorization' || true)"
+          if [[ "${left}" != 0 ]]; then echo "::error::A Git token is still stored"; exit 1; fi
+
+      - name: Get the APKs
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: download-compare-apks
+          path: download
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Download in alternating blocks
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: ${{ matrix.api }}
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: bash .github/plus/download-compare.sh 5 download/build14-app.apk download/head-app.apk
+
+      - name: Compare
+        env:
+          API: ${{ matrix.api }}
+        run: |
+          set -o pipefail
+          status=0
+          python3 -I .github/plus/measure-compare.py --limits .github/plus/download-limits.json build14 head < download-compare.log | tee compare.md || status=$?
+          {
+            echo "### Android ${API}: background download, Build 14 against the head (emulator, debug apps, relative only)"
+            grep -E '^(fixture|Android) ' download-compare.log || true
+            echo
+            grep -v '^COMPARE ' compare.md
+          } >> "${GITHUB_STEP_SUMMARY}"
+          sed -n 's/^COMPARE //p' compare.md | python3 -I -c '
+          import json, sys
+          for r in json.load(sys.stdin):
+              if r["verdict"] == "higher":
+                  print("::warning::{}: {} -> {} ({} %), above the noise margin".format(r["metric"], r["before_median"], r["after_median"], r["change_pct"]))'
+          exit "${status}"
+
+      - name: Keep the measurements
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: download-compare-${{ matrix.api }}
+          path: |
+            download-compare.log
+            compare.md
+          if-no-files-found: warn
+          retention-days: 30
