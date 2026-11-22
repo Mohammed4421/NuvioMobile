@@ -55,7 +55,8 @@ class Gate(unittest.TestCase):
     def item(rid):
         return {"id": rid, "spec": "spec", "phase": rid.split("-")[0] if rid.split("-")[0] in gate.PHASES + ["D", "G"] else "G", "mandatory": True, "requirement": "r", "source": "s",
                 "paths": [], "status": "DISCOVERED", "evidence": [], "untested": [],
-                "needs_physical_device": False, "acceptance": "a", "next": "n"}
+                "needs_physical_device": False, "acceptance": "a", "next": "n",
+                "release_class": "PRE-RELEASE REQUIRED"}
 
     def p001(self, register=None):
         return next(i for i in (register or self.register)["items"] if i["id"] == "P0-01")
@@ -109,6 +110,35 @@ class Gate(unittest.TestCase):
         self.p001()["evidence"] = [{"kind": "review", "file": "notes.md"}]
         self.assertRejects("P0-01: VERIFIED without repeatable evidence")
 
+    # NVP15-CHG-0005: pre-release and post-release requirements.
+    def test_every_requirement_says_when_it_must_hold(self):
+        del self.p001()["release_class"]
+        self.assertRejects("P0-01: release_class None is not one of")
+
+    def test_post_release_is_only_for_the_owners_device_checks(self):
+        self.p001().update(release_class="POST-RELEASE VALIDATION", status="SPECIFIED")
+        self.assertRejects("P0-01: POST-RELEASE VALIDATION is only for checks on the owner's device")
+
+    def test_a_deferred_part_must_name_a_post_release_requirement(self):
+        self.p001()["post_release"] = ["P0-02"]
+        self.assertRejects("P0-01: deferred part P0-02 is not a POST-RELEASE VALIDATION requirement")
+
+    def test_data_signing_and_upgrade_checks_never_wait(self):
+        item = self.item("D-10")
+        item.update(release_class="POST-RELEASE VALIDATION", needs_physical_device=True)
+        self.register["items"] = [i for i in self.register["items"] if i["id"] != "D-10"] + [item]
+        self.assertRejects("D-10: data, signing and upgrade checks cannot wait for after the release")
+
+    def test_post_release_checks_neither_verify_nor_hold_a_phase(self):
+        post = self.item("P0-99")
+        post.update(phase="P0", release_class="POST-RELEASE VALIDATION", needs_physical_device=True, status="SPECIFIED")
+        self.register["items"].append(post)
+        self.assertNotIn("PASS with mandatory requirements not verified: P0-99",
+                         " ".join(self.problems()))
+        post["status"] = "VERIFIED"
+        post["evidence"] = [{"kind": "test", "file": "notes.md", "name": "x"}]
+        (self.repo / "notes.md").write_text("x\n")
+        self.assertRejects("P0-99: needs a physical device; VERIFIED without device evidence")
     def test_a_journey_is_not_verified_by_unit_tests_alone(self):
         journey = self.item("P3-03")
         journey.update(status="VERIFIED", evidence=[{"kind": "test", "file": "notes.md", "name": "x"}])

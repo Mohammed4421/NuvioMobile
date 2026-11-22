@@ -35,30 +35,37 @@ launch_and_check() {
 first_install() { adb shell dumpsys package "${package}" | tr -d '\r' | sed -n 's/^ *firstInstallTime=//p' | head -n 1; }
 data_files() { adb shell "ls /data/data/${package}/shared_prefs 2>/dev/null" | tr -d '\r' | sort; }
 
-# A season download with a paused episode, as the previous build stores it, so the update is checked
-# with download data in it (seed-season-queue.py has the data and the checks).
+# Representative user data, as the previous build stores it (seed-user-data.py: add-ons with a token
+# and their on/off state, subtitle and playback settings, a season download with a paused episode and
+# its partial file), so the update is checked with that data in it and every value afterwards.
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-prefs="/data/data/${package}/shared_prefs/nuvio_downloads.xml"
+prefs_dir="/data/data/${package}/shared_prefs"
 partial="/data/data/${package}/files/downloads/Plus_Seed_Show_S01E01_seedd1.mkv.part"
+seed_files="$(python3 -I "${here}/seed-user-data.py" files)"
 seed_downloads() {
-  local owner
+  local owner file
+  rm -rf seed-in seed-out; mkdir -p seed-in
+  for file in ${seed_files}; do adb pull "${prefs_dir}/${file}" "seed-in/${file}" > /dev/null 2>&1 || true; done
+  python3 -I "${here}/seed-user-data.py" seed seed-in seed-out > /dev/null || fail "Could not write the user data"
   owner="$(adb shell stat -c %u "/data/data/${package}" | tr -d '\r')"
-  adb pull "${prefs}" seed-before.xml > /dev/null 2>&1 || rm -f seed-before.xml
-  python3 -I "${here}/seed-season-queue.py" seed "$( [[ -f seed-before.xml ]] && echo seed-before.xml )" seed-prefs.xml || fail "Could not write the download data"
-  adb shell mkdir -p "/data/data/${package}/shared_prefs" "/data/data/${package}/files/downloads"
-  adb push seed-prefs.xml "${prefs}" > /dev/null || fail "Could not put the download data on the emulator"
+  adb shell mkdir -p "${prefs_dir}" "/data/data/${package}/files/downloads"
+  for file in seed-out/*.xml; do
+    adb push "${file}" "${prefs_dir}/$(basename "${file}")" > /dev/null || fail "Could not put ${file} on the emulator"
+  done
   adb shell "printf 'first 400 bytes' > ${partial}"
-  adb shell chown -R "${owner}:${owner}" "/data/data/${package}/shared_prefs" "/data/data/${package}/files"
-  adb shell chmod 660 "${prefs}" "${partial}"
-  adb shell restorecon -RF "/data/data/${package}/shared_prefs" "/data/data/${package}/files" > /dev/null 2>&1 || true
-  echo "Download data put in place: a season with episode 1 paused (partial file), episode 2 waiting."
+  adb shell chown -R "${owner}:${owner}" "${prefs_dir}" "/data/data/${package}/files"
+  adb shell chmod 660 "${prefs_dir}"/*.xml "${partial}"
+  adb shell restorecon -RF "${prefs_dir}" "/data/data/${package}/files" > /dev/null 2>&1 || true
+  echo "User data put in place: add-ons, subtitle and playback settings, a season with episode 1 paused (partial file), episode 2 waiting."
 }
 check_downloads() {
-  adb pull "${prefs}" seed-after.xml > /dev/null 2>&1 || fail "The download settings are gone after the update"
-  python3 -I "${here}/seed-season-queue.py" check seed-after.xml || fail "Download data changed in the update (see above)"
+  local file
+  rm -rf seed-after; mkdir -p seed-after
+  for file in ${seed_files}; do adb pull "${prefs_dir}/${file}" "seed-after/${file}" > /dev/null 2>&1 || true; done
+  python3 -I "${here}/seed-user-data.py" check seed-after || fail "User data lost or changed in the update (see above)"
   adb shell "test -f ${partial}" || fail "The paused episode's partial file was removed in the update"
-  echo "Download data kept: finished and paused downloads, the queue and the partial file."
-  downloads_note="download data kept (a season with a paused episode, its partial file and a finished download), "
+  echo "User data kept: add-ons and their state, subtitle and playback settings, downloads, the queue and the partial file."
+  downloads_note="user data kept (add-ons with a token, subtitle and playback settings, a season with a paused episode, its partial file and a finished download), "
 }
 downloads_note=""
 

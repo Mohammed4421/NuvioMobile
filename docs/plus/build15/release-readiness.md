@@ -55,7 +55,22 @@ Non-critical gaps are listed for the owner's record and do not block.
 | Data protection | No credentials sent to another site on redirect | `PlaybackRedirectCredentialsTest` | **yes** |
 | Non-critical | Android 17 (emulator image fault), HDR/DV, the owner's sources, gestures, SD card, Resume from the notification on 14+, real performance | Owner's device | no (owner's record) |
 
-## Owner's checks on the final release (NVP15-CHG-0003)
+## Before and after the release (NVP15-CHG-0005)
+
+Every requirement in `requirements.json` has a `release_class`:
+
+- **PRE-RELEASE REQUIRED:** what can be proven without the owner: the full audit, fixes and polish,
+  unit, integration, concurrency and emulator tests, performance against Build 14 in the available
+  environments, security, data and storage, upgrade from Builds 12, 13 and 14 with the real key and
+  representative data, identity, PortKit, CI, the APK and the reports. A phase gate passes only when
+  these hold.
+- **POST-RELEASE VALIDATION:** the owner's personal checks after installing (PRV-01..07, P8-06). They stay
+  NOT TESTED / NEEDS PHYSICAL DEVICE until he reports; deferring them never marks them PASS.
+- **BLOCKED:** a real engineering obstacle (none at present).
+
+Data, signing and upgrade requirements are never post-release; the requirements gate refuses it.
+
+## Owner's checks after installing the release (POST-RELEASE VALIDATION)
 
 Only a phone can show these; they stay NOT TESTED until the owner reports them:
 

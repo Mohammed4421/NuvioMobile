@@ -12,13 +12,19 @@
         "P5-04",
         "P8-06",
         "P8-12",
+        "PRV-01",
+        "PRV-02",
+        "PRV-03",
+        "PRV-04",
+        "PRV-06",
+        "PRV-07",
         "S16-04"
       ],
       "impact": "Player, subtitle and storage behaviour on real hardware unproven",
       "priority": "P1",
       "alternatives": "Owner's short device checklist",
       "decision_owner": "owner",
-      "closes_when": "Device results recorded as evidence"
+      "closes_when": "The owner's checks after installing the release (POST-RELEASE VALIDATION, NVP15-CHG-0005): PRV-01..07"
     },
     {
       "id": "NVP15-RISK-0004",
@@ -26,18 +32,19 @@
       "reason": "Notification test (#48): Android 9 full pause and resume PASS (required check). Android 14: Pause PASS; Resume NOT TESTED, because Android 14 lets an app start a user-initiated download job from the background only after a real tap, which an automated PendingIntent.send() is not",
       "needs": "Owner's phone: start a download, leave the app, Pause then Resume from the notification",
       "requirements": [
-        "D-09"
+        "D-09",
+        "PRV-05"
       ],
       "impact": "The app side of pause/resume from the notification is tested on both emulators; the physical tap is not",
       "priority": "P0",
       "alternatives": "Fix the test until the real scenario passes",
       "decision_owner": "agent",
-      "closes_when": "Owner confirms Pause and Resume from the notification on his phone"
+      "closes_when": "Owner's tap on Resume from the notification on Android 14+ after installing (PRV-05, NVP15-CHG-0005)"
     },
     {
       "id": "NVP15-RISK-0005",
       "state": "NOT TESTED",
-      "reason": "Upgrade 14→15 / 13→15 / 12→15 with the real key and Android 8 refusal run only in the release workflow, after the owner's signing approval",
+      "reason": "Release run 44989102295 (custom-15, a3047e63): 14→15 and 12→15 with the real key PASS on Android 9 and 14, Android 8 refused. 13→15 not run as its own step (Build 13 shares Build 14's key). Data kept is checked on the emulator update with a seeded season queue; a fuller representative data set is open.",
       "needs": "Release run (plus-release environment)",
       "requirements": [
         "P6-14",
@@ -49,7 +56,7 @@
       "priority": "P0",
       "alternatives": "None: needs the release key",
       "decision_owner": "owner",
-      "closes_when": "Release run's upgrade job passes before publishing"
+      "closes_when": "Upgrade from Build 13 run as its own step, and representative user data (settings, add-ons, profiles, downloads, queue, subtitle settings) seeded and checked after 12/13/14→15, before the next release (PRE-RELEASE REQUIRED)"
     },
     {
       "id": "NVP15-RISK-0006",
@@ -65,35 +72,24 @@
       "alternatives": "Keep; verify with tokens (chosen); verify always",
       "decision_owner": "owner",
       "closes_when": "Owner confirms his sources still play"
-    },
+    }
+  ],
+  "closed": [
     {
       "id": "NVP15-RISK-0007",
-      "state": "FAIL",
+      "was": "FAIL",
       "reason": "B15-PLY-02: Nuvio's ExoPlayer add-on subtitle test failed once in 20 runs on Android 9",
-      "needs": "Repeated Android 9 runs",
-      "requirements": [
-        "P8-05",
-        "D-12"
-      ],
-      "impact": "Possibly a slow load of add-on subtitles on old devices",
-      "priority": "P2",
-      "alternatives": "Investigate if it recurs (D-12)",
-      "decision_owner": "agent",
-      "closes_when": "Root cause found or no recurrence over further runs"
+      "closed_on": "2026-11-22",
+      "closes_when": "Root cause found or no recurrence over further runs",
+      "evidence": "Nuvio device tests since #51's diagnostics (2026-11-21 12:54 to 2026-11-22): 85 Android 9/14/16 jobs passed in 32 successful runs, each running MpvSurfaceTest, SubtitlePlaybackTest (both engines, ExoPlayer add-on subtitles) and SubtitleSettingsTest. Every failed run had a named cause: 44908042187 the rejected #55 change (mpv opened once; a real regression the tests caught), 44911126352 and 44917531198 new tests while written, 44931128379 the Android 16 wrong-thread fix (#63) and a stale test reading, 7 runs the Android 17 emulator image. No failure of these tests without a cause."
     },
     {
       "id": "NVP15-RISK-0009",
-      "state": "FAIL",
+      "was": "FAIL",
       "reason": "Last 62 emulator runs: MpvSurfaceTest failed 3 times at three different steps (activity never reached CREATED, Android 14; first frame, Android 14, same run as a font picker timeout; frame after stop/resume, Android 9, run with more emulator colour-buffer errors). Font picker failed once waiting for the system picker. No app fault proven; #51 records colour and logcat on the next failure",
-      "needs": "Repeated Android 14 runs; owner's device for the font picker",
-      "requirements": [
-        "P8-05"
-      ],
-      "impact": "No defect shown in the app; intermittent emulator timeouts",
-      "priority": "P2",
-      "alternatives": "Investigate if repeated (D-12 rule applies to Android 9 only)",
-      "decision_owner": "agent",
-      "closes_when": "A failure with #51 diagnostics shows the cause, or no recurrence over further runs"
+      "closed_on": "2026-11-22",
+      "closes_when": "A failure with #51 diagnostics shows the cause, or no recurrence over further runs",
+      "evidence": "Nuvio device tests since #51's diagnostics (2026-11-21 12:54 to 2026-11-22): 85 Android 9/14/16 jobs passed in 32 successful runs, each running MpvSurfaceTest, SubtitlePlaybackTest (both engines, ExoPlayer add-on subtitles) and SubtitleSettingsTest. Every failed run had a named cause: 44908042187 the rejected #55 change (mpv opened once; a real regression the tests caught), 44911126352 and 44917531198 new tests while written, 44931128379 the Android 16 wrong-thread fix (#63) and a stale test reading, 7 runs the Android 17 emulator image. No failure of these tests without a cause."
     }
   ]
 }

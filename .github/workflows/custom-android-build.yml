@@ -360,16 +360,19 @@ jobs:
         run: |
           set -euo pipefail
           gh release download custom-12 --repo "${GITHUB_REPOSITORY}" --dir build12 --pattern '*x86_64*.apk' --clobber
-          # The previous release users update from in the app: the newest published one, which must be
-          # signed with the release key (build 13 and later).
-          tag="$(gh release view --repo "${GITHUB_REPOSITORY}" --json tagName --jq .tagName)"
+          # The earlier releases users update from, each on its own (owner directive 2026-11-22):
+          # Build 13 and Build 14, and the newest published one if it is another; all must be signed
+          # with the release key.
+          latest="$(gh release view --repo "${GITHUB_REPOSITORY}" --json tagName --jq .tagName)"
           previous=""
-          if [[ "${tag}" != custom-12 ]]; then
-            gh release download "${tag}" --repo "${GITHUB_REPOSITORY}" --dir previous --pattern '*x86_64*.apk' --clobber
-            previous="$(ls previous/*x86_64*.apk)"
-            [[ "$(python3 -I .github/plus/apk-certs.py --current "${previous}")" == "${IDENTITY}" ]] \
+          for tag in custom-13 custom-14 "${latest}"; do
+            [[ "${tag}" != custom-12 && ";${previous}" != *";${tag}="* ]] || continue
+            gh release download "${tag}" --repo "${GITHUB_REPOSITORY}" --dir "previous/${tag}" --pattern '*x86_64*.apk' --clobber
+            apk="$(ls "previous/${tag}"/*x86_64*.apk)"
+            [[ "$(python3 -I .github/plus/apk-certs.py --current "${apk}")" == "${IDENTITY}" ]] \
               || { echo "::error::${tag} is not signed with the release key"; exit 1; }
-          fi
+            previous="${previous:+${previous};}${tag}=${apk}"
+          done
           release="$(ls apks/nuvio-plus-release/*x86_64*.apk)"
           # Any other key: what a stranger could sign (generated here, thrown away with the job).
           tools="$(ls -d "${ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)"
@@ -384,7 +387,7 @@ jobs:
             echo "OLD_KEY_APK=$(ls apks/nuvio-plus-apk/*x86_64*.apk)"
             echo "FOREIGN_APK=${RUNNER_TEMP}/foreign.apk"
           } >> "${GITHUB_ENV}"
-          echo "Previous release: ${tag}"
+          echo "Earlier releases: $(echo "${previous}" | tr ';' '\n' | cut -d= -f1 | paste -sd' ')"
 
       - name: Enable KVM
         run: |

@@ -17,7 +17,8 @@
       "needs_physical_device": false,
       "acceptance": "Every Build 15 change is a fix, test, tool or polish of an existing feature; exceptions are owner decisions.",
       "next": "Season/all pause controls (#28) recorded as owner decision D-01, not a standalone feature.",
-      "nvp15": "NVP15-REQ-0001"
+      "nvp15": "NVP15-REQ-0001",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "C-02",
@@ -33,7 +34,8 @@
       "needs_physical_device": false,
       "acceptance": "Each behaviour change links to a finding.",
       "next": "Enforced per PR review.",
-      "nvp15": "NVP15-REQ-0002"
+      "nvp15": "NVP15-REQ-0002",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "C-03",
@@ -49,7 +51,8 @@
       "needs_physical_device": false,
       "acceptance": "No change of these kinds.",
       "next": "Checked at release scope review.",
-      "nvp15": "NVP15-REQ-0003"
+      "nvp15": "NVP15-REQ-0003",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P0-01",
@@ -102,7 +105,8 @@
         "by": "owner",
         "on": "2026-11-21",
         "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
-      }
+      },
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P0-02",
@@ -150,7 +154,8 @@
         "by": "owner",
         "on": "2026-11-21",
         "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
-      }
+      },
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P0-03",
@@ -196,7 +201,8 @@
         "by": "owner",
         "on": "2026-11-21",
         "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
-      }
+      },
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P0-04",
@@ -230,7 +236,8 @@
         "by": "owner",
         "on": "2026-11-21",
         "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
-      }
+      },
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P0-05",
@@ -270,7 +277,8 @@
         "by": "owner",
         "on": "2026-11-21",
         "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
-      }
+      },
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P0-06",
@@ -301,7 +309,8 @@
         "by": "owner",
         "on": "2026-11-21",
         "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
-      }
+      },
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P0-07",
@@ -330,7 +339,8 @@
         "by": "owner",
         "on": "2026-11-21",
         "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
-      }
+      },
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P1-01",
@@ -364,7 +374,8 @@
       "needs_physical_device": false,
       "acceptance": "Every area listed with owner and review state; dependencies listed.",
       "next": "Regenerate at each phase; keep the committed report current.",
-      "nvp15": "NVP15-REQ-0011"
+      "nvp15": "NVP15-REQ-0011",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P1-02",
@@ -399,7 +410,8 @@
       "needs_physical_device": false,
       "acceptance": "All critical areas reviewed with evidence.",
       "next": "Device checks on the final release.",
-      "nvp15": "NVP15-REQ-0012"
+      "nvp15": "NVP15-REQ-0012",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P1-03",
@@ -426,7 +438,8 @@
       "needs_physical_device": false,
       "acceptance": "Each axis has findings or an explicit 'reviewed, none'.",
       "next": "Kept by the test on every PR.",
-      "nvp15": "NVP15-REQ-0013"
+      "nvp15": "NVP15-REQ-0013",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P1-04",
@@ -454,7 +467,8 @@
       "needs_physical_device": false,
       "acceptance": "Every audit row carries all eleven fields.",
       "next": "Kept by the test on every PR.",
-      "nvp15": "NVP15-REQ-0014"
+      "nvp15": "NVP15-REQ-0014",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P1-05",
@@ -492,7 +506,8 @@
       "needs_physical_device": false,
       "acceptance": "P1-01..04 VERIFIED.",
       "next": "P1 gate: owner's decision.",
-      "nvp15": "NVP15-REQ-0015"
+      "nvp15": "NVP15-REQ-0015",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P1-06",
@@ -519,7 +534,8 @@
       "needs_physical_device": false,
       "acceptance": "Each has a P2/P3 priority with documented risk (§14).",
       "next": "Owner sees the list in known-issues.md.",
-      "nvp15": "NVP15-REQ-0016"
+      "nvp15": "NVP15-REQ-0016",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P2-01",
@@ -541,7 +557,8 @@
       "needs_physical_device": false,
       "acceptance": "Each decision cites a §5 criterion and evidence.",
       "next": "Re-measure at the next upstream sync.",
-      "nvp15": "NVP15-REQ-0017"
+      "nvp15": "NVP15-REQ-0017",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P2-02",
@@ -565,7 +582,8 @@
       "needs_physical_device": false,
       "acceptance": "Each refactor PR states how each constraint holds.",
       "next": "Apply to A-02/A-03 at the next upstream sync.",
-      "nvp15": "NVP15-REQ-0018"
+      "nvp15": "NVP15-REQ-0018",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P2-03",
@@ -587,7 +605,8 @@
       "needs_physical_device": false,
       "acceptance": "Report for A-02 and A-03 before implementation.",
       "next": "Implementation deferred to the next upstream sync (upstream is not merged into Build 15).",
-      "nvp15": "NVP15-REQ-0019"
+      "nvp15": "NVP15-REQ-0019",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P2-04",
@@ -609,7 +628,8 @@
       "needs_physical_device": false,
       "acceptance": "ADRs in the repository.",
       "next": "Keep current at each sync.",
-      "nvp15": "NVP15-REQ-0020"
+      "nvp15": "NVP15-REQ-0020",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P3-01",
@@ -646,12 +666,18 @@
         }
       ],
       "untested": [
-        "HDR / Dolby Vision, real codecs, gesture feel: owner's device check"
+        "Personal device part deferred to PRV-01, PRV-03, PRV-04 (POST-RELEASE VALIDATION, NVP15-CHG-0005): HDR / Dolby Vision, real codecs, gesture feel: owner's device check"
       ],
-      "needs_physical_device": true,
+      "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
       "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
-      "nvp15": "NVP15-REQ-0021"
+      "nvp15": "NVP15-REQ-0021",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-01",
+        "PRV-03",
+        "PRV-04"
+      ]
     },
     {
       "id": "P3-02",
@@ -688,14 +714,17 @@
         }
       ],
       "untested": [
-        "Android 14 resume from the notification (real tap)",
         "Network loss and Wi-Fi only on an emulator",
-        "SD card / SAF on removable storage"
+        "Personal device part deferred to PRV-05 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Android 14 resume from the notification (real tap); SD card / SAF on removable storage"
       ],
-      "needs_physical_device": true,
+      "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
       "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
-      "nvp15": "NVP15-REQ-0022"
+      "nvp15": "NVP15-REQ-0022",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-05"
+      ]
     },
     {
       "id": "P3-03",
@@ -723,7 +752,8 @@
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
       "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
-      "nvp15": "NVP15-REQ-0023"
+      "nvp15": "NVP15-REQ-0023",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P3-04",
@@ -751,7 +781,8 @@
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
       "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
-      "nvp15": "NVP15-REQ-0024"
+      "nvp15": "NVP15-REQ-0024",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P3-05",
@@ -779,7 +810,8 @@
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
       "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
-      "nvp15": "NVP15-REQ-0025"
+      "nvp15": "NVP15-REQ-0025",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P3-06",
@@ -807,7 +839,8 @@
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
       "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
-      "nvp15": "NVP15-REQ-0026"
+      "nvp15": "NVP15-REQ-0026",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P3-07",
@@ -823,7 +856,8 @@
       "needs_physical_device": false,
       "acceptance": "No journey VERIFIED by unit tests alone.",
       "next": "Enforced by the gate (evidence kinds).",
-      "nvp15": "NVP15-REQ-0027"
+      "nvp15": "NVP15-REQ-0027",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-01",
@@ -845,7 +879,8 @@
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
       "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
-      "nvp15": "NVP15-REQ-0028"
+      "nvp15": "NVP15-REQ-0028",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-02",
@@ -869,7 +904,8 @@
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
       "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
-      "nvp15": "NVP15-REQ-0029"
+      "nvp15": "NVP15-REQ-0029",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-03",
@@ -887,7 +923,8 @@
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
       "next": "Add dialog screenshots.",
-      "nvp15": "NVP15-REQ-0030"
+      "nvp15": "NVP15-REQ-0030",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-04",
@@ -909,7 +946,8 @@
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
       "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
-      "nvp15": "NVP15-REQ-0031"
+      "nvp15": "NVP15-REQ-0031",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-05",
@@ -931,7 +969,8 @@
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
       "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
-      "nvp15": "NVP15-REQ-0032"
+      "nvp15": "NVP15-REQ-0032",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-06",
@@ -944,12 +983,16 @@
       "status": "SPECIFIED",
       "evidence": [],
       "untested": [
-        "Animations cannot be judged from still images: owner's device."
+        "Personal part deferred to PRV-02 (POST-RELEASE VALIDATION, NVP15-CHG-0005): the feel of animations in daily use."
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Owner's device on the release candidate.",
-      "nvp15": "NVP15-REQ-0033"
+      "next": "Review the animation code and the still states (no moving bar when idle, #60); the feel in use is PRV-02.",
+      "nvp15": "NVP15-REQ-0033",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-02"
+      ]
     },
     {
       "id": "P4-07",
@@ -973,7 +1016,8 @@
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
       "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
-      "nvp15": "NVP15-REQ-0034"
+      "nvp15": "NVP15-REQ-0034",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-08",
@@ -991,7 +1035,8 @@
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
       "next": "After P4-10 baselines.",
-      "nvp15": "NVP15-REQ-0035"
+      "nvp15": "NVP15-REQ-0035",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-09",
@@ -1015,7 +1060,8 @@
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
       "next": "Cite the passing run of the label assertion; contrast check.",
-      "nvp15": "NVP15-REQ-0036"
+      "nvp15": "NVP15-REQ-0036",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-10",
@@ -1033,7 +1079,8 @@
       "needs_physical_device": false,
       "acceptance": "Baselines for the selected screens in all setups, kept as artifacts.",
       "next": "Green #35, then add the remaining Plus screens.",
-      "nvp15": "NVP15-REQ-0037"
+      "nvp15": "NVP15-REQ-0037",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-11",
@@ -1062,7 +1109,8 @@
       "needs_physical_device": false,
       "acceptance": "A check that compares new screenshots with baselines and reports differences.",
       "next": "Cite that run; review CHANGED lines in every UI PR.",
-      "nvp15": "NVP15-REQ-0038"
+      "nvp15": "NVP15-REQ-0038",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-12",
@@ -1088,7 +1136,8 @@
       "needs_physical_device": false,
       "acceptance": "Screenshot test asserts Arabic text is rendered.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0039"
+      "nvp15": "NVP15-REQ-0039",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P4-13",
@@ -1110,7 +1159,8 @@
       "needs_physical_device": false,
       "acceptance": "Every visual change has a reason and before/after.",
       "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
-      "nvp15": "NVP15-REQ-0040"
+      "nvp15": "NVP15-REQ-0040",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P5-01",
@@ -1135,12 +1185,16 @@
         }
       ],
       "untested": [
-        "Real-device values: NEEDS PHYSICAL DEVICE."
+        "Personal device part deferred to PRV-06 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Real-device values: NEEDS PHYSICAL DEVICE."
       ],
-      "needs_physical_device": true,
+      "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
       "next": "Measure on the owner's device.",
-      "nvp15": "NVP15-REQ-0041"
+      "nvp15": "NVP15-REQ-0041",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-06"
+      ]
     },
     {
       "id": "P5-02",
@@ -1158,7 +1212,8 @@
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
       "next": "Measurement method and limits (P5-10).",
-      "nvp15": "NVP15-REQ-0042"
+      "nvp15": "NVP15-REQ-0042",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P5-03",
@@ -1176,7 +1231,8 @@
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
       "next": "Measurement method and limits (P5-10).",
-      "nvp15": "NVP15-REQ-0043"
+      "nvp15": "NVP15-REQ-0043",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P5-04",
@@ -1201,12 +1257,16 @@
         }
       ],
       "untested": [
-        "Real-device values: NEEDS PHYSICAL DEVICE."
+        "Personal device part deferred to PRV-06 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Real-device values: NEEDS PHYSICAL DEVICE."
       ],
-      "needs_physical_device": true,
+      "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
       "next": "Measure on the owner's device.",
-      "nvp15": "NVP15-REQ-0044"
+      "nvp15": "NVP15-REQ-0044",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-06"
+      ]
     },
     {
       "id": "P5-05",
@@ -1227,12 +1287,16 @@
         }
       ],
       "untested": [
-        "Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE."
+        "Personal device part deferred to PRV-06 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE."
       ],
-      "needs_physical_device": true,
+      "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
       "next": "Owner's device on the release candidate.",
-      "nvp15": "NVP15-REQ-0045"
+      "nvp15": "NVP15-REQ-0045",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-06"
+      ]
     },
     {
       "id": "P5-06",
@@ -1253,12 +1317,16 @@
         }
       ],
       "untested": [
-        "Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE."
+        "Personal device part deferred to PRV-06 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE."
       ],
-      "needs_physical_device": true,
+      "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
       "next": "Owner's device on the release candidate.",
-      "nvp15": "NVP15-REQ-0046"
+      "nvp15": "NVP15-REQ-0046",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-06"
+      ]
     },
     {
       "id": "P5-07",
@@ -1276,7 +1344,8 @@
       "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
       "next": "Measurement method and limits (P5-10).",
-      "nvp15": "NVP15-REQ-0047"
+      "nvp15": "NVP15-REQ-0047",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P5-08",
@@ -1297,12 +1366,16 @@
         }
       ],
       "untested": [
-        "Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE."
+        "Personal device part deferred to PRV-06 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE."
       ],
-      "needs_physical_device": true,
+      "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
       "next": "Owner's device on the release candidate.",
-      "nvp15": "NVP15-REQ-0048"
+      "nvp15": "NVP15-REQ-0048",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-06"
+      ]
     },
     {
       "id": "P5-09",
@@ -1330,7 +1403,8 @@
       "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0049"
+      "nvp15": "NVP15-REQ-0049",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P5-10",
@@ -1355,12 +1429,16 @@
         }
       ],
       "untested": [
-        "Same method on the owner's physical device: NEEDS PHYSICAL DEVICE."
+        "Personal device part deferred to PRV-06 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Same method on the owner's physical device: NEEDS PHYSICAL DEVICE."
       ],
-      "needs_physical_device": true,
+      "needs_physical_device": false,
       "acceptance": "Documented method and raw results in the repository.",
       "next": "Run on the owner's device.",
-      "nvp15": "NVP15-REQ-0050"
+      "nvp15": "NVP15-REQ-0050",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-06"
+      ]
     },
     {
       "id": "P5-11",
@@ -1388,7 +1466,8 @@
       "needs_physical_device": false,
       "acceptance": "Limits file with values and reasons.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0051"
+      "nvp15": "NVP15-REQ-0051",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-01",
@@ -1438,7 +1517,8 @@
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0052"
+      "nvp15": "NVP15-REQ-0052",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-02",
@@ -1456,7 +1536,8 @@
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
       "next": "Security report.",
-      "nvp15": "NVP15-REQ-0053"
+      "nvp15": "NVP15-REQ-0053",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-03",
@@ -1506,7 +1587,8 @@
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0054"
+      "nvp15": "NVP15-REQ-0054",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-04",
@@ -1524,7 +1606,8 @@
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
       "next": "Security report.",
-      "nvp15": "NVP15-REQ-0055"
+      "nvp15": "NVP15-REQ-0055",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-05",
@@ -1552,7 +1635,8 @@
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
       "next": "Security report.",
-      "nvp15": "NVP15-REQ-0056"
+      "nvp15": "NVP15-REQ-0056",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-06",
@@ -1595,7 +1679,8 @@
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
       "next": "Security report.",
-      "nvp15": "NVP15-REQ-0057"
+      "nvp15": "NVP15-REQ-0057",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-07",
@@ -1613,7 +1698,8 @@
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
       "next": "Security report.",
-      "nvp15": "NVP15-REQ-0058"
+      "nvp15": "NVP15-REQ-0058",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-08",
@@ -1631,7 +1717,8 @@
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
       "next": "Security report.",
-      "nvp15": "NVP15-REQ-0059"
+      "nvp15": "NVP15-REQ-0059",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-09",
@@ -1649,7 +1736,8 @@
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
       "next": "Security report.",
-      "nvp15": "NVP15-REQ-0060"
+      "nvp15": "NVP15-REQ-0060",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-10",
@@ -1669,7 +1757,8 @@
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
       "next": "Owner applies or declines the proposal; then re-read the ruleset as evidence.",
-      "nvp15": "NVP15-REQ-0061"
+      "nvp15": "NVP15-REQ-0061",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-11",
@@ -1696,7 +1785,8 @@
       "needs_physical_device": false,
       "acceptance": "Coverage table in the security report.",
       "next": "Security report.",
-      "nvp15": "NVP15-REQ-0062"
+      "nvp15": "NVP15-REQ-0062",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-12",
@@ -1705,16 +1795,35 @@
       "mandatory": true,
       "requirement": "Realistic test data: subtitle and player settings, several profiles, download history and season queue, library and databases, local settings, URI/SAF permissions.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "paths": [
+        ".github/plus/seed-user-data.py",
+        ".github/plus/seed-season-queue.py"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_seed_user_data.py",
+          "name": "test_six_kinds_and_two_profiles_are_seeded",
+          "what": "the six kinds for two profiles",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45006219617,
+          "commit": "07c4851f0261e68c60933555e6585d859f91ff13",
+          "what": "Emulator update test (Nuvio Plus checks): previous release with the six kinds of seeded data for two profiles, updated in place; every value kept ('Kept: add-ons (one with a token) and their on/off state for two profiles; subtitle language, size, engine and brightness; the theme of each profile; the library of each profile; the download folder ... and Wi-Fi only'; downloads, queue and partial file kept)",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Only the season queue is seeded (#28)."
+        "The system grant of the picked folder cannot be created by adb (needs the picker); the stored folder address is checked. The grant on a phone: PRV-05."
       ],
       "needs_physical_device": false,
       "acceptance": "Seed covers all six data kinds.",
-      "next": "Extend the seeding script.",
-      "nvp15": "NVP15-REQ-0063"
+      "next": "The release run applies the same data to the updates from Builds 12, 13 and 14.",
+      "nvp15": "NVP15-REQ-0063",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-13",
@@ -1723,16 +1832,40 @@
       "mandatory": true,
       "requirement": "Data content checked before and after update, not only presence.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Content check covers the season queue only."
+      "paths": [
+        ".github/plus/seed-user-data.py",
+        ".github/plus/seed-season-queue.py"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_seed_user_data.py",
+          "name": "test_a_title_lost_from_a_profiles_library_is_reported",
+          "what": "content compared after the update; each kind of loss reported",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_seed_user_data.py",
+          "name": "test_the_app_rewriting_the_library_in_its_own_form_is_fine",
+          "what": "JSON compared by meaning",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45006219617,
+          "commit": "07c4851f0261e68c60933555e6585d859f91ff13",
+          "what": "Emulator update test (Nuvio Plus checks): previous release with the six kinds of seeded data for two profiles, updated in place; every value kept ('Kept: add-ons (one with a token) and their on/off state for two profiles; subtitle language, size, engine and brightness; the theme of each profile; the library of each profile; the download folder ... and Wi-Fi only'; downloads, queue and partial file kept)",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Content diff for all seeded data kinds.",
-      "next": "With P6-12.",
-      "nvp15": "NVP15-REQ-0064"
+      "next": "Kept by the update tests.",
+      "nvp15": "NVP15-REQ-0064",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-14",
@@ -1748,7 +1881,8 @@
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
       "next": "On the candidate.",
-      "nvp15": "NVP15-REQ-0065"
+      "nvp15": "NVP15-REQ-0065",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-15",
@@ -1764,7 +1898,8 @@
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
       "next": "On the candidate.",
-      "nvp15": "NVP15-REQ-0066"
+      "nvp15": "NVP15-REQ-0066",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-16",
@@ -1780,7 +1915,8 @@
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
       "next": "On the candidate.",
-      "nvp15": "NVP15-REQ-0067"
+      "nvp15": "NVP15-REQ-0067",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-17",
@@ -1796,7 +1932,8 @@
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
       "next": "On the candidate.",
-      "nvp15": "NVP15-REQ-0068"
+      "nvp15": "NVP15-REQ-0068",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P6-18",
@@ -1812,7 +1949,8 @@
       "needs_physical_device": false,
       "acceptance": "Release notes and in-app text checked.",
       "next": "Release notes of the candidate.",
-      "nvp15": "NVP15-REQ-0069"
+      "nvp15": "NVP15-REQ-0069",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P7-01",
@@ -1839,13 +1977,21 @@
           "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
           "what": "PR #30 PortKit transfer tests on its final commit (merged)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45009048362,
+          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
+          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Plan/apply refuse incompatible targets.",
       "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
-      "nvp15": "NVP15-REQ-0070"
+      "nvp15": "NVP15-REQ-0070",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P7-02",
@@ -1863,7 +2009,8 @@
       "needs_physical_device": false,
       "acceptance": "Layout documented with the reason for differences.",
       "next": "Add LICENSES/ and an ADR.",
-      "nvp15": "NVP15-REQ-0071"
+      "nvp15": "NVP15-REQ-0071",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P7-03",
@@ -1883,7 +2030,8 @@
       "needs_physical_device": false,
       "acceptance": "validate checks every field.",
       "next": "Field completeness check.",
-      "nvp15": "NVP15-REQ-0072"
+      "nvp15": "NVP15-REQ-0072",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P7-04",
@@ -1901,7 +2049,8 @@
       "needs_physical_device": false,
       "acceptance": "Each contract enforced by plan with a test.",
       "next": "Licence and conflict contracts.",
-      "nvp15": "NVP15-REQ-0073"
+      "nvp15": "NVP15-REQ-0073",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P7-05",
@@ -1928,13 +2077,21 @@
           "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
           "what": "PR #30 PortKit transfer tests on its final commit (merged)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45009048362,
+          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
+          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every feature has a level.",
       "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
-      "nvp15": "NVP15-REQ-0074"
+      "nvp15": "NVP15-REQ-0074",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P7-06",
@@ -1961,13 +2118,21 @@
           "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
           "what": "PR #30 PortKit transfer tests on its final commit (merged)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45009048362,
+          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
+          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each property has a test.",
       "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
-      "nvp15": "NVP15-REQ-0075"
+      "nvp15": "NVP15-REQ-0075",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P7-07",
@@ -1990,9 +2155,9 @@
         },
         {
           "kind": "ci-run",
-          "run": 44875726793,
-          "commit": "ab8def38ea8bfab7806968f07ca6b9d18ded8bdb",
-          "what": "PortKit transfer tests on #45's final commit (merged): lazy-key-collisions and subtitle-parser-worst-case transferred into upstream 1.0.0 and fork A, their tests passed (4+4 each), APK assembled; dry run, validate and check-evidence steps passed",
+          "run": 45009048362,
+          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
+          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
           "result": "PASS"
         }
       ],
@@ -2000,7 +2165,8 @@
       "needs_physical_device": false,
       "acceptance": "Both targets built and tested.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0076"
+      "nvp15": "NVP15-REQ-0076",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P7-08",
@@ -2018,7 +2184,8 @@
       "needs_physical_device": false,
       "acceptance": "Ten named tests, each PASS on CI.",
       "next": "Map and add the licence test.",
-      "nvp15": "NVP15-REQ-0077"
+      "nvp15": "NVP15-REQ-0077",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P7-09",
@@ -2036,7 +2203,8 @@
       "needs_physical_device": false,
       "acceptance": "All seven outputs in portkit/.",
       "next": "Complete outputs.",
-      "nvp15": "NVP15-REQ-0078"
+      "nvp15": "NVP15-REQ-0078",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P7-10",
@@ -2047,14 +2215,23 @@
       "source": "Build 15 spec v1.0",
       "paths": [],
       "status": "IMPLEMENTED",
-      "evidence": [],
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45009048362,
+          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
+          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "2 of 14 features verified; the remaining 12 classified but unproven."
       ],
       "needs_physical_device": false,
       "acceptance": "Every portable feature transferred and tested on both targets; others with documented reason.",
       "next": "Prove or classify each remaining feature.",
-      "nvp15": "NVP15-REQ-0079"
+      "nvp15": "NVP15-REQ-0079",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-01",
@@ -2090,7 +2267,8 @@
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
       "next": "static-analysis.yml uses this PR's retry script for both sides (#28): re-verify with its run.",
-      "nvp15": "NVP15-REQ-0080"
+      "nvp15": "NVP15-REQ-0080",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-02",
@@ -2114,7 +2292,8 @@
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
       "next": "On the candidate.",
-      "nvp15": "NVP15-REQ-0081"
+      "nvp15": "NVP15-REQ-0081",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-03",
@@ -2154,7 +2333,8 @@
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
       "next": "Cite the candidate's runs.",
-      "nvp15": "NVP15-REQ-0082"
+      "nvp15": "NVP15-REQ-0082",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-04",
@@ -2178,7 +2358,8 @@
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
       "next": "On the candidate.",
-      "nvp15": "NVP15-REQ-0083"
+      "nvp15": "NVP15-REQ-0083",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-05",
@@ -2196,7 +2377,8 @@
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
       "next": "On the candidate.",
-      "nvp15": "NVP15-REQ-0084"
+      "nvp15": "NVP15-REQ-0084",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-06",
@@ -2209,12 +2391,13 @@
       "status": "DISCOVERED",
       "evidence": [],
       "untested": [
-        "Final run on the candidate pending."
+        "NOT TESTED: physical-device results are the owner's checks after the update (PRV-01..07)."
       ],
       "needs_physical_device": true,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate.",
-      "nvp15": "NVP15-REQ-0085"
+      "next": "Record the owner's results after installation (NVP15-CHG-0005).",
+      "nvp15": "NVP15-REQ-0085",
+      "release_class": "POST-RELEASE VALIDATION"
     },
     {
       "id": "P8-07",
@@ -2242,7 +2425,8 @@
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0086"
+      "nvp15": "NVP15-REQ-0086",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-08",
@@ -2269,7 +2453,8 @@
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
       "next": "Confirmed on the candidate",
-      "nvp15": "NVP15-REQ-0087"
+      "nvp15": "NVP15-REQ-0087",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-09",
@@ -2287,7 +2472,8 @@
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
       "next": "On the candidate.",
-      "nvp15": "NVP15-REQ-0088"
+      "nvp15": "NVP15-REQ-0088",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-10",
@@ -2305,7 +2491,8 @@
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
       "next": "On the candidate.",
-      "nvp15": "NVP15-REQ-0089"
+      "nvp15": "NVP15-REQ-0089",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-11",
@@ -2325,7 +2512,8 @@
       "needs_physical_device": false,
       "acceptance": "Gate enforces it on every PR.",
       "next": "Merge #31.",
-      "nvp15": "NVP15-REQ-0090"
+      "nvp15": "NVP15-REQ-0090",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "P8-12",
@@ -2358,13 +2546,16 @@
         }
       ],
       "untested": [
-        "Android 17 (API 37): the emulator image loses system services after boot; NOT TESTED, needs a real device.",
-        "No physical device run (player, HDR, external storage): NEEDS PHYSICAL DEVICE."
+        "Personal device part deferred to PRV-07 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Android 17 (API 37): the emulator image loses system services after boot; NOT TESTED, needs a real device.; No physical device run (player, HDR, external storage): NEEDS PHYSICAL DEVICE."
       ],
-      "needs_physical_device": true,
+      "needs_physical_device": false,
       "acceptance": "Device matrix with results.",
       "next": "Owner's physical device on the release candidate; re-add API 37 when a fixed emulator image ships.",
-      "nvp15": "NVP15-REQ-0091"
+      "nvp15": "NVP15-REQ-0091",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-07"
+      ]
     },
     {
       "id": "P8-13",
@@ -2388,7 +2579,8 @@
       "needs_physical_device": false,
       "acceptance": "Risk list in the readiness report.",
       "next": "Fill from the release run of the candidate before asking for approval.",
-      "nvp15": "NVP15-REQ-0092"
+      "nvp15": "NVP15-REQ-0092",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S12-01",
@@ -2406,7 +2598,8 @@
       "needs_physical_device": false,
       "acceptance": "Ruleset read back from the API shows each rule.",
       "next": "Proposal to the owner; verify by API after.",
-      "nvp15": "NVP15-REQ-0093"
+      "nvp15": "NVP15-REQ-0093",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S12-02",
@@ -2435,7 +2628,8 @@
       "needs_physical_device": false,
       "acceptance": "Manifest file plus a gate step that fails on any mismatch.",
       "next": "Release run: the 'Release scope (S12-02)' step must pass; add pull requests merged before the candidate to the manifest.",
-      "nvp15": "NVP15-REQ-0094"
+      "nvp15": "NVP15-REQ-0094",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S12-03",
@@ -2451,7 +2645,8 @@
       "needs_physical_device": false,
       "acceptance": "Merges only after all gates; release only after owner approval.",
       "next": "Ongoing.",
-      "nvp15": "NVP15-REQ-0095"
+      "nvp15": "NVP15-REQ-0095",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S13-01",
@@ -2469,7 +2664,8 @@
       "needs_physical_device": false,
       "acceptance": "Every phase has its outputs in docs/plus/build15.",
       "next": "Ongoing.",
-      "nvp15": "NVP15-REQ-0096"
+      "nvp15": "NVP15-REQ-0096",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S14-01",
@@ -2485,7 +2681,8 @@
       "needs_physical_device": false,
       "acceptance": "Audit rows carry §14 priority.",
       "next": "With P1-04.",
-      "nvp15": "NVP15-REQ-0097"
+      "nvp15": "NVP15-REQ-0097",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S15-01",
@@ -2505,7 +2702,8 @@
       "needs_physical_device": false,
       "acceptance": "Gate prints the three figures with weights.",
       "next": "Add weights.",
-      "nvp15": "NVP15-REQ-0098"
+      "nvp15": "NVP15-REQ-0098",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-01",
@@ -2521,7 +2719,8 @@
       "needs_physical_device": false,
       "acceptance": "All approved mandatory requirements done.",
       "next": "Readiness report.",
-      "nvp15": "NVP15-REQ-0099"
+      "nvp15": "NVP15-REQ-0099",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-02",
@@ -2537,7 +2736,8 @@
       "needs_physical_device": false,
       "acceptance": "Relevant CI gates pass on the final commit.",
       "next": "Readiness report.",
-      "nvp15": "NVP15-REQ-0100"
+      "nvp15": "NVP15-REQ-0100",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-03",
@@ -2553,7 +2753,8 @@
       "needs_physical_device": false,
       "acceptance": "No open release blockers.",
       "next": "Readiness report.",
-      "nvp15": "NVP15-REQ-0101"
+      "nvp15": "NVP15-REQ-0101",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-04",
@@ -2569,7 +2770,8 @@
       "needs_physical_device": false,
       "acceptance": "Critical function and upgrade tests pass.",
       "next": "Readiness report.",
-      "nvp15": "NVP15-REQ-0102"
+      "nvp15": "NVP15-REQ-0102",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-05",
@@ -2585,7 +2787,8 @@
       "needs_physical_device": false,
       "acceptance": "Data, signing and update safety proven.",
       "next": "Readiness report.",
-      "nvp15": "NVP15-REQ-0103"
+      "nvp15": "NVP15-REQ-0103",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-06",
@@ -2601,7 +2804,8 @@
       "needs_physical_device": false,
       "acceptance": "Visual polish meets the approved review criteria.",
       "next": "Readiness report.",
-      "nvp15": "NVP15-REQ-0104"
+      "nvp15": "NVP15-REQ-0104",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-07",
@@ -2617,7 +2821,8 @@
       "needs_physical_device": false,
       "acceptance": "No performance regression outside approved limits.",
       "next": "Readiness report.",
-      "nvp15": "NVP15-REQ-0105"
+      "nvp15": "NVP15-REQ-0105",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-08",
@@ -2633,7 +2838,8 @@
       "needs_physical_device": false,
       "acceptance": "Mandatory PortKit tests pass.",
       "next": "Readiness report.",
-      "nvp15": "NVP15-REQ-0106"
+      "nvp15": "NVP15-REQ-0106",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-09",
@@ -2658,7 +2864,8 @@
       "needs_physical_device": false,
       "acceptance": "Every unrun test and remaining risk documented.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0107"
+      "nvp15": "NVP15-REQ-0107",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-10",
@@ -2683,7 +2890,8 @@
       "needs_physical_device": false,
       "acceptance": "Source protection and release controls enabled.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0108"
+      "nvp15": "NVP15-REQ-0108",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-11",
@@ -2708,7 +2916,8 @@
       "needs_physical_device": false,
       "acceptance": "Build 14 vs Build 15 comparison delivered.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0109"
+      "nvp15": "NVP15-REQ-0109",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S16-12",
@@ -2724,7 +2933,8 @@
       "needs_physical_device": false,
       "acceptance": "Final owner approval.",
       "next": "Readiness report.",
-      "nvp15": "NVP15-REQ-0110"
+      "nvp15": "NVP15-REQ-0110",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-01",
@@ -2740,7 +2950,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "By phase.",
-      "nvp15": "NVP15-REQ-0111"
+      "nvp15": "NVP15-REQ-0111",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-02",
@@ -2756,7 +2967,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "By phase.",
-      "nvp15": "NVP15-REQ-0112"
+      "nvp15": "NVP15-REQ-0112",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-03",
@@ -2781,7 +2993,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0113"
+      "nvp15": "NVP15-REQ-0113",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-04",
@@ -2806,7 +3019,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0114"
+      "nvp15": "NVP15-REQ-0114",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-05",
@@ -2831,7 +3045,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0115"
+      "nvp15": "NVP15-REQ-0115",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-06",
@@ -2856,7 +3071,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0116"
+      "nvp15": "NVP15-REQ-0116",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-07",
@@ -2881,7 +3097,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0117"
+      "nvp15": "NVP15-REQ-0117",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-08",
@@ -2906,7 +3123,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0118"
+      "nvp15": "NVP15-REQ-0118",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-09",
@@ -2931,7 +3149,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0119"
+      "nvp15": "NVP15-REQ-0119",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-10",
@@ -2956,7 +3175,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0120"
+      "nvp15": "NVP15-REQ-0120",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-11",
@@ -2981,7 +3201,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0121"
+      "nvp15": "NVP15-REQ-0121",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-12",
@@ -3006,7 +3227,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0122"
+      "nvp15": "NVP15-REQ-0122",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S17-13",
@@ -3031,7 +3253,8 @@
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
       "next": "Confirmed on the release candidate",
-      "nvp15": "NVP15-REQ-0123"
+      "nvp15": "NVP15-REQ-0123",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-01",
@@ -3057,7 +3280,8 @@
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0124"
+      "nvp15": "NVP15-REQ-0124",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-02",
@@ -3083,7 +3307,8 @@
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0125"
+      "nvp15": "NVP15-REQ-0125",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-03",
@@ -3109,7 +3334,8 @@
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0126"
+      "nvp15": "NVP15-REQ-0126",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-04",
@@ -3135,7 +3361,8 @@
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0127"
+      "nvp15": "NVP15-REQ-0127",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-05",
@@ -3161,7 +3388,8 @@
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0128"
+      "nvp15": "NVP15-REQ-0128",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-06",
@@ -3187,7 +3415,8 @@
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0129"
+      "nvp15": "NVP15-REQ-0129",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-07",
@@ -3213,7 +3442,8 @@
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Owner acceptance.",
-      "nvp15": "NVP15-REQ-0130"
+      "nvp15": "NVP15-REQ-0130",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-08",
@@ -3231,7 +3461,8 @@
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Merge #28 after the background notification test.",
-      "nvp15": "NVP15-REQ-0131"
+      "nvp15": "NVP15-REQ-0131",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-09",
@@ -3244,13 +3475,16 @@
       "status": "IMPLEMENTED",
       "evidence": [],
       "untested": [
-        "Android 14: Resume from the notification needs the exemption a real tap gives (the test's self-sent PendingIntent is refused: 'Android could not start the download', run of 6013f429); it passed once with a real tap (run 44864116050). Device check (NVP15-RISK-0004).",
-        "The system UI tap itself on both versions: device check."
+        "Personal device part deferred to PRV-05 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Android 14: Resume from the notification needs the exemption a real tap gives (the test's self-sent PendingIntent is refused: 'Android could not start the download', run of 6013f429); it passed once with a real tap (run 44864116050). Device check (NVP15-RISK-0004).; The system UI tap itself on both versions: device check."
       ],
-      "needs_physical_device": true,
+      "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Cite this PR's notification run (Android 14 and 9); the screen tap on the owner's phone.",
-      "nvp15": "NVP15-REQ-0132"
+      "nvp15": "NVP15-REQ-0132",
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-05"
+      ]
     },
     {
       "id": "D-10",
@@ -3268,7 +3502,8 @@
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Merge #28 after the background notification test.",
-      "nvp15": "NVP15-REQ-0133"
+      "nvp15": "NVP15-REQ-0133",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S19-01",
@@ -3287,7 +3522,8 @@
       "needs_physical_device": false,
       "acceptance": "Every item has a unique NVP15-REQ id, an acceptance criterion and mandatory=true unless the owner decided otherwise; the gate fails otherwise.",
       "next": "Gate run of this commit.",
-      "nvp15": "NVP15-REQ-0134"
+      "nvp15": "NVP15-REQ-0134",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S19-02",
@@ -3309,7 +3545,8 @@
       "needs_physical_device": false,
       "acceptance": "Counterparts listed in the register note exist; the gate reads and cross-checks them.",
       "next": "Release scope manifest at P9.",
-      "nvp15": "NVP15-REQ-0135"
+      "nvp15": "NVP15-REQ-0135",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S19-03",
@@ -3343,7 +3580,8 @@
       "needs_physical_device": false,
       "acceptance": "inventory.md covers every file: examined (initial or deep) or excluded with a reason; none left unexamined silently.",
       "next": "Regenerate when areas change; the test fails otherwise.",
-      "nvp15": "NVP15-REQ-0136"
+      "nvp15": "NVP15-REQ-0136",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S19-04",
@@ -3359,7 +3597,8 @@
       "needs_physical_device": false,
       "acceptance": "PR descriptions or the register name the requirement ids of each impactful PR.",
       "next": "From the next PRs on; earlier ones in carryover.json.",
-      "nvp15": "NVP15-REQ-0137"
+      "nvp15": "NVP15-REQ-0137",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S20-01",
@@ -3377,7 +3616,8 @@
       "needs_physical_device": false,
       "acceptance": "Register evidence carries run, full commit, what and result; online gate checks each run succeeded on that commit.",
       "next": "Environment and time come from the cited run.",
-      "nvp15": "NVP15-REQ-0138"
+      "nvp15": "NVP15-REQ-0138",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S20-02",
@@ -3395,7 +3635,8 @@
       "needs_physical_device": false,
       "acceptance": "Stale-evidence check passes on the release commit; release run tests that commit.",
       "next": "At P8/P9.",
-      "nvp15": "NVP15-REQ-0139"
+      "nvp15": "NVP15-REQ-0139",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S21-01",
@@ -3413,7 +3654,8 @@
       "needs_physical_device": false,
       "acceptance": "carryover.json lists every Build 15 pull request with its state, tests and what is still to re-check.",
       "next": "Keep current at each merge.",
-      "nvp15": "NVP15-REQ-0140"
+      "nvp15": "NVP15-REQ-0140",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S21-02",
@@ -3442,7 +3684,8 @@
         "by": "owner",
         "on": "2026-11-21",
         "ref": "Owner in chat, 2026-11-21 13:44 (Riyadh): 'اعتمد' — P0 approved, device performance measurements left open (NVP15-CHG-0004)"
-      }
+      },
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S22-01",
@@ -3461,7 +3704,8 @@
       "needs_physical_device": false,
       "acceptance": "risks.json holds each open item with every §22.1 field; the gate rejects an entry with an empty field.",
       "next": "Keep current.",
-      "nvp15": "NVP15-REQ-0142"
+      "nvp15": "NVP15-REQ-0142",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S22-02",
@@ -3480,7 +3724,8 @@
       "needs_physical_device": false,
       "acceptance": "stage-gates.json uses only these states; a PASS gate with unverified mandatory items or no owner decision fails the gate.",
       "next": "At P9.",
-      "nvp15": "NVP15-REQ-0143"
+      "nvp15": "NVP15-REQ-0143",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S23-01",
@@ -3496,7 +3741,8 @@
       "needs_physical_device": false,
       "acceptance": "Merge approval recorded (D-11); signing and publishing asked separately at the release.",
       "next": "Signing and publishing at P9.",
-      "nvp15": "NVP15-REQ-0144"
+      "nvp15": "NVP15-REQ-0144",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S23-02",
@@ -3514,7 +3760,8 @@
       "needs_physical_device": false,
       "acceptance": "change-requests.json holds each such change with before, after, reason, impact and decision.",
       "next": "Keep current.",
-      "nvp15": "NVP15-REQ-0145"
+      "nvp15": "NVP15-REQ-0145",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S24-01",
@@ -3533,7 +3780,8 @@
       "needs_physical_device": false,
       "acceptance": "stage-gates.json has P0–P9 with these fields; the gate checks states and PASS conditions.",
       "next": "Update at each gate.",
-      "nvp15": "NVP15-REQ-0146"
+      "nvp15": "NVP15-REQ-0146",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S24-02",
@@ -3551,7 +3799,8 @@
       "needs_physical_device": false,
       "acceptance": "The gate prints the figures and method; chat reports follow the list.",
       "next": "Each report.",
-      "nvp15": "NVP15-REQ-0147"
+      "nvp15": "NVP15-REQ-0147",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S25-01",
@@ -3570,7 +3819,8 @@
       "needs_physical_device": false,
       "acceptance": "change-requests.json; MANDATORY list in the gate keeps every id.",
       "next": "Keep current.",
-      "nvp15": "NVP15-REQ-0148"
+      "nvp15": "NVP15-REQ-0148",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S25-02",
@@ -3588,7 +3838,8 @@
       "needs_physical_device": false,
       "acceptance": "check-requirements.py (--online, --matrix) runs on every pull request and push.",
       "next": "Manifest check at P9.",
-      "nvp15": "NVP15-REQ-0149"
+      "nvp15": "NVP15-REQ-0149",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "S25-03",
@@ -3604,7 +3855,8 @@
       "needs_physical_device": false,
       "acceptance": "All present in docs/plus/build15 at the release commit; secret scan clean.",
       "next": "At P9.",
-      "nvp15": "NVP15-REQ-0150"
+      "nvp15": "NVP15-REQ-0150",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-11",
@@ -3620,7 +3872,8 @@
       "needs_physical_device": false,
       "acceptance": "Merges only with all checks green on the head; no signing or publishing without a new approval.",
       "next": "—",
-      "nvp15": "NVP15-REQ-0151"
+      "nvp15": "NVP15-REQ-0151",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-12",
@@ -3631,12 +3884,20 @@
       "source": "Owner decision",
       "paths": [],
       "status": "IMPLEMENTED",
-      "evidence": [],
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/risks.json",
+          "what": "Closed NVP15-RISK-0007/0009: no failure without a cause in 85 Android 9/14/16 device-test jobs since #51",
+          "result": "documented"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Android 9 jobs keep running; triage follows this rule.",
       "next": "—",
-      "nvp15": "NVP15-REQ-0152"
+      "nvp15": "NVP15-REQ-0152",
+      "release_class": "PRE-RELEASE REQUIRED"
     },
     {
       "id": "D-13",
@@ -3652,7 +3913,170 @@
       "needs_physical_device": false,
       "acceptance": "Each change is judged on its effect on playback and sources; B15-SEC-04 fixed without losing sources (#44).",
       "next": "Apply in every decision.",
-      "nvp15": "NVP15-REQ-0153"
+      "nvp15": "NVP15-REQ-0153",
+      "release_class": "PRE-RELEASE REQUIRED"
+    },
+    {
+      "id": "PRV-01",
+      "spec": "Owner directive 2026-11-22 (NVP15-CHG-0005)",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "HDR10, HLG and Dolby Vision on the owner's screen with ExoPlayer and libmpv; Dolby Vision 7 with and without the mapping setting; Dolby audio passthrough.",
+      "source": "Owner directive 2026-11-22 11:24: personal checks after the update is installed",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "NOT TESTED: the owner's check after installing the release (POST-RELEASE VALIDATION)."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "The owner's result on his phone, recorded with the device, Android version and build.",
+      "next": "After the release is installed on the owner's phone.",
+      "nvp15": "NVP15-REQ-0154",
+      "release_class": "POST-RELEASE VALIDATION",
+      "post_release_of": [
+        "P3-01",
+        "P1-02"
+      ]
+    },
+    {
+      "id": "PRV-02",
+      "spec": "Owner directive 2026-11-22 (NVP15-CHG-0005)",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Look and smoothness of the interface in daily use, animations and transitions.",
+      "source": "Owner directive 2026-11-22 11:24: personal checks after the update is installed",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "NOT TESTED: the owner's check after installing the release (POST-RELEASE VALIDATION)."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "The owner's result on his phone, recorded with the device, Android version and build.",
+      "next": "After the release is installed on the owner's phone.",
+      "nvp15": "NVP15-REQ-0155",
+      "release_class": "POST-RELEASE VALIDATION",
+      "post_release_of": [
+        "P4-06"
+      ]
+    },
+    {
+      "id": "PRV-03",
+      "spec": "Owner directive 2026-11-22 (NVP15-CHG-0005)",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Feel of the subtitle gestures: moving and resizing with two fingers.",
+      "source": "Owner directive 2026-11-22 11:24: personal checks after the update is installed",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "NOT TESTED: the owner's check after installing the release (POST-RELEASE VALIDATION)."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "The owner's result on his phone, recorded with the device, Android version and build.",
+      "next": "After the release is installed on the owner's phone.",
+      "nvp15": "NVP15-REQ-0156",
+      "release_class": "POST-RELEASE VALIDATION",
+      "post_release_of": [
+        "P3-01"
+      ]
+    },
+    {
+      "id": "PRV-04",
+      "spec": "Owner directive 2026-11-22 (NVP15-CHG-0005)",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "The owner's own sources, add-ons and accounts: playback and subtitles from them.",
+      "source": "Owner directive 2026-11-22 11:24: personal checks after the update is installed",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "NOT TESTED: the owner's check after installing the release (POST-RELEASE VALIDATION)."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "The owner's result on his phone, recorded with the device, Android version and build.",
+      "next": "After the release is installed on the owner's phone.",
+      "nvp15": "NVP15-REQ-0157",
+      "release_class": "POST-RELEASE VALIDATION",
+      "post_release_of": [
+        "P3-01",
+        "P3-05"
+      ]
+    },
+    {
+      "id": "PRV-05",
+      "spec": "Owner directive 2026-11-22 (NVP15-CHG-0005)",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Downloads, notifications and storage on the owner's phone: Resume from the notification on Android 14+, SD card / removable storage.",
+      "source": "Owner directive 2026-11-22 11:24: personal checks after the update is installed",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "NOT TESTED: the owner's check after installing the release (POST-RELEASE VALIDATION)."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "The owner's result on his phone, recorded with the device, Android version and build.",
+      "next": "After the release is installed on the owner's phone.",
+      "nvp15": "NVP15-REQ-0158",
+      "release_class": "POST-RELEASE VALIDATION",
+      "post_release_of": [
+        "P3-02",
+        "D-09"
+      ]
+    },
+    {
+      "id": "PRV-06",
+      "spec": "Owner directive 2026-11-22 (NVP15-CHG-0005)",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Real performance on the owner's phone: start, memory, playback stability, dropped frames, CPU, heat and responsiveness.",
+      "source": "Owner directive 2026-11-22 11:24: personal checks after the update is installed",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "NOT TESTED: the owner's check after installing the release (POST-RELEASE VALIDATION)."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "The owner's result on his phone, recorded with the device, Android version and build.",
+      "next": "After the release is installed on the owner's phone.",
+      "nvp15": "NVP15-REQ-0159",
+      "release_class": "POST-RELEASE VALIDATION",
+      "post_release_of": [
+        "P5-01",
+        "P5-04",
+        "P5-05",
+        "P5-06",
+        "P5-08",
+        "P5-10"
+      ]
+    },
+    {
+      "id": "PRV-07",
+      "spec": "Owner directive 2026-11-22 (NVP15-CHG-0005)",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "Android 17: open, play, subtitles and a download, on a real device (the android-37.0 emulator image fails after boot).",
+      "source": "Owner directive 2026-11-22 11:24: personal checks after the update is installed",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "NOT TESTED: the owner's check after installing the release (POST-RELEASE VALIDATION)."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "The owner's result on his phone, recorded with the device, Android version and build.",
+      "next": "After the release is installed on the owner's phone.",
+      "nvp15": "NVP15-REQ-0160",
+      "release_class": "POST-RELEASE VALIDATION",
+      "post_release_of": [
+        "P8-12"
+      ]
     }
   ]
 }
