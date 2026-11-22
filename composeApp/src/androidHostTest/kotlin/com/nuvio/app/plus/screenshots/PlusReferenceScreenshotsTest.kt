@@ -21,6 +21,8 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.LayoutDirection
@@ -278,6 +280,31 @@ abstract class PlusReferenceScreenshots(private val device: String) {
         }
         val folder = File("build/reports/plus-screenshots").apply { mkdirs() }
         File(folder, "$screen-$device.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        // P4-09: every control a finger or a screen reader reaches. Report only for now: the
+        // review decides which findings are Plus's to fix (a Nuvio control stays Nuvio's).
+        val report = File("build/reports/plus-a11y").apply { mkdirs() }
+        File(report, "$screen-$device.txt").writeText(accessibilityFindings().joinToString("") { "$screen-$device: $it\n" })
+    }
+
+    /** Tappable or toggleable nodes smaller than 48 dp, or with nothing a screen reader can say. */
+    private fun accessibilityFindings(): List<String> {
+        val dp = compose.density.density
+        val nodes = compose.onAllNodes(hasClickAction() or isToggleable()).fetchSemanticsNodes()
+        return nodes.mapNotNull { node ->
+            val bounds = node.boundsInRoot
+            val label = (node.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty() +
+                node.config.getOrNull(SemanticsProperties.Text).orEmpty().map { it.text } +
+                listOfNotNull(node.config.getOrNull(SemanticsProperties.StateDescription)))
+                .joinToString(" ").trim()
+            val widthDp = (bounds.width / dp).toInt()
+            val heightDp = (bounds.height / dp).toInt()
+            val problems = buildList {
+                if (widthDp < 48 || heightDp < 48) add("target ${widthDp}x${heightDp} dp")
+                if (label.isEmpty()) add("no label")
+            }
+            if (problems.isEmpty()) null
+            else "${problems.joinToString(", ")} at (${(bounds.left / dp).toInt()}, ${(bounds.top / dp).toInt()}) dp \"${label.take(48)}\""
+        }
     }
 
     private fun shownTexts(node: SemanticsNode): List<String> =
