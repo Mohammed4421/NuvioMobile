@@ -8,6 +8,8 @@
 #   B. App process killed (as Android does under memory pressure): the partial file is kept, and
 #      after the user opens the app again the download continues from the kept bytes and finishes
 #      with the exact bytes.
+#   C. Wi-Fi only (D-08, journey J-13): with the setting on and only mobile data connected, nothing is
+#      transferred; when Wi-Fi comes back the download starts and finishes with the exact bytes.
 # A step the emulator cannot produce (the network cannot be cut) is reported NOT TESTED, never PASS.
 # Usage: download-interruptions-test.sh <debug apk> <label>
 set -uo pipefail
@@ -66,14 +68,17 @@ try: print(json.load(sys.stdin)["item"]["status"])
 except Exception: print("missing")'
 }
 engine_is() { [[ "$(engine_status)" == "$1" ]]; }
-start_download() {
+enqueue() {  # enqueue [extra am arguments]
   adb shell run-as "${pkg}" rm -f cache/download-test-ready
   : > "${work}/requests.log"
   adb shell am start -W -n "${pkg}/com.nuvio.android.BackgroundDownloadTestActivity" \
-    --es downloadUrl "http://10.0.2.2:8765/fixture.bin" > /dev/null || fail "could not start the download activity"
+    --es downloadUrl "http://10.0.2.2:8765/fixture.bin" "$@" > /dev/null || fail "could not start the download activity"
   started() { status_is Downloading && adb shell run-as "${pkg}" ls cache/download-test-ready > /dev/null 2>&1; }
   wait_for 60 "the download to start" started
   file="$(state | cut -f2)"
+}
+start_download() {
+  enqueue
   adb shell input keyevent KEYCODE_HOME
   growing() { local size; size="$(part_size "${file}")"; [[ -n "${size}" && "${size}" -gt 2000000 ]]; }
   wait_for 60 "2 MB downloaded in the background" growing
@@ -160,5 +165,39 @@ check_resumed_from "${mark}" "${kept}"
 from_zero="$(tail -n +"$(( mark + 1 ))" "${work}/requests.log" | grep -c '^GET range=- ' || true)"
 (( from_zero == 0 )) || fail "a second transfer started from byte 0 after the process died: $(tail -n +"$(( mark + 1 ))" "${work}/requests.log" | tr '\n' ';')"
 check_complete engine
+
+# C. Wi-Fi only on mobile data. The emulator has Wi-Fi and a metered mobile network; with Wi-Fi off
+# only mobile data is left. If the emulator offers no metered mobile network, C is NOT TESTED.
+networks() { adb shell dumpsys connectivity 2>/dev/null | tr -d '\r' | grep -E "^ *NetworkAgentInfo" ; }
+only_metered_mobile() {
+  local agents; agents="$(networks)"
+  ! grep -q "WIFI" <<< "${agents}" && grep "CELLULAR" <<< "${agents}" | grep -qv "NOT_METERED"
+}
+adb shell pm clear "${pkg}" > /dev/null || fail "could not clear the app"
+out="$(bash "${here}/adb-install.sh" -r -g "${apk}" 2>&1)" || fail "reinstall failed: $(grep -m 3 -E "Failure|Exception|Error" <<< "${out}" | tr '\n' ' ')"
+adb shell svc data enable > /dev/null 2>&1; adb shell svc wifi disable > /dev/null 2>&1
+for _ in $(seq 1 30); do only_metered_mobile && break; sleep 1; done
+if ! only_metered_mobile; then
+  say "NOT TESTED: Wi-Fi only (no metered mobile network on this emulator once Wi-Fi is off): $(networks | cut -c1-200 | tr '\n' ';')"
+  result="${result} (Wi-Fi only NOT TESTED)"
+  network_on
+else
+  enqueue --ez wifiOnly true
+  adb shell input keyevent KEYCODE_HOME
+  sleep 30
+  got="$(grep -c '^GET' "${work}/requests.log" || true)"
+  size="$(part_size "${file}")"
+  (( got == 0 )) || fail "Wi-Fi only: ${got} request(s) to the server on mobile data: $(tr '\n' ';' < "${work}/requests.log")"
+  [[ -z "${size}" || "${size}" == 0 ]] || fail "Wi-Fi only: ${size} bytes downloaded on mobile data"
+  IFS=$'\t' read -r status _ _ error <<< "$(state)"
+  [[ "${status}" != Failed ]] || fail "Wi-Fi only: failed while waiting for Wi-Fi: ${error}"
+  say "Wi-Fi only on mobile data: status ${status}, nothing transferred in 30 s"
+  adb shell svc wifi enable > /dev/null 2>&1
+  waited() { local s; s="$(part_size "${file}")"; engine_is Completed || [[ -n "${s}" && "${s}" -gt 0 ]]; }
+  wait_for 180 "the download to start on Wi-Fi" waited
+  say "started on Wi-Fi"
+  check_complete engine
+  network_on
+fi
 say "download engine log:"; adb logcat -d -v time -s NuvioDownload:I | sed "s/^/${label}:   /"
 say "${result}"
