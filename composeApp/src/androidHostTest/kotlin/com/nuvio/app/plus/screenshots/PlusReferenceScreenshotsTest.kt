@@ -2,6 +2,7 @@ package com.nuvio.app.plus.screenshots
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -65,6 +66,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import kotlin.math.abs
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -280,6 +282,7 @@ abstract class PlusReferenceScreenshots(private val device: String) {
         }
         val folder = File("build/reports/plus-screenshots").apply { mkdirs() }
         File(folder, "$screen-$device.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        compareWithBaseline("$screen-$device", bitmap)
         // P4-09: every control a finger or a screen reader reaches, printed for review.
         val findings = accessibilityFindings()
         val report = File("build/reports/plus-a11y").apply { mkdirs() }
@@ -290,6 +293,48 @@ abstract class PlusReferenceScreenshots(private val device: String) {
             val unlabelled = findings.filter { "no label" in it }
             assertTrue(unlabelled.isEmpty(), "$screen on $device has controls without a label: $unlabelled")
         }
+    }
+
+    /**
+     * P4-11: a 240 px wide thumbnail of the screen against the approved one in
+     * docs/plus/build15/screenshot-baselines. Report only, for human review: the share of pixels
+     * that changed visibly (a channel off by more than 24 of 255) and the mean change. A missing
+     * baseline reports NEW. The thumbnail is kept so an approved change can become the baseline.
+     */
+    private fun compareWithBaseline(name: String, bitmap: Bitmap) {
+        val width = 240
+        val thumb = Bitmap.createScaledBitmap(bitmap, width, (bitmap.height * width / bitmap.width).coerceAtLeast(1), true)
+        File("build/reports/plus-thumbs").apply { mkdirs() }.resolve("$name.png").outputStream().use {
+            thumb.compress(Bitmap.CompressFormat.PNG, 100, it)
+        }
+        val baselineFile = File("../docs/plus/build15/screenshot-baselines/$name.png")
+        val line = if (!baselineFile.exists()) {
+            "$name NEW (no baseline)"
+        } else {
+            val baseline = BitmapFactory.decodeFile(baselineFile.path)
+            if (baseline == null || baseline.width != thumb.width || baseline.height != thumb.height) {
+                "$name SIZE ${baseline?.width}x${baseline?.height} -> ${thumb.width}x${thumb.height}"
+            } else {
+                var changed = 0
+                var total = 0L
+                for (y in 0 until thumb.height) for (x in 0 until thumb.width) {
+                    val a = thumb.getPixel(x, y)
+                    val b = baseline.getPixel(x, y)
+                    val d = maxOf(
+                        abs(((a shr 16) and 0xFF) - ((b shr 16) and 0xFF)),
+                        abs(((a shr 8) and 0xFF) - ((b shr 8) and 0xFF)),
+                        abs((a and 0xFF) - (b and 0xFF)),
+                    )
+                    total += d
+                    if (d > 24) changed++
+                }
+                val pixels = thumb.width * thumb.height
+                val percent = changed * 1000 / pixels / 10.0
+                val verdict = if (changed * 100 >= pixels) "CHANGED" else if (changed > 0) "minor" else "same"
+                "$name $verdict ${percent}% of pixels, mean ${total / pixels}"
+            }
+        }
+        File("build/reports/plus-compare").apply { mkdirs() }.resolve("$name.txt").writeText(line + "\n")
     }
 
     /**
