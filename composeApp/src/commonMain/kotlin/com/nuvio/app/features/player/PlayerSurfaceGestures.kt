@@ -141,6 +141,9 @@ internal fun Modifier.playerSurfaceDragGestures(
             var subtitleUpwardFraction = 0f
             var subtitleZoomActive = false
             var subtitlePanActive = false
+            // Set when a finger lifts during a pinch: a finger put back must not resize or move
+            // against the old start (that jumped); the gesture ends with the last finger.
+            var subtitleTransformEnded = false
 
             while (true) {
                 val event = awaitPointerEvent()
@@ -262,23 +265,30 @@ internal fun Modifier.playerSurfaceDragGestures(
                     }
 
                     PlayerGestureMode.SubtitleTransform -> {
-                        if (pressedPointers.size >= 2) {
+                        if (!subtitleTransformEnded && pressedPointers.size >= 2) {
                             val spread = pointerSpread(pressedPointers)
-                            val centroidDy = pointerCentroidY(pressedPointers) - subtitlePinchStartCentroidY
+                            val centroidY = pointerCentroidY(pressedPointers)
                             if (subtitlePinchStartSpread > 0f && spread > 0f) {
-                                val zoom = spread / subtitlePinchStartSpread
                                 // Small dead zones keep a pinch from also nudging the position and
-                                // a two-finger drag from also resizing.
-                                if (!subtitleZoomActive && abs(zoom - 1f) > SubtitlePinchZoomDeadZone) {
+                                // a two-finger drag from also resizing. Crossing one restarts from
+                                // there, so the size or position follows on smoothly, not with a jump.
+                                if (!subtitleZoomActive && abs(spread / subtitlePinchStartSpread - 1f) > SubtitlePinchZoomDeadZone) {
                                     subtitleZoomActive = true
+                                    subtitlePinchStartSpread = spread
                                 }
-                                if (subtitleZoomActive) subtitleZoom = zoom
+                                if (subtitleZoomActive) subtitleZoom = spread / subtitlePinchStartSpread
                             }
-                            if (!subtitlePanActive && abs(centroidDy) > viewConfiguration.touchSlop * 2f) {
+                            if (!subtitlePanActive && abs(centroidY - subtitlePinchStartCentroidY) > viewConfiguration.touchSlop * 2f) {
                                 subtitlePanActive = true
+                                subtitlePinchStartCentroidY = centroidY
                             }
-                            if (subtitlePanActive) subtitleUpwardFraction = -centroidDy / height
-                            subtitleGestures?.update?.value?.invoke(subtitleZoom, subtitleUpwardFraction)
+                            if (subtitlePanActive) subtitleUpwardFraction = -(centroidY - subtitlePinchStartCentroidY) / height
+                            // Nothing is shown (no size/position hint) until the fingers really move.
+                            if (subtitleZoomActive || subtitlePanActive) {
+                                subtitleGestures?.update?.value?.invoke(subtitleZoom, subtitleUpwardFraction)
+                            }
+                        } else {
+                            subtitleTransformEnded = true
                         }
                         event.changes.forEach { it.consume() }
                         continue

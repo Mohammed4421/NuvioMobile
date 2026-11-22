@@ -26,6 +26,9 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Smoother two-finger subtitle resize and move.** The size or position no longer jumps when the
+  pinch or drag begins, no size hint flashes before the fingers move, and lifting one finger and
+  putting it back no longer resizes or moves the subtitles.
 - **Screen readers:** each download in the library reads its title and state, the subtitle and audio
   − and + buttons say what they do, and the "Wi-Fi only" switch reads its name (the whole row toggles
   it now).

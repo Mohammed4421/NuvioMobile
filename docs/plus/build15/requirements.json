@@ -1323,9 +1323,9 @@
         },
         {
           "kind": "ci-run",
-          "run": 44976691090,
-          "commit": "0231330bea1af1e4611139786211563fd15c0ad6",
-          "what": "#68 (plus-build.yml prints the P4-09 report): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
+          "run": 44980170730,
+          "commit": "bfb6e22b3f11dc40f816539ffeeb29cd025d5bb5",
+          "what": "Build of custom-subtitles after #68 (squash commit, plus-build.yml prints the P4-09 report): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
           "result": "PASS"
         },
         {
@@ -1391,9 +1391,9 @@
         },
         {
           "kind": "ci-run",
-          "run": 44976691090,
-          "commit": "0231330bea1af1e4611139786211563fd15c0ad6",
-          "what": "#68 (plus-build.yml prints the P4-09 report): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
+          "run": 44980170730,
+          "commit": "bfb6e22b3f11dc40f816539ffeeb29cd025d5bb5",
+          "what": "Build of custom-subtitles after #68 (squash commit, plus-build.yml prints the P4-09 report): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
           "result": "PASS"
         },
         {
@@ -1478,9 +1478,9 @@
         },
         {
           "kind": "ci-run",
-          "run": 44976691090,
-          "commit": "0231330bea1af1e4611139786211563fd15c0ad6",
-          "what": "#68: 'Known vulnerabilities in the libraries of the release APK (OSV)': 353 libraries, 0 blocking, 0 reviewed, 0 low or moderate",
+          "run": 44980170730,
+          "commit": "bfb6e22b3f11dc40f816539ffeeb29cd025d5bb5",
+          "what": "Build of custom-subtitles after #68 (squash commit, plus-build.yml prints the P4-09 report): 'Known vulnerabilities in the libraries of the release APK (OSV)' passed (0 blocking)",
           "result": "PASS"
         },
         {
