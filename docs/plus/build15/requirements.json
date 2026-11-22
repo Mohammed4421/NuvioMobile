@@ -687,7 +687,8 @@
       "requirement": "Downloads / Storage: single and season downloads, quality, cancel and resume, network loss, SAF and .part files, out of space. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/journeys.md"
+        "docs/plus/build15/journeys.md",
+        ".github/plus/download-interruptions-test.sh"
       ],
       "status": "IMPLEMENTED",
       "evidence": [
@@ -711,10 +712,16 @@
           "commit": "ca557ac0ec78b3b6824ae6ee6e6a30b10ae0ea01",
           "what": "Download notification (Android 9 pause/resume; 14 and 16 pause) and interruptions (network loss, process death, no second transfer) on Android 9, 14, 16; Android 17 NOT TESTED",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45013362722,
+          "commit": "e5c55eb8709cf22cd5ce6e7cee8c5cc12a73ee24",
+          "what": "Download notification test, scenario C (Wi-Fi only) on Android 9, 14 and 16: metered mobile data only, no request reaches the server and no byte is written in 30 s; Wi-Fi back, the download starts and finishes with the exact SHA-256",
+          "result": "PASS"
         }
       ],
       "untested": [
-        "Network loss and Wi-Fi only on an emulator",
         "Personal device part deferred to PRV-05 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Android 14 resume from the notification (real tap); SD card / SAF on removable storage"
       ],
       "needs_physical_device": false,
@@ -2277,28 +2284,14 @@
       "paths": [
         "portkit/"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44836307313,
-          "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
-          "what": "PR #30 checks on its final commit (merged)",
-          "result": "PASS"
-        },
-        {
-          "kind": "ci-run",
-          "run": 44836307247,
-          "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
-          "what": "PR #30 PortKit transfer tests on its final commit (merged)",
-          "result": "PASS"
-        },
-        {
-          "kind": "ci-run",
-          "run": 45009048362,
-          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
-          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
-          "result": "PASS"
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
+          "result": "PASS",
+          "what": "PortKit transfer tests on this pull request: validate, plan, trial, apply, transfer of the three portable features to Nuvio 1.0.0 and fork A, build and 21 transferred tests (earlier runs 44836307313, 45009048362)"
         }
       ],
       "untested": [],
@@ -2315,15 +2308,32 @@
       "mandatory": true,
       "requirement": "Package layout (README, LICENSES, manifest, compatibility, features, adapters, patches, tools, tests, fixtures, reports); JSON instead of YAML allowed if better organised.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "No LICENSES/; JSON layout decision undocumented as an ADR."
+      "paths": [
+        "portkit/LICENSES/GPL-3.0.txt",
+        "docs/plus/build15/architecture.md",
+        "portkit/README.md"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_portkit_licence.py",
+          "name": "test_the_contract_names_the_licence_of_nuvio_plus",
+          "result": "PASS",
+          "what": "portkit/LICENSES/GPL-3.0.txt is the repository's GPL-3.0; ADR A-07 (architecture.md) records JSON over YAML"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
+          "result": "PASS",
+          "what": "PortKit transfer tests and script tests on this pull request"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layout documented with the reason for differences.",
-      "next": "Add LICENSES/ and an ADR.",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0071",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2335,16 +2345,31 @@
       "requirement": "Feature registry per feature: ID, files, dependencies, supported versions, source sets, data formats, integration points, non-transferable files, tests, limits and known conflicts; starts from .github/plus/features.json.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        ".github/plus/features.json"
+        ".github/plus/features.json",
+        "portkit/feature-records.py",
+        "portkit/reports/feature-records.md"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Not every field present for every feature."
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_portkit_records.py",
+          "name": "test_every_feature_has_every_field",
+          "result": "PASS",
+          "what": "Every one of the 15 features has ID, supported versions, source sets, integration points, Plus files, dependencies, data formats, tests, non-transferable parts, limits and known conflicts, generated from the registry"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_portkit_records.py",
+          "name": "test_the_record_file_is_current",
+          "result": "PASS",
+          "what": "The record file matches the registry"
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "validate checks every field.",
-      "next": "Field completeness check.",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0072",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2355,15 +2380,38 @@
       "mandatory": true,
       "requirement": "Compatibility contracts: target project and version, structure and dependencies, source sets and modules, paths and integration signatures, Gradle/Kotlin/Compose, Android and other platforms, dependencies and licence, conflicts with target fork additions.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Licence and fork-addition conflicts not checked."
+      "paths": [
+        "portkit/compatibility.json",
+        ".github/plus/tests/test_portkit_licence.py"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_portkit_licence.py",
+          "name": "test_a_target_without_a_licence_or_under_another_one_is_refused",
+          "result": "PASS",
+          "what": "Target contract: no licence, MIT, GPL-2.0, LGPL-3.0 refused before planning; nothing written"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_portkit_apply.py",
+          "name": "test_a_conflict_writes_nothing_and_leaves_no_branch",
+          "result": "PASS",
+          "what": "A fork's own change on the feature's lines is a conflict"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
+          "result": "PASS",
+          "what": "Transfer tests on this pull request"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each contract enforced by plan with a test.",
-      "next": "Licence and conflict contracts.",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0073",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2377,28 +2425,14 @@
       "paths": [
         "portkit/compatibility.json"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44836307313,
-          "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
-          "what": "PR #30 checks on its final commit (merged)",
-          "result": "PASS"
-        },
-        {
-          "kind": "ci-run",
-          "run": 44836307247,
-          "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
-          "what": "PR #30 PortKit transfer tests on its final commit (merged)",
-          "result": "PASS"
-        },
-        {
-          "kind": "ci-run",
-          "run": 45009048362,
-          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
-          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
-          "result": "PASS"
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
+          "result": "PASS",
+          "what": "Levels in compatibility.json consistent (portkit.py validate): 3 portable and verified by this run, 5 adapter-required, 4 manual, 3 unsupported"
         }
       ],
       "untested": [],
@@ -2418,28 +2452,14 @@
       "paths": [
         "portkit/"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44836307313,
-          "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
-          "what": "PR #30 checks on its final commit (merged)",
-          "result": "PASS"
-        },
-        {
-          "kind": "ci-run",
-          "run": 44836307247,
-          "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
-          "what": "PR #30 PortKit transfer tests on its final commit (merged)",
-          "result": "PASS"
-        },
-        {
-          "kind": "ci-run",
-          "run": 45009048362,
-          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
-          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
-          "result": "PASS"
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
+          "result": "PASS",
+          "what": "Commands validate, inventory, plan, trial, apply and matrix run by the transfer tests on this pull request"
         }
       ],
       "untested": [],
@@ -2490,15 +2510,31 @@
       "mandatory": true,
       "requirement": "Ten mandatory tests: compatibility check, single feature, feature set with dependencies, dry-run without change, re-apply without duplication, unsupported target refused, modified-file conflict, unsafe partial transfer prevented, resulting build and feature tests, licence and copyright notices kept.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Licence test missing; tests not mapped one by one."
+      "paths": [
+        "portkit/reports/test-report.md",
+        ".github/plus/tests/test_portkit_licence.py"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_portkit_licence.py",
+          "name": "test_a_transfer_keeps_the_licence_and_the_targets_own_notices",
+          "result": "PASS",
+          "what": "Test 10: LICENSE byte for byte and the fork's copyright line kept"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
+          "result": "PASS",
+          "what": "Tests 1–9 (test-report.md maps each to its test or run), transfer and build on both targets"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Ten named tests, each PASS on CI.",
-      "next": "Map and add the licence test.",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0077",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2509,15 +2545,33 @@
       "mandatory": true,
       "requirement": "Outputs: package and tools, Arabic and English docs, per-feature compatibility record, real application examples, diffs and reports, tests and results, limits and unsupported cases.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Real examples and per-feature records incomplete."
+      "paths": [
+        "portkit/README.md",
+        "portkit/reports/feature-records.md",
+        "portkit/reports/test-report.md",
+        "portkit/reports/compatibility-matrix.md"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_portkit_records.py",
+          "name": "test_the_record_file_is_current",
+          "result": "PASS",
+          "what": "Per-feature records; matrix, test report and README (English and Arabic) with real refusal and transfer examples"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
+          "result": "PASS",
+          "what": "The transfer run's own summary: real plan, apply and test output for both targets"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "All seven outputs in portkit/.",
-      "next": "Complete outputs.",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0078",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2540,7 +2594,7 @@
         }
       ],
       "untested": [
-        "2 of 14 features verified; the remaining 12 classified but unproven."
+        "3 of 15 features verified by real transfer; the other 12 are classified (5 adapter-required, 4 manual, 3 unsupported) and refused outside a trial, with the reason in their record."
       ],
       "needs_physical_device": false,
       "acceptance": "Every portable feature transferred and tested on both targets; others with documented reason.",

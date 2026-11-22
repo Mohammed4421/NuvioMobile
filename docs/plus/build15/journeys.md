@@ -27,7 +27,7 @@ download notification test. Font import on Android 9 stays NOT TESTED (picker ne
 | J-10 | Download a season (rest / whole) (Plus) | One at a time, in order, matching source | Source missing, profile switch, restart | harness r1–r21; unit `SeasonQueuePolicyTest`, `SeasonStreamMatcherTest` | — |
 | J-11 | Pause episode / season / all, resume (Plus, D-01) | As the owner's contract | Notification while hidden on Android 14+ | harness r11–r21; `SeasonPauseAndroidTest` (#28) | NEEDS PHYSICAL DEVICE (notification, background) |
 | J-12 | Download into a chosen folder / SD card (Plus) | Files land there, readable | Folder removed, permission lost | unit `AndroidDownloadTransferTest` (SAF paths) | NEEDS PHYSICAL DEVICE (SD card) |
-| J-13 | Wi-Fi only (Plus) | No transfer on mobile data | Switching networks | unit (work constraints) | Emulator network switch not run |
+| J-13 | Wi-Fi only (Plus) | No transfer on mobile data | Switching networks | unit (work constraints); emulator `download-interruptions-test.sh` C on Android 9, 14, 16 (run 45013362722): no request and no byte in 30 s on metered mobile data, starts on Wi-Fi, exact SHA-256 | — (owner's phone: PRV-05) |
 | J-14 | Restart during downloads | Partial files kept, queue continues | Process death | harness r8, r17; `restore()` tests | — |
 | J-15 | Library → Downloads tab → play offline (Plus) | Finished items play; show opens episodes | Copy still downloading | unit `LibraryDownloadEntriesTest` | Look (P4) |
 | J-16 | Install an add-on from a link (Plus) | Confirmation first, then install | Cancel, bad link | unit `AddonLinkConfirmationTest` | — |
@@ -39,7 +39,7 @@ download notification test. Font import on Android 9 stays NOT TESTED (picker ne
 ## Next steps (closing P3)
 
 1. **P3-F1:** run the four existing instrumented tests on the CI emulator, or record why one cannot run there.
-2. Network-loss and Wi-Fi-only journeys (J-09, J-13) on the emulator with the network switched off mid-transfer.
+2. ~~Network-loss and Wi-Fi-only journeys (J-09, J-13) on the emulator~~: network loss in run 44937898514, Wi-Fi only in run 45013362722 (Android 9, 14, 16).
 3. Device list for the owner: J-03–J-08, J-11, J-12 (rows marked NEEDS PHYSICAL DEVICE).
 
 ## Six-case matrix (P3, 2026-11-21)
