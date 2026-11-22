@@ -24,13 +24,37 @@ a report, with its finding; none is a restyle.
 | Settings › Playback pages (`playback-*`) | Nuvio's settings list | Switch rows: Nuvio's component (B15-UI-07, deferred) | Section headers | — | Fits | Decoder wording fixed (B15-UI-04) |
 | Settings › Subtitle appearance (`subtitle-appearance`) | Preview, then controls | Colour codes isolated (B15-UI-02) | Preview first | — | Fits | Codes read left to right |
 
-## Not covered by screenshots
+## Dialogs and alerts (P4-03)
 
-- **Dialogs and alerts (P4-03):** Plus's dialogs (add-on link confirmation, folder errors) have no
-  reference screenshot yet. Not reviewed here; listed as open.
-- **Animations and transitions (P4-06):** a still image cannot show them. The download bar no longer
-  moves when nothing downloads (#60); the rest needs the owner's device.
-- **Contrast and focus order (P4-09):** not measured; labels are asserted (#68).
+`dialog-addon-link` and `dialog-download-delete` (#86), in the same six setups: both are drawn by
+Nuvio's `DialogSurface` (same card, title, message and button row as every dialog of the app); the
+destructive action is the coloured button; Arabic is mirrored with the confirm button at the start.
+Plus has no other dialog: a folder that cannot be used is reported in the downloads list, not in a
+dialog.
+
+## Animations and transitions (P4-06), code review
+
+A still image cannot show motion, so Plus's code was read for it (2026-11-22). Plus adds no
+transition and no animated visibility of its own: the counts of `AnimatedVisibility`,
+`animate*AsState`, `Crossfade`, `tween` and the like in the 67 Kotlin files Plus changes are the same
+as in Nuvio 1.0.0. The motion Plus adds is progress only, and only while work really happens:
+
+| Where | Motion | When |
+|---|---|---|
+| Library › Downloads tile | Determinate bar; moving bar only when the size is unknown | Only while the item is downloading (#60 stopped the bar for paused or waiting items) |
+| Downloads › Season queue | Moving bar under an episode | Only while its source is being searched |
+| Player › Subtitles › AutoSync | Small spinner with "Loading lines" | Only while lines load |
+
+The feel of animations in daily use stays with the owner (PRV-02).
+
+## Contrast and focus (P4-09)
+
+- **Contrast:** measured on every reference image (#89): for each text, the WCAG ratio of its
+  colour to the colour behind it. Text below 4.5:1 is printed for review (`PLUS-A11Y` lines); on
+  Plus's own screens enabled text must reach 3:1, or the test fails. Disabled text is exempt.
+- **Focus order:** Plus sets no traversal order, traversal group or focus override in its screens; the
+  order is Compose's default (reading order). The only focus request is Nuvio's player key handler.
+- **Labels and target size:** asserted and printed since #68.
 
 ## Owner's device
 

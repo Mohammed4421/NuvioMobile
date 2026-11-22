@@ -1,0 +1,7 @@
+{
+  "note": "Build 15 P5-05/06/08: the most a playback metric may grow against Build 14 on the same emulator before playback-compare.yml fails, applied only above the noise margin (twice the larger standard deviation, at least 5 %). CPU is the app's CPU time as a share of one core during 12 s of local playback (software video decoding on the emulator). Time behind the clock, UI frames and stalls are compared and reported; PlaybackSmoothnessTest itself fails on a stall or on playback below 85 % of the clock. Real devices: NEEDS PHYSICAL DEVICE (PRV-06).",
+  "max_increase_percent": {
+    "ExoPlayer_cpu_percent_of_one_core": 20,
+    "Libmpv_cpu_percent_of_one_core": 20
+  }
+}

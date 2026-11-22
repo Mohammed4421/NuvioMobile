@@ -72,6 +72,21 @@
       "alternatives": "Keep; verify with tokens (chosen); verify always",
       "decision_owner": "owner",
       "closes_when": "Owner confirms his sources still play"
+    },
+    {
+      "id": "NVP15-RISK-0010",
+      "state": "FAIL",
+      "reason": "MpvSurfaceTest.restoresVideoAfterSeekingAndRecreatingTheSurface failed once on the Android 14 emulator (run 45013015432, job 137180684762, PR #85, which changes no app code): ActivityScenario.moveToState(CREATED) timed out ('Activity never becomes requested state [CREATED]', last transition RESUMED) before the surface was recreated, so the behaviour under test was not reached. The re-run of that job passed (137183895933), as did Android 9 and 16 in the same run; 1 failure in the last 40 device-test runs",
+      "needs": "Further runs; the test's own lifecycle step is the emulator's ActivityScenario, not app code",
+      "requirements": [
+        "P8-05",
+        "P3-01"
+      ],
+      "impact": "A required check can fail without an app fault; a real surface regression is still caught (the test fails on the video check, not on this step)",
+      "priority": "P2",
+      "alternatives": "Re-run and record (chosen); wait longer for the lifecycle move; replace the activity stop by visibility only (would test less)",
+      "decision_owner": "engineering",
+      "closes_when": "No recurrence over the device-test runs up to the release candidate, or the cause found"
     }
   ],
   "closed": [
