@@ -1884,10 +1884,10 @@
         },
         {
           "kind": "ci-run",
-          "run": 45010158735,
-          "commit": "b13d8143c6ed025e37321c4ce8dc6e5e70b3029b",
+          "run": 45033035833,
+          "commit": "5ef61e19c35633c123d96e65fbd1132f26df3d77",
           "result": "PASS",
-          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' (test_workflow_policy.py on every workflow of the commit)"
+          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' on the branch head after #88 (every current workflow, including playback-compare.yml and the changed performance-compare.yml) (test_workflow_policy.py on every workflow of the commit)"
         },
         {
           "kind": "review",
@@ -1944,10 +1944,10 @@
         },
         {
           "kind": "ci-run",
-          "run": 45010158735,
-          "commit": "b13d8143c6ed025e37321c4ce8dc6e5e70b3029b",
+          "run": 45033035833,
+          "commit": "5ef61e19c35633c123d96e65fbd1132f26df3d77",
           "result": "PASS",
-          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts'"
+          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' on the branch head after #88 (every current workflow, including playback-compare.yml and the changed performance-compare.yml)"
         },
         {
           "kind": "review",
