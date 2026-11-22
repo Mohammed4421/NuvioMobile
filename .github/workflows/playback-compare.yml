@@ -1,7 +1,9 @@
 # Build 15, P5-05/06/08: playback of Build 14 against the head on the same emulators. Both debug
 # apps are built here, in one job (one debug key, so each installs where the other was): the head
 # from this commit, Build 14 from its release tag custom-14 with the head's PlaybackSmoothnessTest
-# added (Build 14 has no dropped-frame counter, so that one value is left out for it). Then
+# added (Build 14 has no dropped-frame counter, so that one value is left out for it) and the head's
+# three test-dispatcher threading changes (.github/plus/playback-compare-build14.patch; without them
+# Build 14 cannot play under the Compose test rule, in the app they change nothing). Then
 # .github/plus/playback-compare.sh runs the test in alternating blocks and
 # .github/plus/measure-compare.py compares them with the noise margin and the limits in
 # .github/plus/playback-limits.json. Emulator video is decoded in software: these numbers describe
@@ -15,6 +17,7 @@ on:
       - .github/workflows/playback-compare.yml
       - .github/plus/playback-compare.sh
       - .github/plus/playback-limits.json
+      - .github/plus/playback-compare-build14.patch
       - .github/plus/measure-compare.py
       - androidApp/src/androidTest/kotlin/com/nuvio/android/PlaybackSmoothnessTest.kt
       - composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/**
@@ -105,6 +108,10 @@ jobs:
               sys.exit("PlaybackSmoothnessTest still reads droppedVideoFrames")
           open(sys.argv[2], "w").write(text)
           EOF
+          # The three threading changes the head made for the test dispatcher (B15-PLY-01, #63): under
+          # the Compose test rule Build 14 touches the player from the wrong thread and never plays.
+          # In the app these effects already run on the main thread, so the patch changes nothing there.
+          patch -p1 -F0 -d ../build14 < .github/plus/playback-compare-build14.patch
           cd ../build14
           bash .github/plus/prepare-build.sh 14
           bash .github/plus/gradle-retry.sh build14.log ./gradlew \
