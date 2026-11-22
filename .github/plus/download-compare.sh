@@ -88,6 +88,16 @@ run() {  # run <label> <apk>
   t0="$(now_ms)"
   IFS=$'\t' read -r status file <<< "$(state)"
   [[ "${status}" == Downloading ]] || fail "${label}: the download did not start (status ${status})"
+  # "Downloading" in the store is not yet a transfer: from Android 14 the download runs as a
+  # user-initiated job that the system starts a moment later. Leave the foreground only once bytes
+  # flow (a request reached the server and the partial file exists), so the background phase
+  # measures a running download. A download that never starts still fails, here, by name.
+  for _ in $(seq 1 120); do
+    [[ -s "${work}/requests.log" ]] && adb shell run-as "${pkg}" ls "files/downloads/${file}.part" > /dev/null 2>&1 && break
+    sleep 0.25
+  done
+  [[ -s "${work}/requests.log" ]] || fail "${label}: no request reached the server within 30 s of the download being queued"
+  echo "${label}: transfer running $(( $(now_ms) - t0 )) ms after the download was queued"
   adb shell input keyevent KEYCODE_HOME
   sleep 1
   pid="$(adb shell pidof "${pkg}" | tr -d '\r')"
