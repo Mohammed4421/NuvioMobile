@@ -13,7 +13,7 @@ commit (S20-02); nothing here is reused from an older commit after the source ch
 | S16-03 | No open release blockers | Open | `risks.json`: 0002 closed by the owner's ruleset (re-read 15:27), others listed below |
 | S16-04 | Critical function and upgrade tests pass | On the candidate | Release run: upgrade 14/13/12 → 15 with the real key, Android 8 refusal |
 | S16-05 | Data, signing and update safety | On the candidate | Release run: certificate SHA-256 `99c0a98c…1e35`, package `com.nuvio.app.plus`, data kept |
-| S16-06 | Visual polish | Done for the reviewed screens | Reference screenshots (phone, landscape phone, tablet; English and Arabic) in every PR; fixes B15-UI-02, 04, 05, 06 |
+| S16-06 | Visual polish | Done for the reviewed screens | `visual-review.md` (72 reference images, six setups); P4-11 comparison against approved baselines in every PR; labels asserted (P4-09); fixes B15-UI-02, 04, 05, 06, 08, 09. Dialogs and animations: owner's device |
 | S16-07 | No performance regression outside limits | Done on the emulator baseline (NVP15-CHG-0004) | `performance-compare.yml` runs, `performance-limits.json`; frame timing and real playback: owner's device |
 | S16-08 | Mandatory PortKit tests pass | Every PR | "Transfer, build and test (upstream and a fork)" (required check) |
 | S16-09 | Every unrun test and remaining risk documented | Done | `untested` lists in `requirements.json`, `risks.json`, the six-case matrix in `journeys.md` |
@@ -30,12 +30,12 @@ commit (S20-02); nothing here is reused from an older commit after the source ch
 | S17-03 | Audit report | `audit.md`, `findings.json`, `inventory.md` |
 | S17-04 | Architecture decision records | `architecture.md` |
 | S17-05 | Functional regression report | `journeys.md` (six-case matrix with runs) |
-| S17-06 | Visual review and screenshot baselines | `PlusReferenceScreenshotsTest` images printed in each PR's checks; findings B15-UI-* |
+| S17-06 | Visual review and screenshot baselines | `visual-review.md`; baselines in `screenshot-baselines/` compared in each PR (P4-11); findings B15-UI-* |
 | S17-07 | Performance before/after | `baseline.json` (performance), `performance-compare.yml` runs |
 | S17-08 | Security and data migration report | `security.md`; migration tests in the host tests (`PlusDownloadsMigrationTest`, `PlusSubtitleMigrationTest`) |
 | S17-09 | Device testing matrix | `docs/plus/device-test-matrix.md`; device rows in `journeys.md` |
 | S17-10 | PortKit package, tests, matrix | `portkit/`, `portkit/reports/compatibility-matrix.md` |
-| S17-11 | Release readiness report | This file |
+| S17-11 | Release readiness report | This file; release scope `release-scope.json`, checked by the release run (S12-02) |
 | S17-12 | Known limitations and deferred issues | `known-issues.md`, deferred findings in `findings.json` |
 | S17-13 | Upgrade, rollback and maintenance guide | `docs/plus/release.md`, `docs/plus/rollback.md`, `docs/plus/signing-migration.md` |
 
