@@ -41,6 +41,8 @@ PHASES = [f"P{n}" for n in range(10)]
 GROUPS = PHASES + ["D", "G"]
 STRONG = {"ci-run", "test", "measurement", "screenshot", "device"}
 KINDS = STRONG | {"review"}
+# Spec P3: the user-journey requirements (P3-07 applies to them).
+JOURNEYS = {"P3-01", "P3-02", "P3-03", "P3-04", "P3-05", "P3-06"}
 # Spec §11 result states other than PASS, and CI conclusions that are not a pass.
 BAD_RESULTS = {"fail", "failed", "failure", "blocked", "not tested", "needs physical device", "pending", "queued",
                "in_progress", "cancelled", "skipped", "timed_out", "action_required", "unknown"}
@@ -229,6 +231,10 @@ def check_item(item, repo, fetch_run):
             problems.append(f"{rid}: {status} without repeatable evidence (a review alone is not enough)")
         if item["needs_physical_device"] and "device" not in kinds:
             problems.append(f"{rid}: needs a physical device; {status} without device evidence")
+        # P3-07: a user journey is not proven by unit tests alone; it needs a run of the app
+        # (an emulator or device run in CI, a screenshot, a measurement or a device result).
+        if rid in JOURNEYS and not kinds & (STRONG - {"test"}):
+            problems.append(f"{rid}: {status} journey on unit tests alone (P3-07)")
     if status == "ACCEPTED":
         accepted = item.get("accepted")
         # "delegated": accepted under the owner's written delegation once its acceptance criteria hold.
