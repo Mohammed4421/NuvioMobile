@@ -72,35 +72,24 @@
       "alternatives": "Keep; verify with tokens (chosen); verify always",
       "decision_owner": "owner",
       "closes_when": "Owner confirms his sources still play"
-    },
+    }
+  ],
+  "closed": [
     {
       "id": "NVP15-RISK-0007",
-      "state": "FAIL",
+      "was": "FAIL",
       "reason": "B15-PLY-02: Nuvio's ExoPlayer add-on subtitle test failed once in 20 runs on Android 9",
-      "needs": "Repeated Android 9 runs",
-      "requirements": [
-        "P8-05",
-        "D-12"
-      ],
-      "impact": "Possibly a slow load of add-on subtitles on old devices",
-      "priority": "P2",
-      "alternatives": "Investigate if it recurs (D-12)",
-      "decision_owner": "agent",
-      "closes_when": "Root cause found or no recurrence over further runs"
+      "closed_on": "2026-11-22",
+      "closes_when": "Root cause found or no recurrence over further runs",
+      "evidence": "Nuvio device tests since #51's diagnostics (2026-11-21 12:54 to 2026-11-22): 85 Android 9/14/16 jobs passed in 32 successful runs, each running MpvSurfaceTest, SubtitlePlaybackTest (both engines, ExoPlayer add-on subtitles) and SubtitleSettingsTest. Every failed run had a named cause: 44908042187 the rejected #55 change (mpv opened once; a real regression the tests caught), 44911126352 and 44917531198 new tests while written, 44931128379 the Android 16 wrong-thread fix (#63) and a stale test reading, 7 runs the Android 17 emulator image. No failure of these tests without a cause."
     },
     {
       "id": "NVP15-RISK-0009",
-      "state": "FAIL",
+      "was": "FAIL",
       "reason": "Last 62 emulator runs: MpvSurfaceTest failed 3 times at three different steps (activity never reached CREATED, Android 14; first frame, Android 14, same run as a font picker timeout; frame after stop/resume, Android 9, run with more emulator colour-buffer errors). Font picker failed once waiting for the system picker. No app fault proven; #51 records colour and logcat on the next failure",
-      "needs": "Repeated Android 14 runs; owner's device for the font picker",
-      "requirements": [
-        "P8-05"
-      ],
-      "impact": "No defect shown in the app; intermittent emulator timeouts",
-      "priority": "P2",
-      "alternatives": "Investigate if repeated (D-12 rule applies to Android 9 only)",
-      "decision_owner": "agent",
-      "closes_when": "A failure with #51 diagnostics shows the cause, or no recurrence over further runs"
+      "closed_on": "2026-11-22",
+      "closes_when": "A failure with #51 diagnostics shows the cause, or no recurrence over further runs",
+      "evidence": "Nuvio device tests since #51's diagnostics (2026-11-21 12:54 to 2026-11-22): 85 Android 9/14/16 jobs passed in 32 successful runs, each running MpvSurfaceTest, SubtitlePlaybackTest (both engines, ExoPlayer add-on subtitles) and SubtitleSettingsTest. Every failed run had a named cause: 44908042187 the rejected #55 change (mpv opened once; a real regression the tests caught), 44911126352 and 44917531198 new tests while written, 44931128379 the Android 16 wrong-thread fix (#63) and a stale test reading, 7 runs the Android 17 emulator image. No failure of these tests without a cause."
     }
   ]
 }
