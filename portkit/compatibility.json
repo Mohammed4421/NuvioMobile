@@ -13,13 +13,21 @@
   "features": {
     "lazy-key-collisions": {
       "level": "portable",
-      "verified": false,
-      "reason": "one Nuvio file, self-contained change"
+      "verified": true,
+      "reason": "one Nuvio file, self-contained change",
+      "evidence": {
+        "run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/45009048362",
+        "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31"
+      }
     },
     "subtitle-parser-worst-case": {
       "level": "portable",
-      "verified": false,
-      "reason": "two Nuvio files, no new API"
+      "verified": true,
+      "reason": "two Nuvio files, no new API",
+      "evidence": {
+        "run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/45009048362",
+        "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31"
+      }
     },
     "subtitle-style": {
       "level": "adapter-required",
@@ -83,8 +91,12 @@
     },
     "playback-credential-tls": {
       "level": "portable",
-      "verified": false,
-      "reason": "one Nuvio file, no new API"
+      "verified": true,
+      "reason": "one Nuvio file, no new API",
+      "evidence": {
+        "run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/45009048362",
+        "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31"
+      }
     }
   },
   "shared_files": {

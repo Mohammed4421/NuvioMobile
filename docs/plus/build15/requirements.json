@@ -1936,6 +1936,13 @@
           "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
           "what": "PR #30 PortKit transfer tests on its final commit (merged)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45009048362,
+          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
+          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2029,6 +2036,13 @@
           "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
           "what": "PR #30 PortKit transfer tests on its final commit (merged)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45009048362,
+          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
+          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2063,6 +2077,13 @@
           "commit": "bf3801484335752bff44fa5f17ac08478b97d31d",
           "what": "PR #30 PortKit transfer tests on its final commit (merged)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45009048362,
+          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
+          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2093,9 +2114,9 @@
         },
         {
           "kind": "ci-run",
-          "run": 44875726793,
-          "commit": "ab8def38ea8bfab7806968f07ca6b9d18ded8bdb",
-          "what": "PortKit transfer tests on #45's final commit (merged): lazy-key-collisions and subtitle-parser-worst-case transferred into upstream 1.0.0 and fork A, their tests passed (4+4 each), APK assembled; dry run, validate and check-evidence steps passed",
+          "run": 45009048362,
+          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
+          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
           "result": "PASS"
         }
       ],
@@ -2153,7 +2174,15 @@
       "source": "Build 15 spec v1.0",
       "paths": [],
       "status": "IMPLEMENTED",
-      "evidence": [],
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45009048362,
+          "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
+          "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "2 of 14 features verified; the remaining 12 classified but unproven."
       ],
