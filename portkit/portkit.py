@@ -37,6 +37,9 @@ TRANSFER_WORKFLOW = "PortKit transfer tests"
 TRANSFER_MACHINERY = ["portkit/portkit.py", "portkit/transfer-test.sh", "portkit/check-test-classes.py",
                       "portkit/fixtures", "portkit/policy.json", ".github/workflows/portkit.yml"]
 # Registry paths are relative to composeApp/src unless they start with a top-level folder.
+# PortKit's own version; the Build 15 release scope (docs/plus/build15/release-scope.json) pins it.
+VERSION = "1.0.0"
+
 TOP_LEVEL = ("composeApp/", "androidApp/", "iosApp/", ".github/", "docs/", "gradle/", "signing/")
 
 

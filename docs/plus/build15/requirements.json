@@ -2295,13 +2295,26 @@
       "mandatory": true,
       "requirement": "Release Scope Manifest (version, mandatory requirement IDs, required PRs and merge state, approval tests, final branch ref, PortKit version) compared by the release gate with GitHub evidence, test results and the exact commit; release refused when incomplete or the branch moved.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
-      "untested": [],
+      "paths": [
+        "docs/plus/build15/release-scope.json",
+        ".github/plus/release-scope-check.py",
+        ".github/workflows/custom-android-build.yml"
+      ],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_release_scope_check.py",
+          "name": "ReleaseScopeTest",
+          "what": "Blocks on a moved branch, an unmerged, missing or other-branch PR, a merge commit outside the release commit, the excluded trial merge merged or contained, a failed or missing gate run on the commit, a changed mandatory list or PortKit version; the repository manifest matches the gate and PortKit"
+        }
+      ],
+      "untested": [
+        "Runs for real only in the release run of the candidate."
+      ],
       "needs_physical_device": false,
       "acceptance": "Manifest file plus a gate step that fails on any mismatch.",
-      "next": "Build after P8.",
+      "next": "Release run: the 'Release scope (S12-02)' step must pass; add pull requests merged before the candidate to the manifest.",
       "nvp15": "NVP15-REQ-0094"
     },
     {

@@ -69,6 +69,7 @@ jobs:
       contents: read
       pull-requests: read
       statuses: read
+      actions: read
     steps:
       - name: Check out
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -94,6 +95,15 @@ jobs:
         run: |
           git fetch --quiet --no-tags https://github.com/NuvioMedia/NuvioMobile.git '+refs/tags/*:refs/tags/*'
           python3 .github/plus/review-gate.py publish
+
+      - name: Release scope (S12-02)
+        # Only a hand-started release run: docs/plus/build15/release-scope.json against GitHub and
+        # this exact commit (pull requests merged and contained, the trial merge excluded, branch not
+        # moved, the requirements gate passed on this commit). Any mismatch publishes nothing.
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I .github/plus/release-scope-check.py
 
   release-identity:
     name: Release signing identity
