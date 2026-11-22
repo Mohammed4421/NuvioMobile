@@ -93,7 +93,7 @@ run() {  # run <label> <apk>
   # flow (a request reached the server and the partial file exists), so the background phase
   # measures a running download. A download that never starts still fails, here, by name.
   for _ in $(seq 1 120); do
-    [[ -s "${work}/requests.log" ]] && adb shell run-as "${pkg}" ls "files/downloads/${file}.part" > /dev/null 2>&1 && break
+    [[ -s "${work}/requests.log" ]] && adb shell "run-as ${pkg} ls 'files/downloads/${file}.part'" 2>/dev/null | grep -qF "${file}.part" && break
     sleep 0.25
   done
   [[ -s "${work}/requests.log" ]] || fail "${label}: no request reached the server within 30 s of the download being queued"
