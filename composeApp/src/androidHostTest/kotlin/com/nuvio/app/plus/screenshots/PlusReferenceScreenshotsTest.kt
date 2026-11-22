@@ -3,6 +3,7 @@ package com.nuvio.app.plus.screenshots
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -23,10 +24,12 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.isRoot
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.LayoutDirection
+import com.nuvio.app.core.ui.NuvioStatusModal
 import com.nuvio.app.core.ui.NuvioTheme
 import com.nuvio.app.features.downloads.DownloadItem
 import com.nuvio.app.features.downloads.DownloadPreferencesState
@@ -66,11 +69,14 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import org.robolectric.shadows.ShadowDialog
 import kotlin.math.abs
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import nuvio.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Build 15, P4-01: reference screenshots of Nuvio Plus screens before any visual change, in English
@@ -248,6 +254,35 @@ abstract class PlusReferenceScreenshots(private val device: String) {
         }
     }
 
+    /**
+     * P4-03: the confirmation dialogs Plus shows, drawn by Nuvio's DialogSurface like every other
+     * dialog of the app: the add-on link confirmation (P6-02) and deleting a download.
+     */
+    @Test fun addonLinkDialog() = shoot("dialog-addon-link") {
+        NuvioStatusModal(
+            title = stringResource(Res.string.addons_link_confirm_title),
+            message = stringResource(Res.string.addons_link_confirm_message, "addons.example.com"),
+            isVisible = true,
+            confirmText = stringResource(Res.string.addons_link_confirm_install),
+            dismissText = stringResource(Res.string.action_cancel),
+            onConfirm = {},
+            onDismiss = {},
+        )
+    }
+
+    @Test fun downloadDeleteDialog() = shoot("dialog-download-delete") {
+        NuvioStatusModal(
+            title = stringResource(Res.string.action_delete_confirm_title),
+            message = stringResource(Res.string.action_delete_confirm_message),
+            isVisible = true,
+            destructive = true,
+            confirmText = stringResource(Res.string.action_yes),
+            dismissText = stringResource(Res.string.action_no),
+            onConfirm = {},
+            onDismiss = {},
+        )
+    }
+
     private fun player(screen: String, content: @Composable () -> Unit) {
         assumeTrue("the player is landscape only; $device is portrait", !device.endsWith("phone"))
         shoot(screen, content)
@@ -266,13 +301,18 @@ abstract class PlusReferenceScreenshots(private val device: String) {
             NuvioTheme { Surface(Modifier.fillMaxSize()) { content() } }
         }
         compose.waitForIdle()
-        val bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
+        // A dialog is a window of its own: its root comes after the screen's, and that is what is
+        // shown and read (the screen behind it is only the dimmed background).
+        val roots = compose.onAllNodes(isRoot(), useUnmergedTree = true)
+        val rootCount = roots.fetchSemanticsNodes().size
+        val root = roots[rootCount - 1]
+        val bitmap = if (rootCount > 1) dialogBitmap() else root.captureToImage().asAndroidBitmap()
         val expected = if (device.startsWith("ar")) LayoutDirection.Rtl else LayoutDirection.Ltr
         assertEquals(expected, direction, "$screen on $device is not laid out in the expected direction")
         assertTrue(distinctColours(bitmap) > 1, "$screen on $device rendered as a single colour")
         // Spec P4: the language shown, not only the device setting (P4-12). Arabic screens show
         // Arabic letters; English ones show none (a missing translation falls back to English).
-        val texts = shownTexts(compose.onRoot(useUnmergedTree = true).fetchSemanticsNode())
+        val texts = shownTexts(root.fetchSemanticsNode())
         val arabic = texts.filter { text -> text.any { it in '\u0600'..'\u06FF' } }
         if (device.startsWith("ar")) {
             assertTrue(arabic.size * 2 >= texts.count { t -> t.any { it.isLetter() } },
@@ -293,6 +333,22 @@ abstract class PlusReferenceScreenshots(private val device: String) {
             val unlabelled = findings.filter { "no label" in it }
             assertTrue(unlabelled.isEmpty(), "$screen on $device has controls without a label: $unlabelled")
         }
+    }
+
+    /**
+     * The dialog window drawn into a bitmap. Under Robolectric, captureToImage() of a dialog's root
+     * gives an empty image (only the activity window is rendered), so the dialog's own decor view is
+     * drawn here, as Android draws it into the window.
+     */
+    private fun dialogBitmap(): Bitmap {
+        val dialog = requireNotNull(ShadowDialog.getLatestDialog()) { "no dialog window is shown" }
+        lateinit var bitmap: Bitmap
+        compose.runOnIdle {
+            val view = requireNotNull(dialog.window).decorView
+            bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+            view.draw(Canvas(bitmap))
+        }
+        return bitmap
     }
 
     /**
@@ -402,7 +458,7 @@ abstract class PlusReferenceScreenshots(private val device: String) {
 /** Reference screens whose controls are all labelled (Plus code, and the Nuvio parts it shows). */
 private val PLUS_OWNED_SCREENS = setOf(
     "library-downloads", "library-download-states", "library-downloads-empty", "downloads-queue",
-    "player-subtitles", "player-audio",
+    "player-subtitles", "player-audio", "dialog-addon-link", "dialog-download-delete",
 )
 
 @RunWith(RobolectricTestRunner::class)
