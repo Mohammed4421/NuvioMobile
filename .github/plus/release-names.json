@@ -1,4 +1,3 @@
 {
-  "_about": "The name a release is shown with, by build number. The tag and the in-app updater use the whole build number (custom-16): the updater of every published build reads only whole numbers, so Build 15 users are offered custom-16 in the app. Owner decision 2026-11-22 (NVP15-CHG-0006): build 16 is shown as 15.5; the upstream-sync plan keeps the name Build 16.",
-  "16": "15.5"
+  "_about": "The name a release is shown with, by build number, when it differs from the number. The tag and the in-app updater always use the whole build number (custom-N): the updater of every published build reads only whole numbers. Owner decision 2026-11-22 12:35 (NVP15-CHG-0006): the complete Build 15 work is published and shown as Build 16; no build has another name."
 }

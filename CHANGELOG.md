@@ -4,10 +4,10 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
-## Next build — Build 15.5: complete engineering checks (published as build 16)
+## Next build — Build 16: complete engineering checks of Build 15
 
-Shown as **15.5**; its tag is `custom-16` so the app's own updater offers it to Build 15 (owner's
-decision). Until now this build adds no change to the app itself, only tests and checks:
+The complete Build 15 work, published as Build 16 (owner's decision); the app's own updater offers it
+to Build 15. Until now this build adds no change to the app itself, only tests and checks:
 
 ### Checked
 - **Updates from Builds 12, 13 and 14** are each tested on their own, starting from realistic data

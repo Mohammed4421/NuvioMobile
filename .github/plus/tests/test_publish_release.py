@@ -92,13 +92,23 @@ class PublishReleaseTest(unittest.TestCase):
         self.assertRegex(top[1], r"^## Build (1[4-9]|[2-9][0-9]) ", top)
 
     def test_a_named_build_is_shown_by_its_name_and_tagged_by_its_number(self):
-        # NVP15-CHG-0006: build 16 is shown as 15.5; the tag stays custom-16 for the in-app updater.
-        result = self.publish(NEXT, build="16")
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-        created = (self.state / "created").read_text()
-        self.assertIn("release create custom-16 ", created)
-        self.assertIn("Nuvio Plus · 15.5 (build 16)", created)
-        self.assertIn("### Build 15.5 (build 16) — safer updates", self.created_notes())
+        names = PLUS / "release-names.json"
+        saved = names.read_text()
+        try:
+            names.write_text('{"16": "15.5"}')
+            result = self.publish(NEXT, build="16")
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            created = (self.state / "created").read_text()
+            self.assertIn("release create custom-16 ", created)
+            self.assertIn("Nuvio Plus · 15.5 (build 16)", created)
+            self.assertIn("### Build 15.5 (build 16) — safer updates", self.created_notes())
+        finally:
+            names.write_text(saved)
+
+    def test_build_16_has_no_other_name(self):
+        # NVP15-CHG-0006: the owner named it 16.
+        self.publish(NEXT, build="16")
+        self.assertIn("Nuvio Plus · build 16", (self.state / "created").read_text())
 
     def test_a_build_without_a_name_keeps_its_number(self):
         self.publish(NEXT)

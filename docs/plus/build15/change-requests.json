@@ -87,11 +87,11 @@
         "S12-02",
         "S17-11"
       ],
-      "before": "The complete Build 15 would be published as the next build number with the title 'build N'.",
-      "after": "It is shown as 'Nuvio Plus 15.5' (release title and notes) and tagged custom-16 with build number 16, so the in-app updater of every published build, which reads whole numbers only (custom-(\\d+)), offers it to Build 15 users. The upstream-sync plan keeps the name 'Build 16' in the documents. Mapping in .github/plus/release-names.json, used by publish-release.sh; tested.",
-      "reason": "Owner chose the name 15.5; a tag custom-15.5 would never be offered by the updater of Build 15 (owner chose the recommended option).",
-      "impact": "Inside the app the build number reads 16; APK file names carry build16.",
-      "decision": "Owner 2026-11-22 12:22 ('١٥.٥') and 12:26 (option: name 15.5, tag 16)"
+      "before": "The complete Build 15 work after custom-15 had no name.",
+      "after": "It is published as Build 16 (tag custom-16, build number 16), which the in-app updater of Build 15 offers (it reads whole numbers only). The upstream-sync plan, earlier called 'Build 16', moves to the build after it. release-names.json can show another name for a build; none is set. Build 15's unfinished work is completed in this build, as the owner directed (not moved to the sync plan).",
+      "reason": "Owner first chose 15.5, then, told that a tag custom-15.5 would never be offered by Build 15's updater, named it 16.",
+      "impact": "Release page, notes, app and APK names all say 16.",
+      "decision": "Owner 2026-11-22 12:22 ('١٥.٥'), 12:26 (name 15.5, tag 16), 12:35 ('سمه ١٦ اذاً')"
     }
   ]
 }
