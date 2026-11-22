@@ -59,6 +59,9 @@ jobs:
             "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerSubtitleCueParser.kt"
             "composeApp/src/commonMain/kotlin/com/nuvio/app/features/autosync/AutoSyncSubtitleCueParser.kt"
             "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/SubtitleParserWorstCaseTest.kt"
+            "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerPlaybackNetworking.kt"
+            "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackTlsTest.kt"
+            "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackRedirectCredentialsTest.kt"
           )
           changed="$(gh api "repos/${REPO}/pulls/${PR}/files" --paginate --jq '.[].filename')"
           for file in ${changed}; do
@@ -111,15 +114,15 @@ jobs:
         if: steps.affected.outputs.run == 'true'
         run: |
           bash portkit/transfer-test.sh "upstream 1.0.0" - \
-            lazy-key-collisions,subtitle-parser-worst-case \
-            com.nuvio.app.core.ui.DuplicateSafeLazyKeysTest,com.nuvio.app.features.player.SubtitleParserWorstCaseTest
+            lazy-key-collisions,subtitle-parser-worst-case,playback-credential-tls \
+            com.nuvio.app.core.ui.DuplicateSafeLazyKeysTest,com.nuvio.app.features.player.SubtitleParserWorstCaseTest,com.nuvio.app.features.player.PlaybackTlsTest,com.nuvio.app.features.player.PlaybackRedirectCredentialsTest
 
       - name: Portable features into fork fixture A
         if: steps.affected.outputs.run == 'true'
         run: |
           bash portkit/transfer-test.sh "fork A (portkit/fixtures/fork-a.patch)" portkit/fixtures/fork-a.patch \
-            lazy-key-collisions,subtitle-parser-worst-case \
-            com.nuvio.app.core.ui.DuplicateSafeLazyKeysTest,com.nuvio.app.features.player.SubtitleParserWorstCaseTest
+            lazy-key-collisions,subtitle-parser-worst-case,playback-credential-tls \
+            com.nuvio.app.core.ui.DuplicateSafeLazyKeysTest,com.nuvio.app.features.player.SubtitleParserWorstCaseTest,com.nuvio.app.features.player.PlaybackTlsTest,com.nuvio.app.features.player.PlaybackRedirectCredentialsTest
 
       - name: Evidence of verified features
         if: steps.affected.outputs.run == 'true'

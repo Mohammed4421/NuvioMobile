@@ -1,6 +1,7 @@
 package com.nuvio.app.features.player
 
 import java.net.InetAddress
+import java.net.SocketTimeoutException
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLHandshakeException
@@ -73,11 +74,29 @@ class PlaybackTlsTest {
 
     /**
      * Real servers (badssl.com): a self-signed certificate still plays without credentials, is
-     * refused with them, and a valid certificate works with them. Skipped (reported) without network.
+     * refused with them, and a valid certificate works with them. Skipped (reported) without network,
+     * or when badssl.com does not answer twice in a row (a timeout is that site, not the app: PortKit
+     * run 45008500103 timed out at the refusal step). The same rules are proven on local servers by
+     * the tests above, which never skip.
      */
     @Test
     fun realServersBehaveAsIntended() {
         assumeTrue("no network", runCatching { InetAddress.getByName("badssl.com") }.isSuccess)
+        repeat(2) { attempt ->
+            try {
+                checkRealServers()
+                return
+            } catch (timeout: SocketTimeoutException) {
+                if (attempt == 1) assumeTrue("badssl.com did not answer twice: ${timeout.message}", false)
+            } catch (error: AssertionError) {
+                // assertThrows reports a timeout as a wrong exception; only that is retried.
+                if (error.cause !is SocketTimeoutException) throw error
+                if (attempt == 1) assumeTrue("badssl.com did not answer twice: ${error.cause?.message}", false)
+            }
+        }
+    }
+
+    private fun checkRealServers() {
         fun get(url: String, headers: Map<String, String>): Int =
             PlayerPlaybackNetworking.httpClientFor(headers, useLongReadTimeout = false)
                 .newCall(Request.Builder().url(url).build()).execute().use { it.code }
