@@ -2152,12 +2152,20 @@
       "requirement": "An untested critical data-protection or update-safety test blocks approval; non-critical gaps go to an owner risk-acceptance list.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
-      "untested": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/release-readiness.md",
+          "what": "'What blocks approval': critical update-safety and data-protection rows block the owner's approval; non-critical gaps listed for the owner's record"
+        }
+      ],
+      "untested": [
+        "The critical rows run on the final commit (release run)."
+      ],
       "needs_physical_device": false,
       "acceptance": "Risk list in the readiness report.",
-      "next": "Readiness report.",
+      "next": "Fill from the release run of the candidate before asking for approval.",
       "nvp15": "NVP15-REQ-0092"
     },
     {
