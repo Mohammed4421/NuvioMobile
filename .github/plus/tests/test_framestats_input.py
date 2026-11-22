@@ -7,40 +7,49 @@ spec = importlib.util.spec_from_file_location("framestats_input", ROOT / ".githu
 fs = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fs)
 
-HEADER = ("Flags,FrameTimelineVsyncId,INTENDED_VSYNC,VSYNC,DEADLINE,OLDEST_INPUT_EVENT,NEWEST_INPUT_EVENT,"
-          "HANDLE_INPUT_START,ANIMATION_START,PERFORM_TRAVERSALS_START,DRAW_START,FRAME_DEADLINE,"
-          "FRAME_START_TIME,FRAME_INTERVAL,SYNC_QUEUED,SYNC_START,ISSUE_DRAW_COMMANDS_START,SWAP_BUFFERS,"
-          "FRAME_COMPLETED,DEQUEUE_BUFFER_DURATION,QUEUE_BUFFER_DURATION,GPU_COMPLETED,SWAP_BUFFERS_COMPLETED,"
-          "DISPLAY_PRESENT_TIME,")
+# The header Android 14 printed in performance run 45008254583.
+NEW = ("Flags,FrameTimelineVsyncId,IntendedVsync,Vsync,InputEventId,HandleInputStart,AnimationStart,"
+       "PerformTraversalsStart,DrawStart,FrameDeadline,FrameInterval,FrameStartTime,SyncQueued,SyncStart,"
+       "IssueDrawCommandsStart,SwapBuffers,FrameCompleted,DequeueBufferDuration,QueueBufferDuration,"
+       "GpuCompleted,SwapBuffersCompleted,DisplayPresentTime,CommandSubmissionCompleted,")
+OLD = ("Flags,INTENDED_VSYNC,VSYNC,OLDEST_INPUT_EVENT,NEWEST_INPUT_EVENT,HANDLE_INPUT_START,ANIMATION_START,"
+       "PERFORM_TRAVERSALS_START,DRAW_START,SYNC_QUEUED,SYNC_START,ISSUE_DRAW_COMMANDS_START,SWAP_BUFFERS,"
+       "FRAME_COMPLETED,")
 
 
-def row(flags, vsync, handle_input, completed, oldest_input=0):
-    cells = ["0"] * 25
-    cells[0], cells[2], cells[5], cells[7], cells[18] = str(flags), str(vsync), str(oldest_input), str(handle_input), str(completed)
+def new_row(flags, vsync, input_id, completed):
+    cells = ["0"] * 23
+    cells[0], cells[2], cells[4], cells[5], cells[16] = str(flags), str(vsync), str(input_id), str(vsync + 1), str(completed)
+    return ",".join(cells) + ","
+
+
+def old_row(flags, vsync, handle_input, completed):
+    cells = ["0"] * 14
+    cells[0], cells[1], cells[5], cells[13] = str(flags), str(vsync), str(handle_input), str(completed)
     return ",".join(cells) + ","
 
 
 class FramestatsInputTest(unittest.TestCase):
-    def test_median_of_the_frames_that_handled_a_touch(self):
-        text = "\n".join(["Window: x", "---PROFILEDATA---", HEADER,
-                          row(0, 1_000_000_000, 1_001_000_000, 1_012_000_000),   # 12 ms, touch
-                          row(0, 2_000_000_000, 2_001_000_000, 2_020_000_000),   # 20 ms, touch
-                          row(0, 3_000_000_000, 3_001_000_000, 3_016_000_000),   # 16 ms, touch
-                          row(0, 4_000_000_000, 0, 4_090_000_000),               # no touch: ignored
-                          row(1, 5_000_000_000, 5_001_000_000, 5_200_000_000),   # flagged frame: ignored
+    def test_android_12_and_later_frames_with_an_input_event(self):
+        text = "\n".join(["---PROFILEDATA---", NEW,
+                          new_row(0, 1_000_000_000, -387647100, 1_012_000_000),  # 12 ms, touch
+                          new_row(0, 2_000_000_000, 55, 2_020_000_000),          # 20 ms, touch
+                          new_row(0, 3_000_000_000, 77, 3_016_000_000),          # 16 ms, touch
+                          new_row(0, 4_000_000_000, 0, 4_090_000_000),           # no touch: ignored
+                          new_row(1, 5_000_000_000, 9, 5_200_000_000),           # flagged frame: ignored
                           "---PROFILEDATA---"])
         self.assertEqual(16.0, fs.input_frame_ms(text))
 
-    def test_the_touch_event_time_is_used_when_android_gives_it(self):
-        text = "\n".join(["---PROFILEDATA---", HEADER,
-                          row(0, 1_000_000_000, 0, 1_030_000_000, oldest_input=1_005_000_000),  # 25 ms from the touch
-                          row(0, 2_000_000_000, 0, 2_035_000_000, oldest_input=2_000_000_000),  # 35 ms
-                          row(0, 3_000_000_000, 0, 3_040_000_000),                               # no touch
+    def test_older_android_frames_with_handle_input_start(self):
+        text = "\n".join(["---PROFILEDATA---", OLD,
+                          old_row(0, 1_000_000_000, 1_001_000_000, 1_030_000_000),
+                          old_row(0, 2_000_000_000, 2_001_000_000, 2_010_000_000),
+                          old_row(0, 3_000_000_000, 0, 3_090_000_000),
                           "---PROFILEDATA---"])
-        self.assertEqual(30.0, fs.input_frame_ms(text))
+        self.assertEqual(20.0, fs.input_frame_ms(text))
 
     def test_no_touch_frames_gives_nothing(self):
-        text = "\n".join(["---PROFILEDATA---", HEADER, row(0, 1_000_000_000, 0, 1_010_000_000), "---PROFILEDATA---"])
+        text = "\n".join(["---PROFILEDATA---", NEW, new_row(0, 1_000_000_000, 0, 1_010_000_000), "---PROFILEDATA---"])
         self.assertIsNone(fs.input_frame_ms(text))
         self.assertIsNone(fs.input_frame_ms("Total frames rendered: 0"))
 
