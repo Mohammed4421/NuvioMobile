@@ -2061,14 +2061,36 @@
       "requirement": "Test layer: Integration tests between components.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44982114765,
+          "commit": "f65cf2db94b457594574e6802e604a4b94c348b6",
+          "what": "Integration on Android 9, 14, 16 emulators: player engine with the subtitle pipeline and device-subtitle cache (SubtitlePlaybackTest, DeviceSubtitleStatesTest), engine with the network stack and range resume (NetworkDropPlaybackTest), surface lifecycle (MpvSurfaceTest), playback smoothness, font import through the system picker (SubtitleSettingsTest)",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44982114772,
+          "commit": "f65cf2db94b457594574e6802e604a4b94c348b6",
+          "what": "Downloads with the notification, scheduler and store: pause/resume from the notification, network loss and process death with no second transfer (Android 9, 14, 16)",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44982114777,
+          "commit": "f65cf2db94b457594574e6802e604a4b94c348b6",
+          "what": "Nuvio Plus checks: the real SeasonDownloadQueue with the downloads repository in the queue race harness (r1–r23), install-update-launch on an emulator, reference screens with the P4-11 comparison",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Final run on the candidate pending."
+        "The same layer on the release candidate commit (release run)."
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate.",
+      "next": "Cite the candidate's runs.",
       "nvp15": "NVP15-REQ-0082"
     },
     {
