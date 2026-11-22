@@ -26,6 +26,9 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Smoother two-finger subtitle resize and move.** The size or position no longer jumps when the
+  pinch or drag begins, no size hint flashes before the fingers move, and lifting one finger and
+  putting it back no longer resizes or moves the subtitles.
 - **Arabic: subtitle and audio values read the right way round.** Delay, size, brightness and
   amplification showed their sign and unit at the wrong end ("0.250s+", "dB 3-"); they now read
   "+0.250s" and "-3 dB" in every language.

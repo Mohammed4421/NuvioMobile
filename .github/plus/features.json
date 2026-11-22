@@ -85,7 +85,8 @@
       ],
       "data": "font size and bottom offset (shared with subtitle-style)",
       "tests": [
-        "device matrix: gestures do not fight seek and brightness swipes"
+        "device matrix: gestures do not fight seek and brightness swipes",
+        "SubtitlePinchGestureTest"
       ],
       "keywords": [
         "SubtitleTransform",
@@ -94,7 +95,8 @@
         "pinch"
       ],
       "test_files": [
-        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleGestureSessionTest.kt"
+        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleGestureSessionTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/player/SubtitlePinchGestureTest.kt"
       ]
     },
     {
