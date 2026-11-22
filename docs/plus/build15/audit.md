@@ -41,11 +41,55 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | B15-UI-07 | Settings (Nuvio) | Each `SettingsSwitchRow` switch is a second, unlabelled screen-reader stop | P4-09 report (#68) | P2 | DEFER (Nuvio's component) | DISCOVERED |
 | B15-UI-08 | Library downloads | Tappable poster had no label (title and state were on its parent) | P4-09 report (#68) | P2 | FIX (#68) | IMPLEMENTED |
 | B15-UI-09 | Subtitle/audio panels, downloads settings | Stepper − and + and the Wi-Fi only switch had no label | P4-09 report (#68) | P2 | FIX (#68) | IMPLEMENTED |
+| B15-NUV-01 | Nuvio areas | `catch (e: Throwable)` also catches coroutine cancellation (~40 in coroutines) | initial-pass.md | P3 | DEFER (Nuvio's code) | DISCOVERED |
+| B15-NUV-02 | Nuvio areas | `runBlocking { getString() }` in repositories and notifications | initial-pass.md | P3 | DEFER (Nuvio's code) | DISCOVERED |
 | B15-DL-05 | Downloads | Resume appended another version or a cut range (review GEM-DL-01/02) | Code; `AndroidDownloadTransferTest` | P1 | FIX (#58) | IMPLEMENTED |
 | B15-PLY-03 | Player | Pending subtitle choice taken before subtitle tracks exist (GEM-PLY-01) | Code; device tests | P1 | FIX (#58) | IMPLEMENTED |
 | B15-PLY-04 | Player | Subtitle change while buffering paused the video (GEM-PLY-02, 3 sites) | Code | P1 | FIX (#58) | IMPLEMENTED |
 | B15-SUB-07 | Subtitles | Arabic line starting with a Latin word laid out LTR in mpv text (GEM-SUB-01) | `SubtitleLineDirectionTest` | P2 | FIX (#58) | IMPLEMENTED |
 | B15-SUB-08 | Subtitles | Long ASS header, vector drawings, numeric entities (GEM-SUB-02) | `SubtitleParserReviewTest` | P2 | FIX (#58) | IMPLEMENTED |
+
+## Audit axes (P1-03)
+
+Each axis of the spec with the findings behind it, or "reviewed, none" with what was checked.
+`test_audit_findings.py` checks that every axis is here and every finding named exists.
+
+| Axis | Findings or result |
+|---|---|
+| Architecture | B15-EXT-03 (and decisions A-01..A-06 in `architecture.md`) |
+| Behaviour | B15-SUB-04, B15-SUB-06, B15-SUB-07, B15-SUB-08, B15-DL-03, B15-DL-05, B15-PLY-03, B15-PLY-04, B15-EXT-02, B15-WP-01, B15-ADD-01 |
+| Performance | B15-SUB-01, B15-SUB-05, B15-UI-03, B15-NUV-02 |
+| Security | B15-SEC-01, B15-SEC-02, B15-SEC-03, B15-SEC-04, B15-AND-01, B15-BLD-01 |
+| Concurrency | B15-DL-01, B15-DL-02, B15-PLY-01, B15-NUV-01 |
+| UX | B15-UI-01, B15-UI-06, B15-LIB-01, B15-STR-01, B15-SET-01, B15-REL-01 |
+| Accessibility, localisation, RTL | B15-UI-02, B15-UI-04, B15-UI-05, B15-UI-07, B15-UI-08, B15-UI-09, B15-AR-01, B15-EXT-01 |
+| Storage and migration | B15-SUB-02, B15-SUB-03, B15-DL-05 |
+| Testability | B15-CI-02 |
+| Upstream compatibility | B15-EXT-03, B15-UI-07, B15-NUV-01 (and A-02/A-03 trial merge in `architecture.md`) |
+| Portability | reviewed, none: PortKit transfers each feature to a clean upstream and a fork and builds and tests it (P7, `portkit/`) |
+
+## Deep audit: player engines, HDR and sign-in storage (P1-02)
+
+Read on 2026-11-22 at `custom-subtitles` a3047e63 (`PlayerEngine.android.kt`, `MpvSurfaceView.android.kt`,
+`PlayerTrackSelection.kt`, `PlayerScreenRuntimeEffects.kt`, `PlaybackMediaItems.android.kt`, the sign-in
+storage of Trakt, SIMKL and accounts). Behaviour on emulators is covered by the device tests (both engines:
+subtitles, surface lifecycle, network drop, smoothness); what a still emulator cannot show is named.
+
+| Path | What the code does | Result |
+|---|---|---|
+| ExoPlayer decoders | Extension renderer priority from settings, decoder fallback on, `setMapDV7ToHevc` from settings (off by default) | Sound. Dolby Vision 7 on a device without a DV decoder needs that setting: device check |
+| Dolby audio | `DolbyFreeMediaCodecSelector` hides the platform Dolby AC-3/E-AC-3 decoders, so the bundled ffmpeg renderer decodes them | Sound (avoids a crash and a retry); passthrough to an amplifier: device check |
+| Dolby Vision and libass | The libass video-effect pipeline is not built for Dolby Vision video; tunnelled playback draws ASS as an overlay | Sound (effects would break DV and tunnelling) |
+| Subtitle selection | Text tracks stay disabled until the app's own selection plan picks one (forced-only or normal); the plan is tested | Sound; `SubtitlePlaybackTest` shows captions with the default setting |
+| Threads | ExoPlayer touched only on the main thread (snapshot loop pinned, #63); libmpv commands on one `NuvioLibmpv` thread | Sound after B15-PLY-01 and the Android 16 fix |
+| libmpv video | `vo` from settings, `gpu-next` by default (libplacebo: tone mapping and Dolby Vision 5 reshaping); `hwdec` auto or no; `tls-verify=yes` with the bundled CA file; `ytdl=no` | Sound. HDR is tone-mapped to SDR by libmpv on Android; HDR output to the screen is ExoPlayer's: device check |
+| HDR labels | DV, HDR10 and HLG read from the codec string and the colour transfer; the base codec of DV resolved from `dvhe`/`dvav`/`dav1` | Sound |
+| Local file header | A few header bytes read on `Dispatchers.IO` while the caller waits when called on the main thread | Brief; B15-NUV-02 |
+| Sign-in tokens | Trakt, SIMKL and account tokens in app-private `SharedPreferences` (`MODE_PRIVATE`); `allowBackup="false"`; no token value in logs (initial pass) | Acceptable: protected by the app sandbox, not encrypted at rest (Nuvio's design) |
+
+No new defect found. Device checks (owner's final-release list): HDR10/HLG/Dolby Vision on the screen with
+ExoPlayer, Dolby Vision 7 with and without the mapping setting, Dolby audio passthrough, hardware decoding with
+libmpv.
 
 ## Areas reviewed and still to review
 

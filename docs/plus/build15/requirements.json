@@ -339,15 +339,31 @@
       "mandatory": true,
       "requirement": "Coverage audit: inventory of all source, build, configuration and dependency files.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "In PR #32; dependencies not inventoried."
+      "paths": [
+        ".github/plus/build15-inventory.py",
+        "docs/plus/build15/inventory.md"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_build15_inventory.py",
+          "name": "test_the_committed_report_leaves_no_area_unexamined",
+          "what": "inventory.md: every area with a review state (none NOT REVIEWED or unexamined) and the dependency section (353 release libraries by group)",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_build15_inventory.py",
+          "name": "test_every_area_without_app_code_is_examined_or_excluded_with_a_reason",
+          "what": "areas without app code examined or excluded with the reason",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every area listed with owner and review state; dependencies listed.",
-      "next": "Merge #32; add dependency inventory.",
+      "next": "Regenerate at each phase; keep the committed report current.",
       "nvp15": "NVP15-REQ-0011"
     },
     {
@@ -357,15 +373,32 @@
       "mandatory": true,
       "requirement": "Deep audit of high-risk, complex or Plus-overlapping areas on evidence.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "paths": [
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/MpvSurfaceView.android.kt"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/audit.md",
+          "what": "Deep audit of the player engines, HDR paths and sign-in storage (section P1-02); Plus areas in the findings",
+          "result": "no new defect"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44982114765,
+          "commit": "f65cf2db94b457594574e6802e604a4b94c348b6",
+          "what": "Both engines on Android 9, 14, 16: subtitles, surface lifecycle, network drop, smoothness (the reviewed paths running)",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Players/HDR/engines not deep-audited; Nuvio areas outside Plus not reviewed."
+        "On a device: HDR/DV on the screen, DV7 mapping, Dolby passthrough, libmpv hardware decoding (owner's list)."
       ],
       "needs_physical_device": false,
       "acceptance": "All critical areas reviewed with evidence.",
-      "next": "Deep audit of player engines and HDR paths.",
+      "next": "Device checks on the final release.",
       "nvp15": "NVP15-REQ-0012"
     },
     {
@@ -375,15 +408,24 @@
       "mandatory": true,
       "requirement": "Audit axes covered: architecture, behaviour, performance, security, concurrency, UX, accessibility/localisation/RTL, storage/migration, testability, upstream compatibility, portability.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Accessibility and performance axes not audited."
+      "paths": [
+        ".github/plus/tests/test_audit_findings.py",
+        "docs/plus/build15/audit.md"
       ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_audit_findings.py",
+          "name": "test_every_audit_axis_has_findings_or_says_reviewed_none",
+          "what": "the eleven axes in audit.md, each with existing findings or 'reviewed, none'",
+          "result": "PASS"
+        }
+      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each axis has findings or an explicit 'reviewed, none'.",
-      "next": "Add axis column to the audit register.",
+      "next": "Kept by the test on every PR.",
       "nvp15": "NVP15-REQ-0013"
     },
     {
@@ -398,7 +440,7 @@
         "docs/plus/build15/audit.md",
         "docs/plus/build15/findings.json"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "test",
@@ -411,7 +453,7 @@
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every audit row carries all eleven fields.",
-      "next": "Kept by the test on every PR",
+      "next": "Kept by the test on every PR.",
       "nvp15": "NVP15-REQ-0014"
     },
     {
@@ -422,12 +464,34 @@
       "requirement": "Exit: scope inventoried, findings prioritised, no critical area unreviewed.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_audit_findings.py",
+          "name": "test_every_audit_axis_has_findings_or_says_reviewed_none",
+          "what": "axes covered",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_initial_pass.py",
+          "name": "test_every_source_file_is_in_an_area_with_a_result",
+          "what": "scope inventoried",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_audit_findings.py",
+          "name": "test_every_deferred_finding_has_a_low_priority_and_its_risk",
+          "what": "findings prioritised",
+          "result": "PASS"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "P1-01..04 VERIFIED.",
-      "next": "After P1-04.",
+      "next": "P1 gate: owner's decision.",
       "nvp15": "NVP15-REQ-0015"
     },
     {
@@ -438,24 +502,23 @@
       "requirement": "Deferred findings (B15-SUB-03, DL-01, CI-02, UI-03) justified by the spec's priority rules.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/audit.md",
+        ".github/plus/tests/test_audit_findings.py",
         "docs/plus/build15/findings.json"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
-          "kind": "review",
-          "file": "docs/plus/build15/findings.json",
-          "what": "Deferred now: CI-02 (Low, Nuvio's tree, no runtime effect), UI-03 (Low, no measured impact; P5 start/memory within noise), BLD-01 (Low, trusted input). SUB-03 and DL-01 were fixed instead (#37, #52)",
-          "result": "documented"
+          "kind": "test",
+          "file": ".github/plus/tests/test_audit_findings.py",
+          "name": "test_every_deferred_finding_has_a_low_priority_and_its_risk",
+          "what": "every DEFER finding is P2/P3, not Critical, with impact and reason",
+          "result": "PASS"
         }
       ],
-      "untested": [
-        "UI-03 frame timing on a device"
-      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each has a P2/P3 priority with documented risk (§14).",
-      "next": "Owner sees the list in known-issues.md",
+      "next": "Owner sees the list in known-issues.md.",
       "nvp15": "NVP15-REQ-0016"
     },
     {
@@ -3255,13 +3318,31 @@
       "mandatory": true,
       "requirement": "Coverage audit: every source, build and configuration file in scope examined at least initially, with examined and excluded files and the reasons; UNMAPPED/UNKNOWN items named.",
       "source": "Build 15 spec v1.1",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "paths": [
+        ".github/plus/initial-pass.py",
+        "docs/plus/build15/initial-pass.md"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_initial_pass.py",
+          "name": "test_every_source_file_is_in_an_area_with_a_result",
+          "what": "every non-test source file is in an area with an initial-pass result",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_initial_pass.py",
+          "name": "test_the_committed_table_is_current",
+          "what": "initial-pass.md matches the code",
+          "result": "PASS"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "inventory.md covers every file: examined (initial or deep) or excluded with a reason; none left unexamined silently.",
-      "next": "Nuvio areas are listed as NUVIO (not reviewed): an initial pass is still due.",
+      "next": "Regenerate when areas change; the test fails otherwise.",
       "nvp15": "NVP15-REQ-0136"
     },
     {

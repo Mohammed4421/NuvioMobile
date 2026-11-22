@@ -63,5 +63,31 @@ class AuditFindings(unittest.TestCase):
         self.assertEqual(table | full, {f["id"] for f in self.findings})
 
 
+    def test_every_audit_axis_has_findings_or_says_reviewed_none(self):
+        """P1-03: the spec's eleven axes, each with existing findings or an explicit 'reviewed, none'."""
+        axes = ["Architecture", "Behaviour", "Performance", "Security", "Concurrency", "UX",
+                "Accessibility, localisation, RTL", "Storage and migration", "Testability",
+                "Upstream compatibility", "Portability"]
+        section = AUDIT.read_text().split("## Audit axes (P1-03)", 1)[1].split("\n## ", 1)[0]
+        rows = dict(re.findall(r"^\| ([^|]+?) \| (.+?) \|$", section, re.M))
+        known = {f["id"] for f in self.findings}
+        for axis in axes:
+            self.assertIn(axis, rows, f"axis {axis} missing")
+            cell = rows[axis]
+            named = re.findall(r"B15-[A-Z]+-\d{2}", cell)
+            self.assertTrue(named or cell.startswith("reviewed, none:"), f"{axis}: no finding and no 'reviewed, none'")
+            for finding in named:
+                self.assertIn(finding, known, f"{axis} names {finding}, which is not in findings.json")
+
+    def test_every_deferred_finding_has_a_low_priority_and_its_risk(self):
+        """P1-06 / spec §14: a deferred finding is P2 or P3 and states its impact and why it waits."""
+        deferred = [f for f in self.findings if f["decision"] == "DEFER"]
+        self.assertTrue(deferred)
+        for f in deferred:
+            self.assertIn(f["priority"], {"P2", "P3"}, f"{f['id']} is deferred at {f['priority']}")
+            self.assertNotEqual("Critical", f["severity"], f["id"])
+            self.assertGreater(len(f["user_impact"].strip()), 10, f"{f['id']}: impact not stated")
+            self.assertGreater(len(f["rationale"].strip()), 10, f"{f['id']}: reason to wait not stated")
+
 if __name__ == "__main__":
     unittest.main()
