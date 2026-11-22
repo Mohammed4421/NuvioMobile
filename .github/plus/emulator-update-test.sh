@@ -41,7 +41,7 @@ data_files() { adb shell "ls /data/data/${package}/shared_prefs 2>/dev/null" | t
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 prefs_dir="/data/data/${package}/shared_prefs"
 partial="/data/data/${package}/files/downloads/Plus_Seed_Show_S01E01_seedd1.mkv.part"
-seed_files="nuvio_addons.xml nuvio_player_settings.xml nuvio_downloads.xml"
+seed_files="$(python3 -I "${here}/seed-user-data.py" files)"
 seed_downloads() {
   local owner file
   rm -rf seed-in seed-out; mkdir -p seed-in

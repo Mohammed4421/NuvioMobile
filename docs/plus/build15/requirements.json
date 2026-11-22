@@ -1707,13 +1707,21 @@
       "source": "Build 15 spec v1.0",
       "paths": [],
       "status": "IMPLEMENTED",
-      "evidence": [],
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_seed_user_data.py",
+          "name": "test_six_kinds_and_two_profiles_are_seeded",
+          "what": "seed-user-data.py: subtitle/playback settings, two profiles, downloads + season queue + download preferences, library per profile, theme and add-ons, the picked download folder",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Only the season queue is seeded (#28)."
+        "The system grant of the picked folder cannot be created by adb (needs the picker); the stored folder address is checked. The grant on a phone: PRV-05."
       ],
       "needs_physical_device": false,
       "acceptance": "Seed covers all six data kinds.",
-      "next": "Extend the seeding script.",
+      "next": "Cite the emulator update run of this change, then the release run's 12/13/14 updates.",
       "nvp15": "NVP15-REQ-0063"
     },
     {
@@ -1725,13 +1733,26 @@
       "source": "Build 15 spec v1.0",
       "paths": [],
       "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Content check covers the season queue only."
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_seed_user_data.py",
+          "name": "test_a_title_lost_from_a_profiles_library_is_reported",
+          "what": "content compared after the update: a changed value, a lost add-on list, a lost library title, a changed folder, lost downloads are each reported",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_seed_user_data.py",
+          "name": "test_the_app_rewriting_the_library_in_its_own_form_is_fine",
+          "what": "JSON compared by meaning, so the app saving it in its own form is not a false loss",
+          "result": "PASS"
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Content diff for all seeded data kinds.",
-      "next": "With P6-12.",
+      "next": "Cite the emulator update run of this change.",
       "nvp15": "NVP15-REQ-0064"
     },
     {
