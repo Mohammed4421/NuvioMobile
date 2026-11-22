@@ -96,6 +96,38 @@ class LibraryDownloadEntriesTest {
         assertNull(entry.playableMovie)
     }
 
+    // Journey "Library", case I (cancel / interrupt): a removed download leaves the library at once,
+    // and a show keeps only what is left of it.
+    @Test
+    fun aRemovedDownloadLeavesTheLibrary() {
+        val first = episode("show", 1, DownloadStatus.Completed, updated = 1)
+        val second = item("show", 2, DownloadStatus.Downloading, updated = 2, downloaded = 5, total = 10)
+        val before = buildLibraryDownloadEntries(listOf(first, second, movie("m", DownloadStatus.Paused, updated = 3)), emptyList())
+        assertEquals(setOf("show", "m"), before.map { it.metaId }.toSet())
+        val after = buildLibraryDownloadEntries(listOf(first), emptyList())
+        val show = after.single()
+        assertEquals("show", show.metaId)
+        assertNull(show.activeState, "the cancelled episode still shows as downloading")
+        assertEquals(1, show.completed.size)
+        assertTrue(buildLibraryDownloadEntries(emptyList(), emptyList()).isEmpty())
+    }
+
+    // Case R (resume / restore): a paused download shows as paused with its progress, and once
+    // resumed it is a running download again with the same progress, first in the list.
+    @Test
+    fun aResumedDownloadIsRunningAgainWithItsProgress() {
+        val done = movie("done", DownloadStatus.Completed, updated = 50)
+        val paused = movie("m", DownloadStatus.Paused, updated = 10, downloaded = 40, total = 100)
+        val whilePaused = buildLibraryDownloadEntries(listOf(done, paused), emptyList())
+        val pausedEntry = whilePaused.single { it.metaId == "m" }
+        assertEquals(DownloadStatus.Paused, pausedEntry.activeState)
+        assertEquals(0.4f, pausedEntry.activeProgress)
+        val resumed = buildLibraryDownloadEntries(listOf(done, paused.copy(status = DownloadStatus.Downloading)), emptyList())
+        assertEquals("m", resumed.first().metaId)
+        assertEquals(DownloadStatus.Downloading, resumed.first().activeState)
+        assertEquals(0.4f, resumed.first().activeProgress)
+    }
+
     private fun movie(id: String, status: DownloadStatus, updated: Long, downloaded: Long = 0, total: Long? = 1) =
         item(id, null, status, updated, downloaded, total)
 

@@ -139,6 +139,12 @@ class Gate(unittest.TestCase):
         post["evidence"] = [{"kind": "test", "file": "notes.md", "name": "x"}]
         (self.repo / "notes.md").write_text("x\n")
         self.assertRejects("P0-99: needs a physical device; VERIFIED without device evidence")
+    def test_a_journey_is_not_verified_by_unit_tests_alone(self):
+        journey = self.item("P3-03")
+        journey.update(status="VERIFIED", evidence=[{"kind": "test", "file": "notes.md", "name": "x"}])
+        (self.repo / "notes.md").write_text("x\n")
+        self.register["items"] = [i for i in self.register["items"] if i["id"] != "P3-03"] + [journey]
+        self.assertRejects("P3-03: VERIFIED journey on unit tests alone (P3-07)")
 
     # 3. Physical device.
     def test_a_device_requirement_is_not_verified_by_ci(self):

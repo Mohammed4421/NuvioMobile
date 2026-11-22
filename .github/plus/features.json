@@ -385,7 +385,8 @@
         "deep link"
       ],
       "test_files": [
-        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/addons/AddonLinkConfirmationTest.kt"
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/addons/AddonLinkConfirmationTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/addons/AddonStoragePersistenceTest.kt"
       ]
     },
     {
