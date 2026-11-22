@@ -221,9 +221,9 @@
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44868996463,
-          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
-          "what": "Emulator before/after with limits on Android 14 and 9: within noise and limits",
+          "run": 45012337983,
+          "commit": "44accd1e8780bceaa04890a8f3bbb53945361611",
+          "what": "performance-compare.yml, Build 14 against the head, 10 values each in alternating blocks on Android 14 and 9 emulators: every metric within noise and within limits",
           "result": "PASS"
         }
       ],
@@ -1172,15 +1172,17 @@
       "paths": [
         ".github/plus/measure-app.sh",
         ".github/plus/measure-compare.py",
+        ".github/plus/framestats-input.py",
+        ".github/plus/performance-limits.json",
         ".github/workflows/performance-compare.yml"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44868996463,
-          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
-          "what": "Emulator before/after with limits on Android 14 and 9: within noise and limits",
+          "run": 45012337983,
+          "commit": "44accd1e8780bceaa04890a8f3bbb53945361611",
+          "what": "Cold start median 319.5→324.5 ms (Android 14), 369→373 ms (Android 9); warm start 60→62, 62→59 ms; all within noise",
           "result": "PASS"
         }
       ],
@@ -1203,17 +1205,34 @@
       "mandatory": true,
       "requirement": "Interaction response time.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
-      "untested": [
-        "Not measured."
+      "paths": [
+        ".github/plus/measure-app.sh",
+        ".github/plus/measure-compare.py",
+        ".github/plus/framestats-input.py",
+        ".github/plus/performance-limits.json",
+        ".github/workflows/performance-compare.yml"
       ],
-      "needs_physical_device": true,
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45012337983,
+          "commit": "44accd1e8780bceaa04890a8f3bbb53945361611",
+          "what": "Median touch-to-frame time during 8 swipes (framestats, frames that handled input): 16.9→16.8 ms on Android 14 (one 60 Hz frame), 5.3→5.3 ms on Android 9; within noise, limit +15 %",
+          "result": "PASS"
+        }
+      ],
+      "untested": [
+        "Personal device part deferred to PRV-06 (POST-RELEASE VALIDATION, NVP15-CHG-0005): touch response on the owner's phone: NEEDS PHYSICAL DEVICE."
+      ],
+      "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10).",
+      "next": "Owner's phone after the release (PRV-06).",
       "nvp15": "NVP15-REQ-0042",
-      "release_class": "PRE-RELEASE REQUIRED"
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-06"
+      ]
     },
     {
       "id": "P5-03",
@@ -1222,17 +1241,35 @@
       "mandatory": true,
       "requirement": "Frame time and jank while scrolling and navigating.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
-      "untested": [
-        "Not measured."
+      "paths": [
+        ".github/plus/measure-app.sh",
+        ".github/plus/measure-compare.py",
+        ".github/plus/framestats-input.py",
+        ".github/plus/performance-limits.json",
+        ".github/workflows/performance-compare.yml"
       ],
-      "needs_physical_device": true,
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45012337983,
+          "commit": "44accd1e8780bceaa04890a8f3bbb53945361611",
+          "what": "Scroll jank 7.14→7.08 % (Android 14), 10.51→10.41 % (Android 9); frame p90 16→16 ms, 18.5→19 ms; within noise, limits +25 % and +15 %",
+          "result": "PASS"
+        }
+      ],
+      "untested": [
+        "Personal device part deferred to PRV-06 (POST-RELEASE VALIDATION, NVP15-CHG-0005): scrolling on the owner's phone: NEEDS PHYSICAL DEVICE.",
+        "Navigation transitions are not measured separately (scrolling the main list only)."
+      ],
+      "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10).",
+      "next": "Owner's phone after the release (PRV-06).",
       "nvp15": "NVP15-REQ-0043",
-      "release_class": "PRE-RELEASE REQUIRED"
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-06"
+      ]
     },
     {
       "id": "P5-04",
@@ -1244,15 +1281,17 @@
       "paths": [
         ".github/plus/measure-app.sh",
         ".github/plus/measure-compare.py",
+        ".github/plus/framestats-input.py",
+        ".github/plus/performance-limits.json",
         ".github/workflows/performance-compare.yml"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44868996463,
-          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
-          "what": "Emulator before/after with limits on Android 14 and 9: within noise and limits",
+          "run": 45012337983,
+          "commit": "44accd1e8780bceaa04890a8f3bbb53945361611",
+          "what": "Memory (PSS) median 58,712→59,026 kB (Android 14), 62,004→62,882 kB (Android 9); within noise",
           "result": "PASS"
         }
       ],
@@ -1393,9 +1432,9 @@
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44868996463,
-          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
-          "what": "performance-compare.yml: APK x86_64 61,848,043 bytes for Build 14 and the head (dex +876 bytes, absorbed by the alignment before the native libraries); limit +5 %",
+          "run": 45012337983,
+          "commit": "44accd1e8780bceaa04890a8f3bbb53945361611",
+          "what": "APK x86_64: Build 14 61,848,043 bytes, head 61,884,907 (+36,864, +0.1 %); limit +5 %",
           "result": "PASS"
         }
       ],
@@ -1416,15 +1455,17 @@
       "paths": [
         ".github/plus/measure-app.sh",
         ".github/plus/measure-compare.py",
+        ".github/plus/framestats-input.py",
+        ".github/plus/performance-limits.json",
         ".github/workflows/performance-compare.yml"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44868996463,
-          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
-          "what": "Method run: Build 14 and head on the same Android 14 and 9 emulators, alternating blocks, 10 values per metric, median/spread/noise margin per metric; real devices NEEDS PHYSICAL DEVICE",
+          "run": 45012337983,
+          "commit": "44accd1e8780bceaa04890a8f3bbb53945361611",
+          "what": "Fixed emulators (Android 14 and 9, x86_64 google_apis), fixed scenarios (cold/warm start, memory, 8 swipes), 10 values per build in alternating blocks, noise margin twice the larger standard deviation and at least 5 %",
           "result": "PASS"
         }
       ],
@@ -1456,9 +1497,9 @@
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44868996463,
-          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
-          "what": "Limits applied (performance-limits.json): all changes within noise and within limits on Android 14 and 9 (cold start 294 -> 281.5 ms and 458.5 -> 434 ms, memory 56.8 -> 56.8 MB and 60.9 -> 61.6 MB)",
+          "run": 45012337983,
+          "commit": "44accd1e8780bceaa04890a8f3bbb53945361611",
+          "what": "Limits applied to start, memory, APK, scroll jank, scroll frame p90 and touch-to-frame time; none exceeded",
           "result": "PASS"
         }
       ],
@@ -2415,9 +2456,9 @@
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 44868996463,
-          "commit": "0ef0b71c75c0134077fb6827fb0d08b791a49e26",
-          "what": "Limits applied (performance-limits.json): all changes within noise and within limits on Android 14 and 9 (cold start 294 -> 281.5 ms and 458.5 -> 434 ms, memory 56.8 -> 56.8 MB and 60.9 -> 61.6 MB)",
+          "run": 45012337983,
+          "commit": "44accd1e8780bceaa04890a8f3bbb53945361611",
+          "what": "performance-compare.yml, Build 14 against the head, 10 values each in alternating blocks on Android 14 and 9 emulators: performance report in the run summary, every change within noise",
           "result": "PASS"
         }
       ],
