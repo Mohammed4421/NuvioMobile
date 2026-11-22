@@ -1314,14 +1314,27 @@
       "mandatory": true,
       "requirement": "Video playback stability.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
+      "paths": [
+        ".github/workflows/playback-compare.yml",
+        ".github/plus/playback-compare.sh",
+        ".github/plus/playback-compare-build14.patch",
+        ".github/plus/playback-limits.json",
+        "androidApp/src/androidTest/kotlin/com/nuvio/android/PlaybackSmoothnessTest.kt"
+      ],
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
           "run": 44974630416,
           "commit": "86f2d18c2e3858cff00be224bfb1e9c4e27be511",
           "what": "PlaybackSmoothnessTest on Android 9, 14, 16 emulators, ExoPlayer and mpv: 12 s of local playback kept up with the clock (1001–1010 ms played per s), 0 stalls, 0–1 dropped video frames; CPU 22–175 % of one core (software video on the emulator). No UI frame was drawn during playback except mpv on Android 9 (575 frames, p90 9 ms, 0 % slower than 16.7 ms)",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45029349398,
+          "commit": "56cb04ca309fa039a29e1b38dffd6ca0985827df",
+          "what": "Playback compare (#88): Build 14 against the head, 4 alternating blocks on Android 14 and 9 emulators, ExoPlayer and libmpv, 12 s each: played ms per wall s 1000–1003 for both builds, time behind the clock 0, 0 stalls in every run; within noise",
           "result": "PASS"
         }
       ],
@@ -1344,7 +1357,13 @@
       "mandatory": true,
       "requirement": "Dropped frames.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
+      "paths": [
+        ".github/workflows/playback-compare.yml",
+        ".github/plus/playback-compare.sh",
+        ".github/plus/playback-compare-build14.patch",
+        ".github/plus/playback-limits.json",
+        "androidApp/src/androidTest/kotlin/com/nuvio/android/PlaybackSmoothnessTest.kt"
+      ],
       "status": "IMPLEMENTED",
       "evidence": [
         {
@@ -1353,10 +1372,18 @@
           "commit": "86f2d18c2e3858cff00be224bfb1e9c4e27be511",
           "what": "PlaybackSmoothnessTest on Android 9, 14, 16 emulators, ExoPlayer and mpv: 12 s of local playback kept up with the clock (1001–1010 ms played per s), 0 stalls, 0–1 dropped video frames; CPU 22–175 % of one core (software video on the emulator). No UI frame was drawn during playback except mpv on Android 9 (575 frames, p90 9 ms, 0 % slower than 16.7 ms)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45029349398,
+          "commit": "56cb04ca309fa039a29e1b38dffd6ca0985827df",
+          "what": "Playback compare (#88): Build 14 against the head, 4 alternating blocks on Android 14 and 9 emulators, ExoPlayer and libmpv, 12 s each: dropped video frames counted by the head only (0–1 per 12 s run on both engines and both Android versions)",
+          "result": "PASS"
         }
       ],
       "untested": [
-        "Personal device part deferred to PRV-06 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE."
+        "Personal device part deferred to PRV-06 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE.",
+        "Before value: Build 14 has no dropped-frame counter, so no Build 14 number exists to compare with; the head's absolute value is recorded."
       ],
       "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
@@ -1393,14 +1420,27 @@
       "mandatory": true,
       "requirement": "CPU in affecting scenarios.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "IMPLEMENTED",
+      "paths": [
+        ".github/workflows/playback-compare.yml",
+        ".github/plus/playback-compare.sh",
+        ".github/plus/playback-compare-build14.patch",
+        ".github/plus/playback-limits.json",
+        "androidApp/src/androidTest/kotlin/com/nuvio/android/PlaybackSmoothnessTest.kt"
+      ],
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
           "run": 44974630416,
           "commit": "86f2d18c2e3858cff00be224bfb1e9c4e27be511",
           "what": "PlaybackSmoothnessTest on Android 9, 14, 16 emulators, ExoPlayer and mpv: 12 s of local playback kept up with the clock (1001–1010 ms played per s), 0 stalls, 0–1 dropped video frames; CPU 22–175 % of one core (software video on the emulator). No UI frame was drawn during playback except mpv on Android 9 (575 frames, p90 9 ms, 0 % slower than 16.7 ms)",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45029349398,
+          "commit": "56cb04ca309fa039a29e1b38dffd6ca0985827df",
+          "what": "Playback compare (#88): Build 14 against the head, 4 alternating blocks on Android 14 and 9 emulators, ExoPlayer and libmpv, 12 s each: app CPU % of one core, medians Build 14 → head: Android 14 ExoPlayer 13.5→13, libmpv 32.5→32; Android 9 ExoPlayer 172→171.5 (noisy: 8–177), libmpv 12→12; within noise, limit +20 %",
           "result": "PASS"
         }
       ],
