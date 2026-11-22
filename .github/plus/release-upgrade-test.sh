@@ -8,7 +8,10 @@
 #     rotation), it installs as an update with the data kept, and afterwards an APK signed with the
 #     old key alone is refused.
 #   Android 8 and older: the release is refused (it needs Android 9) and build 12 stays as it was.
-# Usage: release-upgrade-test.sh <build-12 apk> <previous-release apk or ""> <release apk>
+#   Every update starts from representative user data (seed-user-data.py: add-ons with a token, their
+#     on/off state, subtitle and playback settings, a finished and a paused download with its partial
+#     file and the season queue) and checks every value afterwards.
+# Usage: release-upgrade-test.sh <build-12 apk> <"label=apk;label=apk" of earlier releases, or ""> <release apk>
 #        <old-key apk> <foreign-key apk> <debug app apk> <debug test apk>   (all x86_64)
 set -uo pipefail
 exec > >(tee -a release-upgrade.log) 2>&1
@@ -41,6 +44,36 @@ prepare() {
   adb shell "mkdir -p /data/data/${package}/files && echo kept > /data/data/${package}/files/plus-upgrade-marker" \
     || fail "Could not write the data marker"
   [[ "$(marker)" == kept && -n "$(first_install)" ]] || fail "$2's data could not be prepared"
+  seed_user_data
+}
+# Representative user data, put in place after the earlier build has run once and stopped.
+prefs_dir="/data/data/${package}/shared_prefs"
+partial="/data/data/${package}/files/downloads/Plus_Seed_Show_S01E01_seedd1.mkv.part"
+seed_user_data() {
+  local owner file
+  rm -rf seed-in seed-out; mkdir -p seed-in
+  for file in nuvio_addons.xml nuvio_player_settings.xml nuvio_downloads.xml; do
+    adb pull "${prefs_dir}/${file}" "seed-in/${file}" > /dev/null 2>&1 || true
+  done
+  python3 -I "${here}/seed-user-data.py" seed seed-in seed-out > /dev/null || fail "Could not write the user data"
+  owner="$(adb shell stat -c %u "/data/data/${package}" | tr -d '\r')"
+  adb shell mkdir -p "${prefs_dir}" "/data/data/${package}/files/downloads"
+  for file in seed-out/*.xml; do
+    adb push "${file}" "${prefs_dir}/$(basename "${file}")" > /dev/null || fail "Could not put ${file} on the emulator"
+  done
+  adb shell "printf 'first 400 bytes' > ${partial}"
+  adb shell chown -R "${owner}:${owner}" "${prefs_dir}" "/data/data/${package}/files"
+  adb shell chmod 660 "${prefs_dir}"/*.xml "${partial}"
+  adb shell restorecon -RF "${prefs_dir}" "/data/data/${package}/files" > /dev/null 2>&1 || true
+}
+check_user_data() {
+  local file
+  rm -rf seed-after; mkdir -p seed-after
+  for file in nuvio_addons.xml nuvio_player_settings.xml nuvio_downloads.xml; do
+    adb pull "${prefs_dir}/${file}" "seed-after/${file}" > /dev/null 2>&1 || true
+  done
+  python3 -I "${here}/seed-user-data.py" check seed-after || fail "User data lost or changed in the update from $1 (see above)"
+  adb shell "test -f ${partial}" || fail "The paused episode's partial file was removed in the update from $1"
 }
 # Installs the release over what is installed: an update, data kept, version higher, it opens.
 update_to_release() {
@@ -56,7 +89,8 @@ update_to_release() {
   after_version="$(version_code)"
   (( after_version > before_version )) || fail "Version code did not rise from $1: ${before_version} -> ${after_version}"
   launch "The release (from $1)"
-  UPDATED="version ${before_version} -> ${after_version}, data kept ($(echo "${before_prefs}" | grep -c . || true) settings files and a marker)"
+  check_user_data "$1"
+  UPDATED="version ${before_version} -> ${after_version}, data kept ($(echo "${before_prefs}" | grep -c . || true) settings files; add-ons, subtitle and playback settings, downloads, the season queue and a partial file unchanged)"
 }
 refused_by_android() {
   local verdict; verdict="$(install "$1")"
@@ -94,19 +128,30 @@ eval "${device_host}"
 damaged="$(mktemp --suffix=.apk)"
 head -c "$(( $(stat -c %s "${release}") / 2 ))" "${release}" > "${damaged}"
 
-if [[ -n "${previous}" ]]; then
-  [[ -f "${previous}" ]] || fail "Missing APK: ${previous}"
-  prepare "${previous}" "The previous release"
-  check "${release}" accepted "App check, release over the previous release"
-  check "${foreign}" OtherSigner "App check, APK with a foreign key"
-  check "${old_key}" OtherSigner "App check, APK with the old public key"
-  check "${damaged}" "Unreadable|Unsigned" "App check, damaged download"
-  refused_by_android "${foreign}" "APK with a foreign key"
-  refused_by_android "${old_key}" "APK with the old public key"
-  update_to_release "the previous release"
-  line="- Update from the previous release (Android ${android}): the app's own check accepts the release and refuses foreign-key, old-key and damaged APKs; Android refuses the foreign and old-key APKs; ${UPDATED}."
+# Each earlier release signed with the release key (Builds 13, 14 and the newest published one), on its own.
+first=1
+IFS=';' read -r -a earlier <<< "${previous}"
+for pair in "${earlier[@]}"; do
+  [[ -n "${pair}" ]] || continue
+  label="${pair%%=*}"; apk="${pair#*=}"
+  [[ -f "${apk}" ]] || fail "Missing APK for ${label}: ${apk}"
+  prepare "${apk}" "${label}"
+  check "${release}" accepted "App check, release over ${label}"
+  if (( first )); then
+    check "${foreign}" OtherSigner "App check, APK with a foreign key"
+    check "${old_key}" OtherSigner "App check, APK with the old public key"
+    check "${damaged}" "Unreadable|Unsigned" "App check, damaged download"
+    refused_by_android "${foreign}" "APK with a foreign key"
+    refused_by_android "${old_key}" "APK with the old public key"
+    extra="; the app's check refuses foreign-key, old-key and damaged APKs and Android refuses the foreign and old-key APKs"
+  else
+    extra=""
+  fi
+  first=0
+  update_to_release "${label}"
+  line="- Update from ${label} (Android ${android}): the app's own check accepts the release${extra}; ${UPDATED}."
   echo "${line}" >> "${result}"; echo "::notice::${line#- }"
-fi
+done
 
 prepare "${build12}" "Build 12"
 check "${release}" accepted "App check, release over build 12 (pinned key rotation)"
