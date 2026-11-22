@@ -50,6 +50,35 @@
       "reason": "No device before the release (NVP15-CHG-0003); the owner approved P0 on that basis",
       "impact": "P0 gate passes; device performance stays open in P5",
       "decision": "Owner 2026-11-21 13:44 ('اعتمد')"
+    },
+    {
+      "id": "NVP15-CHG-0005",
+      "requirements": [
+        "P3-01",
+        "P3-02",
+        "P4-06",
+        "P5-01",
+        "P5-04",
+        "P5-05",
+        "P5-06",
+        "P5-08",
+        "P5-10",
+        "P8-06",
+        "P8-12",
+        "D-09",
+        "PRV-01",
+        "PRV-02",
+        "PRV-03",
+        "PRV-04",
+        "PRV-05",
+        "PRV-06",
+        "PRV-07"
+      ],
+      "before": "Checks on the owner's phone (HDR/Dolby Vision, look and feel, gesture feel, his sources and accounts, downloads and notifications on his phone, real performance, Android 17) were part of the requirements a phase and the release waited for (NVP15-CHG-0003: tested on the final release).",
+      "after": "Every requirement has a release class. PRE-RELEASE REQUIRED: everything provable without the owner (full audit, fixes and polish, unit/integration/concurrency/emulator tests, performance against Build 14 in the available environments, security, data and storage, upgrade from Builds 12, 13 and 14 with the real key and representative data, identity, PortKit, CI, APK and reports). POST-RELEASE VALIDATION: the owner's personal checks, kept as NOT TESTED / NEEDS PHYSICAL DEVICE in PRV-01..07 (P9) and P8-06; mixed requirements keep their ids and evidence and name their deferred part (post_release). BLOCKED: a real engineering obstacle. A phase gate passes when its pre-release requirements hold; data, signing and upgrade requirements can never be post-release (the gate refuses it).",
+      "reason": "Owner: development, release preparation and phase closing must not wait for his personal testing; critical engineering tests are never deferred.",
+      "impact": "Device-only findings surface after installation; nothing deferred is marked PASS, VERIFIED or ACCEPTED; Build 16 stays the upstream-sync plan; signing and publishing still need the owner's separate approvals.",
+      "decision": "Owner directive 2026-11-22 11:24 (Riyadh)"
     }
   ]
 }

@@ -51,6 +51,10 @@ test recomposer ("Player is accessed on the wrong thread"); it is now pinned to 
 
 ## On a real device (by a person)
 
+Since the owner's directive of 2026-11-22 (NVP15-CHG-0005), these are **POST-RELEASE VALIDATION**:
+checked by the owner after installing the release (PRV-01..07 in `requirements.json`), recorded as
+NOT TESTED until then. Everything an emulator or CI can prove stays required before the release.
+
 | # | Area | Steps | Expected | Required |
 |---|---|---|---|---|
 | D1 | Update | Install build N-1, use it, install build N over it | Installs as an update; account, add-ons, downloads, settings kept | **required** |
