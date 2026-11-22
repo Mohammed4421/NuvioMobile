@@ -297,7 +297,7 @@ abstract class PlusReferenceScreenshots(private val device: String) {
 
     /**
      * P4-11: a 240 px wide thumbnail of the screen against the approved one in
-     * src/androidHostTest/screenshot-baselines. Report only, for human review: the share of pixels
+     * docs/plus/build15/screenshot-baselines. Report only, for human review: the share of pixels
      * that changed visibly (a channel off by more than 24 of 255) and the mean change. A missing
      * baseline reports NEW. The thumbnail is kept so an approved change can become the baseline.
      */
@@ -307,7 +307,7 @@ abstract class PlusReferenceScreenshots(private val device: String) {
         File("build/reports/plus-thumbs").apply { mkdirs() }.resolve("$name.png").outputStream().use {
             thumb.compress(Bitmap.CompressFormat.PNG, 100, it)
         }
-        val baselineFile = File("src/androidHostTest/screenshot-baselines/$name.png")
+        val baselineFile = File("../docs/plus/build15/screenshot-baselines/$name.png")
         val line = if (!baselineFile.exists()) {
             "$name NEW (no baseline)"
         } else {

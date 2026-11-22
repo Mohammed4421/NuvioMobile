@@ -956,12 +956,20 @@
       "requirement": "Automated image comparison with human review of significant differences.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
-      "untested": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "composeApp/src/androidHostTest/kotlin/com/nuvio/app/plus/screenshots/PlusReferenceScreenshotsTest.kt",
+          "what": "compareWithBaseline: every reference screen against its approved 240 px thumbnail (72 baselines from run 44980253637), PLUS-COMPARE report for human review"
+        }
+      ],
+      "untested": [
+        "The first run against the committed baselines (expected: all 'same')."
+      ],
       "needs_physical_device": false,
       "acceptance": "A check that compares new screenshots with baselines and reports differences.",
-      "next": "Add comparison after baselines exist.",
+      "next": "Cite that run; review CHANGED lines in every UI PR.",
       "nvp15": "NVP15-REQ-0038"
     },
     {
@@ -1319,6 +1327,13 @@
           "commit": "0231330bea1af1e4611139786211563fd15c0ad6",
           "what": "#68 (plus-build.yml prints the P4-09 report): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44980253637,
+          "commit": "fa72d3276ed01117738bd6c5132478d44d2ab2d7",
+          "what": "#70 (plus-build.yml prints the P4-11 comparison): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -1379,6 +1394,13 @@
           "run": 44976691090,
           "commit": "0231330bea1af1e4611139786211563fd15c0ad6",
           "what": "#68 (plus-build.yml prints the P4-09 report): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44980253637,
+          "commit": "fa72d3276ed01117738bd6c5132478d44d2ab2d7",
+          "what": "#70 (plus-build.yml prints the P4-11 comparison): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
           "result": "PASS"
         }
       ],
@@ -1459,6 +1481,13 @@
           "run": 44976691090,
           "commit": "0231330bea1af1e4611139786211563fd15c0ad6",
           "what": "#68: 'Known vulnerabilities in the libraries of the release APK (OSV)': 353 libraries, 0 blocking, 0 reviewed, 0 low or moderate",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44980253637,
+          "commit": "fa72d3276ed01117738bd6c5132478d44d2ab2d7",
+          "what": "#70: OSV step on the release APK libraries passed (0 blocking)",
           "result": "PASS"
         }
       ],
