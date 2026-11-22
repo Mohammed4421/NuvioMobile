@@ -27,8 +27,8 @@ Nothing above is skipped for a rescue build (`rollback.md`).
 In a hand-started run the review gate also checks the release scope
 (`docs/plus/build15/release-scope.json`, `.github/plus/release-scope-check.py`): every listed pull
 request merged and part of the commit, the 1.1.0-beta.2 trial merge (#2) not, the branch not moved,
-the requirements gate passed on the commit, and the mandatory requirement list and PortKit version
-unchanged. A pull request merged for the build must be added to the manifest before the run.
+the requirements gate passed on the commit, and the mandatory requirement list and PortKit (by the SHA-256
+of portkit/portkit.py) unchanged. A pull request merged for the build must be added to the manifest before the run.
 
 A failed run (a failed check, a wrong `release_commit`, a moved branch, a release scope mismatch) makes no GitHub release: its
 report is in the run's summary and in the `nuvio-plus-failure-report` artifact with the logs.

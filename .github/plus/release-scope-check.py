@@ -8,11 +8,12 @@ blocks on any mismatch:
   * no excluded pull request is merged or part of HEAD;
   * each approval test of the release commit (a workflow run on HEAD) concluded success;
   * the mandatory requirement ids equal those the requirements gate enforces;
-  * the PortKit version equals portkit/portkit.py VERSION.
+  * PortKit is the pinned one (SHA-256 of portkit/portkit.py).
 Anything that cannot be confirmed blocks. Prints the problems; exit 1 when there are any.
 
 Usage: release-scope-check.py   (environment: GH_TOKEN, GITHUB_REPOSITORY, GITHUB_REF_NAME)
 """
+import hashlib
 import json
 import os
 import re
@@ -56,8 +57,9 @@ def gate_mandatory(root):
 
 
 def portkit_version(root):
-    match = re.search(r'^VERSION = "([^"]+)"', (Path(root) / "portkit/portkit.py").read_text(), re.M)
-    return match.group(1) if match else None
+    """PortKit's version: the SHA-256 of portkit/portkit.py (a version line in it would change the file
+    that PortKit's verified features were tested with)."""
+    return hashlib.sha256((Path(root) / "portkit/portkit.py").read_bytes()).hexdigest()
 
 
 def check(manifest, api, head, branch, root=".", ancestor=is_ancestor):
@@ -121,8 +123,8 @@ def check(manifest, api, head, branch, root=".", ancestor=is_ancestor):
         problems.append(f"mandatory requirements differ from the gate (missing {missing}, extra {extra})")
 
     version = portkit_version(root)
-    if manifest.get("portkit_version") != version:
-        problems.append(f"PortKit is {version}, the manifest pins {manifest.get('portkit_version')}")
+    if manifest.get("portkit_sha256") != version:
+        problems.append(f"PortKit is {version[:12]}, the manifest pins {str(manifest.get('portkit_sha256'))[:12]}")
     return problems
 
 

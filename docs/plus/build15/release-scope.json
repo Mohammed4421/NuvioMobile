@@ -1,9 +1,8 @@
 {
-  "_about": "Build 15 release scope (spec v1.1 §12, S12-02). The release run compares it with GitHub and the exact commit (.github/plus/release-scope-check.py) and refuses to publish on any mismatch: a pull request listed here not merged into the branch or not part of the commit, an excluded one merged, the branch moved past the commit, an approval test not passed on the commit, the mandatory requirement list or the PortKit version different from the repository's.",
+  "_about": "Build 15 release scope (spec v1.1 §12, S12-02). The release run compares it with GitHub and the exact commit (.github/plus/release-scope-check.py) and refuses to publish on any mismatch: a pull request listed here not merged into the branch or not part of the commit, an excluded one merged, the branch moved past the commit, an approval test not passed on the commit, the mandatory requirement list or PortKit (portkit/portkit.py, by its SHA-256) different from the repository's.",
   "schema": 1,
   "build": 15,
   "branch": "custom-subtitles",
-  "portkit_version": "1.0.0",
   "mandatory_requirements": [
     "C-01",
     "C-02",
@@ -229,5 +228,6 @@
       "nuvio-plus/checks",
       "nuvio-plus/review"
     ]
-  }
+  },
+  "portkit_sha256": "146a1ebd771ca3fd6a1864337411d6a950dc66015338dd31196ea04bb19975dd"
 }

@@ -52,7 +52,7 @@ class ReleaseScopeTest(unittest.TestCase):
     def test_the_repository_manifest_matches_the_gate_and_portkit(self):
         manifest = json.loads((ROOT / "docs/plus/build15/release-scope.json").read_text())
         self.assertEqual(sorted(scope.gate_mandatory(ROOT)), sorted(manifest["mandatory_requirements"]))
-        self.assertEqual(scope.portkit_version(ROOT), manifest["portkit_version"])
+        self.assertEqual(scope.portkit_version(ROOT), manifest["portkit_sha256"])
         self.assertEqual("custom-subtitles", manifest["branch"])
         self.assertIn("2", manifest["excluded_pull_requests"])
         self.assertNotIn(2, manifest["required_pull_requests"])
@@ -99,7 +99,7 @@ class ReleaseScopeTest(unittest.TestCase):
         manifest = self.manifest()
         manifest["mandatory_requirements"] = manifest["mandatory_requirements"][1:] + ["X-99"]
         self.assertTrue(any("mandatory requirements differ" in p for p in self.run_check(manifest, api)))
-        self.assertTrue(any("PortKit is" in p for p in self.run_check(self.manifest(portkit_version="0.9"), api)))
+        self.assertTrue(any("PortKit is" in p for p in self.run_check(self.manifest(portkit_sha256="0" * 64), api)))
 
     def test_other_branch_blocks(self):
         api = FakeGitHub({10: merged(10), 11: merged(11), 2: self.open_trial()})
