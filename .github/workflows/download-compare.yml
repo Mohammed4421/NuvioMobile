@@ -86,9 +86,12 @@ jobs:
           echo "Build 14 source: $(git rev-parse 'custom-14^{commit}')"
           mkdir ../build14
           git archive custom-14 | tar -x -C ../build14
-          # The download is started by the debug activity; it must be the one the head uses.
+          # The download is started by the debug activity; it must be the one the head uses, so the
+          # head's copy goes into Build 14 (debug source set only; never in a release). A head
+          # activity that needs code Build 14 lacks fails Build 14's compile below, by name.
           for f in androidApp/src/debug/kotlin/com/nuvio/android/BackgroundDownloadTestActivity.kt; do
-            cmp "${f}" "../build14/${f}" || { echo "::error::Build 14's ${f} differs from the head's"; exit 1; }
+            [[ -f "../build14/${f}" ]] || { echo "::error::Build 14 has no ${f}"; exit 1; }
+            cmp -s "${f}" "../build14/${f}" || { cp "${f}" "../build14/${f}"; echo "Build 14: ${f} replaced by the head's copy"; }
           done
           cd ../build14
           bash .github/plus/prepare-build.sh 14
