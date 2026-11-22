@@ -854,22 +854,25 @@
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/AudioTrackModal.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/SubtitleStylePanel.kt"
       ],
-      "evidence": "Reference screenshots of the player panels (#49): Arabic showed '0.000s+' and 'dB 0'",
+      "evidence": "Reference screenshots of the player panels (#49); still shown in the Arabic screenshots of 2026-11-22 (#64): '0.000s+', 'dB 0'",
       "root_cause": "Bidi reordering of signed values with units inside RTL text",
       "user_impact": "Delay and boost values misread in Arabic",
       "severity": "Low",
       "alternatives": [
-        "LTR isolate"
+        "LTR isolate (U+2066/U+2069) in each value",
+        "LTR text direction in the shared stepper"
       ],
-      "chosen": "Wrap the values in U+2066/U+2069",
-      "rationale": "Same fix as B15-UI-02",
+      "chosen": "LTR text direction in the shared stepper (#67)",
+      "rationale": "One place covers every stepper (subtitle delay, size, brightness; audio delay, amplification). Correction: #54 recorded this finding as IMPLEMENTED with no code change; the fix landed in #67 and the Arabic screenshot shows '+0.000s' and '0 dB'.",
       "compatibility": "Display only",
-      "tests_required": "Screenshot test asserts the isolated text",
+      "tests_required": "Arabic reference screenshots (player-subtitles-ar-*, player-audio-ar-*) and the P4-11 baselines",
       "priority": "P2",
       "decision": "FIX",
       "status": "IMPLEMENTED",
       "refs": [
-        "#49"
+        "#49",
+        "#54",
+        "#67"
       ]
     },
     {
@@ -1110,32 +1113,6 @@
       "status": "IMPLEMENTED",
       "refs": [
         "#68"
-      ]
-    },
-    {
-      "kind": "defect",
-      "severity": "Low",
-      "compatibility": "Accessibility semantics only; no visual change",
-      "priority": "P2",
-      "id": "B15-UI-10",
-      "area": "Player subtitle and audio panels",
-      "files": [
-        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/SubtitleStylePanel.kt"
-      ],
-      "evidence": "Arabic reference screenshots: '0.000s+' and 'dB 0'",
-      "root_cause": "Numbers with signs and units laid out right to left",
-      "user_impact": "Values misread in Arabic",
-      "alternatives": [
-        "LTR text direction for the value",
-        "Unicode isolates in the strings"
-      ],
-      "chosen": "LTR text direction for the value",
-      "rationale": "One place covers every stepper",
-      "tests_required": "Reference screenshots (Arabic)",
-      "decision": "FIX",
-      "status": "IMPLEMENTED",
-      "refs": [
-        "#67"
       ]
     }
   ]
