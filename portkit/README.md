@@ -15,6 +15,7 @@ turns true for a feature only after the transfer tests pass for it in CI. No fea
 | `portkit.py` | `validate` (registry, levels and policy agree), `inventory` (what each feature changes against upstream) and `plan` (dry run on a target: what a transfer would do, as a report and a diff; writes nothing) |
 | `reports/inventory.md` | The current inventory |
 | `reports/compatibility-matrix.md` | Level, verified, evidence, dependencies and shared files of every feature |
+| `feature-records.py`, `reports/feature-records.md` | One record per feature, generated from the registry, levels, policy and the upstream base: supported versions, source sets, integration points (Nuvio files it changes) and Plus files, dependencies, data formats, tests, non-transferable parts, limits, known conflicts |
 | `reports/test-report.md` | PASS / FAIL / BLOCKED / NOT TESTED for every required check, with evidence |
 
 ```sh
@@ -130,6 +131,8 @@ notices; a target without the GPL-3.0 `LICENSE` is refused before anything is pl
 **الميزات القابلة للنقل الآن:** ثلاث ميزات من 15، تحقق منها اختبار بناء فعلي على Nuvio 1.0.0 الرسمي وعلى Fork مختلف: `lazy-key-collisions` و`subtitle-parser-worst-case` و`playback-credential-tls`.
 
 **الميزات الأخرى:** مرفوضة في النقل الفعلي حتى تُكتب لها محوّلات وتنجح اختباراتها. التفاصيل في `reports/compatibility-matrix.md`، ونتائج الاختبارات في `reports/test-report.md`.
+
+**سجل كل ميزة:** `reports/feature-records.md` يذكر لكل ميزة الإصدارات المدعومة، وملفات Nuvio التي تغيّرها، وملفاتها الخاصة، واعتمادياتها، وصيغ بياناتها، واختباراتها، وما لا يُنقل منها، وحدودها، وتعارضاتها المعروفة.
 
 **مثال على رفض صحيح:** طلب نقل `identity` أو `updater`، أو مشروع هدف فيه تغييرات غير محفوظة.
 
