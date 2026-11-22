@@ -43,6 +43,16 @@ class SubtitlePinchGestureTest {
             update = mutableStateOf({ zoom: Float, up: Float -> updates += zoom to up }),
             end = mutableStateOf({ ends += Unit }),
         )
+        // States are made outside composition (lint: UnrememberedMutableState).
+        val off = mutableStateOf(false)
+        val on = mutableStateOf(true)
+        val position = mutableStateOf(0L)
+        val duration = mutableStateOf(600_000L)
+        val noAction = mutableStateOf({})
+        val onSeekPreview = mutableStateOf({ _: Long, _: Long -> })
+        val onBrightness = mutableStateOf({ _: Float -> })
+        val onVolume = mutableStateOf({ _: PlayerAudioLevel -> })
+        val onCommitSeek = mutableStateOf({ _: Long -> })
         compose.setContent {
             Box(
                 Modifier.size(480.dp, 270.dp)
@@ -52,18 +62,18 @@ class SubtitlePinchGestureTest {
                         layoutSize = IntSize(480, 270),
                         playbackGesturesEnabled = true,
                         sideGestureSystemEdgeExclusionPx = 0f,
-                        playerControlsLockedState = mutableStateOf(false),
-                        touchGesturesEnabledState = mutableStateOf(true),
-                        isHoldToSpeedGestureActiveState = mutableStateOf(false),
-                        currentPositionMsState = mutableStateOf(0L),
-                        currentDurationMsState = mutableStateOf(600_000L),
-                        deactivateHoldToSpeedState = mutableStateOf({}),
-                        showHorizontalSeekPreviewState = mutableStateOf({ _: Long, _: Long -> }),
-                        showBrightnessFeedbackState = mutableStateOf({ _: Float -> }),
-                        showVolumeFeedbackState = mutableStateOf({ _: PlayerAudioLevel -> }),
-                        clearLiveGestureFeedbackState = mutableStateOf({}),
-                        revealLockedOverlayState = mutableStateOf({}),
-                        commitHorizontalSeekState = mutableStateOf({ _: Long -> }),
+                        playerControlsLockedState = off,
+                        touchGesturesEnabledState = on,
+                        isHoldToSpeedGestureActiveState = off,
+                        currentPositionMsState = position,
+                        currentDurationMsState = duration,
+                        deactivateHoldToSpeedState = noAction,
+                        showHorizontalSeekPreviewState = onSeekPreview,
+                        showBrightnessFeedbackState = onBrightness,
+                        showVolumeFeedbackState = onVolume,
+                        clearLiveGestureFeedbackState = noAction,
+                        revealLockedOverlayState = noAction,
+                        commitHorizontalSeekState = onCommitSeek,
                         subtitleGestures = callbacks,
                     ),
             )
