@@ -516,6 +516,13 @@ jobs:
           done
           # P4-09: controls under 48 dp or without a label, per screen and setup (report only).
           cat composeApp/build/reports/plus-a11y/*.txt 2>/dev/null | sed -e '/^$/d' -e 's/^/PLUS-A11Y /' || true
+          # P4-11: each screen against its approved thumbnail (report for review), and the new
+          # thumbnails, so an approved change can be committed as the baseline.
+          cat composeApp/build/reports/plus-compare/*.txt 2>/dev/null | sed -e '/^$/d' -e 's/^/PLUS-COMPARE /' || true
+          for png in composeApp/build/reports/plus-thumbs/*.png; do
+            [[ -f "${png}" ]] || continue
+            echo "PLUS-THUMB $(basename "${png}") $(base64 -w 0 "${png}")"
+          done
 
       - name: Keep the reference screenshots
         # Build 15, P4-01: Plus screens in English and Arabic, phone and tablet
