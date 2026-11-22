@@ -1970,6 +1970,9 @@ private class NuvioLibmpvView(
             playbackSpeed = (mpv.getPropertyDouble("speed") ?: 1.0).toFloat(),
             videoWidth = videoWidth,
             videoHeight = videoHeight,
+            // Frames the decoder skipped plus frames the video output dropped as late.
+            droppedVideoFrames = ((mpv.getPropertyInt("decoder-frame-drop-count") ?: 0) +
+                (mpv.getPropertyInt("frame-drop-count") ?: 0)).toLong(),
         )
     }
 
@@ -2357,6 +2360,7 @@ private fun ExoPlayer.snapshot(): PlayerPlaybackSnapshot {
         playbackSpeed = playbackParameters.speed,
         videoWidth = videoWidth,
         videoHeight = videoHeight,
+        droppedVideoFrames = videoDecoderCounters?.droppedBufferCount?.toLong() ?: 0L,
     )
 }
 
