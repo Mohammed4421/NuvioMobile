@@ -14,9 +14,9 @@ HEADER = ("Flags,FrameTimelineVsyncId,INTENDED_VSYNC,VSYNC,DEADLINE,OLDEST_INPUT
           "DISPLAY_PRESENT_TIME,")
 
 
-def row(flags, vsync, handle_input, completed):
+def row(flags, vsync, handle_input, completed, oldest_input=0):
     cells = ["0"] * 25
-    cells[0], cells[2], cells[7], cells[18] = str(flags), str(vsync), str(handle_input), str(completed)
+    cells[0], cells[2], cells[5], cells[7], cells[18] = str(flags), str(vsync), str(oldest_input), str(handle_input), str(completed)
     return ",".join(cells) + ","
 
 
@@ -30,6 +30,14 @@ class FramestatsInputTest(unittest.TestCase):
                           row(1, 5_000_000_000, 5_001_000_000, 5_200_000_000),   # flagged frame: ignored
                           "---PROFILEDATA---"])
         self.assertEqual(16.0, fs.input_frame_ms(text))
+
+    def test_the_touch_event_time_is_used_when_android_gives_it(self):
+        text = "\n".join(["---PROFILEDATA---", HEADER,
+                          row(0, 1_000_000_000, 0, 1_030_000_000, oldest_input=1_005_000_000),  # 25 ms from the touch
+                          row(0, 2_000_000_000, 0, 2_035_000_000, oldest_input=2_000_000_000),  # 35 ms
+                          row(0, 3_000_000_000, 0, 3_040_000_000),                               # no touch
+                          "---PROFILEDATA---"])
+        self.assertEqual(30.0, fs.input_frame_ms(text))
 
     def test_no_touch_frames_gives_nothing(self):
         text = "\n".join(["---PROFILEDATA---", HEADER, row(0, 1_000_000_000, 0, 1_010_000_000), "---PROFILEDATA---"])

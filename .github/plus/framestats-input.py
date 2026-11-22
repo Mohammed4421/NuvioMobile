@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """Reads `dumpsys gfxinfo <package> framestats` on stdin and prints the median time, in ms, from the
-intended vsync of each frame that handled a touch (HANDLE_INPUT_START set) to that frame being
-completed: how long the app took to show its response to the finger (Build 15, P5-02). Prints
-nothing when no such frame was drawn. Only standard Python."""
+oldest touch event a frame handled (OLDEST_INPUT_EVENT) to that frame being completed: how long the
+app took to show its response to the finger (Build 15, P5-02). Frames without that column's value
+fall back to HANDLE_INPUT_START (older Android versions; touches injected by `input` leave it empty on
+newer ones). Prints nothing when no frame handled a touch, and a count line on stderr.
+Only standard Python."""
 import statistics
 import sys
 
 
 def input_frame_ms(text):
-    header, times = None, []
+    header, times, rows = None, [], 0
     for line in text.splitlines():
         cells = [c.strip() for c in line.split(",")]
         if cells and cells[0] == "Flags":
@@ -21,13 +23,20 @@ def input_frame_ms(text):
             continue
         try:
             flags = int(cells[header["Flags"]])
-            start = int(cells[header["HANDLE_INPUT_START"]])
-            vsync = int(cells[header["INTENDED_VSYNC"]])
             done = int(cells[header["FRAME_COMPLETED"]])
+            oldest = int(cells[header["OLDEST_INPUT_EVENT"]]) if "OLDEST_INPUT_EVENT" in header else 0
+            handle = int(cells[header["HANDLE_INPUT_START"]])
+            vsync = int(cells[header["INTENDED_VSYNC"]])
         except (KeyError, ValueError, IndexError):
             continue
-        if flags == 0 and start > 0 and done > vsync > 0:
+        rows += 1
+        if flags != 0:
+            continue
+        if 0 < oldest < done:
+            times.append((done - oldest) / 1_000_000)
+        elif handle > 0 and done > vsync > 0:
             times.append((done - vsync) / 1_000_000)
+    print(f"framestats: {rows} frames, {len(times)} handled a touch", file=sys.stderr)
     return round(statistics.median(times), 1) if times else None
 
 
