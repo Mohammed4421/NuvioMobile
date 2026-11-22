@@ -1114,6 +1114,56 @@
       "refs": [
         "#68"
       ]
+    },
+    {
+      "kind": "defect",
+      "compatibility": "Nuvio's code, untouched by Plus; a change would add upstream conflicts",
+      "priority": "P3",
+      "id": "B15-NUV-01",
+      "area": "Nuvio areas (sync, profiles, servers, watch progress, party, ...)",
+      "severity": "Low",
+      "files": [
+        "docs/plus/build15/initial-pass.md"
+      ],
+      "evidence": "Initial pass (initial-pass.py, catch-throwable): about 100 `catch (e: Throwable)` in Nuvio code, ~40 inside coroutines without rethrowing CancellationException",
+      "root_cause": "Catching Throwable also catches coroutine cancellation",
+      "user_impact": "A cancelled background task (sync, scrobble, party call) can log a failure or finish its fallback instead of stopping; no data loss or playback effect found",
+      "alternatives": [
+        "Rethrow CancellationException in each catch",
+        "runCatching plus ensureActive",
+        "Leave to Nuvio"
+      ],
+      "chosen": "Leave to Nuvio",
+      "rationale": "Nuvio's code across many areas; no viewing defect traced to it; changing it adds upstream conflicts (C-02)",
+      "tests_required": "initial-pass.py keeps the count",
+      "decision": "DEFER",
+      "status": "DISCOVERED",
+      "refs": []
+    },
+    {
+      "kind": "defect",
+      "compatibility": "Nuvio's code, untouched by Plus; a change would add upstream conflicts",
+      "priority": "P3",
+      "id": "B15-NUV-02",
+      "area": "Nuvio areas (strings in repositories and notifications)",
+      "severity": "Low",
+      "files": [
+        "docs/plus/build15/initial-pass.md"
+      ],
+      "evidence": "Initial pass (run-blocking): runBlocking { getString(...) } in repositories and notification builders; one local file header read in PlaybackMediaItems.android.kt runs on Dispatchers.IO while the caller waits",
+      "root_cause": "Compose resources getString is suspend; the callers are not",
+      "user_impact": "A brief block on first use of a string; no ANR or stall seen in the device, smoothness and start-up tests",
+      "alternatives": [
+        "Pass strings from the UI layer",
+        "Cache strings",
+        "Leave to Nuvio"
+      ],
+      "chosen": "Leave to Nuvio",
+      "rationale": "Nuvio's pattern across areas; measured start and playback unaffected (P5)",
+      "tests_required": "PlaybackSmoothnessTest, start-up measurements",
+      "decision": "DEFER",
+      "status": "DISCOVERED",
+      "refs": []
     }
   ]
 }
