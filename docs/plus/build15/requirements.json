@@ -1104,14 +1104,22 @@
       "requirement": "Video playback stability.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44974630416,
+          "commit": "86f2d18c2e3858cff00be224bfb1e9c4e27be511",
+          "what": "PlaybackSmoothnessTest on Android 9, 14, 16 emulators, ExoPlayer and mpv: 12 s of local playback kept up with the clock (1001–1010 ms played per s), 0 stalls, 0–1 dropped video frames; CPU 22–175 % of one core (software video on the emulator). No UI frame was drawn during playback except mpv on Android 9 (575 frames, p90 9 ms, 0 % slower than 16.7 ms)",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Not measured."
+        "Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10).",
+      "next": "Owner's device on the release candidate.",
       "nvp15": "NVP15-REQ-0045"
     },
     {
@@ -1122,14 +1130,22 @@
       "requirement": "Dropped frames.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44974630416,
+          "commit": "86f2d18c2e3858cff00be224bfb1e9c4e27be511",
+          "what": "PlaybackSmoothnessTest on Android 9, 14, 16 emulators, ExoPlayer and mpv: 12 s of local playback kept up with the clock (1001–1010 ms played per s), 0 stalls, 0–1 dropped video frames; CPU 22–175 % of one core (software video on the emulator). No UI frame was drawn during playback except mpv on Android 9 (575 frames, p90 9 ms, 0 % slower than 16.7 ms)",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Not measured."
+        "Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10).",
+      "next": "Owner's device on the release candidate.",
       "nvp15": "NVP15-REQ-0046"
     },
     {
@@ -1158,14 +1174,22 @@
       "requirement": "CPU in affecting scenarios.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 44974630416,
+          "commit": "86f2d18c2e3858cff00be224bfb1e9c4e27be511",
+          "what": "PlaybackSmoothnessTest on Android 9, 14, 16 emulators, ExoPlayer and mpv: 12 s of local playback kept up with the clock (1001–1010 ms played per s), 0 stalls, 0–1 dropped video frames; CPU 22–175 % of one core (software video on the emulator). No UI frame was drawn during playback except mpv on Android 9 (575 frames, p90 9 ms, 0 % slower than 16.7 ms)",
+          "result": "PASS"
+        }
+      ],
       "untested": [
-        "Not measured."
+        "Same measurement on the owner's physical device (hardware decoding, real streams): NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": true,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10).",
+      "next": "Owner's device on the release candidate.",
       "nvp15": "NVP15-REQ-0048"
     },
     {
