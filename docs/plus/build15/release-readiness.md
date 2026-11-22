@@ -39,6 +39,22 @@ commit (S20-02); nothing here is reused from an older commit after the source ch
 | S17-12 | Known limitations and deferred issues | `known-issues.md`, deferred findings in `findings.json` |
 | S17-13 | Upgrade, rollback and maintenance guide | `docs/plus/release.md`, `docs/plus/rollback.md`, `docs/plus/signing-migration.md` |
 
+## What blocks approval (P8-13)
+
+The owner is asked for the final approval only when every **critical** row below has passed on the
+final commit. An untested or failed critical row is a blocker, never a "known limitation".
+Non-critical gaps are listed for the owner's record and do not block.
+
+| Kind | Check | Where it runs | Blocks approval |
+|---|---|---|---|
+| Update safety | Install over Build 14, 13 and 12 signed with the real key; installs as an update | Release run (`release-upgrade-test.sh`) | **yes** |
+| Update safety | Same package `com.nuvio.app.plus` and certificate SHA-256 `99c0a98c…1e35`; v2 signature only | Release run (sign and verify steps) | **yes** |
+| Update safety | Android 8 refuses the APK; a foreign-signed APK is refused by the in-app updater | Release run (`release-upgrade-test.sh`); `UpdateArchiveCheckTest` | **yes** |
+| Data protection | Settings, subtitle settings, add-ons, downloads and the season queue kept after the update | Release run; `PlusDownloadsMigrationTest`, `PlusSubtitleMigrationTest`, `SeasonQueueStorageTest` | **yes** |
+| Data protection | Download files complete and unchanged after network loss and process death | `download-interruptions-test.sh` (Android 9, 14, 16) | **yes** |
+| Data protection | No credentials sent to another site on redirect | `PlaybackRedirectCredentialsTest` | **yes** |
+| Non-critical | Android 17 (emulator image fault), HDR/DV, the owner's sources, gestures, SD card, Resume from the notification on 14+, real performance | Owner's device | no (owner's record) |
+
 ## Owner's checks on the final release (NVP15-CHG-0003)
 
 Only a phone can show these; they stay NOT TESTED until the owner reports them:
@@ -49,3 +65,4 @@ Only a phone can show these; they stay NOT TESTED until the owner reports them:
 4. Subtitle gestures (move, resize) feel right.
 5. Download to an SD card or a chosen folder.
 6. Start time and smoothness in daily use.
+7. If your phone runs Android 17: open, play, subtitles and a download (not testable on the emulator, see `device-test-matrix.md`).
