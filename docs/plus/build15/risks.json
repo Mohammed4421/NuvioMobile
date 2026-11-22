@@ -12,13 +12,19 @@
         "P5-04",
         "P8-06",
         "P8-12",
+        "PRV-01",
+        "PRV-02",
+        "PRV-03",
+        "PRV-04",
+        "PRV-06",
+        "PRV-07",
         "S16-04"
       ],
       "impact": "Player, subtitle and storage behaviour on real hardware unproven",
       "priority": "P1",
       "alternatives": "Owner's short device checklist",
       "decision_owner": "owner",
-      "closes_when": "Device results recorded as evidence"
+      "closes_when": "The owner's checks after installing the release (POST-RELEASE VALIDATION, NVP15-CHG-0005): PRV-01..07"
     },
     {
       "id": "NVP15-RISK-0004",
@@ -26,18 +32,19 @@
       "reason": "Notification test (#48): Android 9 full pause and resume PASS (required check). Android 14: Pause PASS; Resume NOT TESTED, because Android 14 lets an app start a user-initiated download job from the background only after a real tap, which an automated PendingIntent.send() is not",
       "needs": "Owner's phone: start a download, leave the app, Pause then Resume from the notification",
       "requirements": [
-        "D-09"
+        "D-09",
+        "PRV-05"
       ],
       "impact": "The app side of pause/resume from the notification is tested on both emulators; the physical tap is not",
       "priority": "P0",
       "alternatives": "Fix the test until the real scenario passes",
       "decision_owner": "agent",
-      "closes_when": "Owner confirms Pause and Resume from the notification on his phone"
+      "closes_when": "Owner's tap on Resume from the notification on Android 14+ after installing (PRV-05, NVP15-CHG-0005)"
     },
     {
       "id": "NVP15-RISK-0005",
       "state": "NOT TESTED",
-      "reason": "Upgrade 14→15 / 13→15 / 12→15 with the real key and Android 8 refusal run only in the release workflow, after the owner's signing approval",
+      "reason": "Release run 44989102295 (custom-15, a3047e63): 14→15 and 12→15 with the real key PASS on Android 9 and 14, Android 8 refused. 13→15 not run as its own step (Build 13 shares Build 14's key). Data kept is checked on the emulator update with a seeded season queue; a fuller representative data set is open.",
       "needs": "Release run (plus-release environment)",
       "requirements": [
         "P6-14",
@@ -49,7 +56,7 @@
       "priority": "P0",
       "alternatives": "None: needs the release key",
       "decision_owner": "owner",
-      "closes_when": "Release run's upgrade job passes before publishing"
+      "closes_when": "Upgrade from Build 13 run as its own step, and representative user data (settings, add-ons, profiles, downloads, queue, subtitle settings) seeded and checked after 12/13/14→15, before the next release (PRE-RELEASE REQUIRED)"
     },
     {
       "id": "NVP15-RISK-0006",

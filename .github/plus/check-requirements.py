@@ -46,7 +46,13 @@ BAD_RESULTS = {"fail", "failed", "failure", "blocked", "not tested", "needs phys
                "in_progress", "cancelled", "skipped", "timed_out", "action_required", "unknown"}
 FIELDS = {"id": str, "spec": str, "phase": str, "mandatory": bool, "requirement": str, "source": str, "paths": list,
           "status": str, "evidence": list, "untested": list, "needs_physical_device": bool,
-          "acceptance": str, "next": str}
+          "acceptance": str, "next": str, "release_class": str}
+# Owner directive 2026-11-22 (NVP15-CHG-0005): when each requirement must hold. Personal checks on the
+# owner's phone wait until the release is installed; nothing critical to data, signing or upgrade may.
+RELEASE_CLASSES = {"PRE-RELEASE REQUIRED", "POST-RELEASE VALIDATION", "BLOCKED"}
+# Data protection, signing and upgrade: always proven before the release (the directive's rule).
+CRITICAL = {"P3-06", "P6-05", "P6-08", "P6-09", "P6-14", "P6-15", "P6-16", "P6-17", "P8-10", "S16-04", "S16-05",
+            "S17-08", "D-10", "P2-02"}
 # Every requirement of the Build 15 specification v1.1 (docs/plus/build15/requirements.json, by section)
 # and the owner's later decisions. Removing one from
 # the register, or marking it optional, fails the gate; adding new ones is always allowed.
@@ -68,6 +74,8 @@ MANDATORY = [
     # Spec v1.1 §19–25 and later owner decisions.
     "S19-01", "S19-02", "S19-03", "S19-04", "S20-01", "S20-02", "S21-01", "S21-02", "S22-01", "S22-02",
     "S23-01", "S23-02", "S24-01", "S24-02", "S25-01", "S25-02", "S25-03", "D-11", "D-12", "D-13",
+    # Owner directive 2026-11-22 (NVP15-CHG-0005): personal checks after the release is installed.
+    "PRV-01", "PRV-02", "PRV-03", "PRV-04", "PRV-05", "PRV-06", "PRV-07",
 ]
 SHA = re.compile(r"^[0-9a-f]{40}$")
 # Spec v1.1 §19.2: stable NVP15 identifiers, never reused.
@@ -110,6 +118,10 @@ def check(register, repo, fetch_run=None):
             problems.append(f"{where}: unknown phase {item.get('phase')!r}")
         if item.get("status") not in STATUSES:
             problems.append(f"{where}: unknown status {item.get('status')!r}")
+        if item.get("release_class") not in RELEASE_CLASSES:
+            problems.append(f"{where}: release_class {item.get('release_class')!r} is not one of {sorted(RELEASE_CLASSES)}")
+        if item.get("release_class") == "POST-RELEASE VALIDATION" and item.get("needs_physical_device") is not True:
+            problems.append(f"{where}: POST-RELEASE VALIDATION is only for checks on the owner's device")
     for required in MANDATORY:
         if required not in seen:
             problems.append(f"{required}: mandatory requirement missing from the register")
@@ -129,6 +141,15 @@ def check(register, repo, fetch_run=None):
             problems.append(f"{item.get('id')}: {code} also used by {nvp[code]}")
         else:
             nvp[code] = item.get("id")
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        for ref in item.get("post_release", []) or []:
+            target = seen.get(ref)
+            if not target or target.get("release_class") != "POST-RELEASE VALIDATION":
+                problems.append(f"{item.get('id')}: deferred part {ref} is not a POST-RELEASE VALIDATION requirement")
+        if item.get("id") in CRITICAL and item.get("release_class") == "POST-RELEASE VALIDATION":
+            problems.append(f"{item.get('id')}: data, signing and upgrade checks cannot wait for after the release")
     problems += check_side(repo, seen)
     for item in items:
         if isinstance(item, dict) and all(isinstance(item.get(f), k) for f, k in FIELDS.items()):
@@ -158,7 +179,10 @@ def check_side(repo, seen):
         if gate.get("status") not in GATE_STATES:
             problems.append(f"{where}: status {gate.get('status')!r} is not one of {sorted(GATE_STATES)}")
         if gate.get("status") == "PASS":
+            # A phase closes when everything it needs before the release holds; its post-release
+            # checks stay open (and NOT TESTED) without holding it (NVP15-CHG-0005).
             open_items = [i["id"] for i in seen.values() if i.get("phase") == gate.get("stage") and i.get("mandatory")
+                          and i.get("release_class") != "POST-RELEASE VALIDATION"
                           and i.get("status") not in ("VERIFIED", "ACCEPTED")]
             if open_items:
                 problems.append(f"{where}: PASS with mandatory requirements not verified: {', '.join(open_items)}")
