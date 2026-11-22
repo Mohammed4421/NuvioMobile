@@ -687,7 +687,8 @@
       "requirement": "Downloads / Storage: single and season downloads, quality, cancel and resume, network loss, SAF and .part files, out of space. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
       "paths": [
-        "docs/plus/build15/journeys.md"
+        "docs/plus/build15/journeys.md",
+        ".github/plus/download-interruptions-test.sh"
       ],
       "status": "IMPLEMENTED",
       "evidence": [
@@ -711,10 +712,16 @@
           "commit": "ca557ac0ec78b3b6824ae6ee6e6a30b10ae0ea01",
           "what": "Download notification (Android 9 pause/resume; 14 and 16 pause) and interruptions (network loss, process death, no second transfer) on Android 9, 14, 16; Android 17 NOT TESTED",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45013362722,
+          "commit": "e5c55eb8709cf22cd5ce6e7cee8c5cc12a73ee24",
+          "what": "Download notification test, scenario C (Wi-Fi only) on Android 9, 14 and 16: metered mobile data only, no request reaches the server and no byte is written in 30 s; Wi-Fi back, the download starts and finishes with the exact SHA-256",
+          "result": "PASS"
         }
       ],
       "untested": [
-        "Network loss and Wi-Fi only on an emulator",
         "Personal device part deferred to PRV-05 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Android 14 resume from the notification (real tap); SD card / SAF on removable storage"
       ],
       "needs_physical_device": false,
