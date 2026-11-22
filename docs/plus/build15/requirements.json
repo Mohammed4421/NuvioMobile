@@ -1966,8 +1966,8 @@
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 45013015393,
-          "commit": "f22567f2c2ea6b309fe588d3d6652e04ec9da105",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "PortKit transfer tests on this pull request: validate, plan, trial, apply, transfer of the three portable features to Nuvio 1.0.0 and fork A, build and 21 transferred tests (earlier runs 44836307313, 45009048362)"
         }
@@ -2002,8 +2002,8 @@
         },
         {
           "kind": "ci-run",
-          "run": 45013015393,
-          "commit": "f22567f2c2ea6b309fe588d3d6652e04ec9da105",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "PortKit transfer tests and script tests on this pull request"
         }
@@ -2080,8 +2080,8 @@
         },
         {
           "kind": "ci-run",
-          "run": 45013015393,
-          "commit": "f22567f2c2ea6b309fe588d3d6652e04ec9da105",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "Transfer tests on this pull request"
         }
@@ -2107,8 +2107,8 @@
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 45013015393,
-          "commit": "f22567f2c2ea6b309fe588d3d6652e04ec9da105",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "Levels in compatibility.json consistent (portkit.py validate): 3 portable and verified by this run, 5 adapter-required, 4 manual, 3 unsupported"
         }
@@ -2134,8 +2134,8 @@
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 45013015393,
-          "commit": "f22567f2c2ea6b309fe588d3d6652e04ec9da105",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "Commands validate, inventory, plan, trial, apply and matrix run by the transfer tests on this pull request"
         }
@@ -2203,8 +2203,8 @@
         },
         {
           "kind": "ci-run",
-          "run": 45013015393,
-          "commit": "f22567f2c2ea6b309fe588d3d6652e04ec9da105",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "Tests 1–9 (test-report.md maps each to its test or run), transfer and build on both targets"
         }
@@ -2240,8 +2240,8 @@
         },
         {
           "kind": "ci-run",
-          "run": 45013015393,
-          "commit": "f22567f2c2ea6b309fe588d3d6652e04ec9da105",
+          "run": 45029398712,
+          "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "The transfer run's own summary: real plan, apply and test output for both targets"
         }
