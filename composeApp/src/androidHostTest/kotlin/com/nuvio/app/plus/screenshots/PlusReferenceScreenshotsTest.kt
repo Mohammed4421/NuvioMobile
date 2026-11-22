@@ -3,6 +3,7 @@ package com.nuvio.app.plus.screenshots
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -68,6 +69,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import org.robolectric.shadows.ShadowDialog
 import kotlin.math.abs
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -302,8 +304,9 @@ abstract class PlusReferenceScreenshots(private val device: String) {
         // A dialog is a window of its own: its root comes after the screen's, and that is what is
         // shown and read (the screen behind it is only the dimmed background).
         val roots = compose.onAllNodes(isRoot(), useUnmergedTree = true)
-        val root = roots[roots.fetchSemanticsNodes().size - 1]
-        val bitmap = root.captureToImage().asAndroidBitmap()
+        val rootCount = roots.fetchSemanticsNodes().size
+        val root = roots[rootCount - 1]
+        val bitmap = if (rootCount > 1) dialogBitmap() else root.captureToImage().asAndroidBitmap()
         val expected = if (device.startsWith("ar")) LayoutDirection.Rtl else LayoutDirection.Ltr
         assertEquals(expected, direction, "$screen on $device is not laid out in the expected direction")
         assertTrue(distinctColours(bitmap) > 1, "$screen on $device rendered as a single colour")
@@ -330,6 +333,22 @@ abstract class PlusReferenceScreenshots(private val device: String) {
             val unlabelled = findings.filter { "no label" in it }
             assertTrue(unlabelled.isEmpty(), "$screen on $device has controls without a label: $unlabelled")
         }
+    }
+
+    /**
+     * The dialog window drawn into a bitmap. Under Robolectric, captureToImage() of a dialog's root
+     * gives an empty image (only the activity window is rendered), so the dialog's own decor view is
+     * drawn here, as Android draws it into the window.
+     */
+    private fun dialogBitmap(): Bitmap {
+        val dialog = requireNotNull(ShadowDialog.getLatestDialog()) { "no dialog window is shown" }
+        lateinit var bitmap: Bitmap
+        compose.runOnIdle {
+            val view = requireNotNull(dialog.window).decorView
+            bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+            view.draw(Canvas(bitmap))
+        }
+        return bitmap
     }
 
     /**
