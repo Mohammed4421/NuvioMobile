@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -182,7 +183,9 @@ internal fun SubtitleStyleStepper(
             Text(
                 text = value,
                 color = Color.White,
-                style = MaterialTheme.typography.bodyMedium,
+                // Values are numbers with units ("+0.250s", "-3 dB", "18sp"); in Arabic the bidi
+                // algorithm moved the sign and the unit to the wrong end ("0.250s+", "dB 3-").
+                style = MaterialTheme.typography.bodyMedium.copy(textDirection = TextDirection.Ltr),
             )
         }
         SubtitleStepperButton(
