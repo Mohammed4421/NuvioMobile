@@ -4,7 +4,21 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
-## Next build — Build 15: audit and polish
+## Next build — Build 15.5: complete engineering checks (published as build 16)
+
+Shown as **15.5**; its tag is `custom-16` so the app's own updater offers it to Build 15 (owner's
+decision). Until now this build adds no change to the app itself, only tests and checks:
+
+### Checked
+- **Updates from Builds 12, 13 and 14** are each tested on their own, starting from realistic data
+  (two profiles, add-ons with a token, subtitle and playback settings, library, theme, downloads,
+  a paused episode and the download folder), and every value is checked afterwards.
+- **Performance against Build 14** on the same emulators: start, memory, scrolling smoothness and
+  touch response, all within measurement noise.
+- **Audit of every part of the project**, not only Plus's changes (initial pass of every area, deep
+  review of the player engines, HDR and sign-in storage).
+
+## Build 15 — audit and polish
 
 ### Changed
 - **Season downloads: an episode the first add-on lacks is taken from your other add-ons**, but only

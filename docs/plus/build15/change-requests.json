@@ -79,6 +79,19 @@
       "reason": "Owner: development, release preparation and phase closing must not wait for his personal testing; critical engineering tests are never deferred.",
       "impact": "Device-only findings surface after installation; nothing deferred is marked PASS, VERIFIED or ACCEPTED; Build 16 stays the upstream-sync plan; signing and publishing still need the owner's separate approvals.",
       "decision": "Owner directive 2026-11-22 11:24 (Riyadh)"
+    },
+    {
+      "id": "NVP15-CHG-0006",
+      "requirements": [
+        "S12-01",
+        "S12-02",
+        "S17-11"
+      ],
+      "before": "The complete Build 15 would be published as the next build number with the title 'build N'.",
+      "after": "It is shown as 'Nuvio Plus 15.5' (release title and notes) and tagged custom-16 with build number 16, so the in-app updater of every published build, which reads whole numbers only (custom-(\\d+)), offers it to Build 15 users. The upstream-sync plan keeps the name 'Build 16' in the documents. Mapping in .github/plus/release-names.json, used by publish-release.sh; tested.",
+      "reason": "Owner chose the name 15.5; a tag custom-15.5 would never be offered by the updater of Build 15 (owner chose the recommended option).",
+      "impact": "Inside the app the build number reads 16; APK file names carry build16.",
+      "decision": "Owner 2026-11-22 12:22 ('١٥.٥') and 12:26 (option: name 15.5, tag 16)"
     }
   ]
 }

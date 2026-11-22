@@ -10,6 +10,11 @@ build="$1"; sha="$2"; dir="$3"; note="${4:-}"
 [[ "${build}" =~ ^[0-9]+$ ]] || { echo "::error::Build number '${build}' is not a number"; exit 1; }
 channel="${PLUS_CHANNEL:-stable}"
 tag="custom-${build}"
+# The name the release is shown with (release-names.json), e.g. "15.5 (build 16)"; the tag stays custom-<build>.
+name="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2], ""))' \
+  "$(dirname "$0")/release-names.json" "${build}" 2>/dev/null || true)"
+shown="build ${build}"; heading_name="Build ${build}"
+if [[ -n "${name}" ]]; then shown="${name} (build ${build})"; heading_name="Build ${name} (build ${build})"; fi
 [[ "${channel}" == beta ]] && tag="custom-${build}-beta"
 if gh release view "${tag}" --repo "${GITHUB_REPOSITORY}" > /dev/null 2>&1; then
   echo "${tag} is already published."
@@ -54,7 +59,7 @@ fi
   if [[ -n "${note}" ]]; then echo; echo "${note}"; fi
   echo
   # "## Next build (anything) — title" becomes "### Build <build> — title".
-  sed -E "1s/^## Next build( \([^)]*\))?/### Build ${build}/" <<< "${section}"
+  sed -E "1s/^## Next build( \([^)]*\))?/### ${heading_name}/" <<< "${section}"
   echo
   echo "### Checks passed before publishing"
   cat "${dir}"/checks*.md 2>/dev/null || true
@@ -66,8 +71,8 @@ fi
 if [[ "${channel}" == beta ]]; then
   # Beta builds are pre-releases: only the Beta update channel offers them.
   gh release create "${tag}" "${dir}"/*.apk --repo "${GITHUB_REPOSITORY}" --target "${sha}" \
-    --title "Nuvio Plus · build ${build} (beta)" --notes-file release-notes.md --prerelease --latest=false
+    --title "Nuvio Plus · ${shown} (beta)" --notes-file release-notes.md --prerelease --latest=false
 else
   gh release create "${tag}" "${dir}"/*.apk --repo "${GITHUB_REPOSITORY}" --target "${sha}" \
-    --title "Nuvio Plus · build ${build}" --notes-file release-notes.md --latest
+    --title "Nuvio Plus · ${shown}" --notes-file release-notes.md --latest
 fi
