@@ -51,6 +51,25 @@ class Inventory(unittest.TestCase):
     def test_untouched_nuvio_code_is_not_called_reviewed(self):
         self.assertEqual("NUVIO (not reviewed)", self.inv["features/untouched"]["review"])
 
+    def test_untouched_nuvio_code_in_the_initial_pass_is_initial(self):
+        Path(self.repo, "docs/plus/build15").mkdir(parents=True)
+        Path(self.repo, "docs/plus/build15/initial-pass.md").write_text(
+            "| features/untouched | 1 | — | reviewed, none |\n")
+        inv = {r["area"]: r for r in inventory.inventory(self.repo)["areas"]}
+        self.assertEqual("INITIAL", inv["features/untouched"]["review"])
+        self.assertEqual(["initial-pass.md"], inv["features/untouched"]["refs"])
+
+    def test_every_area_without_app_code_is_examined_or_excluded_with_a_reason(self):
+        for area, (state, refs, note) in inventory.OTHER.items():
+            self.assertIn(state, ("INITIAL", "EXCLUDED"), area)
+            self.assertTrue(refs and note, area)
+
+    def test_the_committed_report_leaves_no_area_unexamined(self):
+        report = (ROOT / "docs/plus/build15/inventory.md").read_text()
+        self.assertNotIn("| NOT REVIEWED |", report)
+        self.assertNotIn("NUVIO (not reviewed)", report.split("## Nuvio's areas", 1)[1])
+        self.assertIn("## Dependencies", report)
+
     def test_a_listed_area_names_its_evidence(self):
         self.assertEqual("PARTIAL", self.inv["features/player"]["review"])
         self.assertTrue(self.inv["features/player"]["refs"])

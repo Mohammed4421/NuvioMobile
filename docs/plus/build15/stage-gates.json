@@ -26,7 +26,7 @@
     },
     {
       "stage": "P1",
-      "status": "BLOCKED",
+      "status": "AWAITING OWNER APPROVAL",
       "commit_sha": null,
       "requirements": [
         "P1-01",
@@ -35,12 +35,11 @@
         "P1-04",
         "P1-05",
         "P1-06",
-        "S19-03",
         "S19-03"
       ],
       "critical_blockers": [],
       "owner_approval": null,
-      "notes": "Initial pass of Nuvio areas still due (S19-03)."
+      "notes": "P1-01..06 and S19-03 VERIFIED (inventory and initial pass of every area, eleven audit axes, deep audit of engines/HDR/sign-in storage, deferred findings prioritised). Device checks named in P1-02 stay with the owner's final-release list."
     },
     {
       "stage": "P2",
