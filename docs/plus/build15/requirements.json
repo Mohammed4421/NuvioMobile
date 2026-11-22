@@ -2148,13 +2148,41 @@
       "mandatory": true,
       "requirement": "Unsupported update paths are stated to users, never presented as data-keeping updates.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
-      "untested": [],
+      "paths": [
+        ".github/plus/publish-release.sh",
+        "composeApp/src/commonMain/composeResources/values/strings.xml",
+        "composeApp/src/androidFull/kotlin/com/nuvio/app/features/updater/AndroidAppUpdaterPlatform.kt"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_publish_release.py",
+          "name": "test_the_notes_say_how_to_update_from_build_13_and_from_build_12_in_both_languages",
+          "result": "PASS",
+          "what": "Every release's notes state, in English and Arabic: from build 13 on an in-place update keeps the data; from build 12 or earlier the old updater cannot install it (manual install over the old app, Android 9+); Android 7 and 8 cannot install it and stay on build 12"
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidFullHostTest/kotlin/com/nuvio/app/features/updater/UpdateArchiveCheckTest.kt",
+          "name": "anotherSigningKeyIsRefused",
+          "result": "PASS",
+          "what": "In the app, an update that cannot keep the data is refused with its reason (other key, other app, not newer, unreadable), never installed: strings updates_archive_* in English and Arabic"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45010158735,
+          "commit": "b13d8143c6ed025e37321c4ce8dc6e5e70b3029b",
+          "result": "PASS",
+          "what": "Nuvio Plus checks: release script tests and host tests"
+        }
+      ],
+      "untested": [
+        "The published notes of Build 16 itself: release run (needs the owner's publishing approval)."
+      ],
       "needs_physical_device": false,
       "acceptance": "Release notes and in-app text checked.",
-      "next": "Release notes of the candidate.",
+      "next": "Read the published Build 16 notes after the release run.",
       "nvp15": "NVP15-REQ-0069",
       "release_class": "PRE-RELEASE REQUIRED"
     },
