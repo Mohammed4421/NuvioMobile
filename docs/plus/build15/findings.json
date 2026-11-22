@@ -1032,6 +1032,111 @@
         "Gemini review 2026-11-21",
         "#58"
       ]
+    },
+    {
+      "kind": "defect",
+      "severity": "Low",
+      "compatibility": "Accessibility semantics only; no visual change",
+      "priority": "P2",
+      "id": "B15-UI-07",
+      "area": "Settings (Nuvio)",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/SettingsComponents.kt"
+      ],
+      "evidence": "P4-09 report (#68): every SettingsSwitchRow switch is a 52x32 dp toggle with no label on playback-*, subtitle-appearance",
+      "root_cause": "Nuvio's SettingsSwitchRow makes the row clickable and also passes onCheckedChange to the Switch, so the Switch is a second, unlabelled focus stop",
+      "user_impact": "Screen readers announce an unnamed switch after each setting",
+      "alternatives": [
+        "Row toggleable, Switch onCheckedChange = null",
+        "Leave to Nuvio"
+      ],
+      "chosen": "Leave to Nuvio",
+      "rationale": "Nuvio's shared component used across its settings; changing it adds an upstream conflict for an issue Nuvio owns (C-02)",
+      "tests_required": "PLUS-A11Y report",
+      "decision": "DEFER",
+      "status": "DISCOVERED",
+      "refs": [
+        "#68"
+      ]
+    },
+    {
+      "kind": "defect",
+      "severity": "Low",
+      "compatibility": "Accessibility semantics only; no visual change",
+      "priority": "P2",
+      "id": "B15-UI-08",
+      "area": "Library downloads",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryDownloadsContent.kt"
+      ],
+      "evidence": "P4-09 report (#68): the tappable poster of each download tile had no label; the title and state were on the outer column",
+      "root_cause": "Description set on a parent that is not the clickable node",
+      "user_impact": "Screen readers announce an unnamed button for each download",
+      "alternatives": [
+        "Description on the clickable poster",
+        "Make the whole tile clickable"
+      ],
+      "chosen": "Description on the clickable poster",
+      "rationale": "Same touch area as before; the screen reader stop now reads title and state",
+      "tests_required": "PlusReferenceScreenshotsTest label assertion",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#68"
+      ]
+    },
+    {
+      "kind": "defect",
+      "severity": "Low",
+      "compatibility": "Accessibility semantics only; no visual change",
+      "priority": "P2",
+      "id": "B15-UI-09",
+      "area": "Subtitle and audio panels; downloads settings",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/SubtitleStylePanel.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsScreen.kt"
+      ],
+      "evidence": "P4-09 report (#68): stepper − and + buttons without labels; Wi-Fi only switch without a label",
+      "root_cause": "Icon-only buttons with contentDescription = null; switch separate from its title",
+      "user_impact": "Screen readers cannot tell the buttons apart",
+      "alternatives": [
+        "Labels on the icons",
+        "Custom actions"
+      ],
+      "chosen": "Labels on the icons; the Wi-Fi row is the switch",
+      "rationale": "Smallest change; the Wi-Fi row also becomes a larger target",
+      "tests_required": "PlusReferenceScreenshotsTest label assertion",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#68"
+      ]
+    },
+    {
+      "kind": "defect",
+      "severity": "Low",
+      "compatibility": "Accessibility semantics only; no visual change",
+      "priority": "P2",
+      "id": "B15-UI-10",
+      "area": "Player subtitle and audio panels",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/SubtitleStylePanel.kt"
+      ],
+      "evidence": "Arabic reference screenshots: '0.000s+' and 'dB 0'",
+      "root_cause": "Numbers with signs and units laid out right to left",
+      "user_impact": "Values misread in Arabic",
+      "alternatives": [
+        "LTR text direction for the value",
+        "Unicode isolates in the strings"
+      ],
+      "chosen": "LTR text direction for the value",
+      "rationale": "One place covers every stepper",
+      "tests_required": "Reference screenshots (Arabic)",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#67"
+      ]
     }
   ]
 }

@@ -280,18 +280,29 @@ abstract class PlusReferenceScreenshots(private val device: String) {
         }
         val folder = File("build/reports/plus-screenshots").apply { mkdirs() }
         File(folder, "$screen-$device.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-        // P4-09: every control a finger or a screen reader reaches. Report only for now: the
-        // review decides which findings are Plus's to fix (a Nuvio control stays Nuvio's).
+        // P4-09: every control a finger or a screen reader reaches, printed for review.
+        val findings = accessibilityFindings()
         val report = File("build/reports/plus-a11y").apply { mkdirs() }
-        File(report, "$screen-$device.txt").writeText(accessibilityFindings().joinToString("") { "$screen-$device: $it\n" })
+        File(report, "$screen-$device.txt").writeText(findings.joinToString("") { "$screen-$device: $it\n" })
+        // On screens Plus draws itself, every control has something a screen reader can say. The
+        // settings pages are left out: their switches come from Nuvio's SettingsSwitchRow (B15-UI-07).
+        if (screen in PLUS_OWNED_SCREENS) {
+            val unlabelled = findings.filter { "no label" in it }
+            assertTrue(unlabelled.isEmpty(), "$screen on $device has controls without a label: $unlabelled")
+        }
     }
 
-    /** Tappable or toggleable nodes smaller than 48 dp, or with nothing a screen reader can say. */
+    /**
+     * Tappable or toggleable nodes on screen with nothing a screen reader can say, and those whose
+     * own bounds are under 48 dp. The size is for review only: Compose widens a smaller target to
+     * 48 dp for touch unless a neighbour is closer. Nodes scrolled out of view (0 x 0) are skipped.
+     */
     private fun accessibilityFindings(): List<String> {
         val dp = compose.density.density
         val nodes = compose.onAllNodes(hasClickAction() or isToggleable()).fetchSemanticsNodes()
         return nodes.mapNotNull { node ->
             val bounds = node.boundsInRoot
+            if (bounds.width <= 0f || bounds.height <= 0f) return@mapNotNull null
             val label = (node.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty() +
                 node.config.getOrNull(SemanticsProperties.Text).orEmpty().map { it.text } +
                 listOfNotNull(node.config.getOrNull(SemanticsProperties.StateDescription)))
@@ -342,6 +353,12 @@ abstract class PlusReferenceScreenshots(private val device: String) {
     )
 
 }
+
+/** Reference screens whose controls are all labelled (Plus code, and the Nuvio parts it shows). */
+private val PLUS_OWNED_SCREENS = setOf(
+    "library-downloads", "library-download-states", "library-downloads-empty", "downloads-queue",
+    "player-subtitles", "player-audio",
+)
 
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)

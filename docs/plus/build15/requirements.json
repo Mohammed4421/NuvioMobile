@@ -914,14 +914,20 @@
       "requirement": "Accessibility: screen readers, focus, contrast, touch target size.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/findings.json",
+          "what": "P4-09 report on every reference screen and setup (#68): unlabelled controls fixed on Plus screens (B15-UI-08, 09) and asserted; Nuvio's settings switch recorded (B15-UI-07); touch size reported (Compose widens targets to 48 dp)"
+        }
+      ],
       "untested": [
-        "Not reviewed yet."
+        "Contrast and focus order not measured; TalkBack on a device: NEEDS PHYSICAL DEVICE."
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines.",
+      "next": "Cite the passing run of the label assertion; contrast check.",
       "nvp15": "NVP15-REQ-0036"
     },
     {
@@ -1306,6 +1312,13 @@
           "commit": "a53de257451bb3534ed06f36375cd42826edd4ee",
           "what": "#47 final commit (merged): attack surface of the 4 built APKs equals the reviewed list (36 lines), no fixed-rule violation",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44976691090,
+          "commit": "0231330bea1af1e4611139786211563fd15c0ad6",
+          "what": "#68 (plus-build.yml prints the P4-09 report): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -1359,6 +1372,13 @@
           "run": 44893001137,
           "commit": "a53de257451bb3534ed06f36375cd42826edd4ee",
           "what": "#47 final commit (merged): attack surface of the 4 built APKs equals the reviewed list (36 lines), no fixed-rule violation",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44976691090,
+          "commit": "0231330bea1af1e4611139786211563fd15c0ad6",
+          "what": "#68 (plus-build.yml prints the P4-09 report): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
           "result": "PASS"
         }
       ],
@@ -1432,6 +1452,13 @@
           "run": 44894545343,
           "commit": "346fb82df9741046dfed692f46aa296fca147614",
           "what": "Stable build of 346fb82d, step 'Known vulnerabilities in the libraries of the release APK (OSV)': 353 libraries, 0 blocking, 0 reviewed, 0 low or moderate",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 44976691090,
+          "commit": "0231330bea1af1e4611139786211563fd15c0ad6",
+          "what": "#68: 'Known vulnerabilities in the libraries of the release APK (OSV)': 353 libraries, 0 blocking, 0 reviewed, 0 low or moderate",
           "result": "PASS"
         }
       ],

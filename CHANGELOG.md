@@ -26,6 +26,9 @@ Newest first.
   after an earlier one); otherwise the queue goes on when you open the app.
 
 ### Fixed
+- **Screen readers:** each download in the library reads its title and state, the subtitle and audio
+  − and + buttons say what they do, and the "Wi-Fi only" switch reads its name (the whole row toggles
+  it now).
 - **Arabic: subtitle and audio values read the right way round.** Delay, size, brightness and
   amplification showed their sign and unit at the wrong end ("0.250s+", "dB 3-"); they now read
   "+0.250s" and "-3 dB" in every language.

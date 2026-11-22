@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Folder
@@ -37,6 +38,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -364,6 +366,12 @@ internal fun LazyListScope.downloadsSettingsContent(
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Row(
+                    // The whole row is the switch: a bigger target, and screen readers read its title.
+                    modifier = Modifier.toggleable(
+                        value = preferences.wifiOnly,
+                        role = Role.Switch,
+                        onValueChange = { DownloadPreferences.setWifiOnly(it) },
+                    ),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
@@ -381,7 +389,7 @@ internal fun LazyListScope.downloadsSettingsContent(
                     }
                     Switch(
                         checked = preferences.wifiOnly,
-                        onCheckedChange = { DownloadPreferences.setWifiOnly(it) },
+                        onCheckedChange = null,
                     )
                 }
             }
