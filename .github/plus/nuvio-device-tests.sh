@@ -9,7 +9,7 @@
 set -uo pipefail
 app="$1"; test_apk="$2"; label="$3"
 here="$(cd "$(dirname "$0")" && pwd)"
-classes="com.nuvio.android.SubtitlePlaybackTest,com.nuvio.android.SubtitleSettingsTest,com.nuvio.android.MpvSurfaceTest,com.nuvio.android.NetworkDropPlaybackTest,com.nuvio.android.DeviceSubtitleStatesTest"
+classes="com.nuvio.android.SubtitlePlaybackTest,com.nuvio.android.SubtitleSettingsTest,com.nuvio.android.MpvSurfaceTest,com.nuvio.android.NetworkDropPlaybackTest,com.nuvio.android.DeviceSubtitleStatesTest,com.nuvio.android.PlaybackSmoothnessTest"
 exec > >(tee -a "nuvio-device-tests-${label}.log") 2>&1
 adb wait-for-device
 host_env="$(bash "${here}/device-test-host.sh" "${app}" "${test_apk}")" || { echo "::error::${label}: the device test host could not be set up"; exit 1; }
@@ -35,6 +35,8 @@ python3 -I "${here}/instrumentation-results.py" "${label}" <<< "${out}" || statu
 # Every run: how many times libmpv was asked to load its source. Two per start are normal (#55): the
 # first request is cancelled before it reaches mpv, and mpv starts the file once.
 echo "${label}: libmpv load requests across the libmpv tests (two per start are normal: the first is cancelled before it reaches mpv, see #55): $(adb logcat -d -s NuvioPlayerDiag:I | grep -c 'mpv_prepare_begin' || true)"
+# P5 measurements of PlaybackSmoothnessTest (emulator baseline, not a device verdict).
+adb logcat -d -s NuvioMeasure:I | sed -nE "s/.*MEASURE (.*)/MEASURE ${label} \1/p"
 if (( status != 0 )); then
   # Evidence for telling an app fault from the emulator: the player's and the system's lines.
   echo "::group::${label}: logcat after the failed tests (player, surface, activity, crashes)"

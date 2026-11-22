@@ -43,7 +43,8 @@
       "title": "Brightness and offsets in ExoPlayer and mpv, HDR-safe subtitle dimming",
       "since": "Build 1",
       "files": [
-        "androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt"
+        "androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerModels.kt"
       ],
       "depends": [],
       "data": "none",
@@ -55,11 +56,13 @@
         "ColorMatrixColorFilter",
         "sub-color",
         "fdclose://",
-        "toMpvSource"
+        "toMpvSource",
+        "droppedVideoFrames"
       ],
       "test_files": [
         "androidApp/src/androidTest/kotlin/com/nuvio/android/MpvSurfaceTest.kt",
-        "androidApp/src/androidTest/kotlin/com/nuvio/android/NetworkDropPlaybackTest.kt"
+        "androidApp/src/androidTest/kotlin/com/nuvio/android/NetworkDropPlaybackTest.kt",
+        "androidApp/src/androidTest/kotlin/com/nuvio/android/PlaybackSmoothnessTest.kt"
       ]
     },
     {
