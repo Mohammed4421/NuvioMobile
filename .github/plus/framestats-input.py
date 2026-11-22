@@ -13,8 +13,9 @@ def input_frame_ms(text):
     header, times, rows = None, [], 0
     for line in text.splitlines():
         cells = [c.strip() for c in line.split(",")]
-        if cells and cells[0] == "Flags":
-            header = {name: index for index, name in enumerate(cells)}
+        if cells and cells[0].lower() == "flags":
+            header = {name.upper(): index for index, name in enumerate(cells)}
+            header["Flags"] = 0
             continue
         if line.startswith("---PROFILEDATA---"):
             header = header if header else None
@@ -37,6 +38,11 @@ def input_frame_ms(text):
         elif handle > 0 and done > vsync > 0:
             times.append((done - vsync) / 1_000_000)
     print(f"framestats: {rows} frames, {len(times)} handled a touch", file=sys.stderr)
+    if not rows:
+        # Show the shape Android gave, so a reader can see why nothing was read.
+        around = [l[:160] for l in text.splitlines() if "PROFILEDATA" in l or l.strip().lower().startswith("flags")][:3]
+        lines = [l[:160] for l in text.splitlines() if l.count(",") > 10][:2]
+        print(f"framestats shape: {around} {lines}", file=sys.stderr)
     return round(statistics.median(times), 1) if times else None
 
 
