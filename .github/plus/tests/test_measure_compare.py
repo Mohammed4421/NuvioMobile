@@ -56,7 +56,8 @@ class Limits(unittest.TestCase):
     def test_the_repository_limits_cover_every_measured_metric(self):
         import json
         limits = json.loads((Path(__file__).resolve().parents[1] / "performance-limits.json").read_text())["max_increase_percent"]
-        self.assertEqual({"cold_start_ms", "warm_start_ms", "pss_kb", "apk_bytes"}, set(limits))
+        self.assertEqual({"cold_start_ms", "warm_start_ms", "pss_kb", "apk_bytes", "scroll_jank_percent",
+                          "scroll_frame_p90_ms", "input_frame_ms"}, set(limits))
 
 
 if __name__ == "__main__":
