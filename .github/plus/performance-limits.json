@@ -1,9 +1,12 @@
 {
-  "note": "Build 15 P5-11: the most a metric may grow against Build 14 on the same emulator before performance-compare.yml fails. Applied only to a change above the noise margin (twice the larger standard deviation, at least 5 %). Set from the first before/after runs (#38: 10 values per build on Android 14 and 9, all changes within noise; widest spread cold start 101 ms on Android 14). Real devices: NEEDS PHYSICAL DEVICE.",
+  "note": "Build 15 P5-11: the most a metric may grow against Build 14 on the same emulator before performance-compare.yml fails. Applied only to a change above the noise margin (twice the larger standard deviation, at least 5 %). Set from the first before/after runs (#38: 10 values per build on Android 14 and 9, all changes within noise; widest spread cold start 101 ms on Android 14). Real devices: NEEDS PHYSICAL DEVICE. Scroll and input limits (P5-02, P5-03) set from #79: scroll jank 6.7–10.6 % and frame p90 16–19 ms over 8 swipes, median touch-to-frame 16.8 ms on Android 14 (one 60 Hz frame) and 5.3 ms on Android 9; jank is a small percentage, so its relative limit is wider.",
   "max_increase_percent": {
     "cold_start_ms": 10,
     "warm_start_ms": 15,
     "pss_kb": 10,
-    "apk_bytes": 5
+    "apk_bytes": 5,
+    "scroll_jank_percent": 25,
+    "scroll_frame_p90_ms": 15,
+    "input_frame_ms": 15
   }
 }
