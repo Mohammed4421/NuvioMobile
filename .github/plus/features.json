@@ -232,7 +232,8 @@
       ],
       "data": "none (reads download records and the season queue)",
       "tests": [
-        "LibraryDownloadEntriesTest"
+        "LibraryDownloadEntriesTest",
+        "LibraryDownloadsJourneyTest"
       ],
       "keywords": [
         "LibraryViewMode",
@@ -241,7 +242,8 @@
         "DownloadShowRoute"
       ],
       "test_files": [
-        "commonTest/kotlin/com/nuvio/app/features/library/LibraryDownloadEntriesTest.kt"
+        "commonTest/kotlin/com/nuvio/app/features/library/LibraryDownloadEntriesTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/library/LibraryDownloadsJourneyTest.kt"
       ],
       "removed_files": [
         "commonMain/kotlin/com/nuvio/app/features/library/LibraryDownloadsButton.kt"
