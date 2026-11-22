@@ -2171,10 +2171,10 @@
         },
         {
           "kind": "ci-run",
-          "run": 45010158735,
-          "commit": "b13d8143c6ed025e37321c4ce8dc6e5e70b3029b",
+          "run": 45013083333,
+          "commit": "77c4d1a4b61a846eb044cf2ef3325e65d6c3e3f0",
           "result": "PASS",
-          "what": "Nuvio Plus checks: release script tests and host tests"
+          "what": "Nuvio Plus checks on this pull request: release script tests (notes text) and host tests (update refusals)"
         }
       ],
       "untested": [
