@@ -79,6 +79,19 @@
       "reason": "Owner: development, release preparation and phase closing must not wait for his personal testing; critical engineering tests are never deferred.",
       "impact": "Device-only findings surface after installation; nothing deferred is marked PASS, VERIFIED or ACCEPTED; Build 16 stays the upstream-sync plan; signing and publishing still need the owner's separate approvals.",
       "decision": "Owner directive 2026-11-22 11:24 (Riyadh)"
+    },
+    {
+      "id": "NVP15-CHG-0006",
+      "requirements": [
+        "S12-01",
+        "S12-02",
+        "S17-11"
+      ],
+      "before": "The complete Build 15 work after custom-15 had no name.",
+      "after": "It is published as Build 16 (tag custom-16, build number 16), which the in-app updater of Build 15 offers (it reads whole numbers only). The upstream-sync plan, earlier called 'Build 16', moves to the build after it. release-names.json can show another name for a build; none is set. Build 15's unfinished work is completed in this build, as the owner directed (not moved to the sync plan).",
+      "reason": "Owner first chose 15.5, then, told that a tag custom-15.5 would never be offered by Build 15's updater, named it 16.",
+      "impact": "Release page, notes, app and APK names all say 16.",
+      "decision": "Owner 2026-11-22 12:22 ('١٥.٥'), 12:26 (name 15.5, tag 16), 12:35 ('سمه ١٦ اذاً')"
     }
   ]
 }

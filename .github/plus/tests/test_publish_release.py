@@ -49,10 +49,10 @@ class PublishReleaseTest(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
-    def publish(self, changelog, channel="stable"):
+    def publish(self, changelog, channel="stable", build="13"):
         (self.dir / "CHANGELOG.md").write_text("# Changelog\n\nIntro.\n\n" + changelog)
         env = dict(self.env, PLUS_CHANNEL=channel)
-        return subprocess.run(["bash", str(PLUS / "publish-release.sh"), "13", "a" * 40, "dist"], cwd=self.dir,
+        return subprocess.run(["bash", str(PLUS / "publish-release.sh"), build, "a" * 40, "dist"], cwd=self.dir,
                               env=env, capture_output=True, text=True)
 
     def released(self, tag, body):
@@ -90,6 +90,29 @@ class PublishReleaseTest(unittest.TestCase):
         top = [line for line in changelog.splitlines() if line.startswith("## ")][:2]
         self.assertTrue(top[0].startswith("## Next build"), top)
         self.assertRegex(top[1], r"^## Build (1[4-9]|[2-9][0-9]) ", top)
+
+    def test_a_named_build_is_shown_by_its_name_and_tagged_by_its_number(self):
+        names = PLUS / "release-names.json"
+        saved = names.read_text()
+        try:
+            names.write_text('{"16": "15.5"}')
+            result = self.publish(NEXT, build="16")
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            created = (self.state / "created").read_text()
+            self.assertIn("release create custom-16 ", created)
+            self.assertIn("Nuvio Plus · 15.5 (build 16)", created)
+            self.assertIn("### Build 15.5 (build 16) — safer updates", self.created_notes())
+        finally:
+            names.write_text(saved)
+
+    def test_build_16_has_no_other_name(self):
+        # NVP15-CHG-0006: the owner named it 16.
+        self.publish(NEXT, build="16")
+        self.assertIn("Nuvio Plus · build 16", (self.state / "created").read_text())
+
+    def test_a_build_without_a_name_keeps_its_number(self):
+        self.publish(NEXT)
+        self.assertIn("Nuvio Plus · build 13", (self.state / "created").read_text())
 
     def test_a_pending_label_in_the_heading_is_dropped(self):
         self.publish("## Next build (pending approval) — safer updates\n\n- x\n")
