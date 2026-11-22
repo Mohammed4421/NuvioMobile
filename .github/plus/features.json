@@ -35,7 +35,8 @@
         "commonTest/kotlin/com/nuvio/app/features/player/PlusSubtitleMigrationTest.kt",
         "commonTest/kotlin/com/nuvio/app/features/player/SubtitleAppearanceTest.kt",
         "androidApp/src/androidTest/kotlin/com/nuvio/android/DeviceSubtitleStatesTest.kt",
-        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleLineDirectionTest.kt"
+        "commonTest/kotlin/com/nuvio/app/features/player/SubtitleLineDirectionTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/player/ProfileSubtitleSettingsIsolationTest.kt"
       ]
     },
     {
@@ -179,7 +180,8 @@
       "test_files": [
         "commonTest/kotlin/com/nuvio/app/features/downloads/PlusDownloadsMigrationTest.kt",
         "androidHostTest/kotlin/com/nuvio/app/features/downloads/DownloadFreeSpaceTest.kt",
-        "androidHostTest/kotlin/com/nuvio/app/features/downloads/AndroidDownloadTransferTest.kt"
+        "androidHostTest/kotlin/com/nuvio/app/features/downloads/AndroidDownloadTransferTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/downloads/ProfileDownloadsIsolationTest.kt"
       ]
     },
     {
@@ -213,7 +215,8 @@
         "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonQueueStorageTest.kt",
         "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonStreamMatcherTest.kt",
         "androidHostTest/kotlin/com/nuvio/app/features/downloads/SeasonPauseAndroidTest.kt",
-        "androidApp/src/debug/kotlin/com/nuvio/android/NotificationActionTestReceiver.kt"
+        "androidApp/src/debug/kotlin/com/nuvio/android/NotificationActionTestReceiver.kt",
+        "commonTest/kotlin/com/nuvio/app/features/downloads/ProfileSeasonQueueIsolationTest.kt"
       ]
     },
     {
@@ -338,6 +341,9 @@
         "NUVIO_SUPABASE",
         "SupabaseConfig",
         "ProfileSettingsSync"
+      ],
+      "test_files": [
+        "androidHostTest/kotlin/com/nuvio/app/features/profiles/ProfilePinOfflineTest.kt"
       ]
     },
     {
