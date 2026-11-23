@@ -2294,10 +2294,10 @@
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 45039537011,
-          "commit": "74f6d64bc4e8c88adf4efe19e89b18c8ceeb86eb",
+          "run": 45101144712,
+          "commit": "f4d85309de20c370b34c5157c53c21eda4b74477",
           "result": "PASS",
-          "what": "PortKit transfer tests on #96 after the feature records were regenerated: validate, plan, trial, apply, transfer of the three portable features to Nuvio 1.0.0 and fork A, build and 21 transferred tests (earlier runs 44836307313, 45009048362, 45029398712)"
+          "what": "PortKit transfer tests on #99 (journey tests of #91, #92, #94 added, feature records regenerated): validate, plan, trial, apply, transfer of the three portable features to Nuvio 1.0.0 and fork A, build and 21 transferred tests (earlier runs 44836307313, 45009048362, 45029398712, 45039537011)"
         }
       ],
       "untested": [],
@@ -2462,10 +2462,10 @@
       "evidence": [
         {
           "kind": "ci-run",
-          "run": 45039537011,
-          "commit": "74f6d64bc4e8c88adf4efe19e89b18c8ceeb86eb",
+          "run": 45101144712,
+          "commit": "f4d85309de20c370b34c5157c53c21eda4b74477",
           "result": "PASS",
-          "what": "Commands validate, inventory, plan, trial, apply and matrix run by the transfer tests on #96 after the feature records were regenerated"
+          "what": "Commands validate, inventory, plan, trial, apply and matrix run by the transfer tests on #99 (journey tests of #91, #92, #94 added, feature records regenerated)"
         }
       ],
       "untested": [],
@@ -2568,10 +2568,10 @@
         },
         {
           "kind": "ci-run",
-          "run": 45039537011,
-          "commit": "74f6d64bc4e8c88adf4efe19e89b18c8ceeb86eb",
+          "run": 45101144712,
+          "commit": "f4d85309de20c370b34c5157c53c21eda4b74477",
           "result": "PASS",
-          "what": "The transfer run's own summary: real plan, apply and test output for both targets (on #96, after the feature records were regenerated; earlier run 45029398712)"
+          "what": "The transfer run's own summary: real plan, apply and test output for both targets (on #99, journey tests of #91, #92, #94 added and feature records regenerated; earlier runs 45029398712, 45039537011)"
         }
       ],
       "untested": [],
