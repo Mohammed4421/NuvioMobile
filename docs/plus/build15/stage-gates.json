@@ -103,7 +103,7 @@
     },
     {
       "stage": "P5",
-      "status": "BLOCKED",
+      "status": "AWAITING OWNER APPROVAL",
       "commit_sha": null,
       "requirements": [
         "P5-01",
@@ -118,11 +118,9 @@
         "P5-10",
         "P5-11"
       ],
-      "critical_blockers": [
-        "NVP15-RISK-0003"
-      ],
+      "critical_blockers": [],
       "owner_approval": null,
-      "notes": "Emulator before/after and limits done (#38); device values due."
+      "notes": "All eleven engineering criteria are verified or accepted. Real-device performance is post-release under CHG-0005. Phase approval is pending."
     },
     {
       "stage": "P6",
@@ -158,7 +156,7 @@
     },
     {
       "stage": "P7",
-      "status": "BLOCKED",
+      "status": "AWAITING OWNER APPROVAL",
       "commit_sha": null,
       "requirements": [
         "P7-01",
@@ -174,7 +172,7 @@
       ],
       "critical_blockers": [],
       "owner_approval": null,
-      "notes": "Transfers verified for two features only."
+      "notes": "The tests transferred three portable features on both targets. The other twelve are classified with reasons (CHG-0007). All ten requirements are verified or accepted. Phase approval is pending."
     },
     {
       "stage": "P8",
