@@ -485,6 +485,20 @@ class WorkflowPolicyTest(unittest.TestCase):
                     # true (never writes) is stricter still and is what non-publishing workflows use.
                     self.assertIn((step.get("with") or {}).get("cache-read-only"), (expected, True), f"{name}/{job_id}")
 
+    def test_emulator_update_and_release_use_supported_software_graphics(self):
+        # Deprecated swiftshader_indirect caused ColorBuffer failures and loss of ADB on CI.
+        # Inspect every emulator-runner step in both the PR update and release-upgrade jobs.
+        for workflow_name, job_id in (("plus-build.yml", "emulator"),
+                                      ("custom-android-build.yml", "release-upgrade")):
+            job = self.workflows[workflow_name]["jobs"][job_id]
+            runners = [step for step in steps(job)
+                       if "android-emulator-runner@" in str(step.get("uses", ""))]
+            self.assertTrue(runners, f"{workflow_name}/{job_id}: no emulator test")
+            for step in runners:
+                options = str((step.get("with") or {}).get("emulator-options", ""))
+                self.assertIn("-gpu software", options, f"{workflow_name}/{step['name']}")
+                self.assertNotIn("swiftshader_indirect", options, f"{workflow_name}/{step['name']}")
+
     def test_jobs_below_an_optional_job_state_their_own_condition(self):
         # GitHub skips a job when any job it depends on, directly or not, was skipped, unless the job's
         # condition starts with always(). The Nuvio baseline is skipped whenever no test fails.

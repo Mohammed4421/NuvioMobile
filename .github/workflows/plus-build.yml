@@ -894,7 +894,7 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          emulator-options: -no-window -gpu software -noaudio -no-boot-anim -no-snapshot
           script: bash .github/plus/emulator-update-test.sh "$PREVIOUS_APK" "$NEW_APK" && bash .github/plus/update-check-device-test.sh "$RELEASE_APK" "$NEW_APK" device-test/debug-app.apk device-test/debug-test.apk
 
       - name: In-app update check on Android 9 (the oldest Android the release supports)
@@ -910,7 +910,7 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          emulator-options: -no-window -gpu software -noaudio -no-boot-anim -no-snapshot
           script: bash .github/plus/update-check-device-test.sh "$RELEASE_APK" "$NEW_APK" device-test/debug-app.apk device-test/debug-test.apk
 
       - name: Keep the emulator result
