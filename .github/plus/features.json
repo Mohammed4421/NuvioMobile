@@ -13,7 +13,10 @@
         "commonMain/kotlin/com/nuvio/app/features/settings/SubtitleAppearanceSettings.kt",
         "commonMain/kotlin/com/nuvio/app/features/player/PlayerSettingsRepository.kt",
         "commonMain/kotlin/com/nuvio/app/features/settings/PlaybackSubtitleSettings.kt",
-        "commonMain/kotlin/com/nuvio/app/features/player/SubtitleStylePanel.kt"
+        "commonMain/kotlin/com/nuvio/app/features/player/SubtitleStylePanel.kt",
+        "androidMain/kotlin/com/nuvio/app/features/player/PlayerSettingsStorage.android.kt",
+        "commonMain/kotlin/com/nuvio/app/features/player/PlayerSettingsStorage.kt",
+        "iosMain/kotlin/com/nuvio/app/features/player/PlayerSettingsStorage.ios.kt"
       ],
       "depends": [
         "player-engines"
@@ -196,7 +199,8 @@
         "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsNotificationActionReceiver.kt",
         "androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt",
         "commonMain/kotlin/com/nuvio/app/features/downloads/SeasonQueueStorage.kt",
-        "commonMain/kotlin/com/nuvio/app/features/profiles/ProfileDeletedDataCleanup.kt"
+        "commonMain/kotlin/com/nuvio/app/features/profiles/ProfileDeletedDataCleanup.kt",
+        "commonMain/kotlin/com/nuvio/app/features/profiles/ProfileRepository.kt"
       ],
       "depends": [
         "download-location"
