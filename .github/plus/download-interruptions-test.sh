@@ -99,7 +99,17 @@ check_complete() {  # check_complete [engine]
   # The same download, not a new one under another name (a replaced download gets a new file name).
   now="$(state | cut -f2)"
   [[ "${now}" == "${file}" ]] || fail "the download was replaced by a new one (${file} -> ${now})"
-  actual="$(adb exec-out "run-as ${pkg} cat 'files/downloads/${file}'" 2>/dev/null | sha256sum | cut -d' ' -f1)"
+  # Do not hash an empty pipe when the emulator/ADB disconnects. A transfer
+  # cannot be VERIFIED unless reading every byte from the device succeeds.
+  local received="${work}/completed-from-device.bin" expected_size received_size
+  if ! adb exec-out "run-as ${pkg} cat 'files/downloads/${file}'" > "${received}" 2>"${work}/adb-read.err"; then
+    say "ADB read error: $(tr '\n' ' ' < "${work}/adb-read.err" | cut -c1-160)"
+    fail "could not read the completed file from the emulator; integrity NOT TESTED"
+  fi
+  received_size="$(wc -c < "${received}")"
+  expected_size="$(wc -c < "${work}/fixture.bin")"
+  [[ "${received_size}" -eq "${expected_size}" ]] || fail "completed file length differs: ${received_size} != ${expected_size} (check file and ADB)"
+  actual="$(sha256sum "${received}" | cut -d' ' -f1)"
   [[ "${actual}" == "${expected}" ]] || fail "completed file differs: ${actual:-missing} != ${expected}"
   say "completed; SHA-256 matches the served file"
 }
