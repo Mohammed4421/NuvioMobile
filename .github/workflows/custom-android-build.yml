@@ -105,6 +105,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 -I .github/plus/release-scope-check.py
 
+      - name: Mandatory pre-release readiness (P0–P9)
+        # A successful evidence-format gate is necessary, but it is not permission to release
+        # while required engineering work remains open. Owner-only personal checks are deferred.
+        if: github.event_name == 'workflow_dispatch'
+        run: python3 -I .github/plus/release-readiness-check.py
+
   release-identity:
     name: Release signing identity
     # Runs no file of the commit (no checkout) and holds no secret: only whether a legacy private key
