@@ -48,7 +48,7 @@ Non-critical gaps are listed for the owner's record and do not block.
 | Kind | Check | Where it runs | Blocks approval |
 |---|---|---|---|
 | Update safety | Install over Build 14, 13 and 12 signed with the real key; installs as an update | Release run (`release-upgrade-test.sh`) | **yes** |
-| Update safety | Same package `com.nuvio.app.plus` and certificate SHA-256 `99c0a98c…1e35`; v2 signature only | Release run (sign and verify steps) | **yes** |
+| Update safety | Same package `com.nuvio.app.plus` and certificate SHA-256 `99c0a98c…1e35`; v3 signature with the verified rotation lineage from the Build 12 key | Release run (sign and verify steps) | **yes** |
 | Update safety | Android 8 refuses the APK; a foreign-signed APK is refused by the in-app updater | Release run (`release-upgrade-test.sh`); `UpdateArchiveCheckTest` | **yes** |
 | Data protection | Settings, subtitle settings, add-ons, downloads and the season queue kept after the update | Release run; `PlusDownloadsMigrationTest`, `PlusSubtitleMigrationTest`, `SeasonQueueStorageTest` | **yes** |
 | Data protection | Download files complete and unchanged after network loss and process death | `download-interruptions-test.sh` (Android 9, 14, 16) | **yes** |
@@ -66,7 +66,7 @@ Every requirement in `requirements.json` has a `release_class`:
   these hold.
 - **POST-RELEASE VALIDATION:** the owner's personal checks after installing (PRV-01..07, P8-06). They stay
   NOT TESTED / NEEDS PHYSICAL DEVICE until he reports; deferring them never marks them PASS.
-- **BLOCKED:** a real engineering obstacle (none at present).
+- **BLOCKED:** an engineering obstacle recorded in `risks.json` or a failing mandatory check on the release candidate.
 
 Data, signing and upgrade requirements are never post-release; the requirements gate refuses it.
 

@@ -23,10 +23,9 @@ tested says so.
 | Trakt / Simkl / MDBList sign-in, server passwords | App-private storage; several use Android Keystore-backed encryption (`MdbListAuthPersistence`, `ServerStorage`, `SimklPlatform`) | Android app sandbox |
 | API keys typed in settings (MDBList, IntroDB) | App-private SharedPreferences, plain | Android app sandbox; Nuvio's design, unchanged |
 | Download state with stream headers | App-private storage, so a resumed download keeps its source | Android app sandbox |
-| Backups | `android:allowBackup="false"` | Not copied to cloud or adb backup |
+| Backups | `android:allowBackup="false"` | Cloud backup is disabled. Device-to-device transfer on some manufacturers' devices can still copy app-private preferences (W5-STO-02). |
 
-Downloaded videos in a user-chosen folder are the user's own files. Logs were not audited line by
-line (not tested).
+Downloaded videos in a user-chosen folder are the user's own files. The [logs and storage audit](security-logs-storage.md) scanned 435 Android and common log calls in 87 files at its audited revision and traced 40 flagged calls. The runtime contents of device logs and vendor device-to-device transfers remain untested.
 
 ## Dependencies (P6-06)
 
@@ -99,7 +98,7 @@ Checked on every pull request by `test_workflow_policy.py` (job "Tests of the re
 
 | MASVS area | Covered here | Not covered |
 |---|---|---|
-| STORAGE | Backup off; secrets in app storage; nothing sensitive on shared storage | Device compromise (root) |
+| STORAGE | Cloud backup disabled; storage and log review in the [logs and storage audit](security-logs-storage.md) | Runtime logs, vendor device-to-device transfer and device compromise (root) |
 | CRYPTO | Keystore use reviewed where Nuvio uses it | No cryptographic audit |
 | NETWORK | Certificate rules, redirects, tokens (above) | Certificate pinning (not used; sources are arbitrary servers) |
 | PLATFORM | Exported components and permissions checked each build | — |

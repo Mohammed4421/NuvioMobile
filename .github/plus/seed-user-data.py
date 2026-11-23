@@ -38,6 +38,14 @@ ADDON_PUBLIC = "https://v3-cinemeta.strem.io/manifest.json"
 ADDON_PROFILE_2 = "https://second-profile-addon.example.invalid/manifest.json"
 FOLDER = "content://com.android.externalstorage.documents/tree/primary%3ADownload%2FNuvio"
 PREFERENCES = {"folderUri": FOLDER, "folderLabel": "Download/Nuvio", "wifiOnly": True}
+PROFILE_CACHE = {
+    "userId": "upgrade-fixture-user", "activeProfileIndex": 2,
+    "hasEverSelectedProfile": True, "rememberLastProfileEnabled": True,
+    "profiles": [
+        {"id": "seed-primary", "user_id": "upgrade-fixture-user", "profile_index": 1, "name": "Primary"},
+        {"id": "seed-second", "user_id": "upgrade-fixture-user", "profile_index": 2, "name": "Second"},
+    ],
+}
 
 
 def library(*titles):
@@ -69,6 +77,7 @@ SETTINGS = {
 # file -> {key: (json value, check)}: JSON the app reads and may write back in its own form, so the
 # check compares what it means, not the text.
 JSON_VALUES = {
+    "nuvio_profile_cache.xml": {"profile_payload": PROFILE_CACHE},
     "nuvio_library.xml": {f"library_payload_{p}": v for p, v in LIBRARY.items()},
     "nuvio_downloads.xml": {"extra_download_preferences": PREFERENCES},
 }
@@ -94,6 +103,19 @@ def entries(root):
 
 def json_changes(expected, found):
     """What of [expected] is missing or different in [found]; a library compares its titles by id."""
+    if not isinstance(found, dict):
+        return ["the stored value is no longer a JSON object"]
+    if "profiles" in expected:
+        errors = [f"{k} changed" for k, value in expected.items()
+                  if k != "profiles" and found.get(k) != value]
+        profiles = found.get("profiles")
+        if not isinstance(profiles, list) or len(profiles) != len(expected["profiles"]):
+            return errors + ["the cached profile count changed"]
+        for profile in expected["profiles"]:
+            matches = [p for p in profiles if isinstance(p, dict) and p.get("id") == profile["id"]]
+            if len(matches) != 1 or any(matches[0].get(k) != v for k, v in profile.items()):
+                errors.append(f"profile {profile['id']} lost its identity, index, owner or name")
+        return errors
     if isinstance(expected, dict) and "items" in expected:
         have = {i.get("id"): i for i in (found or {}).get("items", []) if isinstance(i, dict)}
         out = []

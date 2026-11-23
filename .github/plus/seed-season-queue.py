@@ -14,6 +14,8 @@ import xml.etree.ElementTree as ET
 
 PROFILE = 1
 PARTIAL = "Plus_Seed_Show_S01E01_seedd1.mkv"
+FINISHED = "Plus_Seed_Show_S01E00_seedd0.mkv"
+FINISHED_URI = f"file:///data/user/0/com.nuvio.app.plus/files/downloads/{FINISHED}"
 
 
 def download(id_, episode, status, file_name, downloaded=0, local=None):
@@ -38,7 +40,7 @@ def entry(id_, episode, state, download_id=None, paused=False):
 
 # What Build 14 stores: E1 paused (as Downloading + paused), E2 waiting; E0 finished earlier.
 DOWNLOADS = {"items": [
-    download("seedd0", 0, "Completed", "Plus_Seed_Show_S01E00_seedd0.mkv", 1000, "file:///seed-e0.mkv"),
+    download("seedd0", 0, "Completed", FINISHED, 1000, FINISHED_URI),
     download("seedd1", 1, "Paused", PARTIAL, 400),
 ]}
 QUEUE = {"entries": [entry("seede1", 1, "Downloading", "seedd1", paused=True), entry("seede2", 2, "Waiting")]}
@@ -71,8 +73,10 @@ def check(path):
     values = strings(read(path))
     problems = []
     items = {i["id"]: i for i in json.loads(values.get(f"downloads_payload_{PROFILE}", '{"items":[]}')).get("items", [])}
-    if items.get("seedd0", {}).get("status") != "Completed":
-        problems.append(f"the finished download changed or is gone: {items.get('seedd0')}")
+    finished = items.get("seedd0", {})
+    if any(finished.get(k) != DOWNLOADS["items"][0][k]
+           for k in ("status", "fileName", "localFileUri", "downloadedBytes", "totalBytes")):
+        problems.append(f"the finished download changed or is gone: {finished}")
     d1 = items.get("seedd1")
     if not d1:
         problems.append("the paused download is gone")
