@@ -42,7 +42,19 @@ fail() {
 }
 
 # The download's stored state: status, file name, downloaded bytes (from the app's own storage).
+# The app rewrites nuvio_downloads.xml (SharedPreferences) while it downloads; a read that lands
+# during a rewrite finds no entry. No step of this test removes the entry, so "missing" is read
+# again for up to 3 s before it is reported.
 state() {
+  local out
+  for _ in $(seq 1 12); do
+    out="$(state_once)"
+    [[ "${out}" == missing* ]] || break
+    sleep 0.25
+  done
+  echo "${out}"
+}
+state_once() {
   adb shell run-as "${pkg}" cat shared_prefs/nuvio_downloads.xml 2>/dev/null | python3 -I -c '
 import html, json, re, sys
 xml = sys.stdin.read()
@@ -198,6 +210,7 @@ adb shell am start -W -n "${pkg}/com.nuvio.android.BackgroundDownloadTestActivit
 started() { [[ "$(state | cut -f1)" == Downloading ]] && adb shell run-as "${pkg}" ls cache/download-test-ready > /dev/null 2>&1; }
 wait_for 60 "the download to start (activity checks done, status Downloading)" started
 IFS=$'\t' read -r status file _ <<< "$(state)"
+[[ "${status}" == Downloading && "${file}" != - ]] || fail "the stored entry was lost after the download started (state: ${status} ${file})"
 say "download started: ${file}"
 
 # 2. Background, still downloading.
