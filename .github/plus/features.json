@@ -195,7 +195,8 @@
         "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsTransferJobService.kt",
         "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsNotificationActionReceiver.kt",
         "androidMain/kotlin/com/nuvio/app/features/downloads/AndroidDownloadScheduler.kt",
-        "commonMain/kotlin/com/nuvio/app/features/downloads/SeasonQueueStorage.kt"
+        "commonMain/kotlin/com/nuvio/app/features/downloads/SeasonQueueStorage.kt",
+        "commonMain/kotlin/com/nuvio/app/features/profiles/ProfileDeletedDataCleanup.kt"
       ],
       "depends": [
         "download-location"
@@ -203,7 +204,9 @@
       "data": "season_queue, season_queue_holds (Build 15: pause all, paused seasons)",
       "tests": [
         "SeasonStreamMatcherTest",
-        "PlusDownloadsMigrationTest"
+        "PlusDownloadsMigrationTest",
+        "ProfileDeletedQueueCleanupTest",
+        "ProfileDeletedDataCleanupTest"
       ],
       "keywords": [
         "season.?download",
@@ -217,7 +220,9 @@
         "commonTest/kotlin/com/nuvio/app/features/downloads/SeasonStreamMatcherTest.kt",
         "androidHostTest/kotlin/com/nuvio/app/features/downloads/SeasonPauseAndroidTest.kt",
         "androidApp/src/debug/kotlin/com/nuvio/android/NotificationActionTestReceiver.kt",
-        "commonTest/kotlin/com/nuvio/app/features/downloads/ProfileSeasonQueueIsolationTest.kt"
+        "commonTest/kotlin/com/nuvio/app/features/downloads/ProfileSeasonQueueIsolationTest.kt",
+        "commonTest/kotlin/com/nuvio/app/features/downloads/ProfileDeletedQueueCleanupTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/profiles/ProfileDeletedDataCleanupTest.kt"
       ]
     },
     {

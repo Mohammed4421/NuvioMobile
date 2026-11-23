@@ -300,6 +300,7 @@ object ProfileRepository {
                 activeProfileIndex = _state.value.activeProfile!!.profileIndex
             }
             persist()
+            ProfileDeletedDataCleanup.onProfileDeleted(profileIndex)
             return
         }
         try {
@@ -310,6 +311,7 @@ object ProfileRepository {
             SupabaseProvider.client.postgrest.rpc("sync_delete_profile_data", params)
             ServerRepository.removeProfile(profileIndex)
             pullProfiles()
+            ProfileDeletedDataCleanup.onProfileDeleted(profileIndex)
         } catch (e: Throwable) {
             if (AuthRepository.signOutIfSessionInvalid(e, "Profile delete")) return
             log.e(e) { "Failed to delete profile $profileIndex" }
