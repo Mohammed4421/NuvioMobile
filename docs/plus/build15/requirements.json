@@ -1408,15 +1408,30 @@
       "mandatory": true,
       "requirement": "Background downloads.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "paths": [
+        ".github/workflows/download-compare.yml",
+        ".github/plus/download-compare.sh",
+        ".github/plus/download-limits.json",
+        ".github/plus/tests/test_download_compare.py",
+        "androidApp/src/debug/kotlin/com/nuvio/android/BackgroundDownloadTestActivity.kt"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45105172934,
+          "commit": "99e9e8f15fb2bccb5e0a166e98d4d7fd753af581",
+          "result": "PASS",
+          "what": "Download compare (#90): Build 14 against the head, 5 alternating blocks each on Android 9 and 14 emulators; a 64 MiB file served at 4 MiB/s, the app sent to the background once bytes flow; SHA-256 of every finished file checked. Medians, head vs Build 14: Android 9 wall 16190 vs 16417 ms (-1.4 %), CPU 33 vs 33 ms/MiB, PSS 185355 vs 186218 kB; Android 14 wall 16534 vs 16482 ms (+0.3 %), CPU 37.5 vs 36.8 ms/MiB (+1.9 %), PSS 125429 vs 126026 kB. Every change within the noise margin. One Build 14 sample on Android 14 discarded and repeated: the system restarted its transfer, which resumed with If-Range and 206"
+        }
+      ],
       "untested": [
-        "Not measured."
+        "Real network, real storage and battery on a device (the emulator serves a local file)",
+        "Doze and app standby over long downloads"
       ],
       "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10).",
+      "next": "Re-run on the release candidate if download code changes.",
       "nvp15": "NVP15-REQ-0047",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1891,10 +1906,10 @@
         },
         {
           "kind": "ci-run",
-          "run": 45033035833,
-          "commit": "5ef61e19c35633c123d96e65fbd1132f26df3d77",
+          "run": 45105172980,
+          "commit": "99e9e8f15fb2bccb5e0a166e98d4d7fd753af581",
           "result": "PASS",
-          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' on the branch head after #88 (every current workflow, including playback-compare.yml and the changed performance-compare.yml) (test_workflow_policy.py on every workflow of the commit)"
+          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' on #90 (every current workflow, including the new download-compare.yml; earlier run 45033035833) (test_workflow_policy.py on every workflow of the commit)"
         },
         {
           "kind": "review",
@@ -1951,10 +1966,10 @@
         },
         {
           "kind": "ci-run",
-          "run": 45033035833,
-          "commit": "5ef61e19c35633c123d96e65fbd1132f26df3d77",
+          "run": 45105172980,
+          "commit": "99e9e8f15fb2bccb5e0a166e98d4d7fd753af581",
           "result": "PASS",
-          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' on the branch head after #88 (every current workflow, including playback-compare.yml and the changed performance-compare.yml)"
+          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' on #90 (every current workflow, including the new download-compare.yml; earlier run 45033035833)"
         },
         {
           "kind": "review",
