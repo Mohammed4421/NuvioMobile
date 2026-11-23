@@ -40,6 +40,9 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -121,32 +124,69 @@ object ProfileRepository {
         _state.value = ProfileState()
     }
 
+    private val profileRefreshMutex = Mutex()
+
     suspend fun pullProfiles() {
-        if (AuthRepository.state.value.isAnonymous) {
-            if (!_state.value.isLoaded) {
-                _state.value = _state.value.copy(isLoaded = true)
-            }
+        val account = AuthRepository.state.value as? AuthState.Authenticated ?: return
+        if (account.isAnonymous) {
+            if (!_state.value.isLoaded) _state.value = _state.value.copy(isLoaded = true)
             return
         }
         try {
-            val result = SupabaseProvider.client.postgrest.rpc("sync_pull_profiles")
-            val profiles = result.decodeList<NuvioProfile>()
-            _state.value = _state.value.copy(
-                profiles = profiles.sortedBy { it.profileIndex },
-                isLoaded = true,
-                activeProfile = profiles.find { it.profileIndex == activeProfileIndex }
-                    ?: profiles.firstOrNull(),
-            )
-            if (_state.value.activeProfile != null) {
-                activeProfileIndex = _state.value.activeProfile!!.profileIndex
+            profileRefreshMutex.withLock {
+                if (AuthRepository.state.value != account) return
+                val profiles = SupabaseProvider.client.postgrest.rpc("sync_pull_profiles").decodeList<NuvioProfile>()
+                withContext(Dispatchers.Main.immediate) {
+                    if (AuthRepository.state.value == account) applyRemoteProfiles(account.userId, profiles)
+                }
             }
-            persist()
         } catch (e: Throwable) {
+            if (AuthRepository.state.value != account) return
             if (AuthRepository.signOutIfSessionInvalid(e, "Profile pull")) return
             log.e(e) { "Failed to pull profiles" }
-            if (!_state.value.isLoaded) {
-                _state.value = _state.value.copy(isLoaded = true)
+            if (!_state.value.isLoaded) _state.value = _state.value.copy(isLoaded = true)
+        }
+    }
+
+    /** Applies a complete server snapshot on Main, the same dispatcher as Android transfer observers. */
+    internal fun applyRemoteProfiles(accountId: String, profiles: List<NuvioProfile>) {
+        if (loadedCacheForUserId != null && loadedCacheForUserId != accountId) return
+        if (profiles.any { it.userId.isNotBlank() && it.userId != accountId }) return
+        val byIndex = profiles.associateBy { it.profileIndex }
+        if (profiles.any { it.profileIndex !in 1..MAX_PROFILES } || byIndex.size != profiles.size) return
+
+        // An incomplete identity response must not discard the last known owner of a slot.
+        val ownedBefore = _state.value.profiles.filter { it.userId == accountId && it.id.isNotBlank() }
+        if (ownedBefore.isNotEmpty() && (byIndex[1]?.userId != accountId ||
+                ownedBefore.any { old -> byIndex[old.profileIndex]?.let { it.userId != accountId || it.id.isBlank() } == true })) return
+
+        val deleted = mutableSetOf<Int>()
+        if (loadedCacheForUserId == accountId && byIndex[1]?.userId == accountId) {
+            for (old in _state.value.profiles) {
+                if (old.profileIndex == 1 || old.userId != accountId || old.id.isBlank()) continue
+                val replacement = byIndex[old.profileIndex]
+                if (replacement == null || (replacement.userId == accountId && replacement.id.isNotBlank() && replacement.id != old.id)) {
+                    deleted.add(old.profileIndex)
+                }
             }
+        }
+        applyProfileSnapshot(profiles, deleted)
+        loadedCacheForUserId = accountId
+        persist()
+    }
+
+    private fun applyProfileSnapshot(profiles: List<NuvioProfile>, deleted: Set<Int>) {
+        val previousIndex = activeProfileIndex
+        // Detach old observers and erase private slot data before publishing an index with a new owner.
+        for (index in deleted) {
+            ProfileDeletedDataCleanup.clearConfirmedSlot(index)
+            ProfilePinCacheStorage.removePayload(index)
+            ServerRepository.removeProfile(index)
+        }
+        val active = profiles.find { it.profileIndex == previousIndex } ?: profiles.firstOrNull()
+        _state.value = _state.value.copy(profiles = profiles.sortedBy { it.profileIndex }, activeProfile = active, isLoaded = true)
+        if (active != null && (active.profileIndex != previousIndex || previousIndex in deleted)) {
+            selectProfile(active.profileIndex)
         }
     }
 
@@ -288,31 +328,31 @@ object ProfileRepository {
     }
 
     suspend fun deleteProfile(profileIndex: Int) {
-        if (AuthRepository.state.value.isAnonymous) {
-            val remaining = _state.value.profiles.filter { it.profileIndex != profileIndex }
-            ProfilePinCacheStorage.removePayload(profileIndex)
-            ServerRepository.removeProfile(profileIndex)
-            _state.value = _state.value.copy(
-                profiles = remaining,
-                activeProfile = if (_state.value.activeProfile?.profileIndex == profileIndex) remaining.firstOrNull() else _state.value.activeProfile,
-            )
-            if (_state.value.activeProfile != null) {
-                activeProfileIndex = _state.value.activeProfile!!.profileIndex
-            }
-            persist()
-            ProfileDeletedDataCleanup.onProfileDeleted(profileIndex)
-            return
-        }
+        val account = AuthRepository.state.value as? AuthState.Authenticated ?: return
+        val original = _state.value.profiles.find { it.profileIndex == profileIndex } ?: return
+        if (profileIndex == 1) return
         try {
-            val params = buildJsonObject {
-                put("p_profile_id", profileIndex)
-                putSyncOriginClientId()
+            profileRefreshMutex.withLock {
+                if (AuthRepository.state.value != account) return
+                if (_state.value.profiles.none { it.profileIndex == profileIndex && it.id == original.id }) return
+                if (!account.isAnonymous) {
+                    val params = buildJsonObject {
+                        put("p_profile_id", profileIndex)
+                        putSyncOriginClientId()
+                    }
+                    SupabaseProvider.client.postgrest.rpc("sync_delete_profile_data", params)
+                }
+                withContext(Dispatchers.Main.immediate) {
+                    if (AuthRepository.state.value != account) return@withContext
+                    val local = _state.value.profiles.find { it.profileIndex == profileIndex } ?: return@withContext
+                    if (local.id != original.id) return@withContext
+                    applyProfileSnapshot(_state.value.profiles.filterNot { it.profileIndex == profileIndex }, setOf(profileIndex))
+                    persist()
+                }
             }
-            SupabaseProvider.client.postgrest.rpc("sync_delete_profile_data", params)
-            ServerRepository.removeProfile(profileIndex)
-            pullProfiles()
-            ProfileDeletedDataCleanup.onProfileDeleted(profileIndex)
+            if (!account.isAnonymous && AuthRepository.state.value == account) pullProfiles()
         } catch (e: Throwable) {
+            if (AuthRepository.state.value != account) return
             if (AuthRepository.signOutIfSessionInvalid(e, "Profile delete")) return
             log.e(e) { "Failed to delete profile $profileIndex" }
         }
