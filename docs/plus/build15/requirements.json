@@ -2357,6 +2357,13 @@
           "commit": "77c4d1a4b61a846eb044cf2ef3325e65d6c3e3f0",
           "result": "PASS",
           "what": "Nuvio Plus checks on this pull request: release script tests (notes text) and host tests (update refusals)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45145914188,
+          "commit": "4e81efa7612a544ab0430628202c8541df785dbe",
+          "result": "PASS",
+          "what": "PR #105 after the Android updater staging change: release-note regression suite, Nuvio Plus host tests and on-device update checks for signature, package and version passed. Published Build 16 notes remain untested."
         }
       ],
       "untested": [
