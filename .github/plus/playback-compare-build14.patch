@@ -1,0 +1,54 @@
+diff --git a/composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt b/composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt
+index b0cbcc7e2..53d7fab32 100644
+--- a/composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt
++++ b/composeApp/src/androidMain/kotlin/com/nuvio/app/features/player/PlayerEngine.android.kt
+@@ -1262,9 +1274,13 @@ private fun ExoPlayerSurface(
+     }
+ 
+     LaunchedEffect(exoPlayer) {
+-        while (isActive) {
+-            dispatchExoPlayerSnapshot()
+-            delay(250L)
++        // ExoPlayer must only be touched on its application thread; a recomposer can resume
++        // this effect elsewhere (seen under the Android 16 test dispatcher), so pin the loop.
++        withContext(Dispatchers.Main.immediate) {
++            while (isActive) {
++                dispatchExoPlayerSnapshot()
++                delay(250L)
++            }
+         }
+     }
+ 
+@@ -1624,9 +1640,13 @@ private fun LibmpvPlayerSurface(
+         val view = playerViewRef ?: return@LaunchedEffect
+         view.setPaused(!latestPlayWhenReady.value)
+         val snapshot = view.snapshot()
+-        view.keepScreenOn = snapshot.isPlaying || snapshot.isLoading
+-        latestOnSnapshot.value(snapshot)
+-        nowPlayingController?.syncPlayback(snapshot)
++        // snapshot() runs on the mpv thread; under a dispatcher that does not dispatch back (the
++        // Compose test rule's), the code after it would touch the view from that thread.
++        withContext(Dispatchers.Main.immediate) {
++            view.keepScreenOn = snapshot.isPlaying || snapshot.isLoading
++            latestOnSnapshot.value(snapshot)
++            nowPlayingController?.syncPlayback(snapshot)
++        }
+     }
+ 
+     LaunchedEffect(playerViewRef, resizeMode) {
+@@ -1647,9 +1667,12 @@ private fun LibmpvPlayerSurface(
+         val view = playerViewRef ?: return@LaunchedEffect
+         while (isActive) {
+             val snapshot = view.snapshot()
+-            latestOnSnapshot.value(snapshot)
+-            nowPlayingController?.syncPlayback(snapshot)
+-            view.keepScreenOn = snapshot.isPlaying || snapshot.isLoading
++            // Back on the main thread before touching the view (see the effect above).
++            withContext(Dispatchers.Main.immediate) {
++                latestOnSnapshot.value(snapshot)
++                nowPlayingController?.syncPlayback(snapshot)
++                view.keepScreenOn = snapshot.isPlaying || snapshot.isLoading
++            }
+             delay(250L)
+         }
+     }

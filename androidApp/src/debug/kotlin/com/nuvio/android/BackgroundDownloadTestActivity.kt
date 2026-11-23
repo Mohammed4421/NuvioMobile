@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Build
 import com.nuvio.app.MainActivity
 import com.nuvio.app.features.downloads.DownloadEnqueueResult
+import com.nuvio.app.features.downloads.DownloadPreferences
 import com.nuvio.app.features.downloads.DownloadStatus
 import com.nuvio.app.features.downloads.DownloadsRepository
 import com.nuvio.app.features.streams.StreamItem
@@ -21,6 +22,8 @@ class BackgroundDownloadTestActivity : MainActivity() {
         val url = requireNotNull(intent.getStringExtra("downloadUrl"))
         require(Uri.parse(url).host == "10.0.2.2") { "Only the emulator's local fixture server is supported" }
         val id = "nuvio-background-download-fixture"
+        // The "Wi-Fi only" setting as the user sets it in Downloads (download-interruptions-test.sh C).
+        if (intent.getBooleanExtra("wifiOnly", false)) DownloadPreferences.setWifiOnly(true)
         val result = DownloadsRepository.enqueueFromStream(
             contentType = "movie", videoId = id, parentMetaId = id, parentMetaType = "movie",
             title = "Background download test", logo = null, poster = null, background = null,
