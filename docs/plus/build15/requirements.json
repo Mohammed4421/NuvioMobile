@@ -836,6 +836,13 @@
           "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
           "what": "Nuvio Plus checks on #104 (merged #101 and #105, updated journeys.md): Unit tests of Nuvio Plus (LibraryDownloadsJourneyTest) and emulator checks passed.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45260620064,
+          "commit": "4cec03fb57bd5ec18c7684e9911f71c3d323a29c",
+          "what": "PR #108 combined #106/#107 integrated head: full Nuvio Plus checks SUCCESS on exact SHA, with unit journey tests including LibraryDownloadsJourneyTest, build/signing/update and Android 14 and 9 emulators. The updated journeys.md F1 status is documentation of the already-tested #101 profile cleanup; remaining look-and-feel personal checks are NOT TESTED.",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -880,6 +887,13 @@
           "run": 45171530621,
           "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
           "what": "Nuvio Plus checks on #104 (merged #101 and #105, updated journeys.md): Unit tests of Nuvio Plus (AddonJourneyTest) passed.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45260620064,
+          "commit": "4cec03fb57bd5ec18c7684e9911f71c3d323a29c",
+          "what": "PR #108 combined #106/#107 integrated head: full Nuvio Plus checks SUCCESS on exact SHA, including AddonJourneyTest host tests, Android 14 and 9 app/emulator checks, and security log regression tests. The updated journeys.md does not falsely claim account/server or provider real-device tests.",
           "result": "PASS"
         }
       ],
@@ -2097,6 +2111,13 @@
           "commit": "d30ad14ff7c96b826a99009b3a1ab66cfeed8a3a",
           "what": "PR #107 workflow policy tests passed at this exact commit (Nuvio Plus checks: review gate and release scripts). The API 36 emulator option changed for test stability; required Actions permissions remain unchanged.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45260620064,
+          "commit": "4cec03fb57bd5ec18c7684e9911f71c3d323a29c",
+          "what": "PR #108 integrated head: full Nuvio Plus checks SUCCESS on exact SHA, with the review-gate and release-script workflow policy tests verifying permissions after merging notification workflow improvements from #107 and the security logging fixes from #106.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2170,6 +2191,13 @@
           "run": 45246987111,
           "commit": "d30ad14ff7c96b826a99009b3a1ab66cfeed8a3a",
           "what": "PR #107 workflow policy tests passed at this exact commit, checking the separation of untrusted test jobs and protected signing secrets. The change affects emulator graphics settings only, not access to secrets.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45260620064,
+          "commit": "4cec03fb57bd5ec18c7684e9911f71c3d323a29c",
+          "what": "PR #108 integrated head: full Nuvio Plus checks SUCCESS on exact SHA including review-gate and release-script tests; the merged CI policies retain separation of untrusted test code from protected signing keys.",
           "result": "PASS"
         }
       ],
