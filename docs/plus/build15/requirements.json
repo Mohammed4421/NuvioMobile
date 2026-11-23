@@ -963,14 +963,28 @@
       "requirement": "Consistency of dialogs and alerts.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/visual-review.md",
+          "what": "Dialog review and six reference configurations for addon confirmation and download deletion (#86, #89).",
+          "result": "reviewed"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45015196389,
+          "commit": "37ea437fe92f336b64028deb8cae1d93861d2a0c",
+          "what": "Plus checks on the dialog reference screenshot changes (#86).",
+          "result": "PASS"
+        }
+      ],
       "untested": [
         "Plus dialogs (add-on link confirmation, folder errors) have no reference screenshot."
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Add dialog screenshots.",
+      "next": "Verify the dialog baselines on the candidate.",
       "nvp15": "NVP15-REQ-0030",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1028,14 +1042,21 @@
       "requirement": "Animations and transitions without excess.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/visual-review.md",
+          "what": "Reviewed progress indicators and transitions in the Plus source against upstream (#89).",
+          "result": "reviewed"
+        }
+      ],
       "untested": [
         "Personal part deferred to PRV-02 (POST-RELEASE VALIDATION, NVP15-CHG-0005): the feel of animations in daily use."
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Review the animation code and the still states (no moving bar when idle, #60); the feel in use is PRV-02.",
+      "next": "Verify progress state changes on the candidate; personal motion feel remains post-release.",
       "nvp15": "NVP15-REQ-0033",
       "release_class": "PRE-RELEASE REQUIRED",
       "post_release": [
