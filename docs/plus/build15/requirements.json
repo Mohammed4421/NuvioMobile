@@ -402,6 +402,13 @@
           "commit": "f65cf2db94b457594574e6802e604a4b94c348b6",
           "what": "Both engines on Android 9, 14, 16: subtitles, surface lifecycle, network drop, smoothness (the reviewed paths running)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45109812604,
+          "commit": "9cdcdcc2197916318102831342a905baa12d0655",
+          "what": "Reviewed the styled subtitle refresh on pause transitions and completed seeks. Device jobs passed on API 28, 34 and 36. The recurrence risk remains open (RISK-0014).",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -741,6 +748,11 @@
       "requirement": "Profiles / Accounts: data isolation and permissions, PIN, switching during operations, sync and sign-in. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
       "paths": [
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/downloads/ProfileDownloadsIsolationTest.kt",
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/ProfileSubtitleSettingsIsolationTest.kt",
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/profiles/ProfilePinOfflineTest.kt",
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/downloads/ProfileSeasonQueueIsolationTest.kt",
+        "docs/plus/build15/journeys-profiles.md",
         "docs/plus/build15/journeys.md"
       ],
       "status": "IMPLEMENTED",
@@ -751,14 +763,24 @@
           "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
           "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45106393082,
+          "commit": "7c76772395b9746209809fcf6b2de59954d956df",
+          "what": "Nuvio Plus checks on #100 (same tests as run 45104217755 on #99, with the journey matrix updated; 2383 tests, 0 failing, 6 player screenshot tests skipped): ProfileDownloadsIsolationTest (8), ProfileSeasonQueueIsolationTest (5), ProfileSubtitleSettingsIsolationTest (3), ProfilePinOfflineTest (5), all passing: per-profile isolation of downloads, season queue, subtitle settings and the offline PIN across switches, damage, restart and restore (journeys-profiles.md six-case table)",
+          "result": "PASS"
         }
       ],
       "untested": [
-        "Expected failures and restore for profiles; PIN, sign-in, sync (Nuvio's code)"
+        "Finding F1 (journeys-profiles.md): a deleted profile's index is reused together with its Plus data, so a new profile at that index sees the deleted profile's download list and waiting season episodes. Isolation is not met until fixed or decided (NVP15-RISK-0012)",
+        "Sign-in, sign-out, session expiry, account switch; cloud sync of profiles and settings; setting, changing or clearing a PIN, online PIN check and lock-out: need the Nuvio account server (Nuvio's code)",
+        "ProfileRepository.selectProfile end to end and deleteProfile itself (server or session needed)",
+        "Damaged download preferences read again in the same process (loaded once per process)"
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
+      "next": "Owner decision on F1 (NVP15-RISK-0012); then fix and test, or accept as documented.",
       "nvp15": "NVP15-REQ-0023",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -770,9 +792,10 @@
       "requirement": "Library / Navigation: downloaded content state, posters, episode details, screen transitions, back, app lifecycle. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
       "paths": [
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/library/LibraryDownloadsJourneyTest.kt",
         "docs/plus/build15/journeys.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -780,14 +803,21 @@
           "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
           "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45106393082,
+          "commit": "7c76772395b9746209809fcf6b2de59954d956df",
+          "what": "Nuvio Plus checks on #100 (same tests as run 45104217755 on #99, with the journey matrix updated; 2383 tests, 0 failing, 6 player screenshot tests skipped): LibraryDownloadsJourneyTest, 9 tests covering the six cases: a finished movie opens playback of its local file, a series opens its episodes and back returns to the tab (N); paused, failed and missing downloads show their state and never open playback (F); a transfer interrupted by app exit comes back paused (I); episodes screen and tab survive activity recreation and return from background (R); downloads and the chosen tab come back after a restart (P); deleting one download leaves the others playable (D)",
+          "result": "PASS"
         }
       ],
       "untested": [
-        "Failure, interrupt, restore and restart cases; transitions, back, lifecycle end to end"
+        "The look and the feel of the transitions on a device (P4 and the owner's post-release checks)"
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
+      "next": "Re-run on the release candidate.",
       "nvp15": "NVP15-REQ-0024",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -799,9 +829,11 @@
       "requirement": "Add-ons / Networking: install, confirm, remove; external links; malformed responses; timeouts; user information protection. Each critical journey: normal use, expected failures, cancel/interrupt, resume/restore, persistence after restart, no damage to related features.",
       "source": "Build 15 spec v1.0",
       "paths": [
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/addons/AddonJourneyTest.kt",
+        "docs/plus/build15/journeys-addons.md",
         "docs/plus/build15/journeys.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -809,14 +841,23 @@
           "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
           "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45106393082,
+          "commit": "7c76772395b9746209809fcf6b2de59954d956df",
+          "what": "Nuvio Plus checks on #100 (same tests as run 45104217755 on #99, with the journey matrix updated; 2383 tests, 0 failing, 6 player screenshot tests skipped) (job 'Unit tests of Nuvio Plus': 2383 tests, 0 failing, 6 player screenshot tests skipped): AddonJourneyTest, 9 tests, all six cases of journeys-addons.md (real AddonRepository, parser, OkHttp 60 s timeouts and nuvio_addons storage against MockWebServer, Robolectric SDK 34): install, 15 malformed manifests, HTTP errors, dropped connection, real timeout, cancel in flight, retry, restart persistence per profile, removal without damage; no token in any error",
+          "result": "PASS"
         }
       ],
       "untested": [
-        "Persistence after restart; timeouts and malformed responses beyond Nuvio's tests"
+        "Profile switching through ProfileRepository.selectProfile is not driven (storage and repository level only)",
+        "Server push of add-ons (sync_push_addons) not checked; pull covered by PluginSyncTest",
+        "Manifest bodies have no size limit in httpGetText (Nuvio's code; a ~6 MB body is read in full before refusal): finding, NVP15-RISK-0011"
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
+      "next": "Re-run on the release candidate.",
       "nvp15": "NVP15-REQ-0025",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1062,7 +1103,8 @@
         }
       ],
       "untested": [
-        "Contrast and focus order not measured; TalkBack on a device: NEEDS PHYSICAL DEVICE."
+        "Contrast and focus order not measured; TalkBack on a device: NEEDS PHYSICAL DEVICE.",
+        "Touch area of controls drawn under 48 dp on the downloads queue (#93: 40x40 dp icon buttons, 40x35 dp pause season in landscape, 80x40 and 93x40 dp header buttons): Compose widens them to its 48 dp minimum touch size unless a neighbour is closer; not measured (NVP15-RISK-0013). Contrast: lowest 5.2:1, every measured text at or above 4.5:1"
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
@@ -1414,15 +1456,30 @@
       "mandatory": true,
       "requirement": "Background downloads.",
       "source": "Build 15 spec v1.0",
-      "paths": [],
-      "status": "DISCOVERED",
-      "evidence": [],
+      "paths": [
+        ".github/workflows/download-compare.yml",
+        ".github/plus/download-compare.sh",
+        ".github/plus/download-limits.json",
+        ".github/plus/tests/test_download_compare.py",
+        "androidApp/src/debug/kotlin/com/nuvio/android/BackgroundDownloadTestActivity.kt"
+      ],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45105172934,
+          "commit": "99e9e8f15fb2bccb5e0a166e98d4d7fd753af581",
+          "result": "PASS",
+          "what": "Download compare (#90): Build 14 against the head, 5 alternating blocks each on Android 9 and 14 emulators; a 64 MiB file served at 4 MiB/s, the app sent to the background once bytes flow; SHA-256 of every finished file checked. Medians, head vs Build 14: Android 9 wall 16190 vs 16417 ms (-1.4 %), CPU 33 vs 33 ms/MiB, PSS 185355 vs 186218 kB; Android 14 wall 16534 vs 16482 ms (+0.3 %), CPU 37.5 vs 36.8 ms/MiB (+1.9 %), PSS 125429 vs 126026 kB. Every change within the noise margin. One Build 14 sample on Android 14 discarded and repeated: the system restarted its transfer, which resumed with If-Range and 206"
+        }
+      ],
       "untested": [
-        "Not measured."
+        "Real network, real storage and battery on a device (the emulator serves a local file)",
+        "Doze and app standby over long downloads"
       ],
       "needs_physical_device": false,
       "acceptance": "Repeated before/after values on fixed devices within approved limits.",
-      "next": "Measurement method and limits (P5-10).",
+      "next": "Re-run on the release candidate if download code changes.",
       "nvp15": "NVP15-REQ-0047",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1793,24 +1850,40 @@
       "requirement": "Security review: Storage of sensitive user data.",
       "source": "Build 15 spec v1.0",
       "paths": [
+        ".github/plus/tests/test_no_secret_logging.py",
+        "docs/plus/build15/security-logs-storage.md",
         "docs/plus/build15/security.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "what": "security.md 'Stored data': sign-ins and server passwords in app storage (several Keystore-encrypted), typed API keys plain in app-private preferences (Nuvio's design), allowBackup=false",
           "result": "reviewed, no Build 15 finding",
           "file": "docs/plus/build15/security.md"
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/security-logs-storage.md",
+          "what": "Logs and sensitive storage audit (#95): 435 log calls in 87 files read; Plus code: 6 calls, none sensitive; Nuvio code findings W5-LOG-01..05, W5-STO-01..02 with MASVS/MASTG mapping (MASTG-TEST-0231, 0262, 0001 executed statically; 0203 and 0009 NOT TESTED)",
+          "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45099886622,
+          "commit": "5538983200ca8a0be1fc95146a949d232b18fd4b",
+          "what": "Nuvio Plus checks on #95, job 'Tests of the review gate and release scripts': test_no_secret_logging.py scans every log call and fails on a new one touching credentials or URLs without review; shown to catch a planted leak",
+          "result": "PASS"
         }
       ],
       "untested": [
-        "Logs not audited line by line",
-        "Rooted-device extraction out of scope"
+        "MASTG-TEST-0203 runtime logging with real sign-ins and add-ons while logcat is captured: needs a device",
+        "Rooted-device extraction out of scope",
+        "Nuvio-code findings kept as risks by the owner's decision (NVP15-CHG-0007, NVP15-RISK-0011)"
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Security report.",
+      "next": "Re-run the guard on the release candidate.",
       "nvp15": "NVP15-REQ-0056",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1897,10 +1970,10 @@
         },
         {
           "kind": "ci-run",
-          "run": 45033035833,
-          "commit": "5ef61e19c35633c123d96e65fbd1132f26df3d77",
+          "run": 45105172980,
+          "commit": "99e9e8f15fb2bccb5e0a166e98d4d7fd753af581",
           "result": "PASS",
-          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' on the branch head after #88 (every current workflow, including playback-compare.yml and the changed performance-compare.yml) (test_workflow_policy.py on every workflow of the commit)"
+          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' on #90 (every current workflow, including the new download-compare.yml; earlier run 45033035833) (test_workflow_policy.py on every workflow of the commit)"
         },
         {
           "kind": "review",
@@ -1957,10 +2030,10 @@
         },
         {
           "kind": "ci-run",
-          "run": 45033035833,
-          "commit": "5ef61e19c35633c123d96e65fbd1132f26df3d77",
+          "run": 45105172980,
+          "commit": "99e9e8f15fb2bccb5e0a166e98d4d7fd753af581",
           "result": "PASS",
-          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' on the branch head after #88 (every current workflow, including playback-compare.yml and the changed performance-compare.yml)"
+          "what": "Nuvio Plus checks, job 'Tests of the review gate and release scripts' on #90 (every current workflow, including the new download-compare.yml; earlier run 45033035833)"
         },
         {
           "kind": "review",
@@ -2068,23 +2141,38 @@
       "requirement": "OWASP MASVS/MASTG principles where relevant; actual coverage documented.",
       "source": "Build 15 spec v1.0",
       "paths": [
+        ".github/plus/tests/test_no_secret_logging.py",
+        "docs/plus/build15/security-logs-storage.md",
         "docs/plus/build15/security.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "what": "security.md: MASVS coverage table (storage, crypto, network, platform, code, resilience, privacy) with what is and is not covered",
           "result": "documented",
           "file": "docs/plus/build15/security.md"
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/security-logs-storage.md",
+          "what": "Logs and sensitive storage audit (#95): 435 log calls in 87 files read; Plus code: 6 calls, none sensitive; Nuvio code findings W5-LOG-01..05, W5-STO-01..02 with MASVS/MASTG mapping (MASTG-TEST-0231, 0262, 0001 executed statically; 0203 and 0009 NOT TESTED)",
+          "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45099886622,
+          "commit": "5538983200ca8a0be1fc95146a949d232b18fd4b",
+          "what": "Nuvio Plus checks on #95, job 'Tests of the review gate and release scripts': test_no_secret_logging.py scans every log call and fails on a new one touching credentials or URLs without review; shown to catch a planted leak",
+          "result": "PASS"
         }
       ],
       "untested": [
-        "No MASTG test cases executed beyond the checks named in the table"
+        "MASTG-TEST-0203 (runtime logging) and MASTG-TEST-0009 (device-to-device backup) NOT TESTED: need a device, or two"
       ],
       "needs_physical_device": false,
       "acceptance": "Coverage table in the security report.",
-      "next": "Security report.",
+      "next": "—",
       "nvp15": "NVP15-REQ-0062",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2838,6 +2926,7 @@
       "requirement": "Test layer: Security test report.",
       "source": "Build 15 spec v1.0",
       "paths": [
+        "docs/plus/build15/security-logs-storage.md",
         "docs/plus/build15/security.md"
       ],
       "status": "IMPLEMENTED",
@@ -2847,10 +2936,16 @@
           "file": "docs/plus/build15/security.md",
           "what": "Security test report: credential TLS and redirect tests, OSV run, attack-surface check, MASVS coverage",
           "result": "documented"
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/security-logs-storage.md",
+          "what": "Security test report for logs and storage (#95), with the regression guard",
+          "result": "documented"
         }
       ],
       "untested": [
-        "Native libraries; logs not audited"
+        "Native libraries; runtime log capture on a device (MASTG-TEST-0203)"
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",

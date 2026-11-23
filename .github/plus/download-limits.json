@@ -1,0 +1,8 @@
+{
+  "note": "Build 15 P5-07: the most a background-download metric may grow against Build 14 on the same emulator before download-compare.yml fails, applied only above the noise margin (twice the larger standard deviation, at least 5 %). The same 64 MiB from a local server limited to 4 MiB/s (floor 16 s), app in the background, debug apps compiled ahead of time; wall time from the download start to the finished file, the app process's CPU time per MiB received in the background, and the highest PSS of three samples during the transfer. Every scored run also had one request, reached Completed and matched the SHA-256. Real devices: NEEDS PHYSICAL DEVICE.",
+  "max_increase_percent": {
+    "download_wall_ms": 10,
+    "download_cpu_ms_per_mib": 20,
+    "download_pss_kb": 10
+  }
+}

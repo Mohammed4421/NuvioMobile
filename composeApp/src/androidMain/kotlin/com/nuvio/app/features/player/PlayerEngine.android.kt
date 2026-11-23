@@ -1468,6 +1468,11 @@ private fun LibmpvPlayerSurface(
                 if (property == "eof-reached" || property == "pause" || property == "paused-for-cache" || property == "seeking") {
                     dispatchSnapshot(updateKeepScreenOn = true)
                 }
+                // mpv reports sub-text only when it changes in its own view. A subtitle or delay set
+                // while paused can leave the styled overlay on a caption mpv never reports as gone,
+                // so it stayed until the next cue (DeviceSubtitleStatesTest, Android 14, twice). Read
+                // it again after a seek and on pause / play.
+                if (property == "pause" || (property == "seeking" && !value)) view.updateStyledSubtitle()
             }
             override fun eventProperty(property: String, value: String) {
                 if (property == "sub-text" || property == "sid") view.updateStyledSubtitle()
