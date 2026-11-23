@@ -338,10 +338,18 @@ abstract class PlusReferenceScreenshots(private val device: String) {
             assertTrue(unlabelled.isEmpty(), "$screen on $device has controls without a label: $unlabelled")
         }
         // P4-09: text contrast measured on the image (WCAG 2 ratio of the text's colour to the colour
-        // behind it). Below 4.5:1 is printed for review; on Plus's own screens enabled text must
-        // reach 3:1 (WCAG's floor for large text and controls). Disabled text is exempt (WCAG).
-        val contrast = contrastFindings(bitmap, window = rootCount > 1)
-        File(report, "$screen-$device.txt").appendText(contrast.joinToString("") { "$screen-$device: ${it.second}\n" })
+        // behind it). Below 4.5:1 is printed for review, with each screen's lowest value; on Plus's own
+        // screens enabled text must reach 3:1 (WCAG's floor for large text and controls). Disabled
+        // text is exempt (WCAG).
+        val measured = contrastMeasurements(bitmap, window = rootCount > 1)
+        val contrast = measured.filter { it.first < 4.5 }
+        val lowest = measured.minByOrNull { it.first }
+        File(report, "$screen-$device.txt").appendText(
+            contrast.joinToString("") { "$screen-$device: ${it.second}\n" } +
+                "$screen-$device: contrast measured on ${measured.size} texts" +
+                (lowest?.let { ", lowest ${it.second}" } ?: "") + "\n",
+        )
+        assertTrue(measured.isNotEmpty(), "$screen on $device: no text could be measured for contrast")
         if (screen in PLUS_OWNED_SCREENS) {
             val low = contrast.filter { it.first < 3.0 }.map { it.second }
             assertTrue(low.isEmpty(), "$screen on $device has text below 3:1 contrast: $low")
@@ -433,10 +441,17 @@ abstract class PlusReferenceScreenshots(private val device: String) {
     }
 
     /** Text below 4.5:1 against its background, as (ratio, finding); disabled text is skipped. */
-    private fun contrastFindings(bitmap: Bitmap, window: Boolean): List<Pair<Double, String>> {
-        val nodes = compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text)).fetchSemanticsNodes()
+    /**
+     * Every enabled text's contrast as (ratio, description). The unmerged tree gives each text its
+     * own bounds, so a poster or an icon beside it in the same card is not taken for its colour.
+     */
+    private fun contrastMeasurements(bitmap: Bitmap, window: Boolean): List<Pair<Double, String>> {
+        val nodes = compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text), useUnmergedTree = true)
+            .fetchSemanticsNodes()
         return nodes.mapNotNull { node ->
-            if (node.config.contains(SemanticsProperties.Disabled)) return@mapNotNull null
+            if (generateSequence(node) { it.parent }.any { it.config.contains(SemanticsProperties.Disabled) }) {
+                return@mapNotNull null
+            }
             val bounds = if (window) node.boundsInWindow else node.boundsInRoot
             val left = max(0, bounds.left.toInt()); val top = max(0, bounds.top.toInt())
             val right = min(bitmap.width, bounds.right.toInt()); val bottom = min(bitmap.height, bounds.bottom.toInt())
@@ -449,7 +464,6 @@ abstract class PlusReferenceScreenshots(private val device: String) {
             val background = counts.maxByOrNull { it.value }!!.key
             // The text colour: the pixel colour furthest in contrast from the background (glyph cores).
             val ratio = counts.keys.maxOf { contrastRatio(it, background) }
-            if (ratio >= 4.5) return@mapNotNull null
             val text = node.config.getOrNull(SemanticsProperties.Text).orEmpty().joinToString(" ") { it.text }
             ratio to "contrast ${"%.1f".format(ratio)}:1 at (${(bounds.left / compose.density.density).toInt()}, " +
                 "${(bounds.top / compose.density.density).toInt()}) dp \"${text.take(48)}\""
