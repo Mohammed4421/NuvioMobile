@@ -1371,7 +1371,7 @@
         ".github/plus/playback-limits.json",
         "androidApp/src/androidTest/kotlin/com/nuvio/android/PlaybackSmoothnessTest.kt"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -1386,6 +1386,12 @@
           "commit": "56cb04ca309fa039a29e1b38dffd6ca0985827df",
           "what": "Playback compare (#88): Build 14 against the head, 4 alternating blocks on Android 14 and 9 emulators, ExoPlayer and libmpv, 12 s each: dropped video frames counted by the head only (0–1 per 12 s run on both engines and both Android versions)",
           "result": "PASS"
+        },
+        {
+          "kind": "review",
+          "what": "NVP15-CHG-0007: Owner accepted the absolute dropped-frame measurement (0–1 per 12 s, both engines, Android 9 and 14; runs above) as the comparison: Build 14 has no dropped-frame counter, so no 'before' value exists",
+          "result": "accepted",
+          "file": "docs/plus/build15/change-requests.json"
         }
       ],
       "untested": [
@@ -2583,7 +2589,7 @@
       "requirement": "Acceptance: successful use on the approved test targets, not patch files alone.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -2591,6 +2597,12 @@
           "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31",
           "what": "PortKit transfer tests: lazy-key-collisions, subtitle-parser-worst-case and playback-credential-tls transferred into upstream 1.0.0 and fork fixture A, debug APK built, their tests passed in both",
           "result": "PASS"
+        },
+        {
+          "kind": "review",
+          "what": "NVP15-CHG-0007: Owner accepted three features proven by real transfer on both targets (run above), with the other twelve classified and refused outside a trial with their reason, as meeting the criterion",
+          "result": "accepted",
+          "file": "docs/plus/build15/change-requests.json"
         }
       ],
       "untested": [

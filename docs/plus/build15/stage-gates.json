@@ -26,7 +26,7 @@
     },
     {
       "stage": "P1",
-      "status": "AWAITING OWNER APPROVAL",
+      "status": "PASS",
       "commit_sha": null,
       "requirements": [
         "P1-01",
@@ -38,8 +38,12 @@
         "S19-03"
       ],
       "critical_blockers": [],
-      "owner_approval": null,
-      "notes": "P1-01..06 and S19-03 VERIFIED (inventory and initial pass of every area, eleven audit axes, deep audit of engines/HDR/sign-in storage, deferred findings prioritised). Device checks named in P1-02 stay with the owner's final-release list."
+      "owner_approval": {
+        "by": "owner",
+        "on": "2026-11-23",
+        "ref": "Owner in chat, 2026-11-23 05:30 (Riyadh), explicit choice per item: P1 gate approved; P5-06 accepted on the absolute measurement; P7-10 accepted with three transferred features; Nuvio-code findings of the logs and storage audit kept as risks. Signing then publishing of Build 16 approved in advance, on condition that every PRE-RELEASE REQUIRED item holds (NVP15-CHG-0007)"
+      },
+      "notes": "P1-01..06 and S19-03 VERIFIED (inventory and initial pass of every area, eleven audit axes, deep audit of engines/HDR/sign-in storage, deferred findings prioritised). Device checks named in P1-02 stay with the owner's final-release list. Owner approved 2026-11-23 05:30 (NVP15-CHG-0007)."
     },
     {
       "stage": "P2",

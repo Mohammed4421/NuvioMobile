@@ -92,6 +92,26 @@
       "reason": "Owner first chose 15.5, then, told that a tag custom-15.5 would never be offered by Build 15's updater, named it 16.",
       "impact": "Release page, notes, app and APK names all say 16.",
       "decision": "Owner 2026-11-22 12:22 ('١٥.٥'), 12:26 (name 15.5, tag 16), 12:35 ('سمه ١٦ اذاً')"
+    },
+    {
+      "id": "NVP15-CHG-0007",
+      "requirements": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04",
+        "P1-05",
+        "P1-06",
+        "S19-03",
+        "P5-06",
+        "P7-10",
+        "S17-11"
+      ],
+      "before": "P1 gate awaiting the owner; P5-06 had no Build 14 value for dropped frames; P7-10 acceptance with 3 transferred features open; signing and publishing of Build 16 not yet approved; Nuvio-code findings of the logs and storage audit without a decision.",
+      "after": "P1 gate approved. P5-06: the absolute dropped-frame measurement of the head is the comparison, Build 14 having no dropped-frame counter (stated). P7-10: three features proven by real transfer on both targets, the other twelve classified with their reason, meets the criterion. Nuvio-code findings of the logs and storage audit stay risks with a proposed fix, not changed in Plus. Signing and publishing of Build 16 approved in advance; they run only when every PRE-RELEASE REQUIRED item holds, as two separate environment steps. Branch protection: not decided in this change.",
+      "reason": "Owner chose each item explicitly when asked; the quality rules of NVP15-CHG-0005 stay in force.",
+      "impact": "These decisions no longer block the release; a failing mandatory check still stops it.",
+      "decision": "Owner 2026-11-23 05:30 (Riyadh)"
     }
   ]
 }
