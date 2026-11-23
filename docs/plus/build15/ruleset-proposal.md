@@ -1,6 +1,23 @@
-# Build 15 — proposed protection of `custom-subtitles` (spec §12, P6-10)
+# Build 15/16 — branch protection verified against GitHub
 
-Status: **proposal for the owner**. This session cannot change repository settings; the owner applies
+## Live state on 2026-11-23 (supersedes the 2026-11-21 proposal snapshot)
+
+Verified from the repository's [active ruleset 27721857](https://github.com/Mohammed4421/NuvioMobile/rules/27721857), applied to `custom-subtitles` and `cmp-rewrite`:
+
+- **Deletion and non-fast-forward updates:** blocked.
+- **Pull request required:** active, with zero mandatory approvals. This does not replace review of the evidence or the owner's decisions.
+- **Required checks:** `nuvio-plus/checks`, `nuvio-plus/review`, `Build 15 requirements gate`, `Lint findings against Build 14`, `Transfer, build and test (upstream and a fork)`, and `Notification pause/resume (Android 28)`.
+- **Strict up-to-date rule:** `strict_required_status_checks_policy=false`. The workflow reviews should still test the exact proposed head; GitHub does not currently demand the PR branch be current with the base.
+- **Remaining bypass risk:** integration actor ID `1236702` has `bypass_mode=always`, so the ruleset does not guarantee that every integration path is held by the same checks. **B15-SEC-03 is reduced but not fully eliminated**. Restrict its bypass to pull requests only, or remove it, after the owner reviews the integration's operational need.
+- **Administrative change:** the GitHub connection in this session can read the active ruleset but received HTTP 403 when reading branch-protection administration. This file reports the observed configuration; it does not claim to have changed any remaining GitHub administration setting.
+
+The original proposal is retained below for the audit trail. Its 2026-11-21 assertions that pull-request and required-check rules were absent are historical, **not today's configuration**. Release readiness still separately requires completing all pre-release obligations; branch protection by itself never certifies Build 16 for publication.
+
+---
+
+## Original proposal and historical snapshot (2026-11-21)
+
+Historical status: **proposal for the owner on 2026-11-21**. This session cannot change repository settings; the owner applies
 it (Settings → Rules → Rulesets) or declines it.
 
 ## What protects the branch today (read 2026-11-21, `GET /repos/…/rulesets/27721857`)
