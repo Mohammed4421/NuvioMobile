@@ -1874,6 +1874,13 @@
           "commit": "5538983200ca8a0be1fc95146a949d232b18fd4b",
           "what": "Nuvio Plus checks on #95, job 'Tests of the review gate and release scripts': test_no_secret_logging.py scans every log call and fails on a new one touching credentials or URLs without review; shown to catch a planted leak",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105673,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: security logging scanner and regression tests passed after changing configured addon/plugin URL logging and security audit; review-script job succeeded.",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -2165,6 +2172,13 @@
           "commit": "5538983200ca8a0be1fc95146a949d232b18fd4b",
           "what": "Nuvio Plus checks on #95, job 'Tests of the review gate and release scripts': test_no_secret_logging.py scans every log call and fails on a new one touching credentials or URLs without review; shown to catch a planted leak",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105673,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: security logging scanner and regression tests passed after changing configured addon/plugin URL logging and security audit; review-script job succeeded.",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -2407,6 +2421,13 @@
           "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
           "result": "PASS",
           "what": "On upstream 1.0.0 and fork fixture A, three portable features transferred and 21 transferred tests passed per target."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105653,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2471,7 +2492,7 @@
           "file": ".github/plus/tests/test_portkit_records.py",
           "name": "test_every_feature_has_every_field",
           "result": "PASS",
-          "what": "Every one of the 15 features has ID, supported versions, source sets, integration points, Plus files, dependencies, data formats, tests, non-transferable parts, limits and known conflicts, generated from the registry"
+          "what": "Every one of the 16 features has ID, supported versions, source sets, integration points, Plus files, dependencies, data formats, tests, non-transferable parts, limits and known conflicts, generated from the registry"
         },
         {
           "kind": "test",
@@ -2528,6 +2549,13 @@
           "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
           "result": "PASS",
           "what": "The updated compatibility manifest validated and both upstream 1.0.0 and fork fixture A passed application and build for the three portable features."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105653,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2562,12 +2590,19 @@
           "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
           "result": "PASS",
           "what": "PortKit validation reported all 15 features consistent: 3 portable, 5 adapter-required, 4 manual, 3 unsupported."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105653,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every feature has a level.",
-      "next": "Keep current.",
+      "next": "Keep levels for all 16 classified features; manual security feature not automatically transferred.",
       "nvp15": "NVP15-REQ-0074",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2603,6 +2638,13 @@
           "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
           "result": "PASS",
           "what": "Both trials applied on isolated portkit-trial/transfer branches and reported unchanged target checkouts. The transferred tests passed on each target."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105653,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2723,12 +2765,19 @@
           "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
           "result": "PASS",
           "what": "The transfer job recorded a summary for upstream 1.0.0 and fork fixture A, including the transferred feature names and four passing test-suite counts for each target."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105653,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "All seven outputs in portkit/.",
-      "next": "Keep current.",
+      "next": "Keep records current for 16 features, including manual security logging hardening.",
       "nvp15": "NVP15-REQ-0078",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2757,11 +2806,11 @@
         }
       ],
       "untested": [
-        "3 of 15 features verified by real transfer; the other 12 are classified (5 adapter-required, 4 manual, 3 unsupported) and refused outside a trial, with the reason in their record."
+        "3 of 16 features verified by real transfer; the other 13 are classified (5 adapter-required, 5 manual, 3 unsupported) and refused outside a trial, with the reason in their record."
       ],
       "needs_physical_device": false,
       "acceptance": "Every portable feature transferred and tested on both targets; others with documented reason.",
-      "next": "Prove or classify each remaining feature.",
+      "next": "Three portable features verified on both targets; the new manual safe-network-logging feature is classified and awaits P7 owner gate approval; do not claim automatic transfer.",
       "nvp15": "NVP15-REQ-0079",
       "release_class": "PRE-RELEASE REQUIRED"
     },
