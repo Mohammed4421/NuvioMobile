@@ -21,9 +21,22 @@ launch_and_check() {
   timeout 15 adb logcat -c || true
   run timeout 30 adb shell monkey -p "${package}" -c android.intent.category.LAUNCHER 1 || fail "$1 could not be launched"
   sleep 25
-  timeout 20 adb wait-for-device || true
-  local pid
-  pid="$(timeout 20 adb shell pidof "${package}" | tr -d '\r' || true)"
+  # A disconnected emulator must not be misdiagnosed as an app crash. Two release
+  # attempts lost ADB after the Arabic launch (with ColorBuffer errors in the
+  # emulator log), even though the app had launched and retained its user data.
+  if ! timeout 20 adb wait-for-device; then
+    adb devices -l || true
+    fail "$1: emulator/ADB unavailable after launch; app liveness NOT TESTED"
+  fi
+  local pid adb_status
+  adb_status="$(timeout 10 adb get-state 2>&1)" || {
+    adb devices -l || true
+    fail "$1: emulator/ADB state unreadable (${adb_status}); app liveness NOT TESTED"
+  }
+  [[ "${adb_status}" == device ]] || fail "$1: emulator/ADB is ${adb_status}; app liveness NOT TESTED"
+  pid="$(timeout 20 adb shell pidof "${package}" 2>pidof-error.log | tr -d '\r' || true)"
+  adb_status="$(timeout 10 adb get-state 2>&1)" || fail "$1: ADB lost while checking app process (${adb_status}); app liveness NOT TESTED"
+  [[ "${adb_status}" == device ]] || fail "$1: ADB lost while checking app process (${adb_status}); app liveness NOT TESTED"
   timeout 30 adb logcat -d -b crash > crash.log 2>/dev/null || timeout 30 adb logcat -d -t 500 > crash.log 2>/dev/null || : > crash.log
   if grep -q "FATAL EXCEPTION" crash.log && grep -q "${package}" crash.log; then
     grep -A30 "FATAL EXCEPTION" crash.log | head -60
