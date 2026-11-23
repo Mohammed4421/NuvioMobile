@@ -143,9 +143,14 @@ run() {  # run <label> <apk>
     # (DownloadsTransferJobService.onNetworkChanged). A restart is accepted only as a correct
     # resume: every later request asks for the rest with If-Range and gets 206. The sample is then
     # not a clean measurement; it is discarded and repeated, and the discard is reported.
-    tail -n +2 "${work}/requests.log" | grep -vqE '^GET range=bytes=[0-9]+- if-range="[^"]+" -> 206 ' \
-      && fail "${label}: ${gets} requests, and not every restart resumed with If-Range and 206"
-    echo "${label}: DISCARDED sample: the transfer restarted $(( gets - 1 )) time(s) and resumed correctly (If-Range, 206, SHA-256 matches); repeating"
+    local how="resumed correctly (If-Range, 206)"
+    if tail -n +2 "${work}/requests.log" | grep -vqE '^GET range=bytes=[0-9]+- if-range="[^"]+" -> 206 '; then
+      # The head is under test: a restart that is not a correct resume fails it. Build 14 is the
+      # reference: its behaviour is reported, and its disturbed sample is discarded like the head's.
+      [[ "${label}" == build14 ]] || fail "${label}: ${gets} requests, and not every restart resumed with If-Range and 206"
+      how="did NOT resume (Build 14 behaviour, reported: $(tail -n +2 "${work}/requests.log" | tr '\n' ';'))"
+    fi
+    echo "${label}: DISCARDED sample: the transfer restarted $(( gets - 1 )) time(s) and ${how}; SHA-256 matches; repeating"
     adb logcat -d 2>/dev/null | grep -E "NuvioDownload" | tail -n 6 | sed 's/^/  /'
     adb uninstall "${pkg}" > /dev/null 2>&1 || true
     return 3

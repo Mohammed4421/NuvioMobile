@@ -49,6 +49,9 @@ class DownloadCompare(unittest.TestCase):
         self.assertTrue(self.restart_rejected(first + resume.replace("-> 206", "-> 200")))
         self.assertTrue(self.restart_rejected(first + 'GET range=bytes=38587560- if-range=- -> 206 38587560-67108863\n'))
 
+    def test_only_build14_may_restart_without_resuming(self):
+        self.assertIn('[[ "${label}" == build14 ]] || fail "${label}: ${gets} requests, and not every restart resumed', SCRIPT)
+
     def test_a_discarded_sample_is_repeated_at_most_twice(self):
         self.assertIn("for tries in 1 2 3; do", SCRIPT)
         self.assertIn("three samples in a row were disturbed by transfer restarts", SCRIPT)
