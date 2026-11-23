@@ -55,6 +55,8 @@ internal expect object PlayerSettingsStorage {
     fun saveSubtitleBackgroundColor(colorHex: String)
     fun loadSubtitleAppearance(): String?
     fun saveSubtitleAppearance(value: String)
+    /** Removes the subtitle appearance stored for [profileIndex] (a deleted profile). */
+    fun removeSubtitleAppearance(profileIndex: Int)
     fun loadSubtitleOutlineColor(): String?
     fun saveSubtitleOutlineColor(colorHex: String)
     fun loadSubtitleOutlineEnabled(): Boolean?

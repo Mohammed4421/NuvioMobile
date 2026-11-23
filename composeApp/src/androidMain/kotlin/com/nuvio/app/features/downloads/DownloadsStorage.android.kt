@@ -24,6 +24,13 @@ internal actual object DownloadsStorage {
             ?.apply()
     }
 
+    actual fun loadPayload(profileIndex: Int): String? =
+        preferences?.getString(ProfileScopedKey.of(payloadKey, profileIndex), null)
+
+    actual fun removePayload(profileIndex: Int) {
+        preferences?.edit()?.remove(ProfileScopedKey.of(payloadKey, profileIndex))?.apply()
+    }
+
     actual fun loadExtra(key: String): String? =
         preferences?.getString("extra_$key", null)
 

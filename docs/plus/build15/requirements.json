@@ -2397,6 +2397,13 @@
           "commit": "77c4d1a4b61a846eb044cf2ef3325e65d6c3e3f0",
           "result": "PASS",
           "what": "Nuvio Plus checks on this pull request: release script tests (notes text) and host tests (update refusals)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45145914188,
+          "commit": "4e81efa7612a544ab0430628202c8541df785dbe",
+          "result": "PASS",
+          "what": "PR #105 after the Android updater staging change: release-note regression suite, Nuvio Plus host tests and on-device update checks for signature, package and version passed. Published Build 16 notes remain untested."
         }
       ],
       "untested": [
@@ -2426,12 +2433,26 @@
           "commit": "f4d85309de20c370b34c5157c53c21eda4b74477",
           "result": "PASS",
           "what": "PortKit transfer tests on #99 (journey tests of #91, #92, #94 added, feature records regenerated): validate, plan, trial, apply, transfer of the three portable features to Nuvio 1.0.0 and fork A, build and 21 transferred tests (earlier runs 44836307313, 45009048362, 45029398712, 45039537011)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45116393551,
+          "commit": "14287a14b3a812b847b74591697bd0796c4d64eb",
+          "what": "After updating the profile cleanup feature records, PortKit passed plan checks, transferred and tested portable features on upstream 1.0.0 and fork fixture A, and retained its report.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45146057479,
+          "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
+          "result": "PASS",
+          "what": "On upstream 1.0.0 and fork fixture A, three portable features transferred and 21 transferred tests passed per target."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Plan/apply refuse incompatible targets.",
-      "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0070",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2540,6 +2561,13 @@
           "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "Transfer tests on this pull request"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45146057479,
+          "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
+          "result": "PASS",
+          "what": "The updated compatibility manifest validated and both upstream 1.0.0 and fork fixture A passed application and build for the three portable features."
         }
       ],
       "untested": [],
@@ -2567,12 +2595,19 @@
           "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "Levels in compatibility.json consistent (portkit.py validate): 3 portable and verified by this run, 5 adapter-required, 4 manual, 3 unsupported"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45146057479,
+          "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
+          "result": "PASS",
+          "what": "PortKit validation reported all 15 features consistent: 3 portable, 5 adapter-required, 4 manual, 3 unsupported."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every feature has a level.",
-      "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0074",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2594,12 +2629,26 @@
           "commit": "f4d85309de20c370b34c5157c53c21eda4b74477",
           "result": "PASS",
           "what": "Commands validate, inventory, plan, trial, apply and matrix run by the transfer tests on #99 (journey tests of #91, #92, #94 added, feature records regenerated)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45116393551,
+          "commit": "14287a14b3a812b847b74591697bd0796c4d64eb",
+          "what": "After updating the profile cleanup feature records, PortKit passed plan checks, transferred and tested portable features on upstream 1.0.0 and fork fixture A, and retained its report.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45146057479,
+          "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
+          "result": "PASS",
+          "what": "Both trials applied on isolated portkit-trial/transfer branches and reported unchanged target checkouts. The transferred tests passed on each target."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each property has a test.",
-      "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0075",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2700,6 +2749,20 @@
           "commit": "f4d85309de20c370b34c5157c53c21eda4b74477",
           "result": "PASS",
           "what": "The transfer run's own summary: real plan, apply and test output for both targets (on #99, journey tests of #91, #92, #94 added and feature records regenerated; earlier runs 45029398712, 45039537011)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45116393551,
+          "commit": "14287a14b3a812b847b74591697bd0796c4d64eb",
+          "what": "After updating the profile cleanup feature records, PortKit passed plan checks, transferred and tested portable features on upstream 1.0.0 and fork fixture A, and retained its report.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45146057479,
+          "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
+          "result": "PASS",
+          "what": "The transfer job recorded a summary for upstream 1.0.0 and fork fixture A, including the transferred feature names and four passing test-suite counts for each target."
         }
       ],
       "untested": [],

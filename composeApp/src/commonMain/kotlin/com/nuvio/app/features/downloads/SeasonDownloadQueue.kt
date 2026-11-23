@@ -89,6 +89,13 @@ data class SeasonQueueHolds(
 ) {
     fun allPaused(profileId: Int): Boolean = profileId in allPausedProfiles
     fun seasonPaused(entry: SeasonQueueEntry): Boolean = entry.seasonKey() in pausedSeasons
+
+    /** The holds without those of [profileId] (a deleted profile); the other profiles' are kept. */
+    fun withoutProfile(profileId: Int): SeasonQueueHolds = copy(
+        allPausedProfiles = allPausedProfiles - profileId,
+        pausedSeasons = pausedSeasons.filterNot { it.profileId == profileId }.toSet(),
+        pausedByAll = pausedByAll - profileId,
+    )
 }
 
 internal fun SeasonQueueEntry.seasonKey(): SeasonKey = SeasonKey(profileId ?: -1, parentMetaId, seasonNumber)
@@ -97,6 +104,10 @@ internal fun SeasonQueueEntry.seasonKey(): SeasonKey = SeasonKey(profileId ?: -1
  * The queue's decisions, kept free of the repositories it reads so they can be tested on their own.
  */
 internal object SeasonQueuePolicy {
+    /** The queue without the episodes of [profileId] (a deleted profile), the others in their order. */
+    fun withoutProfile(entries: List<SeasonQueueEntry>, profileId: Int): List<SeasonQueueEntry> =
+        entries.filterNot { it.profileId == profileId }
+
     /**
      * Brings the queue in line with the downloads. An episode handed to the downloader stays while its
      * download runs (Downloading) or is paused (Paused), and leaves the queue once it is finished,
@@ -467,6 +478,18 @@ object SeasonDownloadQueue {
         // Stop the search running for this episode only, so it is not downloaded afterwards.
         searchJobs.remove(entryId)?.cancel()
         update { entries -> entries.filterNot { it.id == entryId } }
+        pump()
+    }
+
+    /**
+     * Drops every episode and every hold of a deleted profile, so a new profile that later gets the
+     * same index starts with an empty queue. The other profiles' episodes and holds are kept.
+     */
+    fun forgetProfile(profileId: Int) {
+        ensureStarted()
+        _entries.value.filter { it.profileId == profileId }.forEach { searchJobs.remove(it.id)?.cancel() }
+        update { entries -> SeasonQueuePolicy.withoutProfile(entries, profileId) }
+        updateHolds { holds -> holds.withoutProfile(profileId) }
         pump()
     }
 

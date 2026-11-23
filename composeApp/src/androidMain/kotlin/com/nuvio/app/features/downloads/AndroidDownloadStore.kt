@@ -52,6 +52,12 @@ internal class AndroidDownloadStore(private val directory: File) {
         transform(current).also(::save)
     }
 
+    fun takeOwned(fileName: String, ownerId: String): AndroidDownloadTransfer? = synchronized(lock) {
+        val owned = get(fileName)?.takeIf { it.item.id == ownerId } ?: return@synchronized null
+        remove(fileName)
+        owned
+    }
+
     fun remove(fileName: String) = synchronized(lock) {
         AtomicFile(recordFile(fileName)).delete()
         state.value = state.value - fileName

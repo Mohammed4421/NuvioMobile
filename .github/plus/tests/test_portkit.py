@@ -140,7 +140,7 @@ class DependencyOrder(unittest.TestCase):
     def test_dependencies_come_first(self):
         registry = json.loads((ROOT / ".github/plus/features.json").read_text())
         order = portkit.dependency_order(registry["features"], ["library-downloads"])
-        self.assertEqual(["download-location", "season-downloads", "library-downloads"], order)
+        self.assertEqual(["download-location", "player-engines", "subtitle-style", "season-downloads", "library-downloads"], order)
 
 
 

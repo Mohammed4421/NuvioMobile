@@ -518,6 +518,10 @@ actual object PlayerSettingsStorage {
         preferences?.edit()?.putString(ProfileScopedKey.of(subtitleAppearanceKey), value)?.apply()
     }
 
+    actual fun removeSubtitleAppearance(profileIndex: Int) {
+        preferences?.edit()?.remove(ProfileScopedKey.of(subtitleAppearanceKey, profileIndex))?.apply()
+    }
+
     actual fun loadSubtitleBackgroundColor(): String? =
         preferences?.getString(ProfileScopedKey.of(subtitleBackgroundColorKey), null)
 
