@@ -2393,12 +2393,19 @@
           "commit": "14287a14b3a812b847b74591697bd0796c4d64eb",
           "what": "After updating the profile cleanup feature records, PortKit passed plan checks, transferred and tested portable features on upstream 1.0.0 and fork fixture A, and retained its report.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45146057479,
+          "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
+          "result": "PASS",
+          "what": "On upstream 1.0.0 and fork fixture A, three portable features transferred and 21 transferred tests passed per target."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Plan/apply refuse incompatible targets.",
-      "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0070",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2507,6 +2514,13 @@
           "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "Transfer tests on this pull request"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45146057479,
+          "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
+          "result": "PASS",
+          "what": "The updated compatibility manifest validated and both upstream 1.0.0 and fork fixture A passed application and build for the three portable features."
         }
       ],
       "untested": [],
@@ -2534,12 +2548,19 @@
           "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "Levels in compatibility.json consistent (portkit.py validate): 3 portable and verified by this run, 5 adapter-required, 4 manual, 3 unsupported"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45146057479,
+          "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
+          "result": "PASS",
+          "what": "PortKit validation reported all 15 features consistent: 3 portable, 5 adapter-required, 4 manual, 3 unsupported."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every feature has a level.",
-      "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0074",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2568,12 +2589,19 @@
           "commit": "14287a14b3a812b847b74591697bd0796c4d64eb",
           "what": "After updating the profile cleanup feature records, PortKit passed plan checks, transferred and tested portable features on upstream 1.0.0 and fork fixture A, and retained its report.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45146057479,
+          "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
+          "result": "PASS",
+          "what": "Both trials applied on isolated portkit-trial/transfer branches and reported unchanged target checkouts. The transferred tests passed on each target."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each property has a test.",
-      "next": "Cite the PortKit run of the commit that marks the two features verified again (this PR).",
+      "next": "Keep current.",
       "nvp15": "NVP15-REQ-0075",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2681,6 +2709,13 @@
           "commit": "14287a14b3a812b847b74591697bd0796c4d64eb",
           "what": "After updating the profile cleanup feature records, PortKit passed plan checks, transferred and tested portable features on upstream 1.0.0 and fork fixture A, and retained its report.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45146057479,
+          "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
+          "result": "PASS",
+          "what": "The transfer job recorded a summary for upstream 1.0.0 and fork fixture A, including the transferred feature names and four passing test-suite counts for each target."
         }
       ],
       "untested": [],
