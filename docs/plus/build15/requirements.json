@@ -600,18 +600,24 @@
       "requirement": "Wide refactoring: Before/After report with alternatives, risks, Android and KMP impact.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/architecture.md",
           "what": "Before/After report for A-02 and A-03: measurement, alternatives, risks, Android and KMP impact, acceptance"
+        },
+        {
+          "kind": "measurement",
+          "file": "docs/plus/build15/architecture.md",
+          "what": "At 3533f9d0 the trial merge measured 7 conflict hunks across two subtitle files (87 lines), and 5 across two downloads files (153 lines). The Before/After report compares three alternatives, records risks, Android and KMP impact, and lists acceptance for the deferred changes.",
+          "result": "Report present; seven named sections reviewed."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Report for A-02 and A-03 before implementation.",
-      "next": "Implementation deferred to the next upstream sync (upstream is not merged into Build 15).",
+      "next": "Revisit the deferred architecture decisions at the next upstream sync.",
       "nvp15": "NVP15-REQ-0019",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -623,18 +629,24 @@
       "requirement": "Architecture Decision Records delivered.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/architecture.md",
           "what": "Architecture decision records A-01..A-06"
+        },
+        {
+          "kind": "measurement",
+          "file": "docs/plus/build15/architecture.md",
+          "what": "Enumerated the Decisions table A-01 through A-07. Each row contains its component, decision, evidence and condition or next step.",
+          "result": "7 of 7 complete decision records"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "ADRs in the repository.",
-      "next": "Keep current at each sync.",
+      "next": "Revisit the deferred architecture decisions at the next upstream sync.",
       "nvp15": "NVP15-REQ-0020",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -898,12 +910,19 @@
       "requirement": "Unit-test success is not taken as proof of journeys.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_journey_is_not_verified_by_unit_tests_alone",
+          "result": "PASS"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "No journey VERIFIED by unit tests alone.",
-      "next": "Enforced by the gate (evidence kinds).",
+      "next": "Recheck on the final candidate.",
       "nvp15": "NVP15-REQ-0027",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3477,19 +3496,25 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-03: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "measurement",
+          "file": "docs/plus/build15/findings.json",
+          "what": "Read audit.md (audit axes and deep risk review), inventory.md (Plus, upstream and dependency sections), and the machine-readable findings list at b0286f8.",
+          "result": "43 audit findings, reviews and claims in the register."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Recheck on the final candidate.",
       "nvp15": "NVP15-REQ-0113",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3503,19 +3528,25 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-04: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "measurement",
+          "file": "docs/plus/build15/architecture.md",
+          "what": "Seven architecture decision records A-01 through A-07 are present in the source deliverable.",
+          "result": "7 of 7 present"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Revisit the deferred architecture decisions at the next upstream sync.",
       "nvp15": "NVP15-REQ-0114",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4215,12 +4246,31 @@
         "docs/plus/build15/stage-gates.json",
         ".github/plus/check-requirements.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_only_the_spec_gate_states_are_allowed",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_gate_cannot_pass_with_open_requirements_or_without_the_owner",
+          "result": "PASS"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_post_release_checks_neither_verify_nor_hold_a_phase",
+          "result": "PASS"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "stage-gates.json uses only these states; a PASS gate with unverified mandatory items or no owner decision fails the gate.",
-      "next": "At P9.",
+      "next": "Recheck on the final candidate.",
       "nvp15": "NVP15-REQ-0143",
       "release_class": "PRE-RELEASE REQUIRED"
     },
