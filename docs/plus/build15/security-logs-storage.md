@@ -110,6 +110,18 @@ adb access or a shared bug report gets the key. Fix (upstream): log the host onl
 through a helper that drops userinfo, path segments after the host and the query. Not changed
 here: Nuvio's code.
 
+**Build 15 proposed remediation (not yet merged or runtime-verified):** a separate Plus
+security branch removes the URL-bearing logs from `AddonRepository`,
+`MetaDetailsRepository`, `StreamSearchSessions`, `SearchRepository` and
+`FetchBridge`. It also stops logging raw metadata payload snippets and exception
+objects on the modified addon/plugin request paths: exception messages may themselves
+include a full request URL. A repository regression test asserts that these known
+unsafe log expressions are absent. This preserves request behavior and keeps only
+operation, count, and exception class diagnostics. The historical findings above
+remain the baseline record; successful CI, merge and any runtime/logcat verification
+must be recorded before calling W5-LOG-01 fully remediated. W5-LOG-02..05 and
+W5-STO-01..02 remain separate findings.
+
 ### W5-LOG-02 — Stream and subtitle URLs logged unredacted (Low, Nuvio)
 
 `HlsParameterSetInitDataSource` logs the full playlist and segment URL, and
