@@ -156,7 +156,7 @@
     },
     {
       "stage": "P7",
-      "status": "AWAITING OWNER APPROVAL",
+      "status": "PASS",
       "commit_sha": null,
       "requirements": [
         "P7-01",
@@ -171,8 +171,12 @@
         "P7-10"
       ],
       "critical_blockers": [],
-      "owner_approval": null,
-      "notes": "The tests transferred three portable features on both targets. The other twelve are classified with reasons (CHG-0007). All ten requirements are verified or accepted. Phase approval is pending."
+      "owner_approval": {
+        "by": "owner",
+        "on": "2026-11-23",
+        "ref": "NVP15-CHG-0008: owner expressly approved PR #106 as the 16th manual PortKit feature (3 proven transfers, 13 classified) and directed completion of Build 16 subject to mandatory checks."
+      },
+      "notes": "The tests transferred three portable features on both targets. The other thirteen are classified with reasons (CHG-0007 and CHG-0008), including safe-network-logging as manual. All ten pre-release requirements are verified; owner approved P7 classification 2026-11-23. Physical-device and unrelated release gates remain open."
     },
     {
       "stage": "P8",

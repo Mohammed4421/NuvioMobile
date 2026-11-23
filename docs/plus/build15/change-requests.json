@@ -112,6 +112,25 @@
       "reason": "Owner chose each item explicitly when asked; the quality rules of NVP15-CHG-0005 stay in force.",
       "impact": "These decisions no longer block the release; a failing mandatory check still stops it.",
       "decision": "Owner 2026-11-23 05:30 (Riyadh)"
+    },
+    {
+      "id": "NVP15-CHG-0008",
+      "requirements": [
+        "P6-05",
+        "P6-11",
+        "P7-01",
+        "P7-03",
+        "P7-04",
+        "P7-05",
+        "P7-06",
+        "P7-09",
+        "P7-10"
+      ],
+      "before": "Owner approved the original PortKit classification of 15 features (three demonstrably transferred, twelve classified). PR #106 adds an unapproved 16th feature, safe-network-logging, so P7 approval was still pending.",
+      "after": "Approve the additional safe-network-logging security hardening as a MANUAL PortKit feature, with no claim of automatic portability. The sixteen-feature classification now consists of three demonstrated transfers and thirteen classified features. Preserve its security scan, the reviewed code changes and passing CI as pre-merge conditions. Owner authorizes continuing the full Build 16 work, with publishing still contingent on every mandatory pre-release gate.",
+      "reason": "Reduce the risk of credential-bearing addon/catalog/plugin addresses being written into logs while keeping every PortKit feature classification explicit.",
+      "impact": "The PortKit feature inventory increases from 15 to 16; generated matrices and security review stay in scope. The new feature cannot be treated as a proven transfer, and release-scope evidence must include the merged security fix.",
+      "decision": "Owner in chat, 2026-11-23 (Riyadh): approved PR #106 security fix and its manual PortKit addition, and instructed completion and publication of the project subject to release gates."
     }
   ]
 }

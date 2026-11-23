@@ -402,7 +402,7 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          emulator-options: -no-window -gpu software -noaudio -no-boot-anim -no-snapshot
           script: bash .github/plus/release-upgrade-test.sh "$BUILD12_APK" "$PREVIOUS_APK" "$RELEASE_APK" "$OLD_KEY_APK" "$FOREIGN_APK" apks/nuvio-plus-update-device-test/debug-app.apk apks/nuvio-plus-update-device-test/debug-test.apk
 
       - name: Keep the result

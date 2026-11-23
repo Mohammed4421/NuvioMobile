@@ -241,27 +241,6 @@ REVIEWED = [
      "origin": "nuvio", "verdict": "safe", "why": "logs the number of stored addon URLs, not the URLs"},
     {"file": C + "addons/AddonRepository.kt", "call": "applied ${urls.size} addons",
      "origin": "nuvio", "verdict": "safe", "why": "logs a count only"},
-    {"file": C + "addons/AddonRepository.kt", "call": "rawUrl=$rawUrl",
-     "origin": "nuvio", "verdict": "known-leak", "finding": "W5-LOG-01",
-     "why": "the addon URL the user typed; configured addons carry their settings, often a debrid API key, in the path"},
-    {"file": C + "addons/AddonRepository.kt", "call": 'log.i { "removeAddon() — $manifestUrl" }',
-     "origin": "nuvio", "verdict": "known-leak", "finding": "W5-LOG-01",
-     "why": "the full manifest URL, same exposure as addAddon"},
-    {"file": C + "details/MetaDetailsRepository.kt", "call": "Fetching meta from: $url",
-     "origin": "nuvio", "verdict": "known-leak", "finding": "W5-LOG-01",
-     "why": "buildAddonResourceUrl keeps the addon's configured path"},
-    {"file": C + "details/MetaDetailsRepository.kt", "call": "(manifest=${manifest.transportUrl})",
-     "origin": "nuvio", "verdict": "known-leak", "finding": "W5-LOG-01",
-     "why": "the resource URL and the transport URL, both with the configured path"},
-    {"file": C + "streams/StreamSearchSessions.kt", "call": "Fetching streams from: $url",
-     "origin": "nuvio", "verdict": "known-leak", "finding": "W5-LOG-01",
-     "why": "stream resource URL of every addon, with its configured path (debrid key for debrid addons)"},
-    {"file": C + "search/SearchRepository.kt", "call": "skip=$requestedSkip url=$requestUrl",
-     "origin": "nuvio", "verdict": "known-leak", "finding": "W5-LOG-01",
-     "why": "two calls (request and failure) log the catalog URL built from the addon manifest URL"},
-    {"file": FC + "plugins/runtime/network/FetchBridge.kt", "call": "Fetch bridge error for $method $url",
-     "origin": "nuvio", "verdict": "known-leak", "finding": "W5-LOG-01",
-     "why": "any URL a plugin scraper fetches, query included; scrapers can put provider keys there"},
     {"file": C + "collection/TmdbCollectionSourceResolver.kt", "call": "TMDB source request failed for $endpoint",
      "origin": "nuvio", "verdict": "safe",
      "why": "endpoint is the TMDB path; buildTmdbUrl adds api_key to a separate url that is not logged; the "
@@ -403,6 +382,32 @@ class Repository(unittest.TestCase):
     def test_the_scan_sees_the_app_logs(self):
         calls = scan_repository()
         self.assertGreater(len(calls), 300, "the scanner found too few log calls; is it still reading the sources?")
+
+    def test_sensitive_addon_url_log_paths_stay_removed(self):
+        """Avoid URL aliases and raw response snippets escaping the lexical credential scan."""
+        forbidden = {
+            "commonMain/kotlin/com/nuvio/app/features/addons/AddonRepository.kt": [
+                "rawUrl=$rawUrl", "removeAddon() — $manifestUrl", "server[$i]: $u",
+            ],
+            "commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsRepository.kt": [
+                "Fetching meta from: $url", "manifest=${manifest.transportUrl}",
+                "payload.take(500)",
+            ],
+            "commonMain/kotlin/com/nuvio/app/features/streams/StreamSearchSessions.kt": [
+                "Fetching streams from: $url",
+            ],
+            "commonMain/kotlin/com/nuvio/app/features/search/SearchRepository.kt": [
+                "url=$requestUrl",
+            ],
+            "fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/network/FetchBridge.kt": [
+                "Fetch bridge error for $method $url",
+            ],
+        }
+        for relative, patterns in forbidden.items():
+            source = (ROOT / "composeApp/src" / relative).read_text(encoding="utf-8")
+            for pattern in patterns:
+                with self.subTest(file=relative, pattern=pattern):
+                    self.assertNotIn(pattern, source)
 
     def test_no_unreviewed_log_call_touches_a_credential_or_url(self):
         left = unreviewed(scan_repository())

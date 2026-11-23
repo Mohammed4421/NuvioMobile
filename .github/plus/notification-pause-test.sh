@@ -249,7 +249,17 @@ say "resumed from byte ${offset} of the kept ${p1}"
 
 # 5. Completes with the exact bytes.
 wait_for 240 "Completed" bash -c "[[ \"\$(adb shell run-as ${pkg} cat shared_prefs/nuvio_downloads.xml)\" == *Completed* ]]"
-actual="$(adb exec-out "run-as ${pkg} cat 'files/downloads/${file}'" 2>/dev/null | sha256sum | cut -d' ' -f1)"
+# A pipe into sha256sum computes the SHA of an empty stream if ADB goes offline,
+# wrongly reporting a corrupted download. Capture the bytes and check ADB first.
+received="${work}/completed-from-device.bin"
+if ! adb exec-out "run-as ${pkg} cat 'files/downloads/${file}'" > "${received}" 2>"${work}/adb-read.err"; then
+  say "ADB read error: $(tr '\n' ' ' < "${work}/adb-read.err" | cut -c1-160)"
+  fail "could not read the completed file from the emulator; integrity NOT TESTED"
+fi
+received_size="$(wc -c < "${received}")"
+expected_size="$(wc -c < "${work}/fixture.bin")"
+[[ "${received_size}" -eq "${expected_size}" ]] || fail "completed file length differs: ${received_size} != ${expected_size} (check file and ADB)"
+actual="$(sha256sum "${received}" | cut -d' ' -f1)"
 [[ "${actual}" == "${expected}" ]] || fail "completed file differs: ${actual:-missing} != ${expected}"
 say "completed; SHA-256 matches the served file"
 say "PASS"
