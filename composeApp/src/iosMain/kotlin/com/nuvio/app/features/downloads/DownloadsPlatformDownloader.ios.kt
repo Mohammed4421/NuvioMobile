@@ -164,6 +164,11 @@ internal actual object DownloadsPlatformDownloader {
         return removePathIfExists("${downloadsDirectoryPath()}/$fileName")
     }
 
+    actual fun removeDeletedProfileTransfer(item: DownloadItem) {
+        // iOS has no durable transfer-owner record. Handles for this profile were already
+        // cancelled. A shared filename alone cannot identify the owner of a remaining file.
+    }
+
     actual fun removePartialFile(destinationFileName: String): Boolean {
         val destinationPath = "${downloadsDirectoryPath()}/$destinationFileName"
         DownloadSubtitleStorage(NSURL.fileURLWithPath(destinationPath).absoluteString!!).remove()
