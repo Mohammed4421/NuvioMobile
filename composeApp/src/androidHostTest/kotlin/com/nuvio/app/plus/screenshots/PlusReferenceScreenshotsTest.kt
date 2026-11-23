@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.isToggleable
@@ -71,6 +72,9 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import org.robolectric.shadows.ShadowDialog
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -333,6 +337,15 @@ abstract class PlusReferenceScreenshots(private val device: String) {
             val unlabelled = findings.filter { "no label" in it }
             assertTrue(unlabelled.isEmpty(), "$screen on $device has controls without a label: $unlabelled")
         }
+        // P4-09: text contrast measured on the image (WCAG 2 ratio of the text's colour to the colour
+        // behind it). Below 4.5:1 is printed for review; on Plus's own screens enabled text must
+        // reach 3:1 (WCAG's floor for large text and controls). Disabled text is exempt (WCAG).
+        val contrast = contrastFindings(bitmap, window = rootCount > 1)
+        File(report, "$screen-$device.txt").appendText(contrast.joinToString("") { "$screen-$device: ${it.second}\n" })
+        if (screen in PLUS_OWNED_SCREENS) {
+            val low = contrast.filter { it.first < 3.0 }.map { it.second }
+            assertTrue(low.isEmpty(), "$screen on $device has text below 3:1 contrast: $low")
+        }
     }
 
     /**
@@ -417,6 +430,38 @@ abstract class PlusReferenceScreenshots(private val device: String) {
             if (problems.isEmpty()) null
             else "${problems.joinToString(", ")} at (${(bounds.left / dp).toInt()}, ${(bounds.top / dp).toInt()}) dp \"${label.take(48)}\""
         }
+    }
+
+    /** Text below 4.5:1 against its background, as (ratio, finding); disabled text is skipped. */
+    private fun contrastFindings(bitmap: Bitmap, window: Boolean): List<Pair<Double, String>> {
+        val nodes = compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text)).fetchSemanticsNodes()
+        return nodes.mapNotNull { node ->
+            if (node.config.contains(SemanticsProperties.Disabled)) return@mapNotNull null
+            val bounds = if (window) node.boundsInWindow else node.boundsInRoot
+            val left = max(0, bounds.left.toInt()); val top = max(0, bounds.top.toInt())
+            val right = min(bitmap.width, bounds.right.toInt()); val bottom = min(bitmap.height, bounds.bottom.toInt())
+            if (right - left < 4 || bottom - top < 4) return@mapNotNull null
+            val counts = HashMap<Int, Int>()
+            for (y in top until bottom) for (x in left until right) {
+                val pixel = bitmap.getPixel(x, y) or (0xFF shl 24)
+                counts[pixel] = (counts[pixel] ?: 0) + 1
+            }
+            val background = counts.maxByOrNull { it.value }!!.key
+            // The text colour: the pixel colour furthest in contrast from the background (glyph cores).
+            val ratio = counts.keys.maxOf { contrastRatio(it, background) }
+            if (ratio >= 4.5) return@mapNotNull null
+            val text = node.config.getOrNull(SemanticsProperties.Text).orEmpty().joinToString(" ") { it.text }
+            ratio to "contrast ${"%.1f".format(ratio)}:1 at (${(bounds.left / compose.density.density).toInt()}, " +
+                "${(bounds.top / compose.density.density).toInt()}) dp \"${text.take(48)}\""
+        }
+    }
+
+    private fun contrastRatio(a: Int, b: Int): Double {
+        fun channel(c: Int): Double = (c / 255.0).let { if (it <= 0.03928) it / 12.92 else ((it + 0.055) / 1.055).pow(2.4) }
+        fun luminance(p: Int) = 0.2126 * channel((p shr 16) and 0xFF) + 0.7152 * channel((p shr 8) and 0xFF) +
+            0.0722 * channel(p and 0xFF)
+        val (x, y) = luminance(a) to luminance(b)
+        return (max(x, y) + 0.05) / (min(x, y) + 0.05)
     }
 
     private fun shownTexts(node: SemanticsNode): List<String> =
