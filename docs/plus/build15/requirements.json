@@ -402,6 +402,13 @@
           "commit": "f65cf2db94b457594574e6802e604a4b94c348b6",
           "what": "Both engines on Android 9, 14, 16: subtitles, surface lifecycle, network drop, smoothness (the reviewed paths running)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45109812604,
+          "commit": "9cdcdcc2197916318102831342a905baa12d0655",
+          "what": "Reviewed the styled subtitle refresh on pause transitions and completed seeks. Device jobs passed on API 28, 34 and 36. The recurrence risk remains open (RISK-0014).",
+          "result": "PASS"
         }
       ],
       "untested": [
