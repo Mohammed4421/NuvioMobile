@@ -66,6 +66,21 @@ class ReleaseReadinessTest(unittest.TestCase):
                  for n in range(9)]
         self.assertTrue(any("P9: no phase gate" in p for p in self.check([], gates)))
 
+    def test_final_readiness_guard_runs_after_signed_upgrade_tests_but_before_publish(self):
+        # An early guard would block the signing/upgrade tests whose evidence
+        # the final release gate requires, making that evidence impossible to collect.
+        workflow = (ROOT / ".github/workflows/custom-android-build.yml").read_text(encoding="utf-8")
+        publish = workflow.index("\n  publish:")
+        signing = workflow.index("\n  release-sign:")
+        upgrade = workflow.index("\n  release-upgrade:")
+        guard_step = workflow.index("      - name: Mandatory pre-release readiness (P0–P9)")
+        publish_step = workflow.index("      - name: Publish release")
+        self.assertLess(signing, publish)
+        self.assertLess(upgrade, publish)
+        self.assertLess(publish, guard_step)
+        self.assertLess(guard_step, publish_step)
+        self.assertEqual(1, workflow.count("      - name: Mandatory pre-release readiness (P0–P9)"))
+
     def test_current_repository_is_blocked_until_ready(self):
         # The release check must not accidentally treat a structurally valid
         # but still incomplete requirement register as approval to publish.
