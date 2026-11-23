@@ -37,6 +37,7 @@ upstream code available to measure the conflict surface against.
 | A-04 | `MainAppContent.kt` hooks | KEEP | 1 conflict, 22 lines: navigation hooks that have to live there | Resolve at sync time |
 | A-05 | `SeasonDownloadQueue` (Plus-owned singleton, ~900 lines) | KEEP | No defect; race harness r1–r21 and policy tests cover it | Revisit only on a proven defect |
 | A-06 | `runBlocking` in `LocalizedUiText` (Nuvio's, B15-UI-03) | DEFER | Not measured | Decide after P5 frame measurements |
+| A-07 | PortKit's registry, contracts and policy in JSON, not YAML (P7-02 allows either) | KEEP JSON | One registry (`.github/plus/features.json`) already serves the upstream review and PortKit; PortKit runs on the Python standard library alone, which reads JSON but not YAML, so a target needs nothing installed; every PortKit file is checked by `portkit.py validate` and the script tests | Revisit only if a file needs comments JSON cannot hold (they go in `_about` keys) |
 
 No restructuring is done in Build 15.
 
