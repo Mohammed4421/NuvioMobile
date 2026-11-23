@@ -822,6 +822,13 @@
           "commit": "7c76772395b9746209809fcf6b2de59954d956df",
           "what": "Nuvio Plus checks on #100 (same tests as run 45104217755 on #99, with the journey matrix updated; 2383 tests, 0 failing, 6 player screenshot tests skipped): LibraryDownloadsJourneyTest, 9 tests covering the six cases: a finished movie opens playback of its local file, a series opens its episodes and back returns to the tab (N); paused, failed and missing downloads show their state and never open playback (F); a transfer interrupted by app exit comes back paused (I); episodes screen and tab survive activity recreation and return from background (R); downloads and the chosen tab come back after a restart (P); deleting one download leaves the others playable (D)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45171530621,
+          "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
+          "what": "Nuvio Plus checks on #104 (merged #101 and #105, updated journeys.md): Unit tests of Nuvio Plus (LibraryDownloadsJourneyTest) and emulator checks passed.",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -859,6 +866,13 @@
           "run": 45106393082,
           "commit": "7c76772395b9746209809fcf6b2de59954d956df",
           "what": "Nuvio Plus checks on #100 (same tests as run 45104217755 on #99, with the journey matrix updated; 2383 tests, 0 failing, 6 player screenshot tests skipped) (job 'Unit tests of Nuvio Plus': 2383 tests, 0 failing, 6 player screenshot tests skipped): AddonJourneyTest, 9 tests, all six cases of journeys-addons.md (real AddonRepository, parser, OkHttp 60 s timeouts and nuvio_addons storage against MockWebServer, Robolectric SDK 34): install, 15 malformed manifests, HTTP errors, dropped connection, real timeout, cancel in flight, retry, restart persistence per profile, removal without damage; no token in any error",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45171530621,
+          "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
+          "what": "Nuvio Plus checks on #104 (merged #101 and #105, updated journeys.md): Unit tests of Nuvio Plus (AddonJourneyTest) passed.",
           "result": "PASS"
         }
       ],
@@ -1914,6 +1928,13 @@
           "commit": "5538983200ca8a0be1fc95146a949d232b18fd4b",
           "what": "Nuvio Plus checks on #95, job 'Tests of the review gate and release scripts': test_no_secret_logging.py scans every log call and fails on a new one touching credentials or URLs without review; shown to catch a planted leak",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45171530621,
+          "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
+          "what": "Nuvio Plus checks on #104 (reconciled security.md with security-logs-storage.md): Tests of the review gate and release scripts (test_no_secret_logging.py) passed.",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -2205,6 +2226,13 @@
           "commit": "5538983200ca8a0be1fc95146a949d232b18fd4b",
           "what": "Nuvio Plus checks on #95, job 'Tests of the review gate and release scripts': test_no_secret_logging.py scans every log call and fails on a new one touching credentials or URLs without review; shown to catch a planted leak",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45171530621,
+          "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
+          "what": "Nuvio Plus checks on #104 (reconciled security.md MASVS table with security-logs-storage.md): Tests of the review gate and release scripts (test_no_secret_logging.py) passed.",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -2241,6 +2269,13 @@
           "run": 45006219617,
           "commit": "07c4851f0261e68c60933555e6585d859f91ff13",
           "what": "Emulator update test (Nuvio Plus checks): previous release with the six kinds of seeded data for two profiles, updated in place; every value kept ('Kept: add-ons (one with a token) and their on/off state for two profiles; subtitle language, size, engine and brightness; the theme of each profile; the library of each profile; the download folder ... and Wi-Fi only'; downloads, queue and partial file kept)",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45171530621,
+          "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
+          "what": "Nuvio Plus checks on #104 (extended seed-user-data.py with nuvio_profile_cache.xml and seed-season-queue.py finished download check): Tests of the review gate and release scripts (test_seed_user_data.py, test_seed_season_queue.py) and Install, update and launch on an emulator passed.",
           "result": "PASS"
         }
       ],
@@ -2285,6 +2320,13 @@
           "run": 45006219617,
           "commit": "07c4851f0261e68c60933555e6585d859f91ff13",
           "what": "Emulator update test (Nuvio Plus checks): previous release with the six kinds of seeded data for two profiles, updated in place; every value kept ('Kept: add-ons (one with a token) and their on/off state for two profiles; subtitle language, size, engine and brightness; the theme of each profile; the library of each profile; the download folder ... and Wi-Fi only'; downloads, queue and partial file kept)",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45171530621,
+          "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
+          "what": "Nuvio Plus checks on #104 (extended seed-user-data.py and seed-season-queue.py post-update assertions): Tests of the review gate and release scripts (test_seed_user_data.py, test_seed_season_queue.py) and Install, update and launch on an emulator passed.",
           "result": "PASS"
         }
       ],
