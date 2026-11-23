@@ -81,12 +81,20 @@ run() {  # run <label> <apk>
   : > "${work}/requests.log"
   adb shell am start -W -n "${pkg}/com.nuvio.android.BackgroundDownloadTestActivity" \
     --es downloadUrl "http://10.0.2.2:8765/fixture.bin" > /dev/null || fail "${label}: could not start the download activity"
+  local ready=""
   for _ in $(seq 1 240); do
-    adb shell run-as "${pkg}" ls cache/download-test-ready > /dev/null 2>&1 && break
+    adb shell "run-as ${pkg} ls cache/download-test-ready" 2>/dev/null | grep -q download-test-ready && { ready=1; break; }
     sleep 0.25
   done
+  [[ -n "${ready}" ]] || fail "${label}: the download activity did not report ready within 60 s"
   t0="$(now_ms)"
-  IFS=$'\t' read -r status file <<< "$(state)"
+  # The app writes its stored downloads list asynchronously (SharedPreferences.apply), so the
+  # entry can reach disk a moment after the activity reports ready: read it for up to 10 s.
+  for _ in $(seq 1 40); do
+    IFS=$'\t' read -r status file <<< "$(state)"
+    [[ "${status}" == Downloading ]] && break
+    sleep 0.25
+  done
   [[ "${status}" == Downloading ]] || fail "${label}: the download did not start (status ${status})"
   # "Downloading" in the store is not yet a transfer: from Android 14 the download runs as a
   # user-initiated job that the system starts a moment later. Leave the foreground only once bytes
@@ -127,9 +135,21 @@ run() {  # run <label> <apk>
   for _ in $(seq 1 60); do status="$(state | cut -f1)"; [[ "${status}" == Completed || "${status}" == Failed ]] && break; sleep 1; done
   [[ "${status}" == Completed ]] || fail "${label}: status ${status} after the file was finished"
   gets="$(grep -c '^GET ' "${work}/requests.log" || true)"
-  [[ "${gets}" == 1 ]] && grep -q '^GET range=- ' "${work}/requests.log" || fail "${label}: expected one request from byte 0, the server saw ${gets}"
   actual="$(adb exec-out "run-as ${pkg} cat 'files/downloads/${file}'" 2>/dev/null | sha256sum | cut -d' ' -f1)"
   [[ "${actual}" == "${expected}" ]] || fail "${label}: the finished file differs: ${actual:-missing} != ${expected}"
+  head -1 "${work}/requests.log" | grep -q '^GET range=- ' || fail "${label}: the first request did not start from byte 0"
+  if [[ "${gets}" != 1 ]]; then
+    # Both builds restart the transfer when the system reports a network change
+    # (DownloadsTransferJobService.onNetworkChanged). A restart is accepted only as a correct
+    # resume: every later request asks for the rest with If-Range and gets 206. The sample is then
+    # not a clean measurement; it is discarded and repeated, and the discard is reported.
+    tail -n +2 "${work}/requests.log" | grep -vqE '^GET range=bytes=[0-9]+- if-range="[^"]+" -> 206 ' \
+      && fail "${label}: ${gets} requests, and not every restart resumed with If-Range and 206"
+    echo "${label}: DISCARDED sample: the transfer restarted $(( gets - 1 )) time(s) and resumed correctly (If-Range, 206, SHA-256 matches); repeating"
+    adb logcat -d 2>/dev/null | grep -E "NuvioDownload" | tail -n 6 | sed 's/^/  /'
+    adb uninstall "${pkg}" > /dev/null 2>&1 || true
+    return 3
+  fi
   (( peak > 0 )) || fail "${label}: no memory sample during the transfer (finished in under 4 s of background?)"
   local cpu_ms=$(( (cpu1 - cpu0) * 1000 / tck )) bytes=$(( size - part0 ))
   echo "${label}: ${bytes} bytes in the background in $(( t1 - tb )) ms, app CPU ${cpu_ms} ms, PSS peak ${peak} kB; one request; Completed; SHA-256 matches"
@@ -139,7 +159,17 @@ run() {  # run <label> <apk>
   adb uninstall "${pkg}" > /dev/null 2>&1 || true
 }
 
+# A discarded sample (return 3) is repeated, at most twice per build in a block.
+measure() {
+  local tries
+  for tries in 1 2 3; do
+    run "$1" "$2"; local rc=$?
+    (( rc == 0 )) && return 0
+    (( rc == 3 )) || exit "${rc}"
+  done
+  fail "$1: three samples in a row were disturbed by transfer restarts"
+}
 for _ in $(seq 1 "${blocks}"); do
-  run build14 "${b14_apk}"
-  run head "${head_apk}"
+  measure build14 "${b14_apk}"
+  measure head "${head_apk}"
 done

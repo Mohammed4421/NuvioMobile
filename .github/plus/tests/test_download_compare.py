@@ -30,9 +30,29 @@ class DownloadCompare(unittest.TestCase):
     def test_a_run_is_scored_only_after_its_checks(self):
         # The MEASURE lines come after the single-request, Completed and SHA-256 checks of the run.
         first_measure = SCRIPT.index('echo "MEASURE ${label} download_wall_ms')
-        for check in ("expected one request from byte 0", "status ${status} after the file was finished",
-                      "the finished file differs", "the app process changed during the download"):
+        for check in ("the first request did not start from byte 0", "status ${status} after the file was finished",
+                      "the finished file differs", "the app process changed during the download",
+                      "not every restart resumed with If-Range and 206", "return 3"):
             self.assertLess(SCRIPT.index(check), first_measure, check)
+
+    def restart_rejected(self, requests):
+        rule = re.search(r"tail -n \+2 \"\$\{work\}/requests.log\" \| (grep -vqE '[^']+')", SCRIPT).group(1)
+        r = subprocess.run(["bash", "-c", f"tail -n +2 | {rule}"], input=requests, text=True)
+        return r.returncode == 0
+
+    def test_a_restart_counts_only_as_a_correct_resume(self):
+        first = 'GET range=- if-range=- -> 200 0-67108863\n'
+        resume = 'GET range=bytes=38587560- if-range="fixture-67108864-1795363532" -> 206 38587560-67108863\n'
+        self.assertFalse(self.restart_rejected(first + resume))
+        self.assertFalse(self.restart_rejected(first + resume + resume))
+        self.assertTrue(self.restart_rejected(first + first))  # started again from byte 0
+        self.assertTrue(self.restart_rejected(first + resume.replace("-> 206", "-> 200")))
+        self.assertTrue(self.restart_rejected(first + 'GET range=bytes=38587560- if-range=- -> 206 38587560-67108863\n'))
+
+    def test_a_discarded_sample_is_repeated_at_most_twice(self):
+        self.assertIn("for tries in 1 2 3; do", SCRIPT)
+        self.assertIn("three samples in a row were disturbed by transfer restarts", SCRIPT)
+        self.assertNotIn('\n  run build14 "${b14_apk}"', SCRIPT)
 
 
 if __name__ == "__main__":
