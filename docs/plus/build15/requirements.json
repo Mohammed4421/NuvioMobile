@@ -1716,6 +1716,13 @@
           "commit": "fa72d3276ed01117738bd6c5132478d44d2ab2d7",
           "what": "#70 (plus-build.yml prints the P4-11 comparison): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: Nuvio Plus checks built and installed APKs and verified package/signature/version; reviewed diff to plus-build.yml changes only the emulator renderer, not APK manifest, exported components, or permissions. The prior attack-surface APK scan remains applicable; no fresh attack-surface scan is claimed here.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -1822,6 +1829,13 @@
           "run": 44980253637,
           "commit": "fa72d3276ed01117738bd6c5132478d44d2ab2d7",
           "what": "#70 (plus-build.yml prints the P4-11 comparison): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: builds and package/update checks passed; the plus-build.yml edit selects software GPU only in CI, while FileProvider paths, permission sources and APK metadata are unchanged. This is an impact revalidation of the prior APK surface evidence, not a new FileProvider device test.",
           "result": "PASS"
         }
       ],
@@ -1942,6 +1956,13 @@
           "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
           "what": "PR #106: security logging scanner and regression tests passed after changing configured addon/plugin URL logging and security audit; review-script job succeeded.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: Nuvio Plus checks completed successfully; its review-script test job verified test_no_secret_logging.py after removing configured URLs and updating security.md. The report still marks credentialed runtime logcat capture NOT TESTED.",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -1987,6 +2008,13 @@
           "run": 44980253637,
           "commit": "fa72d3276ed01117738bd6c5132478d44d2ab2d7",
           "what": "#70: OSV step on the release APK libraries passed (0 blocking)",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: APK build and static CI passed. Changes contain no dependency, Gradle or OSV inventory edits; previously recorded OSV result on the unchanged dependency graph remains applicable. A fresh OSV scan on the signed final release is still required.",
           "result": "PASS"
         }
       ],
@@ -2048,6 +2076,13 @@
           "file": "docs/plus/build15/security.md",
           "result": "PASS",
           "what": "security.md, 'GitHub Actions permissions'"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: the workflow-policy test job passed after changing CI emulator graphics options; workflow permission and token-scope policies unchanged and reviewed.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2108,6 +2143,13 @@
           "file": "docs/plus/build15/security.md",
           "result": "PASS",
           "what": "security.md, 'Test code and signing secrets'"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: workflow-policy tests passed for the current workflows; signing identities and secret handling remain in the separate protected environment, not the untrusted PR tests.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2246,6 +2288,13 @@
           "run": 45233105673,
           "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
           "what": "PR #106: security logging scanner and regression tests passed after changing configured addon/plugin URL logging and security audit; review-script job succeeded.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: logging security test and workflow-review script jobs passed after updating the MASVS/storage report. Runtime logging with real credentials and device-to-device backup remain NOT TESTED as documented.",
           "result": "PASS"
         }
       ],
