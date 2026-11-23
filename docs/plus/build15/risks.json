@@ -87,6 +87,66 @@
       "alternatives": "Re-run and record (chosen); wait longer for the lifecycle move; replace the activity stop by visibility only (would test less)",
       "decision_owner": "engineering",
       "closes_when": "No recurrence over the device-test runs up to the release candidate, or the cause found"
+    },
+    {
+      "id": "NVP15-RISK-0011",
+      "state": "NOT TESTED",
+      "reason": "Nuvio-code findings of the logs and storage audit (security-logs-storage.md): W5-LOG-01 (Medium) add-on and plugin request URLs, which can carry a debrid key, written to logcat; W5-LOG-02..05 (Low) stream and subtitle URLs, redactedForLogs keeping userinfo and path, a partial Trakt token in debug logs, Sentry breadcrumbs with URL path; W5-STO-01 (Low) Trakt tokens and debrid keys in plain app-private SharedPreferences; W5-STO-02 (Low) no data extraction rules with target SDK 36. Also from #91: manifest bodies have no size limit in httpGetText",
+      "needs": "A fix in Nuvio's code, proposed in the report",
+      "requirements": [
+        "P6-05",
+        "P6-11",
+        "P8-08",
+        "P3-05"
+      ],
+      "impact": "Logcat is readable only with adb or by the system on Android 4.1+; plain values sit in the app sandbox. No Plus code is affected; the regression guard fails any new sensitive log call",
+      "priority": "P2",
+      "alternatives": "Keep recorded with a proposed fix (owner's choice, NVP15-CHG-0007); fix in Plus (changes Nuvio's code, out of scope); report upstream",
+      "decision_owner": "owner",
+      "closes_when": "Fixed upstream and synced, or fixed in Plus after a new owner decision"
+    },
+    {
+      "id": "NVP15-RISK-0012",
+      "state": "FAIL",
+      "reason": "Finding F1 of the profile journeys (#94): createProfile reuses the smallest free index and deleteProfile leaves downloads_payload_<n>, the season queue entries with profileId n and the subtitle keys _<n>, so a new profile at a deleted profile's index sees its download list and waiting episodes (PQ aDeletedProfilesEpisodesStayStoredButNeverReachAnotherProfile shows the queue side)",
+      "needs": "Owner decision: clear the Plus data of an index when its profile is deleted or reused (a behaviour change), or accept and document",
+      "requirements": [
+        "P3-03"
+      ],
+      "impact": "Only after a profile is deleted and a new one created; the new profile sees the old list, and its queue may search for the old episodes. Files on disk are not shared beyond that list",
+      "priority": "P1",
+      "alternatives": "Clear on delete; clear on reuse; keep and document",
+      "decision_owner": "owner",
+      "closes_when": "Fixed and tested, or accepted by the owner"
+    },
+    {
+      "id": "NVP15-RISK-0013",
+      "state": "FAIL",
+      "reason": "Touch targets below the 48 dp guideline on the downloads queue (#93 measurement): delete, retry, pause and resume season 40x40 dp, pause season 40x35 dp in landscape, header buttons 80x40 and 93x40 dp",
+      "needs": "Enlarge the touch area to 48 dp without changing the look (Modifier.minimumInteractiveComponentSize or padding)",
+      "requirements": [
+        "P4-09"
+      ],
+      "impact": "Buttons are harder to hit; nothing else",
+      "priority": "P2",
+      "alternatives": "Enlarge the touch area (look unchanged); keep and document",
+      "decision_owner": "engineering",
+      "closes_when": "The measurement prints no target below 48 dp on these screens"
+    },
+    {
+      "id": "NVP15-RISK-0014",
+      "state": "FAIL",
+      "reason": "Intermittent CI failures seen on 2026-11-22 without an app change: the Android 9 device-test job of #87 hung for the full 60 min and was cancelled (rerun passed); DeviceSubtitleStatesTest.libmpvHandlesADeviceSubtitleAcrossStateChanges failed once on Android 14 on #90, which changes no app code (first failure in about 50 runs; rerun passed); the Android 9 notification test twice read the downloads list during a rewrite (fixed in #97)",
+      "needs": "Watch the runs up to the release candidate; a second subtitle-delay failure is treated as an app defect",
+      "requirements": [
+        "P8-05",
+        "P3-01"
+      ],
+      "impact": "A required check can fail or hang without an app fault",
+      "priority": "P2",
+      "alternatives": "Re-run once and record (chosen); investigate on recurrence",
+      "decision_owner": "engineering",
+      "closes_when": "No recurrence on the release candidate's runs"
     }
   ],
   "closed": [
