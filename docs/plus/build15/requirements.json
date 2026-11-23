@@ -759,9 +759,9 @@
         },
         {
           "kind": "ci-run",
-          "run": 45104217755,
-          "commit": "8a080aff6765bdd0b66587047f8174aba8b13eb1",
-          "what": "Nuvio Plus checks on #99: ProfileDownloadsIsolationTest (8), ProfileSeasonQueueIsolationTest (5), ProfileSubtitleSettingsIsolationTest (3), ProfilePinOfflineTest (5), all passing: per-profile isolation of downloads, season queue, subtitle settings and the offline PIN across switches, damage, restart and restore (journeys-profiles.md six-case table)",
+          "run": 45106393082,
+          "commit": "7c76772395b9746209809fcf6b2de59954d956df",
+          "what": "Nuvio Plus checks on #100 (same tests as run 45104217755 on #99, with the journey matrix updated; 2383 tests, 0 failing, 6 player screenshot tests skipped): ProfileDownloadsIsolationTest (8), ProfileSeasonQueueIsolationTest (5), ProfileSubtitleSettingsIsolationTest (3), ProfilePinOfflineTest (5), all passing: per-profile isolation of downloads, season queue, subtitle settings and the offline PIN across switches, damage, restart and restore (journeys-profiles.md six-case table)",
           "result": "PASS"
         }
       ],
@@ -799,9 +799,9 @@
         },
         {
           "kind": "ci-run",
-          "run": 45104217755,
-          "commit": "8a080aff6765bdd0b66587047f8174aba8b13eb1",
-          "what": "Nuvio Plus checks on #99: LibraryDownloadsJourneyTest, 9 tests covering the six cases: a finished movie opens playback of its local file, a series opens its episodes and back returns to the tab (N); paused, failed and missing downloads show their state and never open playback (F); a transfer interrupted by app exit comes back paused (I); episodes screen and tab survive activity recreation and return from background (R); downloads and the chosen tab come back after a restart (P); deleting one download leaves the others playable (D)",
+          "run": 45106393082,
+          "commit": "7c76772395b9746209809fcf6b2de59954d956df",
+          "what": "Nuvio Plus checks on #100 (same tests as run 45104217755 on #99, with the journey matrix updated; 2383 tests, 0 failing, 6 player screenshot tests skipped): LibraryDownloadsJourneyTest, 9 tests covering the six cases: a finished movie opens playback of its local file, a series opens its episodes and back returns to the tab (N); paused, failed and missing downloads show their state and never open playback (F); a transfer interrupted by app exit comes back paused (I); episodes screen and tab survive activity recreation and return from background (R); downloads and the chosen tab come back after a restart (P); deleting one download leaves the others playable (D)",
           "result": "PASS"
         }
       ],
@@ -837,9 +837,9 @@
         },
         {
           "kind": "ci-run",
-          "run": 45104217755,
-          "commit": "8a080aff6765bdd0b66587047f8174aba8b13eb1",
-          "what": "Nuvio Plus checks on #99 (job 'Unit tests of Nuvio Plus': 2383 tests, 0 failing, 6 player screenshot tests skipped): AddonJourneyTest, 9 tests, all six cases of journeys-addons.md (real AddonRepository, parser, OkHttp 60 s timeouts and nuvio_addons storage against MockWebServer, Robolectric SDK 34): install, 15 malformed manifests, HTTP errors, dropped connection, real timeout, cancel in flight, retry, restart persistence per profile, removal without damage; no token in any error",
+          "run": 45106393082,
+          "commit": "7c76772395b9746209809fcf6b2de59954d956df",
+          "what": "Nuvio Plus checks on #100 (same tests as run 45104217755 on #99, with the journey matrix updated; 2383 tests, 0 failing, 6 player screenshot tests skipped) (job 'Unit tests of Nuvio Plus': 2383 tests, 0 failing, 6 player screenshot tests skipped): AddonJourneyTest, 9 tests, all six cases of journeys-addons.md (real AddonRepository, parser, OkHttp 60 s timeouts and nuvio_addons storage against MockWebServer, Robolectric SDK 34): install, 15 malformed manifests, HTTP errors, dropped connection, real timeout, cancel in flight, retry, restart persistence per profile, removal without damage; no token in any error",
           "result": "PASS"
         }
       ],
