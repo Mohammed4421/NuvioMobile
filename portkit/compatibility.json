@@ -57,7 +57,7 @@
     "season-downloads": {
       "level": "manual",
       "verified": false,
-      "reason": "depends on download-location and the streams screen"
+      "reason": "uses download-location, the streams screen and subtitle-style storage for profile cleanup"
     },
     "library-downloads": {
       "level": "manual",

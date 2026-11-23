@@ -61,7 +61,7 @@ deep audit: deep reviews are the findings in `audit.md` (Plus areas, player, dow
 | features/party | 16 | catch-throwable 6 | B15-NUV-01 |
 | features/player | 169 | catch-throwable 5, cleartext-url 3, run-blocking 7, tls-trust 18 | B15-NUV-01, B15-NUV-02, B15-SEC-04 |
 | features/plugins | 27 | catch-throwable 3, cleartext-url 2, run-blocking 6 | B15-NUV-01, B15-NUV-02 |
-| features/profiles | 30 | catch-throwable 3, cleartext-url 2, run-blocking 1, secret-in-log 1 | B15-NUV-01, B15-NUV-02 |
+| features/profiles | 31 | catch-throwable 3, cleartext-url 2, run-blocking 1, secret-in-log 1 | B15-NUV-01, B15-NUV-02 |
 | features/search | 11 | — | reviewed, none |
 | features/servers | 20 | catch-throwable 8, cleartext-url 1, run-blocking 1 | B15-NUV-01, B15-NUV-02 |
 | features/settings | 88 | run-blocking 2 | B15-NUV-02 |

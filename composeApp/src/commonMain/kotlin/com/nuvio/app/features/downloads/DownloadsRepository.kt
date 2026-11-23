@@ -43,6 +43,22 @@ object DownloadsRepository {
         _hasUnseenCompleted.value = false
     }
 
+    /** Called on Main before a confirmed profile slot is reused. Other profiles' transfers keep running. */
+    internal fun detachDeletedDownloads(stored: List<DownloadItem>, active: Boolean): List<DownloadItem> {
+        val owned = if (active && hasLoaded) {
+            (_uiState.value.items + stored).distinctBy { it.id }
+        } else {
+            stored
+        }
+        if (active) {
+            hasLoaded = false
+            _hasUnseenCompleted.value = false
+            _uiState.value = DownloadsUiState()
+        }
+        owned.forEach { activeHandles.remove(it.id)?.cancel() }
+        return owned
+    }
+
     fun clearLocalState() {
         activeHandles.values.forEach(DownloadsTaskHandle::cancel)
         activeHandles.clear()

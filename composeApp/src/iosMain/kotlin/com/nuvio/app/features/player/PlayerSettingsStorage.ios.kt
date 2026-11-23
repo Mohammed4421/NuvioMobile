@@ -483,6 +483,10 @@ actual object PlayerSettingsStorage {
         NSUserDefaults.standardUserDefaults.setObject(value, forKey = ProfileScopedKey.of(subtitleAppearanceKey))
     }
 
+    actual fun removeSubtitleAppearance(profileIndex: Int) {
+        NSUserDefaults.standardUserDefaults.removeObjectForKey(ProfileScopedKey.of(subtitleAppearanceKey, profileIndex))
+    }
+
     actual fun loadSubtitleBackgroundColor(): String? {
         val defaults = NSUserDefaults.standardUserDefaults
         val key = ProfileScopedKey.of(subtitleBackgroundColorKey)

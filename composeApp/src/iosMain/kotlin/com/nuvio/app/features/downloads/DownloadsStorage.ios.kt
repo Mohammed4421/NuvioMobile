@@ -13,6 +13,13 @@ internal actual object DownloadsStorage {
         NSUserDefaults.standardUserDefaults.setObject(payload, forKey = ProfileScopedKey.of(payloadKey))
     }
 
+    actual fun loadPayload(profileIndex: Int): String? =
+        NSUserDefaults.standardUserDefaults.stringForKey(ProfileScopedKey.of(payloadKey, profileIndex))
+
+    actual fun removePayload(profileIndex: Int) {
+        NSUserDefaults.standardUserDefaults.removeObjectForKey(ProfileScopedKey.of(payloadKey, profileIndex))
+    }
+
     actual fun loadExtra(key: String): String? =
         NSUserDefaults.standardUserDefaults.stringForKey("downloads_extra_$key")
 
