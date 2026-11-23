@@ -156,6 +156,8 @@
         "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadDocuments.kt",
         "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadSubtitleStorage.android.kt",
         "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsPlatformDownloader.android.kt",
+        "commonMain/kotlin/com/nuvio/app/features/downloads/DownloadsPlatformDownloader.kt",
+        "iosMain/kotlin/com/nuvio/app/features/downloads/DownloadsPlatformDownloader.ios.kt",
         "androidMain/kotlin/com/nuvio/app/features/downloads/DownloadsStorage.android.kt",
         "iosMain/kotlin/com/nuvio/app/features/downloads/DownloadFolderPicker.ios.kt",
         "iosMain/kotlin/com/nuvio/app/features/downloads/DownloadsStorage.ios.kt",
@@ -203,7 +205,8 @@
         "commonMain/kotlin/com/nuvio/app/features/profiles/ProfileRepository.kt"
       ],
       "depends": [
-        "download-location"
+        "download-location",
+        "subtitle-style"
       ],
       "data": "season_queue, season_queue_holds (Build 15: pause all, paused seasons)",
       "tests": [
