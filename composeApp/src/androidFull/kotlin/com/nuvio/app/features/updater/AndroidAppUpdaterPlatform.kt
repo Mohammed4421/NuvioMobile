@@ -19,6 +19,7 @@ import nuvio.composeapp.generated.resources.updates_archive_other_app
 import nuvio.composeapp.generated.resources.updates_archive_other_signer
 import nuvio.composeapp.generated.resources.updates_archive_unreadable
 import nuvio.composeapp.generated.resources.updates_archive_unsigned
+import nuvio.composeapp.generated.resources.updates_download_failed
 import nuvio.composeapp.generated.resources.updates_download_failed_http
 import nuvio.composeapp.generated.resources.updates_downloaded_file_missing
 import nuvio.composeapp.generated.resources.updates_empty_download_body
@@ -83,38 +84,42 @@ object AndroidAppUpdaterPlatform {
             val context = requireContext()
             val safeName = assetName.replace(Regex("[^a-zA-Z0-9._-]"), "_")
             val destination = File(File(context.cacheDir, "updates"), safeName)
-            destination.parentFile?.mkdirs()
-            if (destination.exists()) {
-                destination.delete()
-            }
+            val directory = requireNotNull(destination.parentFile)
+            directory.mkdirs()
+            val partial = File.createTempFile("update-", ".part", directory)
+            try {
+                val request = Request.Builder()
+                    .url(assetUrl)
+                    .build()
 
-            val request = Request.Builder()
-                .url(assetUrl)
-                .build()
+                httpClient.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        error(runBlocking { getString(Res.string.updates_download_failed_http, response.code) })
+                    }
 
-            httpClient.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    error(runBlocking { getString(Res.string.updates_download_failed_http, response.code) })
-                }
-
-                val body = response.body ?: error(runBlocking { getString(Res.string.updates_empty_download_body) })
-                val totalBytes = body.contentLength().takeIf { it > 0L }
-                body.byteStream().use { input ->
-                    FileOutputStream(destination).use { output ->
-                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                        var downloadedBytes = 0L
-                        while (true) {
-                            currentCoroutineContext().ensureActive()
-                            val read = input.read(buffer)
-                            currentCoroutineContext().ensureActive()
-                            if (read <= 0) break
-                            output.write(buffer, 0, read)
-                            downloadedBytes += read
-                            onProgress(downloadedBytes, totalBytes)
+                    val body = response.body ?: error(runBlocking { getString(Res.string.updates_empty_download_body) })
+                    val totalBytes = body.contentLength().takeIf { it > 0L }
+                    body.byteStream().use { input ->
+                        FileOutputStream(partial).use { output ->
+                            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                            var downloadedBytes = 0L
+                            while (true) {
+                                currentCoroutineContext().ensureActive()
+                                val read = input.read(buffer)
+                                currentCoroutineContext().ensureActive()
+                                if (read <= 0) break
+                                output.write(buffer, 0, read)
+                                downloadedBytes += read
+                                onProgress(downloadedBytes, totalBytes)
+                            }
+                            output.flush()
                         }
-                        output.flush()
                     }
                 }
+                currentCoroutineContext().ensureActive()
+                if (!partial.renameTo(destination)) error(getString(Res.string.updates_download_failed))
+            } finally {
+                partial.delete()
             }
 
             destination.absolutePath
