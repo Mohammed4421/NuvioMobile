@@ -166,6 +166,34 @@ internal class AndroidDownloadScheduler(val context: Context) {
         }
     }
 
+    /** A cached profile list may still say "downloading" after the actual transfer finished. */
+    fun removeDeletedProfileTransfer(item: DownloadItem) {
+        val name = item.fileName
+        if (name.isBlank() || name == "." || name == ".." || File(name).name != name || '\\' in name) return
+        val transfer = store.takeOwned(name, item.id) ?: return
+        DownloadsLiveStatusPlatform.removeNotification(transfer.item.id)
+        if (transfer.item.status == DownloadStatus.Completed) return
+        cancelScheduled(transfer)
+        cleanupScope.launch {
+            lock(name).withLock {
+                if (store.get(name) != null) return@withLock
+                File(directory, "$name.part").delete()
+                val finalFile = File(directory, name)
+                if (finalFile.exists()) return@withLock
+                val document = transfer.documentUri
+                if (document != null) {
+                    // A provider may rename the final document without changing its URI, or keep
+                    // the .part name. Preserve it unless its name and actual length prove it partial.
+                    val expected = transfer.item.totalBytes ?: return@withLock
+                    val size = DownloadDocuments.size(context, document) ?: return@withLock
+                    if (size !in 0L until expected || DownloadDocuments.displayName(context, document)?.endsWith(".part") != true) return@withLock
+                    DownloadDocuments.delete(context, document)
+                }
+                DownloadSubtitleStorage(finalFile.toURI().toString()).remove()
+            }
+        }
+    }
+
     private fun cancelScheduled(transfer: AndroidDownloadTransfer) {
         if (Build.VERSION.SDK_INT >= 34) jobScheduler().cancel(transfer.jobId)
         else WorkManager.getInstance(context).cancelUniqueWork(workName(transfer))
