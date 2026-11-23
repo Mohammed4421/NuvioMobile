@@ -130,7 +130,9 @@
       "composeApp/src/commonMain/kotlin/com/nuvio/app"
     ],
     "required_text": {
-      "settings.gradle.kts": ":composeApp"
-    }
+      "settings.gradle.kts": ":composeApp",
+      "LICENSE": "GNU GENERAL PUBLIC LICENSE\n                       Version 3"
+    },
+    "_licence": "Nuvio Mobile and Nuvio Plus are GPL-3.0; a target under another licence (or without one) is refused, so no Plus code reaches a project whose licence it cannot keep (P7-04). PortKit never transfers or edits LICENSE, and a patch only changes the lines of its hunks, so a target's own copyright and licence notices stay (P7-08, test_portkit_licence.py)."
   }
 }

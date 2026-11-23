@@ -179,7 +179,8 @@
       "test_files": [
         "commonTest/kotlin/com/nuvio/app/features/downloads/PlusDownloadsMigrationTest.kt",
         "androidHostTest/kotlin/com/nuvio/app/features/downloads/DownloadFreeSpaceTest.kt",
-        "androidHostTest/kotlin/com/nuvio/app/features/downloads/AndroidDownloadTransferTest.kt"
+        "androidHostTest/kotlin/com/nuvio/app/features/downloads/AndroidDownloadTransferTest.kt",
+        "androidApp/src/debug/kotlin/com/nuvio/android/BackgroundDownloadTestActivity.kt"
       ]
     },
     {

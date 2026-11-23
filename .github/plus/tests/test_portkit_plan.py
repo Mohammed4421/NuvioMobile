@@ -18,7 +18,7 @@ spec.loader.exec_module(portkit)
 BASE = json.loads((ROOT / "portkit/compatibility.json").read_text())["upstream_base"]["commit"]
 HAVE_BASE = subprocess.run(["git", "-C", str(ROOT), "cat-file", "-e", f"{BASE}^{{commit}}"]).returncode == 0
 LAZY = "composeApp/src/commonMain/kotlin/com/nuvio/app/core/ui/DuplicateSafeLazyKeys.kt"
-ANCHORS = ["settings.gradle.kts", "composeApp/build.gradle.kts", "composeApp/src/commonMain/kotlin/com/nuvio/app/App.kt"]
+ANCHORS = ["LICENSE", "settings.gradle.kts", "composeApp/build.gradle.kts", "composeApp/src/commonMain/kotlin/com/nuvio/app/App.kt"]
 
 
 def upstream_tree(paths):
