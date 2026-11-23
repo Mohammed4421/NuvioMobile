@@ -1,5 +1,6 @@
 import importlib.util
 import io
+import json
 import contextlib
 import tempfile
 import unittest
@@ -51,7 +52,7 @@ class SeedUserDataTest(unittest.TestCase):
 
     def test_six_kinds_and_two_profiles_are_seeded(self):
         self.assertEqual(sorted(["nuvio_addons.xml", "nuvio_downloads.xml", "nuvio_library.xml",
-                                 "nuvio_player_settings.xml", "nuvio_theme_settings.xml"]), seed.FILES)
+                                 "nuvio_player_settings.xml", "nuvio_profile_cache.xml", "nuvio_theme_settings.xml"]), seed.FILES)
         library = seed.entries(seed.read(self.after / "nuvio_library.xml"))
         self.assertIn(("string", "library_payload_1"), library)
         self.assertIn(("string", "library_payload_2"), library)
@@ -85,6 +86,27 @@ class SeedUserDataTest(unittest.TestCase):
         code, out = self.quiet_check()
         self.assertEqual(1, code)
         self.assertIn("folderUri changed", out)
+
+    def test_cached_profile_index_reuse_and_active_profile_change_are_reported(self):
+        file = self.after / "nuvio_profile_cache.xml"
+        root = seed.read(file)
+        element = next(e for e in root if e.get("name") == "profile_payload")
+        cache = json.loads(element.text)
+        cache["profiles"][1]["profile_index"] = 1
+        cache["activeProfileIndex"] = 1
+        element.text = json.dumps(cache)
+        ET.ElementTree(root).write(file, encoding="utf-8", xml_declaration=True)
+        result, output = self.quiet_check()
+        self.assertEqual(1, result)
+        self.assertIn("profile seed-second lost its identity", output)
+        self.assertIn("activeProfileIndex changed", output)
+
+    def test_finished_download_must_still_point_to_its_file(self):
+        file = self.after / "nuvio_downloads.xml"
+        file.write_text(file.read_text().replace(seed.queue.FINISHED_URI, "file:///other.mkv"))
+        result, output = self.quiet_check()
+        self.assertEqual(1, result)
+        self.assertIn("finished download changed", output)
 
     def test_lost_download_data_is_reported(self):
         (self.after / "nuvio_downloads.xml").unlink()

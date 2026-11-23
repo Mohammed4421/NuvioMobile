@@ -50,9 +50,8 @@ last commit of #49, merged as 46814605):
 
 - **E1** Nuvio device tests, run 44904776284 (Android 9 and 14 emulators)
 - **E2** Download notification test, run 44904776282 (Android 9 full; Android 14 pause only)
-- **E3** Nuvio Plus checks, run 44904776470 (2241 host tests, race harness, update device check on
+- **E3** Nuvio Plus checks, run 44904776470 (2241 host tests, race harness, update device check on Android 9 and 14, reference screenshots)
 - **E4** Nuvio Plus checks, run 45104217755 on 8a080aff (#99): host journey tests `AddonJourneyTest`, `LibraryDownloadsJourneyTest`, and the profile isolation tests of `journeys-profiles.md` (Robolectric, SDK 34)
-  Android 9 and 14, reference screenshots)
 
 | Domain | N | F | I | R | P | D | Not covered here |
 |---|---|---|---|---|---|---|---|
@@ -61,7 +60,6 @@ last commit of #49, merged as 46814605):
 | Profiles / accounts | PASS E3, E4 (downloads, queue, subtitle settings and offline PIN per profile) | PASS E4 (damaged list, queue entry, appearance or PIN cache stays in its profile) | PASS E3, E4 (switch, pause or cancel during a download) | PASS E4 (back to a profile while its transfer runs; offline PIN after restart) | PASS E3, E4 | PASS E3, E4 | **F1 open**: a deleted profile's index is reused with its Plus data (NVP15-RISK-0012). PIN online, sign-in and sync are Nuvio's code and need the server (`journeys-profiles.md`) |
 | Library / navigation | PASS E3, E4 (local playback; series opens episodes, back) | PASS E4 (paused, failed, missing never play) | PASS E4 (transfer interrupted by app exit) | PASS E4 (activity recreation, return from background) | PASS E4 (list and tab after restart) | PASS E3, E4 (deleting one keeps the others) | The look and feel of transitions on a device |
 | Add-ons / networking | PASS E3, E4 (install from address and confirmed link, disable, reorder) | PASS E4 (15 malformed manifests, HTTP errors, dropped connection, real 60 s timeout) | PASS E3, E4 (cancel in flight, dismissed link) | PASS E4 (retry; broken manifest keeps the add-on and recovers) | PASS E4 (order, enabled state, address per profile) | PASS E3, E4 | `selectProfile` not driven; no manifest size limit (NVP15-RISK-0011) (`journeys-addons.md`) |
-| Updater / identity | PASS E3 (update device check) | PASS E3 (wrong key, damaged archive) | NOT TESTED | — | PASS E3 (data kept on the emulator update) | PASS E3 | 14→15, 13→15, 12→15 with the real key: in the release run before publishing |
+| Updater / identity | PASS E3 (update device check) | PASS E3 (wrong key, damaged archive) | PASS #105 (truncated download keeps previous APK) | PASS #105 (retry downloads clean replacement) | PASS E3 (data kept on the emulator update) | PASS E3 | 14→15, 13→15, 12→15 with the real key: in the release run before publishing |
 
-No domain has all six cases PASS, so P3-01…P3-06 stay IMPLEMENTED. The rows that only a phone can show
-are the owner's final-release checks (NVP15-CHG-0003).
+The six case columns cover the scenarios named in each cell. Open engineering gaps are recorded in the final column and in the requirement register. The rows that require the owner's phone are post-release checks (NVP15-CHG-0003).

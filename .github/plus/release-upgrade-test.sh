@@ -48,7 +48,20 @@ prepare() {
 }
 # Representative user data, put in place after the earlier build has run once and stopped.
 prefs_dir="/data/data/${package}/shared_prefs"
-partial="/data/data/${package}/files/downloads/Plus_Seed_Show_S01E01_seedd1.mkv.part"
+media_dir="/data/user/0/${package}/files/downloads"
+expected_media="$(mktemp -d)" || fail "Cannot prepare reference downloads"
+trap 'rm -rf "${expected_media}"' EXIT
+head -c 400 /dev/urandom > "${expected_media}/Plus_Seed_Show_S01E01_seedd1.mkv.part" || fail "Cannot prepare partial download"
+head -c 1000 /dev/urandom > "${expected_media}/Plus_Seed_Show_S01E00_seedd0.mkv" || fail "Cannot prepare finished download"
+check_media_bytes() {
+  local file actual
+  for file in "${expected_media}"/*; do
+    actual="$(mktemp)" || fail "Cannot prepare comparison file"
+    adb pull "${media_dir}/${file##*/}" "${actual}" >/dev/null || fail "$1: missing ${file##*/}"
+    cmp -s "${file}" "${actual}" || fail "$1: bytes changed in ${file##*/}"
+    rm -f "${actual}"
+  done
+}
 seed_user_data() {
   local owner file
   rm -rf seed-in seed-out; mkdir -p seed-in
@@ -57,14 +70,17 @@ seed_user_data() {
   done
   python3 -I "${here}/seed-user-data.py" seed seed-in seed-out > /dev/null || fail "Could not write the user data"
   owner="$(adb shell stat -c %u "/data/data/${package}" | tr -d '\r')"
-  adb shell mkdir -p "${prefs_dir}" "/data/data/${package}/files/downloads"
+  adb shell mkdir -p "${prefs_dir}" "${media_dir}" || fail "Could not create fixture directories"
   for file in seed-out/*.xml; do
     adb push "${file}" "${prefs_dir}/$(basename "${file}")" > /dev/null || fail "Could not put ${file} on the emulator"
   done
-  adb shell "printf 'first 400 bytes' > ${partial}"
+  for file in "${expected_media}"/*; do
+    adb push "${file}" "${media_dir}/${file##*/}" >/dev/null || fail "Could not seed ${file##*/}"
+  done
   adb shell chown -R "${owner}:${owner}" "${prefs_dir}" "/data/data/${package}/files"
-  adb shell chmod 660 "${prefs_dir}"/*.xml "${partial}"
+  adb shell "chmod 660 ${prefs_dir}/*.xml ${media_dir}/Plus_Seed_Show_S01E0*"
   adb shell restorecon -RF "${prefs_dir}" "/data/data/${package}/files" > /dev/null 2>&1 || true
+  check_media_bytes "Before installing the candidate"
 }
 check_user_data() {
   local file
@@ -73,7 +89,7 @@ check_user_data() {
     adb pull "${prefs_dir}/${file}" "seed-after/${file}" > /dev/null 2>&1 || true
   done
   python3 -I "${here}/seed-user-data.py" check seed-after || fail "User data lost or changed in the update from $1 (see above)"
-  adb shell "test -f ${partial}" || fail "The paused episode's partial file was removed in the update from $1"
+  check_media_bytes "After the update from $1"
 }
 # Installs the release over what is installed: an update, data kept, version higher, it opens.
 update_to_release() {
@@ -118,6 +134,7 @@ if (( sdk < 28 )); then
   [[ "${verdict}" == Failure* ]] || fail "Android ${android} accepted the release; it must be refused (v3 only, needs Android 9)"
   [[ "$(first_install)" == "${before_time}" && "$(version_code)" == "${before_version}" && "$(marker)" == kept ]] \
     || fail "Build 12 or its data changed after the refused install"
+  check_user_data "Build 12 after the refused install"
   line="- Release on Android ${android}: refused as intended (${verdict}); build 12 and its data untouched."
   echo "${line}" >> "${result}"; echo "::notice::${line#- }"
   exit 0

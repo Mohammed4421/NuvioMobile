@@ -18,12 +18,13 @@ adb wait-for-device
 echo "Android $(adb shell getprop ro.build.version.release | tr -d '\r'), ABIs $(adb shell getprop ro.product.cpu.abilist | tr -d '\r')"
 
 launch_and_check() {
-  adb logcat -c || true
-  run adb shell monkey -p "${package}" -c android.intent.category.LAUNCHER 1 || fail "$1 could not be launched"
+  timeout 15 adb logcat -c || true
+  run timeout 30 adb shell monkey -p "${package}" -c android.intent.category.LAUNCHER 1 || fail "$1 could not be launched"
   sleep 25
+  timeout 20 adb wait-for-device || true
   local pid
-  pid="$(adb shell pidof "${package}" | tr -d '\r' || true)"
-  adb logcat -d -b crash > crash.log 2>/dev/null || adb logcat -d > crash.log
+  pid="$(timeout 20 adb shell pidof "${package}" | tr -d '\r' || true)"
+  timeout 30 adb logcat -d -b crash > crash.log 2>/dev/null || timeout 30 adb logcat -d -t 500 > crash.log 2>/dev/null || : > crash.log
   if grep -q "FATAL EXCEPTION" crash.log && grep -q "${package}" crash.log; then
     grep -A30 "FATAL EXCEPTION" crash.log | head -60
     fail "$1 crashed on launch"
@@ -94,14 +95,14 @@ launch_and_check "New build"
 # Beyond launching: the app draws its UI, survives Back, rotation (tablet-like landscape) and an
 # Arabic (right-to-left) start. Screenshots are kept for a person to look at.
 mkdir -p screens
-shot() { adb exec-out screencap -p > "screens/$1.png" || true; }
+shot() { timeout 30 adb exec-out screencap -p > "screens/$1.png" || true; }
 ui_has_app() {
-  adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 || return 1
-  adb shell cat /sdcard/ui.xml | tr -d '\r' > "screens/$1.xml"
+  timeout 30 adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1 || return 1
+  timeout 20 adb shell cat /sdcard/ui.xml | tr -d '\r' > "screens/$1.xml"
   grep -q "package=\"${package}\"" "screens/$1.xml"
 }
-alive() { [[ -n "$(adb shell pidof "${package}" | tr -d '\r')" ]]; }
-crashed() { adb logcat -d -b crash 2>/dev/null | grep -q "${package}"; }
+alive() { [[ -n "$(timeout 20 adb shell pidof "${package}" | tr -d '\r' || true)" ]]; }
+crashed() { timeout 20 adb logcat -d -b crash 2>/dev/null | grep -q "${package}"; }
 
 shot portrait
 ui_has_app portrait || fail "The new build shows no UI of its own after launch"
