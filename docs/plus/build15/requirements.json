@@ -2298,6 +2298,13 @@
           "commit": "f4d85309de20c370b34c5157c53c21eda4b74477",
           "result": "PASS",
           "what": "PortKit transfer tests on #99 (journey tests of #91, #92, #94 added, feature records regenerated): validate, plan, trial, apply, transfer of the three portable features to Nuvio 1.0.0 and fork A, build and 21 transferred tests (earlier runs 44836307313, 45009048362, 45029398712, 45039537011)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45116393551,
+          "commit": "14287a14b3a812b847b74591697bd0796c4d64eb",
+          "what": "After updating the profile cleanup feature records, PortKit passed plan checks, transferred and tested portable features on upstream 1.0.0 and fork fixture A, and retained its report.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2466,6 +2473,13 @@
           "commit": "f4d85309de20c370b34c5157c53c21eda4b74477",
           "result": "PASS",
           "what": "Commands validate, inventory, plan, trial, apply and matrix run by the transfer tests on #99 (journey tests of #91, #92, #94 added, feature records regenerated)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45116393551,
+          "commit": "14287a14b3a812b847b74591697bd0796c4d64eb",
+          "what": "After updating the profile cleanup feature records, PortKit passed plan checks, transferred and tested portable features on upstream 1.0.0 and fork fixture A, and retained its report.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2572,6 +2586,13 @@
           "commit": "f4d85309de20c370b34c5157c53c21eda4b74477",
           "result": "PASS",
           "what": "The transfer run's own summary: real plan, apply and test output for both targets (on #99, journey tests of #91, #92, #94 added and feature records regenerated; earlier runs 45029398712, 45039537011)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45116393551,
+          "commit": "14287a14b3a812b847b74591697bd0796c4d64eb",
+          "what": "After updating the profile cleanup feature records, PortKit passed plan checks, transferred and tested portable features on upstream 1.0.0 and fork fixture A, and retained its report.",
+          "result": "PASS"
         }
       ],
       "untested": [],
