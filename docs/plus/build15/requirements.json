@@ -1097,7 +1097,7 @@
       ],
       "untested": [
         "Contrast and focus order not measured; TalkBack on a device: NEEDS PHYSICAL DEVICE.",
-        "Touch targets below 48 dp measured by #93 (PLUS-A11Y lines): 40x40 dp delete, retry, pause and resume season buttons; 40x35 dp pause season in landscape; 80x40 and 93x40 dp header buttons (NVP15-RISK-0013). Contrast: lowest 5.2:1, every measured text at or above 4.5:1"
+        "Touch area of controls drawn under 48 dp on the downloads queue (#93: 40x40 dp icon buttons, 40x35 dp pause season in landscape, 80x40 and 93x40 dp header buttons): Compose widens them to its 48 dp minimum touch size unless a neighbour is closer; not measured (NVP15-RISK-0013). Contrast: lowest 5.2:1, every measured text at or above 4.5:1"
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",

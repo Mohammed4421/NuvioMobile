@@ -121,17 +121,17 @@
     },
     {
       "id": "NVP15-RISK-0013",
-      "state": "FAIL",
-      "reason": "Touch targets below the 48 dp guideline on the downloads queue (#93 measurement): delete, retry, pause and resume season 40x40 dp, pause season 40x35 dp in landscape, header buttons 80x40 and 93x40 dp",
-      "needs": "Enlarge the touch area to 48 dp without changing the look (Modifier.minimumInteractiveComponentSize or padding)",
+      "state": "NOT TESTED",
+      "reason": "The #93 measurement prints drawn bounds under 48 dp on the downloads queue (icon buttons 40x40 dp, pause season 40x35 dp in landscape, header buttons 80x40 and 93x40 dp). That is the drawn size, not the touch area: Compose widens a smaller target to its 48 dp minimum touch size unless a neighbour is closer (the measurement's own comment). The real touch area was not measured",
+      "needs": "Measure the touch area (a tap just outside the drawn bounds, or the touch bounds) on these screens",
       "requirements": [
         "P4-09"
       ],
-      "impact": "Buttons are harder to hit; nothing else",
-      "priority": "P2",
-      "alternatives": "Enlarge the touch area (look unchanged); keep and document",
+      "impact": "None shown: likely no defect; open until the touch area is measured",
+      "priority": "P3",
+      "alternatives": "Measure the touch area; enlarge only a target that stays under 48 dp",
       "decision_owner": "engineering",
-      "closes_when": "The measurement prints no target below 48 dp on these screens"
+      "closes_when": "Every listed control is shown to take taps over at least 48 x 48 dp"
     },
     {
       "id": "NVP15-RISK-0014",
