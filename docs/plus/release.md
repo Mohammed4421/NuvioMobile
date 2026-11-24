@@ -22,6 +22,12 @@ pull requests of one build) cannot release a partial build, and no run has to be
    refused (`release-upgrade`).
 5. Publishing waits for the owner's second approval, then makes the `custom-N` release.
 
+For signed upgrade evidence before publishing, select `validation_only` when starting the
+workflow. Use the current branch head and obtain the signing approval as usual. The run verifies
+the signed APKs and exercises the same emulator matrix, preserving the reports in Actions.
+The publish job is skipped and does not request publication approval. Run again with
+`validation_only` unchecked after recording and reviewing the evidence.
+
 Nothing above is skipped for a rescue build (`rollback.md`).
 
 In a hand-started run the review gate also checks the release scope
@@ -36,5 +42,6 @@ report is in the run's summary and in the `nuvio-plus-failure-report` artifact w
 | Event | Checks | Review gate | Release signing | Update tests | Published |
 |---|---|---|---|---|---|
 | Merge (push) | yes | yes | no | no | never |
+| Run by hand, head and `validation_only` | yes | yes | after approval 1 | yes | never |
 | Run by hand, `release_commit` = head | yes | yes | after approval 1 | yes | after approval 2 |
 | Run by hand, anything else | yes | yes | no (fails) | no | never |

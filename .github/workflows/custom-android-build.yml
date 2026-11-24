@@ -18,9 +18,13 @@ on:
   workflow_dispatch:
     inputs:
       release_commit:
-        description: "Publish: the full commit of the branch head (40 hex). Any other value publishes nothing."
+        description: "The full commit of the branch head (40 hex)."
         required: true
         type: string
+      validation_only:
+        description: "Sign and test the candidate with approval, without publishing a release."
+        type: boolean
+        default: false
 
 # Releases queue one after another. Checks after a merge have their own queue, so a release waiting
 # for the owner's approval never holds them up (and they never publish).
@@ -420,7 +424,7 @@ jobs:
     name: Publish
     needs: [checks, review-gate, release-identity, release-sign, release-verify, release-upgrade]
     # Only APKs signed with the pinned release key, verified, and moved from build 12 on emulators.
-    if: needs.release-identity.outputs.publish == 'true'
+    if: github.event_name == 'workflow_dispatch' && inputs.validation_only == false && needs.release-identity.outputs.publish == 'true'
     # A second approval by the owner, after every test above passed. It reads no secret of the
     # environment (none is referenced here); the environment only makes it wait for the owner.
     environment: plus-release

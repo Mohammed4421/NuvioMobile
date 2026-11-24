@@ -255,8 +255,19 @@ class WorkflowPolicyTest(unittest.TestCase):
 
     def test_every_release_job_waits_for_the_identity_decision(self):
         jobs = self.workflows["custom-android-build.yml"]["jobs"]
-        for job_id in ("release-sign", "release-verify", "release-upgrade", "publish"):
+        for job_id in ("release-sign", "release-verify", "release-upgrade"):
             self.assertEqual("needs.release-identity.outputs.publish == 'true'", jobs[job_id]["if"], job_id)
+
+    def test_a_validation_only_run_cannot_enter_the_publish_environment(self):
+        workflow = self.workflows["custom-android-build.yml"]
+        validation = workflow["on"]["workflow_dispatch"]["inputs"]["validation_only"]
+        self.assertEqual("boolean", validation["type"])
+        self.assertIs(False, validation["default"])
+        self.assertEqual(
+            "github.event_name == 'workflow_dispatch' && inputs.validation_only == false "
+            "&& needs.release-identity.outputs.publish == 'true'",
+            workflow["jobs"]["publish"]["if"],
+        )
 
     def test_only_release_signing_reads_the_release_key(self):
         for name, _, job_id, job in self.each_job():
