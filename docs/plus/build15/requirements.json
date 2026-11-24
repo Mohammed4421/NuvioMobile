@@ -2132,6 +2132,13 @@
           "commit": "8578adff19ab211b027c2a59175ba55e4e171c6d",
           "what": "PR #112 Nuvio Plus checks passed, including the workflow policy suite confirming validation-only runs cannot enter the publish environment and protected signing remains isolated.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45440038053,
+          "commit": "643f740522b66de086ff39696b586ab0a67c7ade",
+          "what": "PR #115 Nuvio Plus checks succeeded; job 138608287622 passed 374 tests including workflow permissions, signing-secret isolation and validation-only publish exclusion after integration of PRs #111–#114.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2226,6 +2233,13 @@
           "run": 45412742897,
           "commit": "8578adff19ab211b027c2a59175ba55e4e171c6d",
           "what": "PR #112 Nuvio Plus checks passed, including the workflow policy suite confirming validation-only runs cannot enter the publish environment and protected signing remains isolated.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45440038053,
+          "commit": "643f740522b66de086ff39696b586ab0a67c7ade",
+          "what": "PR #115 Nuvio Plus checks succeeded; job 138608287622 passed 374 tests including workflow permissions, signing-secret isolation and validation-only publish exclusion after integration of PRs #111–#114.",
           "result": "PASS"
         }
       ],
