@@ -28,13 +28,34 @@ version_code() { adb shell dumpsys package "${package}" | tr -d '\r' | sed -n 's
 marker() { adb shell "cat /data/data/${package}/files/plus-upgrade-marker 2>/dev/null" | tr -d '\r'; }
 prefs() { adb shell "ls /data/data/${package}/shared_prefs 2>/dev/null" | tr -d '\r' | sort; }
 check() { bash "${here}/update-device-check.sh" "$@" || fail "The app's update check gave the wrong verdict ($3)"; }
+require_device() {
+  local state
+  if ! state="$(timeout 10 adb get-state 2>&1)" || [[ "${state}" != device ]]; then
+    timeout 10 adb devices -l || true
+    fail "$1: emulator/ADB unavailable (${state:-no state}); app liveness NOT TESTED"
+  fi
+}
+
 launch() {
-  adb logcat -c || true
-  adb shell monkey -p "${package}" -c android.intent.category.LAUNCHER 1 > /dev/null || fail "$1 could not be launched"
+  local pid crash
+  require_device "$1 before launch"
+  timeout 15 adb logcat -b crash -c || fail "$1: could not clear the emulator crash buffer"
+  if ! timeout 30 adb shell monkey -p "${package}" -c android.intent.category.LAUNCHER 1 > /dev/null; then
+    require_device "$1 during launch"
+    fail "$1 could not be launched"
+  fi
   sleep 20
-  [[ -n "$(adb shell pidof "${package}" | tr -d '\r')" ]] || fail "$1 is not running after launch"
-  ! adb logcat -d -b crash 2>/dev/null | grep -q "${package}" || fail "$1 crashed on launch"
-  adb shell am force-stop "${package}"
+  timeout 20 adb wait-for-device || fail "$1: emulator/ADB unavailable after launch; app liveness NOT TESTED"
+  require_device "$1 after launch"
+  pid="$(timeout 20 adb shell pidof "${package}" | tr -d '\r')" || true
+  require_device "$1 after checking the app process"
+  crash="$(timeout 30 adb logcat -d -b crash)" || fail "$1: could not read the emulator crash buffer"
+  if grep -Fq "${package}" <<< "${crash}"; then
+    printf '%s\n' "${crash}"
+    fail "$1 crashed on launch"
+  fi
+  [[ -n "${pid}" ]] || fail "$1 is not running after launch"
+  timeout 15 adb shell am force-stop "${package}" || fail "$1 could not be stopped after launch"
 }
 # Installs <apk> fresh, opens it once and leaves a data marker.
 prepare() {
