@@ -259,7 +259,11 @@
     107,
     108,
     109,
-    110
+    110,
+    111,
+    112,
+    113,
+    114
   ],
   "excluded_pull_requests": {
     "2": "Nuvio 1.1.0-beta.2 trial merge: pre-release, never part of Build 15 (owner's rule 9)"
