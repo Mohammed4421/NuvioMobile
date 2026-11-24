@@ -471,6 +471,13 @@ jobs:
             [[ "${cert}" == "${identity}" ]] || { echo "::error::${apk} is not signed with the release key"; exit 1; }
           done
 
+      - name: Mandatory pre-release readiness (P0–P9)
+        # Signing and the upgrade matrix run before this final publication guard because
+        # their results are themselves required release evidence. The previous build remains
+        # published when a required requirement or owner-approved phase gate is incomplete.
+        # Owner-only personal device checks remain a separate post-release obligation.
+        run: python3 -I .github/plus/release-readiness-check.py
+
       - name: The branch head is still this commit
         # Inline, no file of the commit. The branch may have moved while the checks ran or the owner's
         # approval was pending: only the commit that is still the branch head is published.

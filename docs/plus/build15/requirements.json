@@ -2118,6 +2118,13 @@
           "commit": "4cec03fb57bd5ec18c7684e9911f71c3d323a29c",
           "what": "PR #108 integrated head: full Nuvio Plus checks SUCCESS on exact SHA, with the review-gate and release-script workflow policy tests verifying permissions after merging notification workflow improvements from #107 and the security logging fixes from #106.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45337337013,
+          "commit": "aa6bbbcecb69bf1872bbb744a1a9ee72c850edfe",
+          "what": "Nuvio Plus checks on PR #109 after adding fail-closed release-readiness gate to custom-android-build.yml: Tests of the review gate and release scripts (test_workflow_policy.py, test_release_readiness_check.py) passed.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2198,6 +2205,13 @@
           "run": 45260620064,
           "commit": "4cec03fb57bd5ec18c7684e9911f71c3d323a29c",
           "what": "PR #108 integrated head: full Nuvio Plus checks SUCCESS on exact SHA including review-gate and release-script tests; the merged CI policies retain separation of untrusted test code from protected signing keys.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45337337013,
+          "commit": "aa6bbbcecb69bf1872bbb744a1a9ee72c850edfe",
+          "what": "Nuvio Plus checks on PR #109 after adding fail-closed release-readiness gate to custom-android-build.yml: Tests of the review gate and release scripts (test_workflow_policy.py, test_release_readiness_check.py) passed.",
           "result": "PASS"
         }
       ],
