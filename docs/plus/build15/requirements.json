@@ -782,17 +782,24 @@
           "commit": "7c76772395b9746209809fcf6b2de59954d956df",
           "what": "Nuvio Plus checks on #100 (same tests as run 45104217755 on #99, with the journey matrix updated; 2383 tests, 0 failing, 6 player screenshot tests skipped): ProfileDownloadsIsolationTest (8), ProfileSeasonQueueIsolationTest (5), ProfileSubtitleSettingsIsolationTest (3), ProfilePinOfflineTest (5), all passing: per-profile isolation of downloads, season queue, subtitle settings and the offline PIN across switches, damage, restart and restore (journeys-profiles.md six-case table)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45151305429,
+          "commit": "6245b2ae639b1103f606d88e38dbcd995c62ed44",
+          "what": "PR #101 Nuvio Plus checks PASS: ProfileDeletedDataCleanupTest and ProfileDeletedQueueCleanupTest on confirmed local deleted-index cleanup; other profiles' data retained, completed media preserved. Does not exercise live account server deletion.",
+          "result": "PASS"
         }
       ],
       "untested": [
-        "Finding F1 (journeys-profiles.md): a deleted profile's index is reused together with its Plus data, so a new profile at that index sees the deleted profile's download list and waiting season episodes. Isolation is not met until fixed or decided (NVP15-RISK-0012)",
+        "Finding F1 (NVP15-RISK-0012) fixed locally in #101, but signed-in server deletion, remote profile-snapshot sync and a second device remain NOT TESTED without a test account/server.",
         "Sign-in, sign-out, session expiry, account switch; cloud sync of profiles and settings; setting, changing or clearing a PIN, online PIN check and lock-out: need the Nuvio account server (Nuvio's code)",
         "ProfileRepository.selectProfile end to end and deleteProfile itself (server or session needed)",
         "Damaged download preferences read again in the same process (loaded once per process)"
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Owner decision on F1 (NVP15-RISK-0012); then fix and test, or accept as documented.",
+      "next": "Finish server-based sign-in/delete and second-device profile sync journey testing when a test account/environment is available; preserve post-release-only personal checks separately.",
       "nvp15": "NVP15-REQ-0023",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -828,6 +835,13 @@
           "run": 45171530621,
           "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
           "what": "Nuvio Plus checks on #104 (merged #101 and #105, updated journeys.md): Unit tests of Nuvio Plus (LibraryDownloadsJourneyTest) and emulator checks passed.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45260620064,
+          "commit": "4cec03fb57bd5ec18c7684e9911f71c3d323a29c",
+          "what": "PR #108 combined #106/#107 integrated head: full Nuvio Plus checks SUCCESS on exact SHA, with unit journey tests including LibraryDownloadsJourneyTest, build/signing/update and Android 14 and 9 emulators. The updated journeys.md F1 status is documentation of the already-tested #101 profile cleanup; remaining look-and-feel personal checks are NOT TESTED.",
           "result": "PASS"
         }
       ],
@@ -873,6 +887,13 @@
           "run": 45171530621,
           "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
           "what": "Nuvio Plus checks on #104 (merged #101 and #105, updated journeys.md): Unit tests of Nuvio Plus (AddonJourneyTest) passed.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45260620064,
+          "commit": "4cec03fb57bd5ec18c7684e9911f71c3d323a29c",
+          "what": "PR #108 combined #106/#107 integrated head: full Nuvio Plus checks SUCCESS on exact SHA, including AddonJourneyTest host tests, Android 14 and 9 app/emulator checks, and security log regression tests. The updated journeys.md does not falsely claim account/server or provider real-device tests.",
           "result": "PASS"
         }
       ],
@@ -2090,6 +2111,13 @@
           "commit": "d30ad14ff7c96b826a99009b3a1ab66cfeed8a3a",
           "what": "PR #107 workflow policy tests passed at this exact commit (Nuvio Plus checks: review gate and release scripts). The API 36 emulator option changed for test stability; required Actions permissions remain unchanged.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45260620064,
+          "commit": "4cec03fb57bd5ec18c7684e9911f71c3d323a29c",
+          "what": "PR #108 integrated head: full Nuvio Plus checks SUCCESS on exact SHA, with the review-gate and release-script workflow policy tests verifying permissions after merging notification workflow improvements from #107 and the security logging fixes from #106.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2163,6 +2191,13 @@
           "run": 45246987111,
           "commit": "d30ad14ff7c96b826a99009b3a1ab66cfeed8a3a",
           "what": "PR #107 workflow policy tests passed at this exact commit, checking the separation of untrusted test jobs and protected signing secrets. The change affects emulator graphics settings only, not access to secrets.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45260620064,
+          "commit": "4cec03fb57bd5ec18c7684e9911f71c3d323a29c",
+          "what": "PR #108 integrated head: full Nuvio Plus checks SUCCESS on exact SHA including review-gate and release-script tests; the merged CI policies retain separation of untrusted test code from protected signing keys.",
           "result": "PASS"
         }
       ],

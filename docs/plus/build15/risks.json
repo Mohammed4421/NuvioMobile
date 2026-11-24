@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "note": "Spec v1.1 \u00a722: every FAIL / BLOCKED / NOT TESTED / NEEDS PHYSICAL DEVICE and open decision; a critical one blocks the release until its evidence exists.",
+  "note": "Spec v1.1 §22: every FAIL / BLOCKED / NOT TESTED / NEEDS PHYSICAL DEVICE and open decision; a critical one blocks the release until its evidence exists.",
   "risks": [
     {
       "id": "NVP15-RISK-0003",
@@ -44,7 +44,7 @@
     {
       "id": "NVP15-RISK-0005",
       "state": "NOT TESTED",
-      "reason": "Release run 44989102295 (custom-15, a3047e63): 14\u219215 and 12\u219215 with the real key PASS on Android 9 and 14, Android 8 refused. 13\u219215 not run as its own step (Build 13 shares Build 14's key). Data kept is checked on the emulator update with a seeded season queue; a fuller representative data set is open.",
+      "reason": "Release run 44989102295 (custom-15, a3047e63): 14→15 and 12→15 with the real key PASS on Android 9 and 14, Android 8 refused. 13→15 not run as its own step (Build 13 shares Build 14's key). Data kept is checked on the emulator update with a seeded season queue; a fuller representative data set is open.",
       "needs": "Release run (plus-release environment)",
       "requirements": [
         "P6-14",
@@ -56,7 +56,7 @@
       "priority": "P0",
       "alternatives": "None: needs the release key",
       "decision_owner": "owner",
-      "closes_when": "Upgrade from Build 13 run as its own step, and representative user data (settings, add-ons, profiles, downloads, queue, subtitle settings) seeded and checked after 12/13/14\u219215, before the next release (PRE-RELEASE REQUIRED)"
+      "closes_when": "Upgrade from Build 13 run as its own step, and representative user data (settings, add-ons, profiles, downloads, queue, subtitle settings) seeded and checked after 12/13/14→15, before the next release (PRE-RELEASE REQUIRED)"
     },
     {
       "id": "NVP15-RISK-0006",
@@ -151,6 +151,14 @@
       "closed_on": "2026-11-22",
       "closes_when": "A failure with #51 diagnostics shows the cause, or no recurrence over further runs",
       "evidence": "Nuvio device tests since #51's diagnostics (2026-11-21 12:54 to 2026-11-22): 85 Android 9/14/16 jobs passed in 32 successful runs, each running MpvSurfaceTest, SubtitlePlaybackTest (both engines, ExoPlayer add-on subtitles) and SubtitleSettingsTest. Every failed run had a named cause: 44908042187 the rejected #55 change (mpv opened once; a real regression the tests caught), 44911126352 and 44917531198 new tests while written, 44931128379 the Android 16 wrong-thread fix (#63) and a stale test reading, 7 runs the Android 17 emulator image. No failure of these tests without a cause."
+    },
+    {
+      "id": "NVP15-RISK-0012",
+      "was": "FAIL",
+      "reason": "F1: after deletion, a newly created profile could reuse the prior index and observe the old Plus download list and queued episodes, including subtitle appearance.",
+      "closed_on": "2026-11-23",
+      "closes_when": "Confirmed deletion/reused index clears old Plus state without touching another profile's data; completed downloaded media files retained per owner's decision.",
+      "evidence": "PR #101 merged (merge SHA 9419874825d6f9981b4f30af9b72c6dc32b069cd); Nuvio Plus checks PASS run 45151305429 at 6245b2ae639b1103f606d88e38dbcd995c62ed44; ProfileDeletedDataCleanupTest and ProfileDeletedQueueCleanupTest. Signed-in server RPC, second-device deletion and cloud sync remain NOT TESTED under P3-03."
     }
   ]
 }
