@@ -97,6 +97,11 @@
         "run": "https://github.com/Mohammed4421/NuvioMobile/actions/runs/45009048362",
         "commit": "c8af53233b0c29f0bb244162fca8a2792d45bb31"
       }
+    },
+    "safe-network-logging": {
+      "level": "manual",
+      "verified": false,
+      "reason": "Touches five upstream Nuvio addon/search/plugin sources; must be reviewed for each target, not automatically transferred"
     }
   },
   "shared_files": {

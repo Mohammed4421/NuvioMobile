@@ -517,23 +517,10 @@ object SearchRepository {
         val current = _discoverUiState.value
         val selectedCatalog = current.selectedCatalog ?: return
         val requestedSkip = if (reset) 0 else current.nextSkip ?: return
-        val requestUrl = if (selectedCatalog.server != null) {
-            selectedCatalog.key
-        } else {
-            buildCatalogUrl(
-                manifestUrl = selectedCatalog.manifestUrl,
-                type = selectedCatalog.type,
-                catalogId = selectedCatalog.catalogId,
-                genre = current.selectedGenre,
-                search = null,
-                skip = requestedSkip.takeIf { it > 0 },
-            )
-        }
-
         log.d {
             "Discover request reset=$reset addon=${selectedCatalog.addonName} type=${selectedCatalog.type} " +
                 "catalogId=${selectedCatalog.catalogId} catalogKey=${selectedCatalog.key} " +
-                "genre=${current.selectedGenre ?: "<all>"} skip=$requestedSkip url=$requestUrl"
+                "genre=${current.selectedGenre ?: "<all>"} skip=$requestedSkip"
         }
 
         _discoverUiState.value = current.copy(
@@ -614,10 +601,10 @@ object SearchRepository {
                     if (latest.selectedCatalogKey != selectedCatalog.key || latest.selectedGenre != current.selectedGenre) {
                         return@fold
                     }
-                    log.e(error) {
+                    log.e {
                         "Discover request failed catalogKey=${selectedCatalog.key} addon=${selectedCatalog.addonName} " +
                             "type=${selectedCatalog.type} catalogId=${selectedCatalog.catalogId} " +
-                            "genre=${current.selectedGenre ?: "<all>"} skip=$requestedSkip url=$requestUrl"
+                            "genre=${current.selectedGenre ?: "<all>"} skip=$requestedSkip error=${error::class.simpleName}"
                     }
                     _discoverUiState.value = latest.copy(
                         items = if (reset) emptyList() else latest.items,

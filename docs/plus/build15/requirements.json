@@ -1716,6 +1716,13 @@
           "commit": "fa72d3276ed01117738bd6c5132478d44d2ab2d7",
           "what": "#70 (plus-build.yml prints the P4-11 comparison): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: Nuvio Plus checks built and installed APKs and verified package/signature/version; reviewed diff to plus-build.yml changes only the emulator renderer, not APK manifest, exported components, or permissions. The prior attack-surface APK scan remains applicable; no fresh attack-surface scan is claimed here.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -1822,6 +1829,13 @@
           "run": 44980253637,
           "commit": "fa72d3276ed01117738bd6c5132478d44d2ab2d7",
           "what": "#70 (plus-build.yml prints the P4-11 comparison): 'Attack surface against the reviewed list (P6)' passed on the 4 built APKs",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: builds and package/update checks passed; the plus-build.yml edit selects software GPU only in CI, while FileProvider paths, permission sources and APK metadata are unchanged. This is an impact revalidation of the prior APK surface evidence, not a new FileProvider device test.",
           "result": "PASS"
         }
       ],
@@ -1935,6 +1949,20 @@
           "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
           "what": "Nuvio Plus checks on #104 (reconciled security.md with security-logs-storage.md): Tests of the review gate and release scripts (test_no_secret_logging.py) passed.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105673,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: security logging scanner and regression tests passed after changing configured addon/plugin URL logging and security audit; review-script job succeeded.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: Nuvio Plus checks completed successfully; its review-script test job verified test_no_secret_logging.py after removing configured URLs and updating security.md. The report still marks credentialed runtime logcat capture NOT TESTED.",
+          "result": "PASS"
         }
       ],
       "untested": [
@@ -1980,6 +2008,13 @@
           "run": 44980253637,
           "commit": "fa72d3276ed01117738bd6c5132478d44d2ab2d7",
           "what": "#70: OSV step on the release APK libraries passed (0 blocking)",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: APK build and static CI passed. Changes contain no dependency, Gradle or OSV inventory edits; previously recorded OSV result on the unchanged dependency graph remains applicable. A fresh OSV scan on the signed final release is still required.",
           "result": "PASS"
         }
       ],
@@ -2044,9 +2079,23 @@
         },
         {
           "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: the workflow-policy test job passed after changing CI emulator graphics options; workflow permission and token-scope policies unchanged and reviewed.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
           "run": 45246987111,
           "commit": "d30ad14ff7c96b826a99009b3a1ab66cfeed8a3a",
           "what": "PR #107 workflow policy tests passed at this exact commit (Nuvio Plus checks: review gate and release scripts). The API 36 emulator option changed for test stability; required Actions permissions remain unchanged.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45259703036,
+          "commit": "16ed8d4a3df5a426290f6667cc4e3a472dc996a7",
+          "what": "PR #106 integrated head after #107: Nuvio Plus checks workflow completed SUCCESS on this exact SHA. Its review gate / release-script policy tests, APK build and both emulator checks passed with the merged notification workflow and security code; workflow permissions remain under the tested policy.",
           "result": "PASS"
         }
       ],
@@ -2111,9 +2160,23 @@
         },
         {
           "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: workflow-policy tests passed for the current workflows; signing identities and secret handling remain in the separate protected environment, not the untrusted PR tests.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
           "run": 45246987111,
           "commit": "d30ad14ff7c96b826a99009b3a1ab66cfeed8a3a",
           "what": "PR #107 workflow policy tests passed at this exact commit, checking the separation of untrusted test jobs and protected signing secrets. The change affects emulator graphics settings only, not access to secrets.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45259703036,
+          "commit": "16ed8d4a3df5a426290f6667cc4e3a472dc996a7",
+          "what": "PR #106 integrated head after #107: Nuvio Plus checks workflow completed SUCCESS on this exact SHA. The review-gate and release-script unit tests passed, including checks that test code receives no signing secrets and signing jobs run only verified artifacts; the merged notification workflow was included.",
           "result": "PASS"
         }
       ],
@@ -2246,6 +2309,20 @@
           "run": 45171530621,
           "commit": "bb699e5341e467b1b335aeb949f403eef05e0a89",
           "what": "Nuvio Plus checks on #104 (reconciled security.md MASVS table with security-logs-storage.md): Tests of the review gate and release scripts (test_no_secret_logging.py) passed.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105673,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: security logging scanner and regression tests passed after changing configured addon/plugin URL logging and security audit; review-script job succeeded.",
+          "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45242717827,
+          "commit": "f2e7726fe2cbb7999a88ad830dbb2f4ec2f5d664",
+          "what": "PR #106 on the exact head: logging security test and workflow-review script jobs passed after updating the MASVS/storage report. Runtime logging with real credentials and device-to-device backup remain NOT TESTED as documented.",
           "result": "PASS"
         }
       ],
@@ -2503,6 +2580,13 @@
           "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
           "result": "PASS",
           "what": "On upstream 1.0.0 and fork fixture A, three portable features transferred and 21 transferred tests passed per target."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105653,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2567,7 +2651,7 @@
           "file": ".github/plus/tests/test_portkit_records.py",
           "name": "test_every_feature_has_every_field",
           "result": "PASS",
-          "what": "Every one of the 15 features has ID, supported versions, source sets, integration points, Plus files, dependencies, data formats, tests, non-transferable parts, limits and known conflicts, generated from the registry"
+          "what": "Every one of the 16 features has ID, supported versions, source sets, integration points, Plus files, dependencies, data formats, tests, non-transferable parts, limits and known conflicts, generated from the registry"
         },
         {
           "kind": "test",
@@ -2624,6 +2708,13 @@
           "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
           "result": "PASS",
           "what": "The updated compatibility manifest validated and both upstream 1.0.0 and fork fixture A passed application and build for the three portable features."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105653,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2658,12 +2749,19 @@
           "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
           "result": "PASS",
           "what": "PortKit validation reported all 15 features consistent: 3 portable, 5 adapter-required, 4 manual, 3 unsupported."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105653,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every feature has a level.",
-      "next": "Keep current.",
+      "next": "Keep levels for all 16 classified features; manual security feature not automatically transferred.",
       "nvp15": "NVP15-REQ-0074",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2699,6 +2797,13 @@
           "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
           "result": "PASS",
           "what": "Both trials applied on isolated portkit-trial/transfer branches and reported unchanged target checkouts. The transferred tests passed on each target."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105653,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
+          "result": "PASS"
         }
       ],
       "untested": [],
@@ -2819,12 +2924,19 @@
           "commit": "47bb1c107307456f58054e5cb53eeb26550ccca4",
           "result": "PASS",
           "what": "The transfer job recorded a summary for upstream 1.0.0 and fork fixture A, including the transferred feature names and four passing test-suite counts for each target."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45233105653,
+          "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
+          "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
+          "result": "PASS"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "All seven outputs in portkit/.",
-      "next": "Keep current.",
+      "next": "Keep records current for 16 features, including manual security logging hardening.",
       "nvp15": "NVP15-REQ-0078",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2853,11 +2965,11 @@
         }
       ],
       "untested": [
-        "3 of 15 features verified by real transfer; the other 12 are classified (5 adapter-required, 4 manual, 3 unsupported) and refused outside a trial, with the reason in their record."
+        "3 of 16 features verified by real transfer; the other 13 are classified (5 adapter-required, 5 manual, 3 unsupported) and refused outside a trial, with the reason in their record."
       ],
       "needs_physical_device": false,
       "acceptance": "Every portable feature transferred and tested on both targets; others with documented reason.",
-      "next": "Prove or classify each remaining feature.",
+      "next": "Three portable features verified on both targets; the new manual safe-network-logging feature is classified and awaits P7 owner gate approval; do not claim automatic transfer.",
       "nvp15": "NVP15-REQ-0079",
       "release_class": "PRE-RELEASE REQUIRED"
     },

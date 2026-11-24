@@ -478,6 +478,28 @@
         "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackTlsTest.kt",
         "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackRedirectCredentialsTest.kt"
       ]
+    },
+    {
+      "id": "safe-network-logging",
+      "title": "Redact configured addon, catalog and plugin URLs from runtime logs",
+      "since": "Build 15 security review",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/addons/AddonRepository.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsRepository.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/streams/StreamSearchSessions.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/search/SearchRepository.kt",
+        "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/network/FetchBridge.kt"
+      ],
+      "depends": [],
+      "data": "none; removes potentially credential-bearing log output",
+      "tests": [
+        "test_no_secret_logging.py; static review of actual call sites and alias regressions"
+      ],
+      "keywords": [
+        "rawUrl",
+        "FetchBridge",
+        "request logging"
+      ]
     }
   ]
 }

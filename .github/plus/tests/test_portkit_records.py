@@ -1,6 +1,7 @@
 """PortKit per-feature records (P7-03, P7-09): every feature has every registry field, and the
 generated record file is current."""
 import importlib.util
+import json
 import os
 import subprocess
 import unittest
@@ -27,7 +28,8 @@ class Records(unittest.TestCase):
     def test_every_feature_has_every_field(self):
         text = records.records()
         sections = text.split("\n## ")[1:]
-        self.assertEqual(15, len(sections))
+        expected = len(json.loads((ROOT / '.github/plus/features.json').read_text())['features'])
+        self.assertEqual(expected, len(sections))
         for section in sections:
             name = section.split("\n", 1)[0]
             for field in FIELDS:

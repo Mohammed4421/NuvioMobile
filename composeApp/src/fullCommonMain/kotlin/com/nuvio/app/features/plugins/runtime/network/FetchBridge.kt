@@ -33,7 +33,7 @@ internal class FetchBridge : HostModule {
             } catch (cancelled: kotlinx.coroutines.CancellationException) {
                 throw cancelled
             } catch (t: Throwable) {
-                log.e(t) { "Fetch bridge error for $method $url" }
+                log.e { "Fetch bridge request failed (${t::class.simpleName})" }
                 JsonObject(
                     mapOf(
                         "ok" to JsonPrimitive(false),

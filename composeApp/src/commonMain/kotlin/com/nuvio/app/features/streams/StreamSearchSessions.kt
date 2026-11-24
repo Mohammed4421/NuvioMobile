@@ -240,7 +240,7 @@ private fun CoroutineScope.launchStreamSearchTasks(
                 type = targets.type,
                 id = targets.videoId,
             )
-            log.d { "Fetching streams from: $url" }
+            log.d { "Fetching addon streams" }
             val group = runCatchingUnlessCancelled {
                 val payload = fetchAddonResponseText(url = url, forceRefresh = forceRefresh)
                 StreamParser.parse(
@@ -255,7 +255,7 @@ private fun CoroutineScope.launchStreamSearchTasks(
                     AddonStreamGroup(addon.addonName, addon.addonId, streams, isLoading = false)
                 },
                 onFailure = { error ->
-                    log.w(error) { "Failed to fetch streams from ${addon.addonName}" }
+                    log.w { "Failed to fetch addon streams (${error::class.simpleName})" }
                     AddonStreamGroup(addon.addonName, addon.addonId, emptyList(), isLoading = false, error = error.message)
                 },
             )
