@@ -215,8 +215,14 @@ say "download started: ${file}"
 
 # 2. Background, still downloading.
 adb shell input keyevent KEYCODE_HOME
-sleep 8
-s1="$(part_size "${file}")"; sleep 5; s2="$(part_size "${file}")"
+s1=""
+part_started() {
+  s1="$(part_size "${file}")"
+  [[ "${s1}" =~ ^[1-9][0-9]*$ ]]
+}
+wait_for 25 "the partial file to start growing in the background" part_started
+sleep 5
+s2="$(part_size "${file}")"
 [[ -n "${s1}" && -n "${s2}" && "${s2}" -gt "${s1}" ]] || fail "not downloading in the background (.part ${s1:-none} -> ${s2:-none})"
 say "downloading in the background: .part ${s1} -> ${s2} bytes"
 
