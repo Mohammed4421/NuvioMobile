@@ -29,12 +29,18 @@ The host tests make a profile active through Nuvio's own cold-start path
 (`ProfileStorage` + `ProfileRepository.ensureLoaded`) and then call the same `onProfileChanged`. The
 roughly 30 other repositories that `selectProfile` reloads are Nuvio's and are not exercised here.
 
-**Deleting a profile** (`ProfileRepository.deleteProfile`). With an account it calls the server
-(`sync_delete_profile_data`), which needs one. Offline it removes the PIN cache and the server entries
-on the device. In neither case does it touch the Plus data: `downloads_payload_<n>`, the profile's
-season-queue entries and its subtitle keys all stay. The files it downloaded stay too. That data is
-**orphaned harmlessly**: no other profile shows it, starts it or is held by it (tests below). There is
-one exception, finding F1.
+**Deleting a profile, after PR #101.** The old F1 behaviour is fixed: when an
+authenticated deletion succeeds locally (anonymous profile) or after the server
+confirms a deletion, `ProfileRepository.applyProfileSnapshot` calls
+`ProfileDeletedDataCleanup.clearConfirmedSlot(index)` **before** publishing a
+profile index to a new owner. The cleanup clears that index's stored Plus
+download list, uncompleted transfers and partial files, season-queue entries
+and holds, and subtitle appearance. It keeps completed downloaded media files
+on disk by the owner's decision. It never erases another profile's records.
+`ProfileDeletedDataCleanupTest` and `ProfileDeletedQueueCleanupTest` verify
+these local invariants on #101; the signed-in server RPC, remote snapshot
+propagation and second-device behaviour remain **NOT TESTED** without a test
+account/server. The historical finding F1 below is retained as closed evidence.
 
 ## Six cases
 
@@ -64,17 +70,19 @@ r8/r17 (restart with two profiles) and r18 (pause all per profile). Unit tests:
 cannot be restarted inside one process. Its restart is covered by harness r8 and r17, which use a
 fresh class loader. Here, the PQ tests decode what was stored and decide with the real policy.
 
-## Findings (Nuvio's code; no behaviour changed in this PR)
+## Findings and follow-up (PR #94 baseline; PR #101 remediation)
 
-- **F1 — a deleted profile's index is reused together with its local Plus data.**
-  `createProfile` takes the smallest free index (`(1..MAX_PROFILES) - existing`), and
-  `deleteProfile` leaves `downloads_payload_<n>`, the queue entries with `profileId = n` and the
-  subtitle keys `_<n>`. So a new profile that gets index n sees the deleted profile's download list
-  and its waiting season episodes, and the queue will search for those episodes under it. The test
-  `PQ aDeletedProfilesEpisodesStayStoredButNeverReachAnotherProfile` shows the queue side (its last
-  assertion). The downloads side follows from the key and needs no test of its own. A fix would be
-  to clear the Plus data for that index on delete, or when the index is reused. That is a behaviour
-  change and is left for the owner to decide.
+- **F1 — CLOSED by PR #101 (NVP15-RISK-0012): deleted-index Plus data.**
+  Before the fix, `createProfile` reused a free index but that index's Plus
+  data remained. PR #101 added cleanup on the confirmed deletion/snapshot path.
+  Android host tests now cover downloads, active transfer detach, unfinished
+  partial-file cleanup and subtitle preferences; common tests cover season
+  queue entries/holds. All mandatory CI workflows for PR #101 passed on
+  `6245b2ae639b1103f606d88e38dbcd995c62ed44` (including Nuvio Plus
+  checks run 45151305429 and device tests run 45151305641). **No real account
+  server or second-device deletion test was run**; these remain separate gaps.
+  Completed media files stay on disk without appearing in a reused profile.
+
 - **F2 — an unreadable download list is replaced on that profile's first write.**
   `DownloadsCodec.decodeItems` returns an empty list for a broken payload, and `persist()` later
   writes the list held in memory. The loss stays inside that profile. The season queue, unlike this,
@@ -95,10 +103,10 @@ fresh class loader. Here, the PQ tests decode what was stored and decide with th
   need the server.
 - **Setting, changing or clearing a PIN; online PIN verification; lock-out after wrong tries**
   (`retryAfterSeconds`): server RPCs. Only the offline check is covered (PP).
-- **`deleteProfile` itself:** the signed-in path needs the server. The offline path
-  (`isAnonymous`) needs an anonymous session that `AuthRepository` creates only through
-  `initialize()`, which starts the server session job. What deletion leaves behind is stated above
-  from the code, and the queue side is tested (PQ).
+- **`deleteProfile` end to end with a live account:** the signed-in path requires the
+  server. The anonymous path requires an initialized authenticated anonymous session. The
+  confirmed-deletion cleanup hook and storage effects are covered by PR #101 host/common
+  tests; end-to-end server deletion, remote sync and a second device remain untested.
 - **`ProfileRepository.selectProfile` end to end:** it reloads about 30 Nuvio repositories, some of
   which touch the network. The tests apply the switch the way it reaches the Plus repositories.
 - **The PIN screen and the profile picker UI:** existing `ProfileSelectionRoutingTest` (Nuvio); the
