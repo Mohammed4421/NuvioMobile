@@ -78,6 +78,8 @@ MANDATORY = [
     "S23-01", "S23-02", "S24-01", "S24-02", "S25-01", "S25-02", "S25-03", "D-11", "D-12", "D-13",
     # Owner directive 2026-11-22 (NVP15-CHG-0005): personal checks after the release is installed.
     "PRV-01", "PRV-02", "PRV-03", "PRV-04", "PRV-05", "PRV-06", "PRV-07",
+    # Owner decision 2026-11-25 (NVP15-CHG-0009): TalkBack and focus order on the owner's phone.
+    "PRV-08",
 ]
 SHA = re.compile(r"^[0-9a-f]{40}$")
 # Spec v1.1 §19.2: stable NVP15 identifiers, never reused.
@@ -272,6 +274,32 @@ def check_item(item, repo, fetch_run):
     return problems
 
 
+def weight(item):
+    """S15-01 risk weight: the release-critical data, signing and upgrade items 3, user journeys,
+    security and test layers (P3, P6, P8) 2, every other requirement 1. Effort is not estimated."""
+    if item.get("id") in CRITICAL:
+        return 3
+    return 2 if item.get("phase") in ("P3", "P6", "P8") else 1
+
+
+def weighted_progress(items):
+    """Implementation, verification and acceptance as risk-weighted percentages of all requirements,
+    release readiness as the weighted share of PRE-RELEASE REQUIRED items VERIFIED or ACCEPTED, and the
+    critical path: open pre-release items, critical ones first. Shown beside, never instead of, the
+    equal counts (spec §15/§24.4)."""
+    done = {"implemented": ("IMPLEMENTED", "VERIFIED", "ACCEPTED"), "verified": ("VERIFIED", "ACCEPTED"),
+            "accepted": ("ACCEPTED",)}
+    total = sum(weight(i) for i in items) or 1
+    result = {key: 100 * sum(weight(i) for i in items if i.get("status") in states) // total
+              for key, states in done.items()}
+    pre = [i for i in items if i.get("release_class") == "PRE-RELEASE REQUIRED"]
+    pre_total = sum(weight(i) for i in pre) or 1
+    result["ready"] = 100 * sum(weight(i) for i in pre if i.get("status") in done["verified"]) // pre_total
+    open_items = [i for i in pre if i.get("status") not in done["verified"]]
+    result["critical_path"] = [i["id"] for i in sorted(open_items, key=lambda i: (-weight(i), str(i.get("id"))))]
+    return result
+
+
 def stale(rid, paths, runs, repo):
     """Files of the requirement changed after the newest commit its CI evidence names."""
     known = [p["commit"] for p in runs if git(repo, "merge-base", "--is-ancestor", p["commit"], "HEAD").returncode == 0]
@@ -354,10 +382,16 @@ def main():
     device = sum(1 for i in items if i.get("needs_physical_device") and i.get("status") not in ("VERIFIED", "ACCEPTED"))
     print("Register: " + ", ".join(f"{st} {n}" for st, n in counts.items()))
     # Spec §15/§24.4: three separate figures, each = requirements in that state or beyond / all
-    # requirements, counted equally (no effort/risk weights are approved), never one figure.
+    # requirements, counted equally, never one figure; the risk-weighted line below is shown beside it.
     print(f"Implementation {100 * implemented // total}% | verification {100 * verified // total}% | "
           f"acceptance {100 * counts['ACCEPTED'] // total}% (of {len(items)}); "
           f"untested parts listed: {untested}; open items needing a physical device: {device}")
+    weighted = weighted_progress(items)
+    print("Weighted by risk (S15-01; data, signing and upgrade x3, journeys/security/tests x2, others x1): "
+          f"implementation {weighted['implemented']}% | verification {weighted['verified']}% | "
+          f"acceptance {weighted['accepted']}%; release readiness {weighted['ready']}% of pre-release items")
+    print("Critical path (open pre-release items, data/signing/upgrade first): "
+          + (", ".join(weighted["critical_path"]) or "none"))
     print("OK" if not problems else f"{len(problems)} problem(s)")
     return 1 if problems else 0
 

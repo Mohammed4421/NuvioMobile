@@ -163,7 +163,8 @@
     "PRV-04",
     "PRV-05",
     "PRV-06",
-    "PRV-07"
+    "PRV-07",
+    "PRV-08"
   ],
   "required_pull_requests": [
     15,
