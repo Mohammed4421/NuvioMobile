@@ -766,6 +766,20 @@
           "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
           "result": "PASS",
           "what": "PR #123 head: Nuvio Plus checks - HTTP errors, 416, out of space, season queue race harness r1-r21, process recreation, profile isolation (cases F, P, D)."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45712111253,
+          "commit": "dae421725baca278d508022406fbfd0d99d224f5",
+          "result": "PASS",
+          "what": "PR #132 head (every adb call bounded): download notification and interruption tests passed on Android 9 (pause, resume to the same byte, SHA-256 equal), 14 and 16 (pause), network loss and process death."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45712111288,
+          "commit": "dae421725baca278d508022406fbfd0d99d224f5",
+          "result": "PASS",
+          "what": "PR #132 head: Nuvio Plus checks (host tests, race harness, emulator update) passed."
         }
       ],
       "untested": [
