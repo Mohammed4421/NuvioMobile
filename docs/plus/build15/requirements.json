@@ -2976,6 +2976,13 @@
           "commit": "b290ed1ee1b92924990bfd7665c3e3ded4dd9db5",
           "result": "PASS",
           "what": "PortKit transfer tests and script tests on this pull request"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45686475688,
+          "commit": "03db1ee8f539b39b029ec4bbc7a343577647f90f",
+          "result": "PASS",
+          "what": "PR #128 head (architecture.md gained the §5 criterion column; A-07 still keeps JSON): PortKit transfer tests and script tests passed."
         }
       ],
       "untested": [],
