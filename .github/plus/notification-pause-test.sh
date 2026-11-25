@@ -18,6 +18,10 @@
 set -uo pipefail
 apk="$1"; label="$2"; mode="${3:-full}"
 here="$(cd "$(dirname "$0")" && pwd)"
+# Every adb call is bounded (each takes seconds here): on Android 9 a single call once never returned
+# and the job hung until its 60-minute limit (PR #132: after the resume, 58 minutes of silence). A
+# stuck call now fails within 2 minutes with the step that needed it, never as a pass.
+adb() { timeout "${NUVIO_ADB_TIMEOUT:-120}" adb "$@"; }
 pkg=com.nuviodebug.com
 id=nuvio-background-download-fixture
 work="$(mktemp -d)"
