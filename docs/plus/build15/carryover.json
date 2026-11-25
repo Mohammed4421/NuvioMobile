@@ -364,6 +364,1029 @@
         "P8-01"
       ],
       "changes_app_source": false
+    },
+    {
+      "source": "#46",
+      "state": "REUSE VERIFIED",
+      "area": "Evidence after #45: PortKit features re-verified, P7-07 and P8-01 verified",
+      "tests_run": "Nuvio Plus checks passed on the head 55e5bfec (run 44882598301); merged as 623b7718; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P7-01",
+        "P7-05",
+        "P7-06",
+        "P7-07",
+        "P8-01",
+        "S22-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#47",
+      "state": "REUSE VERIFIED",
+      "area": "Build 15 P4: language check in screenshots and visual review from the log",
+      "tests_run": "Nuvio Plus checks passed on the head a53de257 (run 44893001137); merged as 346fb82d; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-11",
+        "P4-12"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#48",
+      "state": "REUSE VERIFIED",
+      "area": "Notification test: Android 9 full, Android 14 up to the notification; D-01..D-07 verified",
+      "tests_run": "Nuvio Plus checks passed on the head b1a49104 (run 44900212735); merged as 9cdddf8e; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "D-01",
+        "D-07",
+        "D-09"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#49",
+      "state": "REUSE VERIFIED",
+      "area": "Build 15 P4: playback settings screenshots (EN/AR, phone/tablet)",
+      "tests_run": "Nuvio Plus checks passed on the head a0b3332c (run 44904776470); merged as 46814605; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-01",
+        "P4-11",
+        "P4-12"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#50",
+      "state": "REUSE VERIFIED",
+      "area": "Keep stream credentials within the source's site on redirects (B15-SEC-04)",
+      "tests_run": "Nuvio Plus checks passed on the head 237046b4 (run 44903516117); merged as e857b3ac; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P6-05",
+        "D-13"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#51",
+      "state": "REUSE VERIFIED",
+      "area": "Record the evidence when a Nuvio device test fails",
+      "tests_run": "Nuvio Plus checks passed on the head 90ca67ac (run 44904238469); merged as 83527f5c; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P8-05",
+        "P8-11"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#52",
+      "state": "REUSE VERIFIED",
+      "area": "Count the partial file on storage in the download space check",
+      "tests_run": "Nuvio Plus checks passed on the head ffa751bb (run 44902200330); merged as dd10acab; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-02",
+        "D-08"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#53",
+      "state": "REUSE VERIFIED",
+      "area": "Registers follow GitHub and the code",
+      "tests_run": "Nuvio Plus checks passed on the head 950ed02e (run 44902533863); merged as 6aaea9d1; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "S19-02",
+        "S25-02"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#54",
+      "state": "REUSE VERIFIED",
+      "area": "Security report (P6) and B15-UI-05",
+      "tests_run": "Nuvio Plus checks passed on the head 1511e849 (run 44904855147); merged as 4465d71d; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P6-05",
+        "P6-06",
+        "P6-11"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#56",
+      "state": "REUSE VERIFIED",
+      "area": "P3 journey matrix and release readiness",
+      "tests_run": "Nuvio Plus checks passed on the head 7d120748 (run 44908807445); merged as 61291e21; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-01",
+        "P3-02",
+        "P3-03",
+        "P3-04",
+        "P3-05",
+        "P3-06",
+        "P3-07",
+        "S16-09"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#57",
+      "state": "REUSE VERIFIED",
+      "area": "Downloads in daily use: network loss and process death on the emulator; mpv load-count label",
+      "tests_run": "Nuvio Plus checks passed on the head f4f5cc79 (run 44915599902); merged as 87050e4d; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-02",
+        "D-08",
+        "P8-05"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#58",
+      "state": "REUSE VERIFIED",
+      "area": "Fixes from the independent review (downloads, ExoPlayer subtitles, Arabic lines, parser)",
+      "tests_run": "Nuvio Plus checks passed on the head 44268b54 (run 44917350754); merged as 1bf570c5; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-01",
+        "P3-02",
+        "P4-08"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#59",
+      "state": "REUSE VERIFIED",
+      "area": "Device test: subtitle from the device - off/on, delay, missing file",
+      "tests_run": "Nuvio Plus checks passed on the head 1680914d (run 44925409617); merged as 5e8190b0; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-01",
+        "P8-05"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#60",
+      "state": "REUSE VERIFIED",
+      "area": "P4 polish: download screens and subtitle panel (owner's batch)",
+      "tests_run": "Nuvio Plus checks passed on the head afdc29ec (run 44925411929); merged as f033866d; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-01",
+        "P4-02",
+        "P4-03",
+        "P4-04",
+        "P4-05",
+        "P4-08"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#61",
+      "state": "REUSE VERIFIED",
+      "area": "Season downloads: other add-ons in the same quality when the first lacks an episode",
+      "tests_run": "Nuvio Plus checks passed on the head 3e0c65d9 (run 44919120443); merged as 13e1d1f8; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-02",
+        "C-02"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#62",
+      "state": "REUSE VERIFIED",
+      "area": "SAF downloads: stream subtitle copies beside the video",
+      "tests_run": "Nuvio Plus checks passed on the head 1d656fb3 (run 44928115317); merged as 7a6fe1ca; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-02",
+        "D-08"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#63",
+      "state": "REUSE VERIFIED",
+      "area": "Emulator tests on Android 16 and 17 too",
+      "tests_run": "Nuvio Plus checks passed on the head e48b1c87 (run 44939747104); merged as 3533f9d0; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P8-12",
+        "D-12"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#64",
+      "state": "REUSE VERIFIED",
+      "area": "P5: playback stability, dropped frames and CPU on both engines",
+      "tests_run": "Nuvio Plus checks passed on the head 86f2d18c (run 44974630481); merged as ddf7efc6; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P5-05",
+        "P5-06",
+        "P5-08"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#65",
+      "state": "REUSE VERIFIED",
+      "area": "P2: Before/After report for A-02/A-03 (deferred to the next upstream sync)",
+      "tests_run": "Nuvio Plus checks passed on the head 958754fa (run 44974755536); merged as 5c7d3d69; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P2-02",
+        "P2-03"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#66",
+      "state": "REUSE VERIFIED",
+      "area": "P8-13: what blocks the owner's approval",
+      "tests_run": "Nuvio Plus checks passed on the head 9d01bde8 (run 44976405028); merged as 39c2da48; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P8-13"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#67",
+      "state": "REUSE VERIFIED",
+      "area": "P4: subtitle and audio values read left to right in Arabic",
+      "tests_run": "Nuvio Plus checks passed on the head aaa2be8f (run 44976598630); merged as 108b8767; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-01",
+        "P4-08"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#68",
+      "state": "REUSE VERIFIED",
+      "area": "P4-09: accessibility report for Plus screens (touch targets, labels)",
+      "tests_run": "Nuvio Plus checks passed on the head 2a00db31 (run 44978627736); merged as bfb6e22b; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-09"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#69",
+      "state": "REUSE VERIFIED",
+      "area": "Smoother two-finger subtitle resize and move",
+      "tests_run": "Nuvio Plus checks passed on the head 8924cc44 (run 44982092497); merged as 0867d1a1; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-01",
+        "P4-06"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#70",
+      "state": "REUSE VERIFIED",
+      "area": "P4-11: screenshot comparison against approved baselines",
+      "tests_run": "Nuvio Plus checks passed on the head f65cf2db (run 44982114777); merged as 508a6b36; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-11"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#71",
+      "state": "REUSE VERIFIED",
+      "area": "P4: per-screen visual review; correct the B15-UI-05 record",
+      "tests_run": "Nuvio Plus checks passed on the head 9d960e19 (run 44983453786); merged as 6b65cd4f; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-01",
+        "P4-13",
+        "S17-06"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#72",
+      "state": "REUSE VERIFIED",
+      "area": "S12-02: release scope manifest checked by the release run",
+      "tests_run": "Nuvio Plus checks passed on the head b777ebf3 (run 44985461142); merged as 9d9d02c6; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "S12-02"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#73",
+      "state": "REUSE VERIFIED",
+      "area": "P8-03: integration test layer evidence",
+      "tests_run": "Nuvio Plus checks passed on the head 6ca182cb (run 44984981518); merged as c73769b7; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P8-03"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#74",
+      "state": "REUSE VERIFIED",
+      "area": "Build 15 candidate: release scope and readiness report",
+      "tests_run": "Nuvio Plus checks passed on the head 4439b1b3 (run 44987898462); merged as a3047e63; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "S12-02",
+        "S16-09",
+        "S16-10",
+        "S16-11",
+        "S17-11"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#75",
+      "state": "REUSE VERIFIED",
+      "area": "P1: initial pass of every area, inventory, audit axes, deep audit of the engines",
+      "tests_run": "Nuvio Plus checks passed on the head 89364d9d (run 45001414952); merged as aafe4ec3; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-06",
+        "S19-03"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#76",
+      "state": "REUSE VERIFIED",
+      "area": "P3: journey cases for profiles, library, add-ons and the updater",
+      "tests_run": "Nuvio Plus checks passed on the head 06b3fca5 (run 45001654380); merged as 90148677; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-07"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#77",
+      "state": "REUSE VERIFIED",
+      "area": "Owner directive: pre-release vs post-release requirements (NVP15-CHG-0005)",
+      "tests_run": "Nuvio Plus checks passed on the head 349af551 (run 45004738131); merged as 1228df0d; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "PRV-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#78",
+      "state": "REUSE VERIFIED",
+      "area": "Update tests: Builds 13 and 14 on their own, with representative user data",
+      "tests_run": "Nuvio Plus checks passed on the head c6ae1975 (run 45003417495); merged as 170c320a; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P6-14",
+        "P6-15",
+        "P6-16",
+        "P8-10",
+        "D-10"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#79",
+      "state": "REUSE VERIFIED",
+      "area": "P5-02/03: scrolling jank and touch response against Build 14",
+      "tests_run": "Nuvio Plus checks passed on the head a88887bc (run 45014478613); merged as f65df443; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P5-02"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#80",
+      "state": "REUSE VERIFIED",
+      "area": "P6-12/13: representative data of all six kinds, two profiles",
+      "tests_run": "Nuvio Plus checks passed on the head 5acc3d4d (run 45007745329); merged as eda325b7; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P6-12"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#81",
+      "state": "REUSE VERIFIED",
+      "area": "Close RISK-0007/0009 (unstable device tests) with evidence",
+      "tests_run": "Nuvio Plus checks passed on the head 97a15d4e (run 45006333809); merged as 5cfa2791; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P8-05",
+        "S22-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#82",
+      "state": "REUSE VERIFIED",
+      "area": "P7: transfer test of all three portable features; verify them",
+      "tests_run": "Nuvio Plus checks passed on the head b13d8143 (run 45010158735); merged as d10cd029; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P7-04",
+        "P7-05",
+        "P7-06",
+        "P7-07",
+        "P7-08"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#83",
+      "state": "REUSE VERIFIED",
+      "area": "Build 16: the complete Build 15 work (name and CHANGELOG)",
+      "tests_run": "Nuvio Plus checks passed on the head 30701188 (run 45008356228); merged as b23947cc; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "S17-01",
+        "S25-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#84",
+      "state": "REUSE VERIFIED",
+      "area": "Build 15 security reviews: deep links, external files, Actions permissions, signing secrets, APK integrity (P6)",
+      "tests_run": "Nuvio Plus checks passed on the head d08a56cb (run 45029265462); merged as 306c3560; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P6-02",
+        "P6-04",
+        "P6-07",
+        "P6-08",
+        "P6-09"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#85",
+      "state": "REUSE VERIFIED",
+      "area": "PortKit: licence contract and test, LICENSES/, tests mapped 1–10, JSON decision (P7)",
+      "tests_run": "Nuvio Plus checks passed on the head f58ddc34 (run 45030866743); merged as af067c4b; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P7-01",
+        "P7-02",
+        "P7-04",
+        "P7-08"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#86",
+      "state": "REUSE VERIFIED",
+      "area": "Reference screenshots of Plus dialogs: add-on link confirmation, download delete (P4-03)",
+      "tests_run": "Nuvio Plus checks passed on the head 37ea437f (run 45015196389); merged as f5ece7c9; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-03",
+        "P6-02"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#87",
+      "state": "REUSE VERIFIED",
+      "area": "Emulator test: Wi-Fi only on mobile data (D-08, J-13)",
+      "tests_run": "Nuvio Plus checks passed on the head ced9b21f (run 45029251757); merged as 854ba469; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "D-08",
+        "P3-02"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#88",
+      "state": "REUSE VERIFIED",
+      "area": "Playback compare: Build 14 against the head (P5-05, P5-06, P5-08)",
+      "tests_run": "Nuvio Plus checks passed on the head 56cb04ca (run 45029349396); merged as 2c1d8c18; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P5-05",
+        "P5-06",
+        "P5-08",
+        "PRV-06"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#89",
+      "state": "REUSE VERIFIED",
+      "area": "P4: text contrast measured on the reference images; dialogs, animations, focus reviewed",
+      "tests_run": "Nuvio Plus checks passed on the head d96cc320 (run 45029523912); merged as 69023814; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-03",
+        "P4-06",
+        "P4-09"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#90",
+      "state": "REUSE VERIFIED",
+      "area": "Background download compare: Build 14 against the head (P5-07)",
+      "tests_run": "Nuvio Plus checks passed on the head 67632266 (run 45107371951); merged as ccd8f6df; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P5-07"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#91",
+      "state": "REUSE VERIFIED",
+      "area": "Add-on journeys: persistence, malformed responses, timeouts (P3-05)",
+      "tests_run": "Nuvio Plus checks passed on the head 64692b3e (run 45100167552); merged as a66c10c3; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-05"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#92",
+      "state": "REUSE VERIFIED",
+      "area": "Library journeys: navigation, back, restore (P3-04)",
+      "tests_run": "Nuvio Plus checks passed on the head 91c71c95 (run 45100242141); merged as a66c10c3; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-04",
+        "P3-07"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#93",
+      "state": "REUSE VERIFIED",
+      "area": "Contrast measured per text, lowest value printed per screen (P4-09)",
+      "tests_run": "Nuvio Plus checks passed on the head 2765b13e (run 45099883091); merged as 10f64b0a; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-09"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#94",
+      "state": "REUSE VERIFIED",
+      "area": "Profile journeys: isolation, failures, restore (P3-03)",
+      "tests_run": "Nuvio Plus checks passed on the head d21b5450 (run 45100011715); merged as a66c10c3; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-03"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#95",
+      "state": "REUSE VERIFIED",
+      "area": "Security: logs and sensitive storage audit (P6-05, P8-08, P6-11)",
+      "tests_run": "Nuvio Plus checks passed on the head 55389832 (run 45099886622); merged as acd1c138; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P6-05",
+        "P6-11",
+        "P8-08"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#96",
+      "state": "REUSE VERIFIED",
+      "area": "Register: P5-05/06/08 evidence (#88); fresh P6-07/08 evidence",
+      "tests_run": "Nuvio Plus checks passed on the head 39c42d15 (run 45041521952); merged as 9917ad0a; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P5-05",
+        "P5-06",
+        "P5-08",
+        "P6-07",
+        "P6-08"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#97",
+      "state": "REUSE VERIFIED",
+      "area": "Notification test: read a mid-rewrite downloads list again",
+      "tests_run": "Nuvio Plus checks passed on the head 13252bc3 (run 45099859649); merged as f6697bdf; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "D-09",
+        "P8-05"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#98",
+      "state": "REUSE VERIFIED",
+      "area": "Register: owner decisions of 2026-11-23 (NVP15-CHG-0007)",
+      "tests_run": "Nuvio Plus checks passed on the head c84335b1 (run 45100831964); merged as b92b2f1d; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P5-06",
+        "P7-10"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#99",
+      "state": "REUSE VERIFIED",
+      "area": "Integration: P3 journeys of add-ons, library, profiles (#91, #92, #94)",
+      "tests_run": "Nuvio Plus checks passed on the head 8a080aff (run 45104217755); merged as a66c10c3; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-03",
+        "P3-04",
+        "P3-05",
+        "P7-01"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#100",
+      "state": "REUSE VERIFIED",
+      "area": "Register: journeys P3-03/04/05, security P6-05/11; risks 0011-0014",
+      "tests_run": "Nuvio Plus checks passed on the head e648db4f (run 45108365273); merged as 7326699b; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-03",
+        "P3-04",
+        "P3-05",
+        "P6-05",
+        "P6-11",
+        "P8-08"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#101",
+      "state": "REUSE VERIFIED",
+      "area": "Profiles: clear a deleted profile's Plus data (finding F1, P3-03)",
+      "tests_run": "Nuvio Plus checks passed on the head 6245b2ae (run 45151305429); merged as 94198748; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-03"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#102",
+      "state": "REUSE VERIFIED",
+      "area": "Player (mpv): read the styled caption again after a seek and on pause/play",
+      "tests_run": "Nuvio Plus checks passed on the head 03fb71a1 (run 45116301338); merged as b0286f81; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-01"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#104",
+      "state": "REUSE VERIFIED",
+      "area": "Require the remaining Build 15 fixes and evidence in the corrected re…",
+      "tests_run": "Nuvio Plus checks passed on the head cafb3470 (run 45220133905); merged as 0fc794e3; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "S12-02"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#105",
+      "state": "REUSE VERIFIED",
+      "area": "Keep the previous cached APK until its replacement downloads completely",
+      "tests_run": "Nuvio Plus checks passed on the head 771e30da (run 45151077481); merged as f41bfb3e; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-06"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#106",
+      "state": "REUSE VERIFIED",
+      "area": "Security: stop logging configured addon and plugin URLs (W5-LOG-01)",
+      "tests_run": "Nuvio Plus checks passed on the head 4010aa5b (run 45263032526); merged as 651d118b; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P6-05",
+        "P6-07",
+        "P6-08",
+        "P6-11",
+        "P7-01",
+        "P7-04",
+        "P7-05",
+        "P7-06",
+        "P7-09",
+        "P7-10"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#107",
+      "state": "REUSE VERIFIED",
+      "area": "CI: separate emulator ADB failure from app crash or download corruption",
+      "tests_run": "Nuvio Plus checks passed on the head f5aa9fb6 (run 45249653910); merged as b486b89c; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P6-07",
+        "P6-08"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#108",
+      "state": "REUSE VERIFIED",
+      "area": "Build 15: reconcile F1 profile cleanup evidence and preserve server-test gaps",
+      "tests_run": "Nuvio Plus checks passed on the head ae832aa8 (run 45336952356); merged as 35d16f22; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P3-03",
+        "P3-04",
+        "P3-05",
+        "P6-07",
+        "P6-08"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#109",
+      "state": "REUSE VERIFIED",
+      "area": "Build 16: fail closed before release if mandatory requirements or phase approvals remain open",
+      "tests_run": "Nuvio Plus checks passed on the head c6d392cc (run 45387738909); merged as 803f917c; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "S12-03",
+        "S16-01",
+        "S23-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#110",
+      "state": "REUSE VERIFIED",
+      "area": "Build 16: pin complete release scope and fail-closed PR chain",
+      "tests_run": "Nuvio Plus checks passed on the head e8f714ac (run 45338566456); merged as d522e76e; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "S12-02",
+        "S17-02",
+        "S25-03"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#111",
+      "state": "REUSE VERIFIED",
+      "area": "Diagnose emulator disconnects during signed upgrade tests",
+      "tests_run": "Nuvio Plus checks passed on the head 6452a682 (run 45431834507); merged as 538752f5; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P6-14",
+        "P6-17"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#112",
+      "state": "REUSE VERIFIED",
+      "area": "Collect signed upgrade evidence without publishing the candidate",
+      "tests_run": "Nuvio Plus checks passed on the head 5d2c83f8 (run 45431838370); merged as 2e0a0d06; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P6-07",
+        "P6-08"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#113",
+      "state": "REUSE VERIFIED",
+      "area": "Remove a line-ending conflict in the iOS download implementation",
+      "tests_run": "Nuvio Plus checks passed on the head 8baa54b1 (run 45417743757); merged as 69642d84; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P2-01"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#114",
+      "state": "REUSE VERIFIED",
+      "area": "Wait for the download fixture before measuring background progress",
+      "tests_run": "Nuvio Plus checks passed on the head 76b6d922 (run 45419709253); merged as 07715c79; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "D-09",
+        "P8-05"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#115",
+      "state": "REUSE VERIFIED",
+      "area": "Include merged validation and compatibility changes in Build 16 scope",
+      "tests_run": "Nuvio Plus checks passed on the head 367f8165 (run 45500232068); merged as d1a65f0d; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "S12-02"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#116",
+      "state": "REUSE VERIFIED",
+      "area": "Build 16: record owner approval of P5",
+      "tests_run": "Nuvio Plus checks passed on the head 82525dd5 (run 45569260818); merged as 65a5e800; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P5-01",
+        "P5-02",
+        "P5-03",
+        "P5-04",
+        "P5-05",
+        "P5-06",
+        "P5-07",
+        "P5-08",
+        "P5-09",
+        "P5-10",
+        "P5-11",
+        "S24-01"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#117",
+      "state": "REUSE VERIFIED",
+      "area": "Build 16: measure touch areas by touch bounds, require 48 dp on Plus screens (P4-09)",
+      "tests_run": "Nuvio Plus checks passed on the head 6e4f7c97 (run 45642684537); merged as 1e53e954; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-09"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#118",
+      "state": "REUSE VERIFIED",
+      "area": "Build 16: record signed upgrade matrix (P6-14..17) and touch-area evidence (P4-09)",
+      "tests_run": "Nuvio Plus checks passed on the head 6e84f7e6 (run 45659453031); merged as b428fcc0; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "D-10",
+        "P4-09",
+        "P6-09",
+        "P6-14",
+        "P6-15",
+        "P6-16",
+        "P6-17",
+        "P8-10",
+        "S20-02"
+      ],
+      "changes_app_source": false
+    },
+    {
+      "source": "#119",
+      "state": "REUSE VERIFIED",
+      "area": "Build 16: P4 visual review fixes and dialog baselines (P4-01, P4-03, P4-07, P4-10)",
+      "tests_run": "Nuvio Plus checks passed on the head 58f267ac (run 45666459400); merged as 15427d66; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P4-01",
+        "P4-03",
+        "P4-07",
+        "P4-10"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#120",
+      "state": "REUSE VERIFIED",
+      "area": "Build 16: restore Nuvio's LF endings in ProfileRepository.kt and guard line endings (P2-01)",
+      "tests_run": "Nuvio Plus checks passed on the head b023ebd6 (run 45661349538); merged as d553bf42; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "P2-01"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#122",
+      "state": "REUSE VERIFIED",
+      "area": "Build 16: requirement ids for every pull request (S19-04); add #115-#117 to the release scope",
+      "tests_run": "Nuvio Plus checks passed on the head 0d9a1591 (run 45662561275); merged as 0e172bff; every later commit runs the same checks",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "S19-04"
+      ],
+      "changes_app_source": false
     }
   ]
 }
