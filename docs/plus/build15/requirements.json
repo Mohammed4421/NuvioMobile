@@ -4961,12 +4961,27 @@
       "paths": [
         "docs/plus/build15/carryover.json"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_carryover_scope.py",
+          "name": "test_every_pull_request_of_the_scope_is_in_the_carry_over",
+          "result": "PASS",
+          "what": "Every pull request of the release scope (#15 on) is in carryover.json with its state, the tests run on its head (the passing Nuvio Plus checks run) and what the release candidate re-checks."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_carryover_states_follow_the_spec",
+          "result": "PASS",
+          "what": "Carry-over states follow spec §21."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "carryover.json lists every Build 15 pull request with its state, tests and what is still to re-check.",
-      "next": "Keep current at each merge.",
+      "next": "Add each newly merged pull request to carryover.json and release-scope.json; the test fails otherwise.",
       "nvp15": "NVP15-REQ-0140",
       "release_class": "PRE-RELEASE REQUIRED"
     },
