@@ -3004,6 +3004,13 @@
           "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
           "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45702240777,
+          "commit": "112ecf8f8aedc1cfb2d318937c8880c16af826ff",
+          "result": "PASS",
+          "what": "PR #134 head (download-location gains PlusWifiOnlySchedulingTest; feature records regenerated): PortKit transfer tests and script tests passed."
         }
       ],
       "untested": [],
@@ -3228,6 +3235,13 @@
           "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
           "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45702240777,
+          "commit": "112ecf8f8aedc1cfb2d318937c8880c16af826ff",
+          "result": "PASS",
+          "what": "PR #134 head (download-location gains PlusWifiOnlySchedulingTest; feature records regenerated): PortKit transfer tests and script tests passed."
         }
       ],
       "untested": [],
@@ -3355,6 +3369,13 @@
           "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
           "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45702240777,
+          "commit": "112ecf8f8aedc1cfb2d318937c8880c16af826ff",
+          "result": "PASS",
+          "what": "PR #134 head (download-location gains PlusWifiOnlySchedulingTest; feature records regenerated): PortKit transfer tests and script tests passed."
         }
       ],
       "untested": [],
