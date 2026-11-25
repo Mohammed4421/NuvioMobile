@@ -24,6 +24,15 @@ class CarryoverScope(unittest.TestCase):
             with self.subTest(source=entry["source"]):
                 self.assertTrue(str(entry.get("tests_run", "")).strip(), "no tests named")
 
+    def test_every_app_change_names_its_reason(self):
+        """C-02: a pull request that changed app source names the requirements (and through them the
+        findings or owner decisions) that justify it."""
+        entries = json.loads((DOCS / "carryover.json").read_text(encoding="utf-8"))["entries"]
+        for entry in entries:
+            if entry.get("changes_app_source"):
+                with self.subTest(source=entry["source"]):
+                    self.assertTrue(entry.get("requirements"), "an app change with no requirement")
+
 
 if __name__ == "__main__":
     unittest.main()

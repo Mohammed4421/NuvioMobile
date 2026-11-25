@@ -43,19 +43,40 @@
       "requirement": "No change to sound behaviour without evidence or a clear engineering reason.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/findings.json",
           "result": "PASS",
           "what": "Behaviour fixes carry findings (e.g. B15-ADD-02 for #123, B15-SEC-04, B15-SUB-01..08, B15-UI-01); pr-requirements.json and carryover.json name each pull request's requirements."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_carryover_scope.py",
+          "name": "test_every_app_change_names_its_reason",
+          "result": "PASS",
+          "what": "Every pull request that changed app source names its requirements in carryover.json."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_audit_findings.py",
+          "name": "test_a_fix_names_its_tests",
+          "result": "PASS",
+          "what": "Every FIX finding names the tests that prove it."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_audit_findings.py",
+          "name": "test_verified_defects_have_repeatable_evidence",
+          "result": "PASS",
+          "what": "Every verified defect cites a CI run or pull request."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each behaviour change links to a finding.",
-      "next": "Enforced per PR review.",
+      "next": "Each new app change: a finding or requirement in its pull request; the tests enforce it.",
       "nvp15": "NVP15-REQ-0002",
       "release_class": "PRE-RELEASE REQUIRED"
     },
