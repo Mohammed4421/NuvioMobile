@@ -3871,14 +3871,22 @@
       "paths": [
         ".github/plus/check-requirements.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_progress.py",
+          "name": "test_progress_is_also_weighted_by_risk_with_the_critical_path",
+          "result": "PASS",
+          "what": "The gate prints implementation, verification and acceptance as equal counts and, beside them, weighted by risk (data/signing/upgrade x3, journeys/security/tests x2, others x1), with release readiness and the critical path of open pre-release items."
+        }
+      ],
       "untested": [
-        "Weights not defined; counts used."
+        "Effort is not estimated per requirement; the weights are risk-based only."
       ],
       "needs_physical_device": false,
       "acceptance": "Gate prints the three figures with weights.",
-      "next": "Add weights.",
+      "next": "Printed on every gate run.",
       "nvp15": "NVP15-REQ-0098",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -5112,12 +5120,20 @@
       "paths": [
         ".github/plus/check-requirements.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_progress.py",
+          "name": "test_progress_is_also_weighted_by_risk_with_the_critical_path",
+          "result": "PASS",
+          "what": "Every gate run prints the register totals, the three figures, the weighted figures, open device items and the critical path; progress reports quote them."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "The gate prints the figures and method; chat reports follow the list.",
-      "next": "Each report.",
+      "next": "Printed on every gate run.",
       "nvp15": "NVP15-REQ-0147",
       "release_class": "PRE-RELEASE REQUIRED"
     },
