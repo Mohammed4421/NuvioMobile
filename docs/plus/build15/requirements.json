@@ -969,18 +969,37 @@
       "requirement": "Spacing, sizes and alignment.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/visual-review.md",
           "what": "Per-screen review of the 72 reference images (spacing, sizes, alignment)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
+        },
+        {
+          "kind": "screenshot",
+          "file": "docs/plus/build15/screenshot-baselines/subtitle-appearance-en-phone.png",
+          "result": "PASS",
+          "what": "Approved baseline after review."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
+      "next": "Re-review any CHANGED screen the comparison reports in later UI pull requests.",
       "nvp15": "NVP15-REQ-0028",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -998,6 +1017,19 @@
           "kind": "review",
           "file": "docs/plus/build15/visual-review.md",
           "what": "Per-screen review: controls and labels (B15-UI-08, 09)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
         }
       ],
       "untested": [
@@ -1005,7 +1037,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
+      "next": "TalkBack on a device (owner's device list); the rest is verified by the screenshot review.",
       "nvp15": "NVP15-REQ-0029",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1017,7 +1049,7 @@
       "requirement": "Consistency of dialogs and alerts.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
@@ -1031,14 +1063,31 @@
           "commit": "37ea437fe92f336b64028deb8cae1d93861d2a0c",
           "what": "Plus checks on the dialog reference screenshot changes (#86).",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
+        },
+        {
+          "kind": "screenshot",
+          "file": "docs/plus/build15/screenshot-baselines/dialog-addon-link-ar-phone.png",
+          "result": "PASS",
+          "what": "Approved baseline after review."
         }
       ],
-      "untested": [
-        "Plus dialogs (add-on link confirmation, folder errors) have no reference screenshot."
-      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Verify the dialog baselines on the candidate.",
+      "next": "Re-review any CHANGED screen the comparison reports in later UI pull requests.",
       "nvp15": "NVP15-REQ-0030",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1050,18 +1099,31 @@
       "requirement": "Visual hierarchy.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/visual-review.md",
           "what": "Per-screen review: hierarchy of each screen"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
+      "next": "Re-review any CHANGED screen the comparison reports in later UI pull requests.",
       "nvp15": "NVP15-REQ-0031",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1073,18 +1135,37 @@
       "requirement": "Loading, error and empty states.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/visual-review.md",
           "what": "Per-screen review: paused, downloading, failed, searching, empty and AutoSync error states"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
+        },
+        {
+          "kind": "screenshot",
+          "file": "docs/plus/build15/screenshot-baselines/library-downloads-empty-ar-phone.png",
+          "result": "PASS",
+          "what": "Approved baseline after review."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
+      "next": "Re-review any CHANGED screen the comparison reports in later UI pull requests.",
       "nvp15": "NVP15-REQ-0032",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1096,13 +1177,26 @@
       "requirement": "Animations and transitions without excess.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/visual-review.md",
           "what": "Reviewed progress indicators and transitions in the Plus source against upstream (#89).",
           "result": "reviewed"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
         }
       ],
       "untested": [
@@ -1110,7 +1204,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Verify progress state changes on the candidate; personal motion feel remains post-release.",
+      "next": "Re-review any CHANGED screen the comparison reports in later UI pull requests.",
       "nvp15": "NVP15-REQ-0033",
       "release_class": "PRE-RELEASE REQUIRED",
       "post_release": [
@@ -1125,12 +1219,31 @@
       "requirement": "Usability on phone and tablet.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/visual-review.md",
           "what": "Per-screen review: phone, landscape phone and tablet in both languages"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
+        },
+        {
+          "kind": "screenshot",
+          "file": "docs/plus/build15/screenshot-baselines/library-downloads-en-phone-land.png",
+          "result": "PASS",
+          "what": "Approved baseline after review."
         }
       ],
       "untested": [
@@ -1138,7 +1251,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
+      "next": "Re-review any CHANGED screen the comparison reports in later UI pull requests.",
       "nvp15": "NVP15-REQ-0034",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1150,14 +1263,32 @@
       "requirement": "Arabic, English and RTL.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Arabic strings test (B15-AR-01) in #32; RTL screenshots in #35 not yet green."
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
+        },
+        {
+          "kind": "screenshot",
+          "file": "docs/plus/build15/screenshot-baselines/downloads-queue-ar-phone.png",
+          "result": "PASS",
+          "what": "Approved baseline after review."
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "After P4-10 baselines.",
+      "next": "Re-review any CHANGED screen the comparison reports in later UI pull requests.",
       "nvp15": "NVP15-REQ-0035",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1182,6 +1313,19 @@
           "commit": "6e4f7c972881baf58cbdcb29a7a1f9202d43d7d0",
           "result": "PASS",
           "what": "PR #117 head: PlusReferenceScreenshotsTest asserts a touch area of at least 48 dp (touchBoundsInRoot) for every control on Plus-owned screens in six language/size setups; 2393 tests, 0 failed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
         }
       ],
       "untested": [
@@ -1190,7 +1334,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "Cite the passing run of the label assertion; contrast check.",
+      "next": "TalkBack and focus order on a device (owner's device list); contrast and touch areas are measured.",
       "nvp15": "NVP15-REQ-0036",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1202,14 +1346,32 @@
       "requirement": "Reference screenshots before changes, with data, language, size and theme fixed.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "#35: two screens; first run found the test environment lacked RTL support; fixed, re-running."
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
+        },
+        {
+          "kind": "screenshot",
+          "file": "docs/plus/build15/screenshot-baselines/downloads-queue-ar-tablet.png",
+          "result": "PASS",
+          "what": "Approved baseline after review."
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Baselines for the selected screens in all setups, kept as artifacts.",
-      "next": "Green #35, then add the remaining Plus screens.",
+      "next": "Re-review any CHANGED screen the comparison reports in later UI pull requests.",
       "nvp15": "NVP15-REQ-0037",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1221,7 +1383,7 @@
       "requirement": "Automated image comparison with human review of significant differences.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
@@ -1234,12 +1396,25 @@
           "commit": "f65cf2db94b457594574e6802e604a4b94c348b6",
           "what": "#70 with the committed baselines: 72 of 72 screens 'same'",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "A check that compares new screenshots with baselines and reports differences.",
-      "next": "Cite that run; review CHANGED lines in every UI PR.",
+      "next": "Re-review any CHANGED screen the comparison reports in later UI pull requests.",
       "nvp15": "NVP15-REQ-0038",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -1278,18 +1453,31 @@
       "requirement": "Design rule: keep the original style; alternative designs only with a clear reason and a testable improvement.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/visual-review.md",
           "what": "Every visual change in Build 15 fixes a recorded finding; no restyle"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666459400,
+          "commit": "58f267ac14013e7ff58b02a7b1f2e690b08865c1",
+          "result": "PASS",
+          "what": "PR #119 final head: PlusReferenceScreenshotsTest shot 15 screens in English and Arabic on phone, phone landscape and tablet (84 images); every one compared 'same' with its approved baseline after the reviewed changes (library grid with the app's column count, subtitle hint inset, dialog baselines); every measured text at or above 4.5:1 contrast (lowest 5.2:1); no touch area under 48 dp; every control on Plus screens labelled."
+        },
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/screenshot-baselines",
+          "result": "PASS",
+          "what": "Visual review by eye of all 84 screenshots (run 45642684537 and #119's runs): RTL mirroring, mixed Arabic/English titles, LTR domains and colour codes inside Arabic text, media controls and timeline left to right as Material asks, loading/paused/failed/empty states, dialogs on Nuvio's DialogSurface with the destructive action in red. Findings fixed in #119 (subtitle hint alignment; test grid not matching the app)."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every visual change has a reason and before/after.",
-      "next": "Re-review CHANGED screens reported by the P4-11 comparison.",
+      "next": "Re-review any CHANGED screen the comparison reports in later UI pull requests.",
       "nvp15": "NVP15-REQ-0040",
       "release_class": "PRE-RELEASE REQUIRED"
     },
