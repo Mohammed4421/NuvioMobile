@@ -29,17 +29,26 @@ upstream code available to measure the conflict surface against.
 
 ## Decisions
 
-| ID | Part | Decision | Evidence | Condition / next step |
-|---|---|---|---|---|
-| A-01 | Overall layout (Plus in own files, small hooks in Nuvio's) | KEEP | 26 Plus files carry most code; 5 of 45 modified Nuvio files conflict with 71 upstream commits | Re-measure at every upstream sync |
-| A-02 | Subtitle style inside `StyledSubtitle.kt` and `PlayerSettingsRepository.kt` | DEFER to the next upstream sync (report below) | Conflict surface grew: 7 conflicts, 87 lines on 2026-11-22 | Do as the first step of the Build 16 sync, under the P2-02 constraints and the acceptance in the report |
-| A-03 | Plus sections inside `DownloadsScreen.kt` and `DownloadsRepository.kt` | DEFER to the next upstream sync (report below) | 5 conflicts, 153 lines on 2026-11-22 (the P4 polish added to it) | Same as A-02 |
-| A-04 | `MainAppContent.kt` hooks | KEEP | 1 conflict, 22 lines: navigation hooks that have to live there | Resolve at sync time |
-| A-05 | `SeasonDownloadQueue` (Plus-owned singleton, ~900 lines) | KEEP | No defect; race harness r1–r21 and policy tests cover it | Revisit only on a proven defect |
-| A-06 | `runBlocking` in `LocalizedUiText` (Nuvio's, B15-UI-03) | DEFER | Not measured | Decide after P5 frame measurements |
-| A-07 | PortKit's registry, contracts and policy in JSON, not YAML (P7-02 allows either) | KEEP JSON | One registry (`.github/plus/features.json`) already serves the upstream review and PortKit; PortKit runs on the Python standard library alone, which reads JSON but not YAML, so a target needs nothing installed; every PortKit file is checked by `portkit.py validate` and the script tests | Revisit only if a file needs comments JSON cannot hold (they go in `_about` keys) |
+| ID | Part | Decision | §5 criterion | Evidence | Condition / next step |
+|---|---|---|---|---|---|
+| A-01 | Overall layout (Plus in own files, small hooks in Nuvio's) | KEEP | upstream merge cost | 26 Plus files carry most code; 5 of 45 modified Nuvio files conflict with 71 upstream commits | Re-measure at every upstream sync |
+| A-02 | Subtitle style inside `StyledSubtitle.kt` and `PlayerSettingsRepository.kt` | DEFER to the next upstream sync (report below) | upstream merge cost | Conflict surface grew: 7 conflicts, 87 lines on 2026-11-22 | Do as the first step of the Build 16 sync, under the P2-02 constraints and the acceptance in the report |
+| A-03 | Plus sections inside `DownloadsScreen.kt` and `DownloadsRepository.kt` | DEFER to the next upstream sync (report below) | upstream merge cost | 5 conflicts, 153 lines on 2026-11-22 (the P4 polish added to it) | Same as A-02 |
+| A-04 | `MainAppContent.kt` hooks | KEEP | upstream merge cost | 1 conflict, 22 lines: navigation hooks that have to live there | Resolve at sync time |
+| A-05 | `SeasonDownloadQueue` (Plus-owned singleton, ~900 lines) | KEEP | concurrency/state simplification | No defect; race harness r1–r21 and policy tests cover it | Revisit only on a proven defect |
+| A-06 | `runBlocking` in `LocalizedUiText` (Nuvio's, B15-UI-03) | DEFER | measured performance | Not measured | Decide after P5 frame measurements |
+| A-07 | PortKit's registry, contracts and policy in JSON, not YAML (P7-02 allows either) | KEEP JSON | PortKit enablement | One registry (`.github/plus/features.json`) already serves the upstream review and PortKit; PortKit runs on the Python standard library alone, which reads JSON but not YAML, so a target needs nothing installed; every PortKit file is checked by `portkit.py validate` and the script tests | Revisit only if a file needs comments JSON cannot hold (they go in `_about` keys) |
 
-No restructuring is done in Build 15.
+No restructuring is done in Build 15 or Build 16.
+
+### Nuvio files Plus removes
+
+Every Kotlin or Swift file of the upstream base (`portkit/compatibility.json`) that Plus no longer has,
+with the decision behind it. `.github/plus/tests/test_architecture.py` fails on any other.
+
+| File (Nuvio's) | Why | Decision |
+|---|---|---|
+| `composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryDownloadsButton.kt` | Replaced by the Downloads tab inside the library (feature library-downloads, since Build 8; removed in 47b15235) | Plus feature registered in `.github/plus/features.json` |
 
 ## Before/After report: A-02 and A-03 (P2-03)
 
