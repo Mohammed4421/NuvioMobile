@@ -3055,6 +3055,13 @@
           "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
           "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45702240777,
+          "commit": "112ecf8f8aedc1cfb2d318937c8880c16af826ff",
+          "result": "PASS",
+          "what": "PR #134 head (download-location gains PlusWifiOnlySchedulingTest; feature records regenerated): PortKit transfer tests and script tests passed."
         }
       ],
       "untested": [],
@@ -3279,6 +3286,13 @@
           "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
           "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45702240777,
+          "commit": "112ecf8f8aedc1cfb2d318937c8880c16af826ff",
+          "result": "PASS",
+          "what": "PR #134 head (download-location gains PlusWifiOnlySchedulingTest; feature records regenerated): PortKit transfer tests and script tests passed."
         }
       ],
       "untested": [],
@@ -3406,6 +3420,13 @@
           "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
           "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45702240777,
+          "commit": "112ecf8f8aedc1cfb2d318937c8880c16af826ff",
+          "result": "PASS",
+          "what": "PR #134 head (download-location gains PlusWifiOnlySchedulingTest; feature records regenerated): PortKit transfer tests and script tests passed."
         }
       ],
       "untested": [],
@@ -3893,8 +3914,16 @@
       "paths": [
         "docs/plus/build15/"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_the_real_side_registers_hold",
+          "result": "PASS",
+          "what": "The registers that let work resume without session memory (requirements, gates, risks, carry-over, change requests) exist and are cross-checked on every pull request."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every phase has its outputs in docs/plus/build15.",
@@ -3910,8 +3939,23 @@
       "requirement": "Priorities P0 Release Blocker .. P3 Optional applied to findings; deferred P2/P3 list does not block release when criteria are met and risks documented.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_audit_findings.py",
+          "name": "test_defects_are_classified",
+          "result": "PASS",
+          "what": "Every defect finding carries a §14 priority and severity."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_audit_findings.py",
+          "name": "test_every_deferred_finding_has_a_low_priority_and_its_risk",
+          "result": "PASS",
+          "what": "A deferred finding is P2 or P3 with its impact and reason stated."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Audit rows carry §14 priority.",
@@ -4700,16 +4744,55 @@
       "requirement": "Wi-Fi, SAF, profiles and Android limits respected.",
       "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/downloads/PlusWifiOnlySchedulingTest.kt",
+          "name": "wifiOnlyDownloadsWaitForAnUnmeteredNetwork",
+          "result": "PASS",
+          "what": "Wi-Fi only: the transfer job requires an unmetered network; others any network."
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/downloads/AndroidDownloadLifecycleTest.kt",
+          "name": "scheduledDownloadsArePersistedUserInitiatedTransfers",
+          "result": "PASS",
+          "what": "Android 14+ limits: downloads are persisted user-initiated jobs with a required network."
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/downloads/AndroidDownloadTransferTest.kt",
+          "name": "resumesPartialFileWithRangeAndValidator",
+          "result": "PASS",
+          "what": "SAF and app storage: a partial file resumes with Range and its validator."
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/downloads/ProfileDownloadsIsolationTest.kt",
+          "name": "switchingDuringAnActiveDownloadKeepsEachProfilesItemsApart",
+          "result": "PASS",
+          "what": "Profiles: switching during a download keeps each profile's items apart."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258196,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123 head: download notification and interruption tests on Android 9, 14 and 16 (background transfer, pause, network loss, process death)."
+        }
+      ],
       "untested": [
-        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
+        "SD card / removable storage on the owner's phone (PRV-05)."
       ],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
       "next": "Merge #28 after the background notification test.",
       "nvp15": "NVP15-REQ-0131",
-      "release_class": "PRE-RELEASE REQUIRED"
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-05"
+      ]
     },
     {
       "id": "D-09",
@@ -4719,8 +4802,16 @@
       "requirement": "Pause and resume from notifications in the background tested.",
       "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45666258196,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123 head: pause and resume from the notification with the app in the background on Android 9 (same byte, SHA-256 equal); pause on Android 14 and 16; Resume on 14+ needs a real tap (PRV-05)."
+        }
+      ],
       "untested": [
         "Personal device part deferred to PRV-05 (POST-RELEASE VALIDATION, NVP15-CHG-0005): Android 14: Resume from the notification needs the exemption a real tap gives (the test's self-sent PendingIntent is refused: 'Android could not start the download', run of 6013f429); it passed once with a real tap (run 44864116050). Device check (NVP15-RISK-0004).; The system UI tap itself on both versions: device check."
       ],
@@ -5089,12 +5180,34 @@
       "requirement": "Separate explicit owner approvals for final merge, signing and publishing; silence is no approval; no single implicit approval for all three.",
       "source": "Build 15 spec v1.1",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_a_validation_only_run_cannot_enter_the_publish_environment",
+          "result": "PASS",
+          "what": "Signing for validation never reaches publishing."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_publishing_waits_for_the_owner_after_every_test",
+          "result": "PASS",
+          "what": "Publishing waits for the owner's plus-release approval after every test."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_release_signing_needs_the_review_gate_and_signs_v3_only",
+          "result": "PASS",
+          "what": "Signing needs the review gate and its own plus-release approval."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Merge approval recorded (D-11); signing and publishing asked separately at the release.",
-      "next": "Signing and publishing at P9.",
+      "next": "Signing and publishing are each approved in the plus-release environment at the release run.",
       "nvp15": "NVP15-REQ-0144",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -5323,8 +5436,30 @@
       "requirement": "Viewing experience first: widest source compatibility, fast start, picture/sound/subtitle quality, smoothness, look and stability; security and test quality serve it and are not traded away.",
       "source": "Owner decision",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackRedirectCredentialsTest.kt",
+          "name": "thePlayerKeepsCredentialsOnARedirectWithinTheSameHost",
+          "result": "PASS",
+          "what": "B15-SEC-04 fixed without losing sources: credentials still reach the same host after a redirect."
+        },
+        {
+          "kind": "test",
+          "file": "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/player/PlaybackTlsTest.kt",
+          "name": "anUntrustedCertificateIsRefusedForAPublicHostAndAcceptedOnTheLocalNetwork",
+          "result": "PASS",
+          "what": "Local-network sources with self-signed certificates keep playing while public hosts are protected."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258414,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123 head: device tests play with ExoPlayer and mpv on Android 28, 34 and 36."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each change is judged on its effect on playback and sources; B15-SEC-04 fixed without losing sources (#44).",
