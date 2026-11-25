@@ -1,0 +1,80 @@
+{
+  "id": 27721857,
+  "name": "Protect main branches",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": [
+        "refs/heads/cmp-rewrite",
+        "refs/heads/custom-subtitles"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": false,
+        "required_reviewers": [],
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": false,
+        "require_extra_approval_for_unattributed_changes": true,
+        "allowed_merge_methods": [
+          "merge"
+        ]
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": false,
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {
+            "context": "nuvio-plus/checks",
+            "integration_id": 15368
+          },
+          {
+            "context": "nuvio-plus/review",
+            "integration_id": 15368
+          },
+          {
+            "context": "Build 15 requirements gate",
+            "integration_id": 15368
+          },
+          {
+            "context": "Lint findings against Build 14",
+            "integration_id": 15368
+          },
+          {
+            "context": "Transfer, build and test (upstream and a fork)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Notification pause/resume (Android 28)",
+            "integration_id": 15368
+          }
+        ]
+      }
+    }
+  ],
+  "bypass_actors": [
+    {
+      "actor_id": 1236702,
+      "actor_type": "Integration",
+      "bypass_mode": "pull_request"
+    }
+  ],
+  "updated_at": "2026-11-25T23:09:31.935+03:00",
+  "_read": "GET /repos/Mohammed4421/NuvioMobile/rulesets/27721857 on 2026-11-25 after the owner saved it (P6-10, B15-SEC-03)"
+}

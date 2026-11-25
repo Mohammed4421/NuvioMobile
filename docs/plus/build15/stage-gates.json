@@ -47,7 +47,7 @@
     },
     {
       "stage": "P2",
-      "status": "BLOCKED",
+      "status": "PASS",
       "commit_sha": null,
       "requirements": [
         "P2-01",
@@ -56,8 +56,12 @@
         "P2-04"
       ],
       "critical_blockers": [],
-      "owner_approval": null,
-      "notes": "architecture.md exists; ADRs and owner approval of high-risk changes due."
+      "owner_approval": {
+        "by": "owner",
+        "on": "2026-11-25",
+        "ref": "Owner in chat, 2026-11-25: 'اذا اتقنت ونجح بالفحص ادمج واعتمد دائما', confirmed 'Yes, gates too' - standing approval of a phase gate once every mandatory requirement of it is VERIFIED or ACCEPTED."
+      },
+      "notes": "P2-01..04 VERIFIED: decisions A-01..A-07 name their §5 criterion; test_architecture.py and test_line_endings.py guard structure and upstream merge cost (#120, #128); A-02/A-03 deferred to the next upstream sync with their before/after report."
     },
     {
       "stage": "P3",
@@ -80,7 +84,7 @@
     },
     {
       "stage": "P4",
-      "status": "BLOCKED",
+      "status": "PASS",
       "commit_sha": null,
       "requirements": [
         "P4-01",
@@ -98,8 +102,12 @@
         "P4-13"
       ],
       "critical_blockers": [],
-      "owner_approval": null,
-      "notes": "Reference screenshots exist; comparison and polish due."
+      "owner_approval": {
+        "by": "owner",
+        "on": "2026-11-25",
+        "ref": "Owner in chat, 2026-11-25: 'اذا اتقنت ونجح بالفحص ادمج واعتمد دائما', confirmed 'Yes, gates too' - standing approval of a phase gate once every mandatory requirement of it is VERIFIED or ACCEPTED."
+      },
+      "notes": "P4-01..13 VERIFIED: 84 reference shots reviewed by eye and compared with baselines (#119, #124), contrast >= 4.5:1, touch areas >= 48 dp, Plus controls labelled; TalkBack and focus order on the owner's phone are PRV-08 (NVP15-CHG-0009)."
     },
     {
       "stage": "P5",

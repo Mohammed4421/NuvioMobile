@@ -2624,14 +2624,21 @@
       "paths": [
         "docs/plus/build15/ruleset-proposal.md"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "measurement",
+          "file": "docs/plus/build15/ruleset-27721857.json",
+          "result": "PASS",
+          "what": "Ruleset 27721857 read from GitHub after the owner's change (updated 2026-11-25 23:09 +03): custom-subtitles and cmp-rewrite need a pull request; six required checks (nuvio-plus/checks, nuvio-plus/review, Build 15 requirements gate, Lint findings against Build 14, PortKit transfer, Notification pause/resume (Android 28)); merge commits only; deletion and force push blocked; the one bypass actor (the Claude GitHub App, integration 1236702) limited to pull requests."
+        }
+      ],
       "untested": [
-        "Ruleset change needs the owner (session cannot edit settings); current ruleset requires no checks (B15-SEC-03)."
+        "Residual (P3): strict_required_status_checks_policy stays false, so a pull request's checks may have run on an older base; the requirements gate runs again on every push to custom-subtitles and combined merges are simulated before merging."
       ],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Owner applies or declines the proposal; then re-read the ruleset as evidence.",
+      "next": "Re-read the ruleset before the release run.",
       "nvp15": "NVP15-REQ-0061",
       "release_class": "PRE-RELEASE REQUIRED"
     },
