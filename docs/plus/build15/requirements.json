@@ -4698,19 +4698,12 @@
           "name": "test_the_real_side_registers_hold",
           "result": "PASS",
           "what": "Runs in the requirements gate on every pull request and push."
-        },
-        {
-          "kind": "ci-run",
-          "run": 45666258461,
-          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
-          "result": "PASS",
-          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Counterparts listed in the register note exist; the gate reads and cross-checks them.",
-      "next": "Holds while the gate runs on every pull request and push.",
+      "next": "Holds while the gate runs on every pull request and push. Cites the gate's tests rather than a run: this requirement's paths are the registers or the gate themselves, so a run cited inside the register goes stale with the next register update.",
       "nvp15": "NVP15-REQ-0135",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4813,19 +4806,12 @@
           "name": "test_a_run_that_did_not_succeed_fails_online",
           "result": "PASS",
           "what": "Runs in the requirements gate on every pull request and push."
-        },
-        {
-          "kind": "ci-run",
-          "run": 45666258461,
-          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
-          "result": "PASS",
-          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Register evidence carries run, full commit, what and result; online gate checks each run succeeded on that commit.",
-      "next": "Holds while the gate runs on every pull request and push.",
+      "next": "Holds while the gate runs on every pull request and push. Cites the gate's tests rather than a run: this requirement's paths are the registers or the gate themselves, so a run cited inside the register goes stale with the next register update.",
       "nvp15": "NVP15-REQ-0138",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4916,19 +4902,12 @@
           "name": "test_a_risk_needs_every_field_and_known_requirements",
           "result": "PASS",
           "what": "Runs in the requirements gate on every pull request and push."
-        },
-        {
-          "kind": "ci-run",
-          "run": 45666258461,
-          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
-          "result": "PASS",
-          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "risks.json holds each open item with every §22.1 field; the gate rejects an entry with an empty field.",
-      "next": "Holds while the gate runs on every pull request and push.",
+      "next": "Holds while the gate runs on every pull request and push. Cites the gate's tests rather than a run: this requirement's paths are the registers or the gate themselves, so a run cited inside the register goes stale with the next register update.",
       "nvp15": "NVP15-REQ-0142",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -5006,19 +4985,12 @@
           "name": "test_the_real_side_registers_hold",
           "result": "PASS",
           "what": "Runs in the requirements gate on every pull request and push."
-        },
-        {
-          "kind": "ci-run",
-          "run": 45666258461,
-          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
-          "result": "PASS",
-          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "change-requests.json holds each such change with before, after, reason, impact and decision.",
-      "next": "Holds while the gate runs on every pull request and push.",
+      "next": "Holds while the gate runs on every pull request and push. Cites the gate's tests rather than a run: this requirement's paths are the registers or the gate themselves, so a run cited inside the register goes stale with the next register update.",
       "nvp15": "NVP15-REQ-0145",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -5048,19 +5020,12 @@
           "name": "test_only_the_spec_gate_states_are_allowed",
           "result": "PASS",
           "what": "Runs in the requirements gate on every pull request and push."
-        },
-        {
-          "kind": "ci-run",
-          "run": 45666258461,
-          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
-          "result": "PASS",
-          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "stage-gates.json has P0–P9 with these fields; the gate checks states and PASS conditions.",
-      "next": "Holds while the gate runs on every pull request and push.",
+      "next": "Holds while the gate runs on every pull request and push. Cites the gate's tests rather than a run: this requirement's paths are the registers or the gate themselves, so a run cited inside the register goes stale with the next register update.",
       "nvp15": "NVP15-REQ-0146",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -5102,19 +5067,12 @@
           "name": "test_a_missing_mandatory_requirement_fails",
           "result": "PASS",
           "what": "Runs in the requirements gate on every pull request and push."
-        },
-        {
-          "kind": "ci-run",
-          "run": 45666258461,
-          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
-          "result": "PASS",
-          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "change-requests.json; MANDATORY list in the gate keeps every id.",
-      "next": "Holds while the gate runs on every pull request and push.",
+      "next": "Holds while the gate runs on every pull request and push. Cites the gate's tests rather than a run: this requirement's paths are the registers or the gate themselves, so a run cited inside the register goes stale with the next register update.",
       "nvp15": "NVP15-REQ-0148",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -5131,17 +5089,17 @@
       "status": "VERIFIED",
       "evidence": [
         {
-          "kind": "ci-run",
-          "run": 45666258461,
-          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "kind": "test",
+          "file": ".github/plus/tests/test_gate_triggers.py",
+          "name": "test_the_gate_runs_on_every_pull_request_and_push_online",
           "result": "PASS",
-          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
+          "what": "requirements-gate.yml runs the gate's tests and check-requirements.py --online on every pull request to and push of custom-subtitles, with no path filter."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "check-requirements.py (--online, --matrix) runs on every pull request and push.",
-      "next": "Holds while the gate runs on every pull request and push.",
+      "next": "Holds while the workflow keeps these triggers; the test fails otherwise.",
       "nvp15": "NVP15-REQ-0149",
       "release_class": "PRE-RELEASE REQUIRED"
     },
