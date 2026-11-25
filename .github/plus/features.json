@@ -171,7 +171,8 @@
         "DownloadSubtitlesTest",
         "DownloadsTransferWorkerTest",
         "AndroidDownloadLifecycleTest",
-        "DownloadFreeSpaceTest"
+        "DownloadFreeSpaceTest",
+        "PlusWifiOnlySchedulingTest"
       ],
       "keywords": [
         "OpenDocumentTree",
@@ -185,6 +186,7 @@
       "test_files": [
         "commonTest/kotlin/com/nuvio/app/features/downloads/PlusDownloadsMigrationTest.kt",
         "androidHostTest/kotlin/com/nuvio/app/features/downloads/DownloadFreeSpaceTest.kt",
+        "androidHostTest/kotlin/com/nuvio/app/features/downloads/PlusWifiOnlySchedulingTest.kt",
         "androidHostTest/kotlin/com/nuvio/app/features/downloads/AndroidDownloadTransferTest.kt",
         "androidHostTest/kotlin/com/nuvio/app/features/downloads/ProfileDownloadsIsolationTest.kt",
         "androidApp/src/debug/kotlin/com/nuvio/android/BackgroundDownloadTestActivity.kt"

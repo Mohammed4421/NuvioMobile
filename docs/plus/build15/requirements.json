@@ -4669,7 +4669,7 @@
       "evidence": [
         {
           "kind": "test",
-          "file": "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/downloads/AndroidDownloadLifecycleTest.kt",
+          "file": "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/downloads/PlusWifiOnlySchedulingTest.kt",
           "name": "wifiOnlyDownloadsWaitForAnUnmeteredNetwork",
           "result": "PASS",
           "what": "Wi-Fi only: the transfer job requires an unmetered network; others any network."
