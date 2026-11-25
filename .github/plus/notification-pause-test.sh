@@ -35,7 +35,16 @@ fail() {
     echo "== notifications"; adb shell dumpsys notification --noredact | grep -A8 "pkg=${pkg}" | head -n 40
     echo "== connectivity"; adb shell dumpsys connectivity | grep -iE "NetworkAgentInfo|Active default network" | head -n 10
     echo "== crashes"; adb logcat -d -b crash 2>/dev/null | tail -n 60
-    echo "== app log"; adb logcat -d 2>/dev/null | grep -E "com\.nuviodebug|nuvio|AndroidRuntime|WM-|Download" | grep -viE "SuperDelight|gstatic|ZappDownloader| SP  " | tail -n 80
+    # Whether the app process that started the download is still the one running it: a process
+    # restarted for the download job has no observer copying the transfer state into
+    # nuvio_downloads.xml (the transfer records below are what the app restores from).
+    echo "== app process (started as ${app_pid:-unknown})"; adb shell ps -A -o PID,STIME,NAME 2>/dev/null | grep -F "${pkg}"
+    echo "== transfer records"; adb shell run-as "${pkg}" sh -c 'for f in files/download-transfers/*; do echo "$f"; cat "$f"; echo; done' 2>&1 | head -c 4000
+    echo "== app log (app processes only)"
+    for pid in ${app_pid:-} $(adb shell pidof "${pkg}" 2>/dev/null | tr -d '\r'); do
+      adb logcat -d --pid="${pid}" 2>/dev/null | grep -vE " (V|D) (OpenGLRenderer|EGL_emulation|HWUI)" | tail -n 60
+    done
+    echo "== system log about the app"; adb logcat -d 2>/dev/null | grep -F "${pkg}" | grep -vE "AppsFilter" | tail -n 40
     echo "== server"; cat "${work}/server.log" 2>/dev/null; } > "notification-pause-${label}-state.txt" 2>&1
   sed 's/^/  /' "notification-pause-${label}-state.txt"
   exit 1
@@ -211,7 +220,8 @@ started() { [[ "$(state | cut -f1)" == Downloading ]] && adb shell run-as "${pkg
 wait_for 60 "the download to start (activity checks done, status Downloading)" started
 IFS=$'\t' read -r status file _ <<< "$(state)"
 [[ "${status}" == Downloading && "${file}" != - ]] || fail "the stored entry was lost after the download started (state: ${status} ${file})"
-say "download started: ${file}"
+app_pid="$(adb shell pidof "${pkg}" 2>/dev/null | tr -d '\r')"
+say "download started: ${file} (app process ${app_pid:-unknown})"
 
 # 2. Background, still downloading.
 adb shell input keyevent KEYCODE_HOME
@@ -224,7 +234,7 @@ wait_for 25 "the partial file to start growing in the background" part_started
 sleep 5
 s2="$(part_size "${file}")"
 [[ -n "${s1}" && -n "${s2}" && "${s2}" -gt "${s1}" ]] || fail "not downloading in the background (.part ${s1:-none} -> ${s2:-none})"
-say "downloading in the background: .part ${s1} -> ${s2} bytes"
+say "downloading in the background: .part ${s1} -> ${s2} bytes (app process $(adb shell pidof "${pkg}" 2>/dev/null | tr -d '\r'))"
 
 # 3. Pause from the notification.
 send_notification_action "Pause"
