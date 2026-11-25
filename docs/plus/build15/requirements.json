@@ -4439,19 +4439,12 @@
           "name": "test_a_mandatory_requirement_marked_optional_fails",
           "result": "PASS",
           "what": "Runs in the requirements gate on every pull request and push."
-        },
-        {
-          "kind": "ci-run",
-          "run": 45666258461,
-          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
-          "result": "PASS",
-          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every item has a unique NVP15-REQ id, an acceptance criterion and mandatory=true unless the owner decided otherwise; the gate fails otherwise.",
-      "next": "Holds while the gate runs on every pull request and push.",
+      "next": "Holds while the gate runs on every pull request and push. Cites the gate's tests rather than a run: this requirement's path is requirements.json itself, so any run cited inside it is stale by the commit that cites it.",
       "nvp15": "NVP15-REQ-0134",
       "release_class": "PRE-RELEASE REQUIRED"
     },
