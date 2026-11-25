@@ -660,7 +660,7 @@
       "paths": [
         "docs/plus/build15/journeys.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -682,6 +682,20 @@
           "commit": "ca557ac0ec78b3b6824ae6ee6e6a30b10ae0ea01",
           "what": "Nuvio device tests on Android 9, 14 and 16 emulators: SubtitlePlaybackTest, DeviceSubtitleStatesTest, MpvSurfaceTest, NetworkDropPlaybackTest (ExoPlayer and mpv), SubtitleSettingsTest (14, 16); Android 17 NOT TESTED (emulator image fault, device-test-matrix.md)",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258414,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123 head: Nuvio device tests on Android 28, 34 and 36 - ExoPlayer and mpv play with styled captions, MpvSurfaceTest stop/resume and seek restored after surface recreation, device subtitle states (journey matrix cases N, I, R)."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258203,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123 head: Nuvio Plus checks - playback TLS/redirect failures, subtitle style migration and persistence, reference screenshots of the player panels (cases F, P, D)."
         }
       ],
       "untested": [
@@ -689,7 +703,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
+      "next": "Owner's device checks stay post-release (NVP15-CHG-0005).",
       "nvp15": "NVP15-REQ-0021",
       "release_class": "PRE-RELEASE REQUIRED",
       "post_release": [
@@ -709,7 +723,7 @@
         "docs/plus/build15/journeys.md",
         ".github/plus/download-interruptions-test.sh"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -738,6 +752,20 @@
           "commit": "e5c55eb8709cf22cd5ce6e7cee8c5cc12a73ee24",
           "what": "Download notification test, scenario C (Wi-Fi only) on Android 9, 14 and 16: metered mobile data only, no request reaches the server and no byte is written in 30 s; Wi-Fi back, the download starts and finishes with the exact SHA-256",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258196,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123 head: download notification and interruption tests - real background transfer, pause from the notification, resume to the same byte with equal SHA-256 on Android 9, network loss and process death (cases N, I, R)."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258203,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123 head: Nuvio Plus checks - HTTP errors, 416, out of space, season queue race harness r1-r21, process recreation, profile isolation (cases F, P, D)."
         }
       ],
       "untested": [
@@ -745,7 +773,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
+      "next": "Owner's device checks stay post-release (NVP15-CHG-0005).",
       "nvp15": "NVP15-REQ-0022",
       "release_class": "PRE-RELEASE REQUIRED",
       "post_release": [
@@ -918,7 +946,7 @@
       "paths": [
         "docs/plus/build15/journeys.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -926,14 +954,26 @@
           "commit": "a0b3332c9d2d2a15b995f4a78dabcbe6b6e8c4d3",
           "what": "Nuvio Plus checks: 2241 host tests, season race harness, update device check (Android 9, 14), reference screenshots",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation run with the real key: builds 12, 13, 14 and 15 -> 16 on Android 9 and 14 accepted with data kept; foreign-key, old-key and damaged APKs refused; Android 8 refused (cases N, F, P, D)."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258203,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123 head: update check on the emulator (signature, package, version) and the truncated/retried update download (#105) keep the previous APK and replace it cleanly (cases I, R)."
         }
       ],
-      "untested": [
-        "Interrupted update; 14/13/12 → 15 with the real key (release run)"
-      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Six-case matrix in journeys.md; remaining cases listed as untested",
+      "next": "Owner's device checks stay post-release (NVP15-CHG-0005).",
       "nvp15": "NVP15-REQ-0026",
       "release_class": "PRE-RELEASE REQUIRED"
     },
