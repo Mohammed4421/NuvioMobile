@@ -2381,6 +2381,13 @@
           "commit": "0affebbdd320fdffc78cb5c4196f03dedf8b141c",
           "result": "PASS",
           "what": "PR #116 exact head: Nuvio Plus checks succeeded; job 138949194993 ran 374 tests, including workflow policy permissions and signing secret isolation assertions, all passing. Documentation-only follow-up records this evidence."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45697597022,
+          "commit": "f3e7c486d391fdf974b55065ea0317942ab7f508",
+          "result": "PASS",
+          "what": "PR #132 head (device test and update check bounded, Android 16 emulator 4 cores): Nuvio Plus checks passed, including the workflow policy suite (permissions, signing secret isolation, validation-only runs never publish)."
         }
       ],
       "untested": [],
@@ -2490,6 +2497,13 @@
           "commit": "0affebbdd320fdffc78cb5c4196f03dedf8b141c",
           "result": "PASS",
           "what": "PR #116 exact head: Nuvio Plus checks succeeded; job 138949194993 ran 374 tests, including workflow policy permissions and signing secret isolation assertions, all passing. Documentation-only follow-up records this evidence."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45697597022,
+          "commit": "f3e7c486d391fdf974b55065ea0317942ab7f508",
+          "result": "PASS",
+          "what": "PR #132 head (device test and update check bounded, Android 16 emulator 4 cores): Nuvio Plus checks passed, including the workflow policy suite (permissions, signing secret isolation, validation-only runs never publish)."
         }
       ],
       "untested": [],
