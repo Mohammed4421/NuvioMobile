@@ -103,7 +103,7 @@
     },
     {
       "stage": "P5",
-      "status": "AWAITING OWNER APPROVAL",
+      "status": "PASS",
       "commit_sha": null,
       "requirements": [
         "P5-01",
@@ -119,8 +119,12 @@
         "P5-11"
       ],
       "critical_blockers": [],
-      "owner_approval": null,
-      "notes": "All eleven engineering criteria are verified or accepted. Real-device performance is post-release under CHG-0005. Phase approval is pending."
+      "owner_approval": {
+        "by": "owner",
+        "on": "2026-11-25",
+        "ref": "Owner in chat: اعتمد — explicit P5 approval; physical-device performance remains post-release."
+      },
+      "notes": "All eleven engineering criteria verified or accepted. Owner approved P5 on 2026-11-25. Real-device performance remains post-release under CHG-0005."
     },
     {
       "stage": "P6",
