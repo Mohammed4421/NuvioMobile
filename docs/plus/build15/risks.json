@@ -42,23 +42,6 @@
       "closes_when": "Owner's tap on Resume from the notification on Android 14+ after installing (PRV-05, NVP15-CHG-0005)"
     },
     {
-      "id": "NVP15-RISK-0005",
-      "state": "NOT TESTED",
-      "reason": "Release run 44989102295 (custom-15, a3047e63): 14→15 and 12→15 with the real key PASS on Android 9 and 14, Android 8 refused. 13→15 not run as its own step (Build 13 shares Build 14's key). Data kept is checked on the emulator update with a seeded season queue; a fuller representative data set is open.",
-      "needs": "Release run (plus-release environment)",
-      "requirements": [
-        "P6-14",
-        "P6-15",
-        "P6-16",
-        "P6-17"
-      ],
-      "impact": "Data-keeping upgrade unproven until the release run",
-      "priority": "P0",
-      "alternatives": "None: needs the release key",
-      "decision_owner": "owner",
-      "closes_when": "Upgrade from Build 13 run as its own step, and representative user data (settings, add-ons, profiles, downloads, queue, subtitle settings) seeded and checked after 12/13/14→15, before the next release (PRE-RELEASE REQUIRED)"
-    },
-    {
       "id": "NVP15-RISK-0006",
       "state": "NOT TESTED",
       "reason": "B15-SEC-04 fixed in #44 (merged); real playback of credentialed streams not yet seen on a device",
@@ -106,20 +89,6 @@
       "closes_when": "Fixed upstream and synced, or fixed in Plus after a new owner decision"
     },
     {
-      "id": "NVP15-RISK-0013",
-      "state": "NOT TESTED",
-      "reason": "The #93 measurement prints drawn bounds under 48 dp on the downloads queue (icon buttons 40x40 dp, pause season 40x35 dp in landscape, header buttons 80x40 and 93x40 dp). That is the drawn size, not the touch area: Compose widens a smaller target to its 48 dp minimum touch size unless a neighbour is closer (the measurement's own comment). The real touch area was not measured",
-      "needs": "Measure the touch area (a tap just outside the drawn bounds, or the touch bounds) on these screens",
-      "requirements": [
-        "P4-09"
-      ],
-      "impact": "None shown: likely no defect; open until the touch area is measured",
-      "priority": "P3",
-      "alternatives": "Measure the touch area; enlarge only a target that stays under 48 dp",
-      "decision_owner": "engineering",
-      "closes_when": "Every listed control is shown to take taps over at least 48 x 48 dp"
-    },
-    {
       "id": "NVP15-RISK-0014",
       "state": "FAIL",
       "reason": "Intermittent CI failures seen on 2026-11-22 without an app change: the Android 9 device-test job of #87 hung for the full 60 min and was cancelled (rerun passed); DeviceSubtitleStatesTest.libmpvHandlesADeviceSubtitleAcrossStateChanges failed once on Android 14 on #90, which changes no app code (first failure in about 50 runs; rerun passed); the Android 9 notification test twice read the downloads list during a rewrite (fixed in #97)",
@@ -159,6 +128,22 @@
       "closed_on": "2026-11-23",
       "closes_when": "Confirmed deletion/reused index clears old Plus state without touching another profile's data; completed downloaded media files retained per owner's decision.",
       "evidence": "PR #101 merged (merge SHA 9419874825d6f9981b4f30af9b72c6dc32b069cd); Nuvio Plus checks PASS run 45151305429 at 6245b2ae639b1103f606d88e38dbcd995c62ed44; ProfileDeletedDataCleanupTest and ProfileDeletedQueueCleanupTest. Signed-in server RPC, second-device deletion and cloud sync remain NOT TESTED under P3-03."
+    },
+    {
+      "id": "NVP15-RISK-0013",
+      "was": "NOT TESTED",
+      "reason": "The #93 measurement prints drawn bounds under 48 dp on the downloads queue (icon buttons 40x40 dp, pause season 40x35 dp in landscape, header buttons 80x40 and 93x40 dp). That is the drawn size, not the touch area: Compose widens a smaller target to its 48 dp minimum touch size unless a neighbour is closer (the measurement's own comment). The real touch area was not measured",
+      "closed_on": "2026-11-25",
+      "closes_when": "Every listed control is shown to take taps over at least 48 x 48 dp",
+      "evidence": "PR #117 merged (merge SHA 1e53e9547574266f122716013e3aa9cac1b29390): PlusReferenceScreenshotsTest reads each control's touchBoundsInRoot and fails on Plus-owned screens when a touch area is under 48 dp. Nuvio Plus checks run 45642684537 at 6e4f7c972881baf58cbdcb29a7a1f9202d43d7d0: 2393 tests, 0 failed (only the six portrait-phone player cases skipped, as designed), so every control of the downloads queue and the other Plus screens takes taps over at least 48 x 48 dp in English and Arabic on phone, phone landscape and tablet."
+    },
+    {
+      "id": "NVP15-RISK-0005",
+      "was": "NOT TESTED",
+      "reason": "Release run 44989102295 (custom-15, a3047e63): 14→15 and 12→15 with the real key PASS on Android 9 and 14, Android 8 refused. 13→15 not run as its own step (Build 13 shares Build 14's key). Data kept is checked on the emulator update with a seeded season queue; a fuller representative data set is open.",
+      "closed_on": "2026-11-25",
+      "closes_when": "Upgrade from Build 13 run as its own step, and representative user data (settings, add-ons, profiles, downloads, queue, subtitle settings) seeded and checked after 12/13/14→15, before the next release (PRE-RELEASE REQUIRED)",
+      "evidence": "Signed validation-only run 45642292281 at 65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1 (owner's plus-release approval 2026-11-25): Build 13 run as its own step; representative user data (add-ons with a token for two profiles, subtitle settings, per-profile theme and library, download folder and Wi-Fi only, downloads, season queue, partial file) seeded and checked unchanged after 12/13/14/15 -> 16 on Android 9 and 14; Android 8 refused. The final head's release run repeats the matrix before publishing (S20-02)."
     }
   ]
 }
