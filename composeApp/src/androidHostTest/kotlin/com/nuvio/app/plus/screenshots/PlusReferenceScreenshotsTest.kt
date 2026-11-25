@@ -336,6 +336,9 @@ abstract class PlusReferenceScreenshots(private val device: String) {
         if (screen in PLUS_OWNED_SCREENS) {
             val unlabelled = findings.filter { "no label" in it }
             assertTrue(unlabelled.isEmpty(), "$screen on $device has controls without a label: $unlabelled")
+            // P4-09: every control a finger reaches on Plus's own screens has a 48 dp touch area.
+            val small = findings.filter { TOUCH_FINDING in it }
+            assertTrue(small.isEmpty(), "$screen on $device has touch areas under 48 dp: $small")
         }
         // P4-09: text contrast measured on the image (WCAG 2 ratio of the text's colour to the colour
         // behind it). Below 4.5:1 is printed for review, with each screen's lowest value; on Plus's own
@@ -416,8 +419,10 @@ abstract class PlusReferenceScreenshots(private val device: String) {
 
     /**
      * Tappable or toggleable nodes on screen with nothing a screen reader can say, and those whose
-     * own bounds are under 48 dp. The size is for review only: Compose widens a smaller target to
-     * 48 dp for touch unless a neighbour is closer. Nodes scrolled out of view (0 x 0) are skipped.
+     * touch area is under 48 dp (P4-09, NVP15-RISK-0013). The touch area is the node's touch bounds,
+     * which include the widening Compose gives a smaller control (minimumInteractiveComponentSize),
+     * so a 40 dp icon button that a finger can hit over 48 dp passes; the drawn size is printed
+     * beside it for review. Nodes scrolled out of view (0 x 0) are skipped.
      */
     private fun accessibilityFindings(): List<String> {
         val dp = compose.density.density
@@ -431,8 +436,14 @@ abstract class PlusReferenceScreenshots(private val device: String) {
                 .joinToString(" ").trim()
             val widthDp = (bounds.width / dp).toInt()
             val heightDp = (bounds.height / dp).toInt()
+            val touch = node.touchBoundsInRoot
+            // Rounded, not truncated: 47.99 dp from pixel rounding is a 48 dp target.
+            val touchWidthDp = Math.round(touch.width / dp)
+            val touchHeightDp = Math.round(touch.height / dp)
             val problems = buildList {
-                if (widthDp < 48 || heightDp < 48) add("target ${widthDp}x${heightDp} dp")
+                if (touchWidthDp < 48 || touchHeightDp < 48) {
+                    add("$TOUCH_FINDING ${touchWidthDp}x${touchHeightDp} dp (drawn ${widthDp}x${heightDp} dp)")
+                }
                 if (label.isEmpty()) add("no label")
             }
             if (problems.isEmpty()) null
@@ -513,6 +524,8 @@ abstract class PlusReferenceScreenshots(private val device: String) {
     )
 
 }
+
+private const val TOUCH_FINDING = "touch area"
 
 /** Reference screens whose controls are all labelled (Plus code, and the Nuvio parts it shows). */
 private val PLUS_OWNED_SCREENS = setOf(
