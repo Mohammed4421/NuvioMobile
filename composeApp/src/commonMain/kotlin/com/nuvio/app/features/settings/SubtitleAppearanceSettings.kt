@@ -50,6 +50,8 @@ internal fun SubtitleAppearanceSettings(
         }
         Text(
             stringResource(Res.string.subtitle_appearance_hint),
+            // Aligned with the text inside the preview and the settings group, as the brightness note is.
+            modifier = Modifier.padding(horizontal = if (isTablet) 20.dp else 16.dp),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
