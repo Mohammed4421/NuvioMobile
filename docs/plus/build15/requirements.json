@@ -4638,12 +4638,41 @@
         ".github/plus/check-requirements.py",
         "docs/plus/build15/requirements.json"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_missing_mandatory_requirement_fails",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_unknown_statuses_and_duplicate_ids_fail",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_missing_or_repeated_identifier_fails",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_mandatory_requirement_marked_optional_fails",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every item has a unique NVP15-REQ id, an acceptance criterion and mandatory=true unless the owner decided otherwise; the gate fails otherwise.",
-      "next": "Gate run of this commit.",
+      "next": "Holds while the gate runs on every pull request and push. Cites the gate's tests rather than a run: this requirement's path is requirements.json itself, so any run cited inside it is stale by the commit that cites it.",
       "nvp15": "NVP15-REQ-0134",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4661,12 +4690,27 @@
         "docs/plus/build15/risks.json",
         "docs/plus/build15/change-requests.json"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_the_real_side_registers_hold",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258461,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Counterparts listed in the register note exist; the gate reads and cross-checks them.",
-      "next": "Release scope manifest at P9.",
+      "next": "Holds while the gate runs on every pull request and push.",
       "nvp15": "NVP15-REQ-0135",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4713,12 +4757,27 @@
       "requirement": "Every impactful pull request linked to requirement ids; every implemented requirement linked to a test or a documented reason it cannot be tested (a reason alone never makes it VERIFIED).",
       "source": "Build 15 spec v1.1",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_pr_requirements.py",
+          "name": "test_ids_exist_and_pull_requests_are_in_scope",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258461,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "PR descriptions or the register name the requirement ids of each impactful PR.",
-      "next": "From the next PRs on; earlier ones in carryover.json.",
+      "next": "Holds while the gate runs on every pull request and push.",
       "nvp15": "NVP15-REQ-0137",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4732,12 +4791,41 @@
       "paths": [
         ".github/plus/check-requirements.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_ci_run_needs_a_run_number_and_a_full_commit",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_run_on_another_commit_fails_online",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_run_that_did_not_succeed_fails_online",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258461,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Register evidence carries run, full commit, what and result; online gate checks each run succeeded on that commit.",
-      "next": "Environment and time come from the cited run.",
+      "next": "Holds while the gate runs on every pull request and push.",
       "nvp15": "NVP15-REQ-0138",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4820,12 +4908,27 @@
         "docs/plus/build15/risks.json",
         ".github/plus/check-requirements.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_risk_needs_every_field_and_known_requirements",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258461,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "risks.json holds each open item with every §22.1 field; the gate rejects an entry with an empty field.",
-      "next": "Keep current.",
+      "next": "Holds while the gate runs on every pull request and push.",
       "nvp15": "NVP15-REQ-0142",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4895,12 +4998,27 @@
       "paths": [
         "docs/plus/build15/change-requests.json"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_the_real_side_registers_hold",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258461,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "change-requests.json holds each such change with before, after, reason, impact and decision.",
-      "next": "Keep current.",
+      "next": "Holds while the gate runs on every pull request and push.",
       "nvp15": "NVP15-REQ-0145",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4915,12 +5033,34 @@
         "docs/plus/build15/stage-gates.json",
         ".github/plus/check-requirements.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_gate_cannot_pass_with_open_requirements_or_without_the_owner",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_only_the_spec_gate_states_are_allowed",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258461,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "stage-gates.json has P0–P9 with these fields; the gate checks states and PASS conditions.",
-      "next": "Update at each gate.",
+      "next": "Holds while the gate runs on every pull request and push.",
       "nvp15": "NVP15-REQ-0146",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4954,12 +5094,27 @@
         "docs/plus/build15/change-requests.json",
         ".github/plus/check-requirements.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_missing_mandatory_requirement_fails",
+          "result": "PASS",
+          "what": "Runs in the requirements gate on every pull request and push."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258461,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "change-requests.json; MANDATORY list in the gate keeps every id.",
-      "next": "Keep current.",
+      "next": "Holds while the gate runs on every pull request and push.",
       "nvp15": "NVP15-REQ-0148",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4973,12 +5128,20 @@
       "paths": [
         ".github/plus/check-requirements.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45666258461,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "Build 15 requirements gate on PR #123's head: the gate's own tests (test_check_*.py), the baseline check and check-requirements.py --online all passed on that commit."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "check-requirements.py (--online, --matrix) runs on every pull request and push.",
-      "next": "Manifest check at P9.",
+      "next": "Holds while the gate runs on every pull request and push.",
       "nvp15": "NVP15-REQ-0149",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -5024,19 +5187,33 @@
       "requirement": "Android 9 stays supported and tested on the emulator at lower priority: a real defect on it is fixed; a test unstable only on Android 9 is pursued only when playback, subtitles, downloads or upgrades are affected.",
       "source": "Owner decision",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/risks.json",
           "what": "Closed NVP15-RISK-0007/0009: no failure without a cause in 85 Android 9/14/16 device-test jobs since #51",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258196,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123's head: Notification pause/resume (Android 28) passed (pause and resume), a required check of custom-subtitles."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258414,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123's head: Nuvio device tests passed on Android 28, 34 and 36."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Android 9 jobs keep running; triage follows this rule.",
-      "next": "—",
+      "next": "Android 9 stays a required check (Notification pause/resume (Android 28)).",
       "nvp15": "NVP15-REQ-0152",
       "release_class": "PRE-RELEASE REQUIRED"
     },
