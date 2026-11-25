@@ -44,6 +44,7 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | B15-UI-09 | Subtitle/audio panels, downloads settings | Stepper − and + and the Wi-Fi only switch had no label | P4-09 report (#68) | P2 | FIX (#68) | IMPLEMENTED |
 | B15-NUV-01 | Nuvio areas | `catch (e: Throwable)` also catches coroutine cancellation (~40 in coroutines) | initial-pass.md | P3 | DEFER (Nuvio's code) | DISCOVERED |
 | B15-NUV-02 | Nuvio areas | `runBlocking { getString() }` in repositories and notifications | initial-pass.md | P3 | DEFER (Nuvio's code) | DISCOVERED |
+| B15-NUV-03 | Nuvio tests | `TestHttp` records concurrent requests in an unsynchronised list; `searchesEachSelectedLibraryOnJellyfin` can lose one | #132 run 45715101558 | P3 | DEFER (Nuvio's test code) | DISCOVERED |
 | B15-DL-05 | Downloads | Resume appended another version or a cut range (review GEM-DL-01/02) | Code; `AndroidDownloadTransferTest` | P1 | FIX (#58) | IMPLEMENTED |
 | B15-PLY-03 | Player | Pending subtitle choice taken before subtitle tracks exist (GEM-PLY-01) | Code; device tests | P1 | FIX (#58) | IMPLEMENTED |
 | B15-PLY-04 | Player | Subtitle change while buffering paused the video (GEM-PLY-02, 3 sites) | Code | P1 | FIX (#58) | IMPLEMENTED |
@@ -61,7 +62,7 @@ Each axis of the spec with the findings behind it, or "reviewed, none" with what
 | Behaviour | B15-SUB-04, B15-SUB-06, B15-SUB-07, B15-SUB-08, B15-DL-03, B15-DL-05, B15-PLY-03, B15-PLY-04, B15-EXT-02, B15-WP-01, B15-ADD-01 |
 | Performance | B15-SUB-01, B15-SUB-05, B15-UI-03, B15-NUV-02 |
 | Security | B15-SEC-01, B15-SEC-02, B15-SEC-03, B15-SEC-04, B15-AND-01, B15-BLD-01 |
-| Concurrency | B15-DL-01, B15-DL-02, B15-PLY-01, B15-NUV-01, B15-ADD-02 |
+| Concurrency | B15-DL-01, B15-DL-02, B15-PLY-01, B15-NUV-01, B15-ADD-02, B15-NUV-03 |
 | UX | B15-UI-01, B15-UI-06, B15-LIB-01, B15-STR-01, B15-SET-01, B15-REL-01 |
 | Accessibility, localisation, RTL | B15-UI-02, B15-UI-04, B15-UI-05, B15-UI-07, B15-UI-08, B15-UI-09, B15-AR-01, B15-EXT-01 |
 | Storage and migration | B15-SUB-02, B15-SUB-03, B15-DL-05 |

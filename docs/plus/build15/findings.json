@@ -1191,6 +1191,32 @@
       "refs": [
         "#121"
       ]
+    },
+    {
+      "kind": "defect",
+      "compatibility": "Nuvio's test code (commonTest TestHttp.kt), untouched by Plus; the fix belongs upstream",
+      "priority": "P3",
+      "id": "B15-NUV-03",
+      "area": "Nuvio tests (media servers)",
+      "severity": "Low",
+      "files": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/servers/mediabrowser/TestHttp.kt"
+      ],
+      "evidence": "MediaBrowserRequestTest.searchesEachSelectedLibraryOnJellyfin failed once on PR #132 (run 45715101558, AssertionError at MediaBrowserRequestTest.kt:211) and passed on the full re-run of the same commit",
+      "root_cause": "MediaBrowserProvider.search queries each library concurrently (async in coroutineScope); TestHttp records requests in an unsynchronised mutableListOf from MockEngine, so one recorded request can be lost and the parentId set misses a library",
+      "user_impact": "None: the app's search is unaffected; the test can fail spuriously",
+      "alternatives": [
+        "Synchronise TestHttp.requests (Nuvio's file)",
+        "Leave to Nuvio and re-run when it fails spuriously"
+      ],
+      "chosen": "Leave to Nuvio and re-run when it fails spuriously",
+      "rationale": "Changing Nuvio's test harness adds upstream merge cost for a test-only race with no user impact; the next upstream sync can carry a fix",
+      "tests_required": "MediaBrowserRequestTest",
+      "decision": "DEFER",
+      "status": "DISCOVERED",
+      "refs": [
+        "#132"
+      ]
     }
   ]
 }

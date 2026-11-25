@@ -65,7 +65,7 @@
     },
     {
       "stage": "P3",
-      "status": "BLOCKED",
+      "status": "PASS",
       "commit_sha": null,
       "requirements": [
         "P3-01",
@@ -76,11 +76,13 @@
         "P3-06",
         "P3-07"
       ],
-      "critical_blockers": [
-        "NVP15-RISK-0004"
-      ],
-      "owner_approval": null,
-      "notes": "Journeys need real runs."
+      "critical_blockers": [],
+      "owner_approval": {
+        "by": "owner",
+        "on": "2026-11-26",
+        "ref": "Owner in chat, 2026-11-25: 'اذا اتقنت ونجح بالفحص ادمج واعتمد دائما', confirmed 'Yes, gates too' - standing approval of a phase gate once every mandatory requirement of it is VERIFIED or ACCEPTED."
+      },
+      "notes": "P3-01..07 VERIFIED, P3-03 ACCEPTED by the owner (server journeys as residual risk NVP15-RISK-0015). Journeys on current runs: device tests on Android 28/34/36, download notification and interruption tests, Nuvio Plus checks, the signed upgrade matrix (#126, #127, #132). Device parts are post-release (PRV-01..05)."
     },
     {
       "stage": "P4",
