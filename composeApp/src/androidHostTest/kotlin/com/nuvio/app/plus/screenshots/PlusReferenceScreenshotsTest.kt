@@ -42,6 +42,7 @@ import com.nuvio.app.features.downloads.SeasonQueueEntryState
 import com.nuvio.app.features.downloads.SeasonQueueHolds
 import com.nuvio.app.features.downloads.SeasonQueueReference
 import com.nuvio.app.features.downloads.downloadsSettingsContent
+import com.nuvio.app.features.home.components.posterGridColumnCountForWidth
 import com.nuvio.app.features.downloads.seasonQueueContent
 import com.nuvio.app.features.library.buildLibraryDownloadEntries
 import com.nuvio.app.features.library.libraryDownloadsContent
@@ -128,11 +129,24 @@ abstract class PlusReferenceScreenshots(private val device: String) {
         )
         LazyColumn(Modifier.fillMaxSize()) {
             libraryDownloadsContent(
-                entries = entries, activeCount = 2, queueCount = 0, columns = if (device.endsWith("tablet")) 5 else 3,
+                entries = entries, activeCount = 2, queueCount = 0, columns = appColumns(),
                 onManageClick = {}, onEntryClick = {}, onEntryLongClick = {},
             )
         }
     }
+
+    /**
+     * The poster columns the library uses at this setup's width (LibraryScreen takes them from
+     * posterGridColumnCountForWidth of its own width), so landscape and tablet shots show the grid
+     * the app shows, not a fixed count.
+     */
+    private fun appColumns(): Int = posterGridColumnCountForWidth(
+        when {
+            device.endsWith("tablet") -> 1280.dp
+            device.endsWith("phone-land") -> 891.dp
+            else -> 411.dp
+        },
+    )
 
     // P4 batch (owner, 2026-11-21): states and long or mixed titles on the download screens.
     private fun longTitle() = text(
@@ -151,7 +165,7 @@ abstract class PlusReferenceScreenshots(private val device: String) {
         )
         LazyColumn(Modifier.fillMaxSize()) {
             libraryDownloadsContent(
-                entries = entries, activeCount = 1, queueCount = 0, columns = if (device.endsWith("tablet")) 5 else 3,
+                entries = entries, activeCount = 1, queueCount = 0, columns = appColumns(),
                 onManageClick = {}, onEntryClick = {}, onEntryLongClick = {},
             )
         }
@@ -160,7 +174,7 @@ abstract class PlusReferenceScreenshots(private val device: String) {
     @Test fun libraryDownloadsEmpty() = shoot("library-downloads-empty") {
         LazyColumn(Modifier.fillMaxSize()) {
             libraryDownloadsContent(
-                entries = emptyList(), activeCount = 0, queueCount = 0, columns = 3,
+                entries = emptyList(), activeCount = 0, queueCount = 0, columns = appColumns(),
                 onManageClick = {}, onEntryClick = {}, onEntryLongClick = {},
             )
         }

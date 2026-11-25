@@ -1175,11 +1175,18 @@
           "kind": "review",
           "file": "docs/plus/build15/findings.json",
           "what": "P4-09 report on every reference screen and setup (#68): unlabelled controls fixed on Plus screens (B15-UI-08, 09) and asserted; Nuvio's settings switch recorded (B15-UI-07); touch size reported (Compose widens targets to 48 dp)"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45642684537,
+          "commit": "6e4f7c972881baf58cbdcb29a7a1f9202d43d7d0",
+          "result": "PASS",
+          "what": "PR #117 head: PlusReferenceScreenshotsTest asserts a touch area of at least 48 dp (touchBoundsInRoot) for every control on Plus-owned screens in six language/size setups; 2393 tests, 0 failed."
         }
       ],
       "untested": [
         "Contrast and focus order not measured; TalkBack on a device: NEEDS PHYSICAL DEVICE.",
-        "Touch area of controls drawn under 48 dp on the downloads queue (#93: 40x40 dp icon buttons, 40x35 dp pause season in landscape, 80x40 and 93x40 dp header buttons): Compose widens them to its 48 dp minimum touch size unless a neighbour is closer; not measured (NVP15-RISK-0013). Contrast: lowest 5.2:1, every measured text at or above 4.5:1"
+        "Contrast: lowest 5.2:1, every measured text at or above 4.5:1 (measured). Touch areas: measured by touch bounds, all at least 48 dp on Plus screens (#117, NVP15-RISK-0013 closed)."
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
@@ -2278,7 +2285,7 @@
         ".github/plus/apk-certs.py",
         "composeApp/src/androidFullHostTest/kotlin/com/nuvio/app/features/updater/UpdateArchiveCheckTest.kt"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "test",
@@ -2316,14 +2323,19 @@
           "file": "docs/plus/build15/security.md",
           "result": "PASS",
           "what": "security.md, 'APK integrity and signing keys'"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation-only release run (custom-android-build.yml, validation_only=true, owner's plus-release approval 2026-11-25) of custom-subtitles at 65a5e800: release-verify: 4 APKs signed with APK Signature Scheme v3 only by 99c0a98c..., lineage 40335e31... -> 99c0a98c..., contents identical to the tested APKs; the update check (signature, package, version) passed."
         }
       ],
-      "untested": [
-        "release-verify on the signed Build 16 candidate: release run (needs the owner's signing approval)."
-      ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Finding or 'reviewed, none' with evidence; MASVS/MASTG mapping where relevant.",
-      "next": "Release run of the candidate.",
+      "next": "Repeat in the signed release run of the final Build 16 head (S20-02) before publishing.",
       "nvp15": "NVP15-REQ-0060",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2513,12 +2525,22 @@
       "requirement": "Upgrade matrix: Build 14 → Build 15.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
-      "untested": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation-only release run (custom-android-build.yml, validation_only=true, owner's plus-release approval 2026-11-25) of custom-subtitles at 65a5e800: custom-14 -> 1016 on Android 9 and Android 14 with the real release key: the app's update check accepts the release, version 1014 -> 1016, seeded user data kept (add-ons with a token and on/off state for two profiles, subtitle settings, theme and library of each profile, download folder and Wi-Fi only, downloads, season queue and a partial file). custom-15 -> 1016 also PASS."
+        }
+      ],
+      "untested": [
+        "Watch progress (continue watching) is not part of the seeded data set; covered by Nuvio's own storage, not changed by Plus."
+      ],
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
-      "next": "On the candidate.",
+      "next": "Repeat in the signed release run of the final Build 16 head (S20-02) before publishing.",
       "nvp15": "NVP15-REQ-0065",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2530,12 +2552,20 @@
       "requirement": "Upgrade matrix: Build 13 → Build 15 if direct update is supported.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation-only release run (custom-android-build.yml, validation_only=true, owner's plus-release approval 2026-11-25) of custom-subtitles at 65a5e800: custom-13 -> 1016 run as its own step on Android 9 and Android 14: accepted, version 1013 -> 1016, seeded user data kept; the app's check refuses foreign-key, old-key and damaged APKs and Android refuses the foreign and old-key APKs."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
-      "next": "On the candidate.",
+      "next": "Repeat in the signed release run of the final Build 16 head (S20-02) before publishing.",
       "nvp15": "NVP15-REQ-0066",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2547,12 +2577,20 @@
       "requirement": "Upgrade matrix: Build 12 → Build 15 if the old-key transition stays supported.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation-only release run (custom-android-build.yml, validation_only=true, owner's plus-release approval 2026-11-25) of custom-subtitles at 65a5e800: build 12 -> 1016 on Android 9 and Android 14: the app's check accepts the release through the pinned key rotation, version 1012 -> 1016, seeded user data kept; afterwards an APK signed with the old key alone is refused."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
-      "next": "On the candidate.",
+      "next": "Repeat in the signed release run of the final Build 16 head (S20-02) before publishing.",
       "nvp15": "NVP15-REQ-0067",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -2564,12 +2602,20 @@
       "requirement": "Upgrade matrix: Android 8: safe refusal of the unsupported release.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation-only release run (custom-android-build.yml, validation_only=true, owner's plus-release approval 2026-11-25) of custom-subtitles at 65a5e800: Android 8.0 (API 26): the release is refused as intended (INSTALL_PARSE_FAILED_NO_CERTIFICATES, v3-only signature); build 12 and its data untouched."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Run on Android 9 and 14 on the release candidate with content checks.",
-      "next": "On the candidate.",
+      "next": "Repeat in the signed release run of the final Build 16 head (S20-02) before publishing.",
       "nvp15": "NVP15-REQ-0068",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3307,14 +3353,20 @@
       "requirement": "Test layer: Release/upgrade: APK integrity, upgrade and data.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "Final run on the candidate pending."
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation-only release run (custom-android-build.yml, validation_only=true, owner's plus-release approval 2026-11-25) of custom-subtitles at 65a5e800: Release/upgrade layer on the candidate: release-verify (certificate, lineage, same contents as tested) and the upgrade matrix on Android 8, 9 and 14 all PASS."
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate.",
+      "next": "Repeat in the signed release run of the final Build 16 head (S20-02) before publishing.",
       "nvp15": "NVP15-REQ-0089",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4330,14 +4382,20 @@
       "requirement": "Upgrade keeps the data.",
       "source": "Owner decision 2026-11-21 §7",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [
-        "In PR #28 (a9c28ab3), all checks passed; harness r1-r21."
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation-only release run (custom-android-build.yml, validation_only=true, owner's plus-release approval 2026-11-25) of custom-subtitles at 65a5e800: Upgrade keeps the data: seeded representative user data checked unchanged after 12/13/14/15 -> 16 on Android 9 and 14 with the real key."
+        }
       ],
+      "untested": [],
       "needs_physical_device": false,
       "acceptance": "Test per condition PASS on the merged commit.",
-      "next": "Merge #28 after the background notification test.",
+      "next": "Repeat in the signed release run of the final Build 16 head (S20-02) before publishing.",
       "nvp15": "NVP15-REQ-0133",
       "release_class": "PRE-RELEASE REQUIRED"
     },

@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "note": "Spec v1.1 §19.4 (S19-04): requirement ids of the merged pull requests whose description names none. Pull requests up to #45 are in carryover.json; later ones name their ids in the description or here. Checked by .github/plus/tests/test_pr_requirements.py (every id exists in requirements.json, every pull request is in release-scope.json).",
+  "pull_requests": {
+    "51": {
+      "title": "Record the evidence when a Nuvio device test fails",
+      "requirements": [
+        "P8-05",
+        "P8-11"
+      ]
+    },
+    "53": {
+      "title": "Registers follow GitHub and the code",
+      "requirements": [
+        "S19-02",
+        "S25-02"
+      ]
+    },
+    "56": {
+      "title": "P3 journey matrix and release readiness",
+      "requirements": [
+        "P3-01",
+        "P3-02",
+        "P3-03",
+        "P3-04",
+        "P3-05",
+        "P3-06",
+        "P3-07",
+        "S16-09"
+      ]
+    },
+    "57": {
+      "title": "Downloads in daily use: network loss and process death on the emulator; mpv load-count lab",
+      "requirements": [
+        "P3-02",
+        "D-08",
+        "P8-05"
+      ]
+    },
+    "59": {
+      "title": "Device test: subtitle from the device - off/on, delay, missing file",
+      "requirements": [
+        "P3-01",
+        "P8-05"
+      ]
+    },
+    "60": {
+      "title": "P4 polish: download screens and subtitle panel (owner's batch)",
+      "requirements": [
+        "P4-01",
+        "P4-02",
+        "P4-03",
+        "P4-04",
+        "P4-05",
+        "P4-08"
+      ]
+    },
+    "61": {
+      "title": "Season downloads: other add-ons in the same quality when the first lacks an episode",
+      "requirements": [
+        "P3-02",
+        "C-02"
+      ]
+    },
+    "62": {
+      "title": "SAF downloads: stream subtitle copies beside the video",
+      "requirements": [
+        "P3-02",
+        "D-08"
+      ]
+    },
+    "63": {
+      "title": "Emulator tests on Android 16 and 17 too",
+      "requirements": [
+        "P8-12",
+        "D-12"
+      ]
+    },
+    "69": {
+      "title": "Smoother two-finger subtitle resize and move",
+      "requirements": [
+        "P3-01",
+        "P4-06"
+      ]
+    },
+    "74": {
+      "title": "Build 15 candidate: release scope and readiness report",
+      "requirements": [
+        "S12-02",
+        "S16-09",
+        "S16-10",
+        "S16-11",
+        "S17-11"
+      ]
+    },
+    "78": {
+      "title": "Update tests: Builds 13 and 14 on their own, with representative user data",
+      "requirements": [
+        "P6-14",
+        "P6-15",
+        "P6-16",
+        "P8-10",
+        "D-10"
+      ]
+    },
+    "81": {
+      "title": "Close RISK-0007/0009 (unstable device tests) with evidence",
+      "requirements": [
+        "P8-05",
+        "S22-01"
+      ]
+    },
+    "82": {
+      "title": "P7: transfer test of all three portable features; verify them",
+      "requirements": [
+        "P7-04",
+        "P7-05",
+        "P7-06",
+        "P7-07",
+        "P7-08"
+      ]
+    },
+    "83": {
+      "title": "Build 16: the complete Build 15 work (name and CHANGELOG)",
+      "requirements": [
+        "S17-01",
+        "S25-01"
+      ]
+    },
+    "97": {
+      "title": "Notification test: read a mid-rewrite downloads list again",
+      "requirements": [
+        "D-09",
+        "P8-05"
+      ]
+    },
+    "109": {
+      "title": "Build 16: fail closed before release if mandatory requirements or phase approvals remain open",
+      "requirements": [
+        "S12-03",
+        "S16-01",
+        "S23-01"
+      ]
+    },
+    "114": {
+      "title": "Wait for the download fixture before measuring background progress",
+      "requirements": [
+        "D-09",
+        "P8-05"
+      ]
+    },
+    "115": {
+      "title": "Include merged validation and compatibility changes in Build 16 scope",
+      "requirements": [
+        "S12-02"
+      ]
+    },
+    "116": {
+      "title": "Build 16: record owner approval of P5",
+      "requirements": [
+        "P5-01",
+        "P5-02",
+        "P5-03",
+        "P5-04",
+        "P5-05",
+        "P5-06",
+        "P5-07",
+        "P5-08",
+        "P5-09",
+        "P5-10",
+        "P5-11",
+        "S24-01"
+      ]
+    }
+  }
+}

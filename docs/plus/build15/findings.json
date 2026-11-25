@@ -1164,6 +1164,33 @@
       "decision": "DEFER",
       "status": "DISCOVERED",
       "refs": []
+    },
+    {
+      "kind": "defect",
+      "compatibility": "Nuvio's code (AddonRepository.kt, already carrying Plus's safe-network-logging lines); five added lines, no signature change",
+      "priority": "P2",
+      "id": "B15-ADD-02",
+      "area": "Add-ons (refresh)",
+      "severity": "Low",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/addons/AddonRepository.kt"
+      ],
+      "evidence": "AddonJourneyTest.aManifestThatBreaksLaterKeepsTheAddonInstalledAndRecovers failed on PR #121 (run 45662059350, AssertionError at AddonJourneyTest.kt:254): the refresh that follows the start-up load was not made",
+      "root_cause": "A refresh job publishes isRefreshing = false before it leaves activeRefreshJobs (its finally block runs after); refreshAddon called in that window sees an active job and returns without refreshing",
+      "user_impact": "A refresh asked for right after an add-on finished loading (pull to refresh, add-on settings) can be silently skipped",
+      "alternatives": [
+        "Leave the active jobs before publishing the result",
+        "Wait in the test for the job to end",
+        "Leave to Nuvio"
+      ],
+      "chosen": "Leave the active jobs before publishing the result",
+      "rationale": "The defect is in the app, not the test; the change is five lines and keeps the finally block for cancellation",
+      "tests_required": "AddonJourneyTest (all cases), AddonRepository tests",
+      "decision": "FIX",
+      "status": "IMPLEMENTED",
+      "refs": [
+        "#121"
+      ]
     }
   ]
 }

@@ -303,6 +303,11 @@ object AddonRepository {
                     )
                 }
 
+                // Leave the active jobs before the add-on shows as no longer refreshing, so a refresh
+                // asked for as soon as it shows idle starts instead of being dropped as a duplicate.
+                if (activeRefreshJobs[manifestUrl] === refreshJob) {
+                    activeRefreshJobs.remove(manifestUrl)
+                }
                 _uiState.update { current ->
                     current.copy(
                         addons = current.addons.map { addon ->

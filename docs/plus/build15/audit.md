@@ -31,6 +31,7 @@ measurement that anyone can repeat. Known issues from before Build 15 are in `kn
 | B15-WP-01 | Watch progress | Test fixture changed from a 1 s to a 50 min clip at the same 94 % position | Cherry-pick of Nuvio's own fix 618622d8 (a newer guard treats 1 s clips as errors); assertion unchanged | — | KEEP | VERIFIED (review) |
 | B15-AR-01 | Arabic | Every English string has Arabic and the same placeholders | New `test_arabic_strings.py`: 2,811 English strings, 0 missing, 0 placeholder mismatches | — | KEEP; guarded by the new test | VERIFIED (test) |
 | B15-ADD-01 | Add-ons | Link confirmation state is `remember`ed, not saved | Activity handles rotation itself (`configChanges`), so it survives rotation; lost only on process death, where nothing is installed (safe) | P3 | KEEP | VERIFIED (review) |
+| B15-ADD-02 | Add-ons | A refresh asked for just after an add-on finished loading is dropped: the job leaves `activeRefreshJobs` after it shows as idle | AddonJourneyTest failure on #121 (run 45662059350) | P2 | FIX | IMPLEMENTED |
 | B15-LIB-01 | Library | Downloads tab replaces Nuvio's downloads button (button file deleted) | Diff review of `LibraryScreen.kt`; `LibraryDownloadEntriesTest`; open: look and RTL (P4), chip count includes paused downloads | — | KEEP; visuals in P4 | IMPLEMENTED |
 | B15-STR-01 | Streams | Season download sheet (rest of season / whole season) | Diff review of `StreamsScreen.kt`; queue paths in the race harness | — | KEEP; visuals in P4 | IMPLEMENTED |
 | B15-SET-01 | Settings | Subtitle brightness slider and bottom-offset range | Diff review of `SubtitleAppearanceSettings.kt`; effect on the picture needs a device | — | KEEP; NEEDS PHYSICAL DEVICE | IMPLEMENTED |
@@ -60,7 +61,7 @@ Each axis of the spec with the findings behind it, or "reviewed, none" with what
 | Behaviour | B15-SUB-04, B15-SUB-06, B15-SUB-07, B15-SUB-08, B15-DL-03, B15-DL-05, B15-PLY-03, B15-PLY-04, B15-EXT-02, B15-WP-01, B15-ADD-01 |
 | Performance | B15-SUB-01, B15-SUB-05, B15-UI-03, B15-NUV-02 |
 | Security | B15-SEC-01, B15-SEC-02, B15-SEC-03, B15-SEC-04, B15-AND-01, B15-BLD-01 |
-| Concurrency | B15-DL-01, B15-DL-02, B15-PLY-01, B15-NUV-01 |
+| Concurrency | B15-DL-01, B15-DL-02, B15-PLY-01, B15-NUV-01, B15-ADD-02 |
 | UX | B15-UI-01, B15-UI-06, B15-LIB-01, B15-STR-01, B15-SET-01, B15-REL-01 |
 | Accessibility, localisation, RTL | B15-UI-02, B15-UI-04, B15-UI-05, B15-UI-07, B15-UI-08, B15-UI-09, B15-AR-01, B15-EXT-01 |
 | Storage and migration | B15-SUB-02, B15-SUB-03, B15-DL-05 |
