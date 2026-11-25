@@ -767,7 +767,7 @@
         "docs/plus/build15/journeys-profiles.md",
         "docs/plus/build15/journeys.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "ACCEPTED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -789,6 +789,20 @@
           "commit": "6245b2ae639b1103f606d88e38dbcd995c62ed44",
           "what": "PR #101 Nuvio Plus checks PASS: ProfileDeletedDataCleanupTest and ProfileDeletedQueueCleanupTest on confirmed local deleted-index cleanup; other profiles' data retained, completed media preserved. Does not exercise live account server deletion.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258203,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123 head: Nuvio Plus checks - profile isolation of downloads, season queue, subtitle settings and offline PIN; deleted-profile cleanup (ProfileDeletedDataCleanupTest, ProfileDeletedQueueCleanupTest); switching, pausing or cancelling during a download."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45666258414,
+          "commit": "13408df6a0b1e039a002db599ada2a2b185c49f6",
+          "result": "PASS",
+          "what": "PR #123 head: Nuvio device tests on Android 28, 34 and 36 (the app running on an emulator)."
         }
       ],
       "untested": [
@@ -799,9 +813,14 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Journeys in this domain with all six cases PASS, each linked to test, environment, SHA and log.",
-      "next": "Finish server-based sign-in/delete and second-device profile sync journey testing when a test account/environment is available; preserve post-release-only personal checks separately.",
+      "next": "Post-release: server journeys with the owner's account (NVP15-RISK-0015).",
       "nvp15": "NVP15-REQ-0023",
-      "release_class": "PRE-RELEASE REQUIRED"
+      "release_class": "PRE-RELEASE REQUIRED",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-25",
+        "ref": "Owner in chat, 2026-11-25: 'Accept as risk' - the untested signed-in server journeys of P3-03 (sign-in, sync, online PIN, server deletion, second device) accepted as a residual risk (NVP15-RISK-0015), checked after release."
+      }
     },
     {
       "id": "P3-04",
