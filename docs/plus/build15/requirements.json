@@ -3755,14 +3755,21 @@
       "requirement": "custom-subtitles protection enabled and verified; no direct push or unauthorised force push; required checks where GitHub supports it; single-owner workflow kept; plus-release approval gates verified.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "measurement",
+          "file": "docs/plus/build15/ruleset-27721857.json",
+          "result": "PASS",
+          "what": "custom-subtitles protection verified from GitHub: pull request required, six required checks, deletion and force push blocked, merge commits only, the integration bypass limited to pull requests (no direct push)."
+        }
+      ],
       "untested": [
-        "Ruleset blocks deletion and force push only; required checks and pull-request rule need the owner in settings."
+        "strict up-to-date checks stay off (P3 residual, see P6-10)."
       ],
       "needs_physical_device": false,
       "acceptance": "Ruleset read back from the API shows each rule.",
-      "next": "Proposal to the owner; verify by API after.",
+      "next": "Re-read the ruleset before the release run.",
       "nvp15": "NVP15-REQ-0093",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -5189,12 +5196,21 @@
       "requirement": "Advance approval to merge pull requests into custom-subtitles once every mandatory check passes on their final commit; signing and publishing still need separate approvals.",
       "source": "Owner decision",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
-      "untested": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "measurement",
+          "file": "docs/plus/build15/ruleset-27721857.json",
+          "result": "PASS",
+          "what": "Merges are possible only through a pull request whose six required checks passed; merge commits only, so the evidence commits stay in the branch history."
+        }
+      ],
+      "untested": [
+        "strict up-to-date checks stay off (P3 residual, see P6-10)."
+      ],
       "needs_physical_device": false,
       "acceptance": "Merges only with all checks green on the head; no signing or publishing without a new approval.",
-      "next": "—",
+      "next": "Re-read the ruleset before the release run.",
       "nvp15": "NVP15-REQ-0151",
       "release_class": "PRE-RELEASE REQUIRED"
     },
