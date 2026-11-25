@@ -41,6 +41,19 @@ class AndroidDownloadLifecycleTest {
         assertEquals(2, job.extras.size())
     }
 
+    /** D-08: a Wi-Fi only download waits for an unmetered network; any other waits for any network. */
+    @Test
+    fun wifiOnlyDownloadsWaitForAnUnmeteredNetwork() {
+        val scheduler = AndroidDownloadScheduler(RuntimeEnvironment.getApplication())
+        val wifiOnly = scheduler.buildJob(AndroidDownloadStore(temporary.newFolder()).begin(downloadItem().copy(wifiOnly = true)))
+        val anyNetwork = scheduler.buildJob(AndroidDownloadStore(temporary.newFolder()).begin(downloadItem().copy(wifiOnly = false)))
+
+        @Suppress("DEPRECATION")
+        assertEquals(JobInfo.NETWORK_TYPE_UNMETERED, wifiOnly.networkType)
+        @Suppress("DEPRECATION")
+        assertEquals(JobInfo.NETWORK_TYPE_ANY, anyNetwork.networkType)
+    }
+
     @Test
     fun transferStateAndCredentialsSurviveProcessRecreation() {
         val directory = temporary.newFolder()
