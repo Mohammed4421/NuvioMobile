@@ -84,7 +84,12 @@ class DeviceSubtitleStatesTest {
             awaitText("First caption")
 
             // 2. Delay after off/on: +5 s moves "First caption" (2-5 s) to 7-10 s.
-            compose.runOnIdle { controller!!.pause(); controller!!.setSubtitleDelayMs(5_000) }
+            // Back to the start first and wait for it: the player is paused somewhere in 2.5-5 s here,
+            // so a snapshot left from before the seek below could already lie in the checked 3.3-6 s
+            // window and the check would run before the delayed subtitle was loaded (PR #136, Android 14).
+            compose.runOnIdle { controller!!.pause(); controller!!.seekTo(0) }
+            compose.waitUntil(10_000) { compose.runOnIdle { snapshot.positionMs < 1_000 } }
+            compose.runOnIdle { controller!!.setSubtitleDelayMs(5_000) }
             compose.runOnIdle { controller!!.clearExternalSubtitle() }
             compose.runOnIdle { controller!!.setSubtitleUri(subtitleUri); controller!!.setSubtitleDelayMs(5_000); controller!!.seekTo(3_000); controller!!.play() }
             compose.waitUntil(10_000) { compose.runOnIdle { snapshot.positionMs in 3_300..6_000 } }
