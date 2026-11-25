@@ -2139,6 +2139,13 @@
           "commit": "643f740522b66de086ff39696b586ab0a67c7ade",
           "what": "PR #115 Nuvio Plus checks succeeded; job 138608287622 passed 374 tests including workflow permissions, signing-secret isolation and validation-only publish exclusion after integration of PRs #111–#114.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45537974694,
+          "commit": "0affebbdd320fdffc78cb5c4196f03dedf8b141c",
+          "result": "PASS",
+          "what": "PR #116 exact head: Nuvio Plus checks succeeded; job 138949194993 ran 374 tests, including workflow policy permissions and signing secret isolation assertions, all passing. Documentation-only follow-up records this evidence."
         }
       ],
       "untested": [],
@@ -2241,6 +2248,13 @@
           "commit": "643f740522b66de086ff39696b586ab0a67c7ade",
           "what": "PR #115 Nuvio Plus checks succeeded; job 138608287622 passed 374 tests including workflow permissions, signing-secret isolation and validation-only publish exclusion after integration of PRs #111–#114.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45537974694,
+          "commit": "0affebbdd320fdffc78cb5c4196f03dedf8b141c",
+          "result": "PASS",
+          "what": "PR #116 exact head: Nuvio Plus checks succeeded; job 138949194993 ran 374 tests, including workflow policy permissions and signing secret isolation assertions, all passing. Documentation-only follow-up records this evidence."
         }
       ],
       "untested": [],
