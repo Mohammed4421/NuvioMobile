@@ -152,8 +152,10 @@ jobs:
           # the emulator's current software GPU path. Older images keep the mode they pass with.
           emulator-options: -no-window -gpu ${{ matrix.api == 37 && 'swangle_indirect' || 'swiftshader_indirect' }} -noaudio -no-boot-anim -no-snapshot
           # Android 17's image did not boot within 600 s with the default 2 cores (run of 38f059c9).
-          cores: ${{ matrix.api == 37 && 4 || 2 }}
-          ram-size: ${{ matrix.api == 37 && '4096M' || '' }}
+          # Android 16 (36) stalled twice in software video decoding with 2 cores (PRs #123, #127):
+          # it gets the same 4 cores and 4 GB.
+          cores: ${{ matrix.api >= 36 && 4 || 2 }}
+          ram-size: ${{ matrix.api >= 36 && '4096M' || '' }}
           emulator-boot-timeout: ${{ matrix.api == 37 && 1200 || 600 }}
           # Android 17's default data partition could not hold the debug app (run of e228cded:
           # "Requested internal only, but not enough space").

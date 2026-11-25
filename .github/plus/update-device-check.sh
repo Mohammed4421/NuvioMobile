@@ -22,7 +22,9 @@ wait_for_copy() {
   for i in $(seq 1 "${NUVIO_COPY_WAIT:-60}"); do [[ "$(copied_size)" == "${size}" ]] && return 0; sleep 1; done
   return 1
 }
-adb exec-in run-as "${host}" sh -c "cat > files/update-check/${name}" < "${apk}" > /dev/null 2>&1
+# Bounded: on Android 9 exec-in once never returned (PR #129: 42 minutes until the job's limit),
+# so the push fallback below was never reached. After 120 s it is given up and the fallback runs.
+timeout 120 adb exec-in run-as "${host}" sh -c "cat > files/update-check/${name}" < "${apk}" > /dev/null 2>&1
 if ! wait_for_copy; then
   echo "${label}: the direct copy stopped at $(copied_size) of ${size} bytes; copying through adb push"
   adb push "${apk}" "/data/local/tmp/${name}" > /dev/null \

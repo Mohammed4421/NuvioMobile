@@ -29,8 +29,17 @@ fi
 adb shell cmd package compile -m speed -f "${NUVIO_TEST_HOST}" > /dev/null 2>&1 || true
 adb shell cmd package compile -m speed -f "${NUVIO_TEST_RUNNER%%/*}" > /dev/null 2>&1 || true
 adb logcat -c || true
-out="$(adb shell "am instrument -w -r -e class '${classes}' '${NUVIO_TEST_RUNNER}'" 2>&1 | tr -d '\r')"
+# Bounded: the whole class list takes about 5 minutes. Twice on Android 36 (PRs #123, #127) the
+# emulator stalled in software video decoding and the job hung silently until its 60-minute limit.
+# A stall now fails here after 25 minutes with the logcat below, as a hang, never as a pass.
 status=0
+out="$(timeout 1500 adb shell "am instrument -w -r -e class '${classes}' '${NUVIO_TEST_RUNNER}'" 2>&1 | tr -d '\r')" || true
+if [[ "${out}" != *"INSTRUMENTATION_CODE"* ]]; then
+  echo "::error::${label}: the instrumentation did not finish within 25 minutes (hang); last output:"
+  tail -n 40 <<< "${out}"
+  echo "::group::${label}: logcat at the hang"; adb logcat -d -v time | tail -n 300; echo "::endgroup::"
+  exit 1
+fi
 python3 -I "${here}/instrumentation-results.py" "${label}" <<< "${out}" || status=$?
 # Every run: how many times libmpv was asked to load its source. Two per start are normal (#55): the
 # first request is cancelled before it reaches mpv, and mpv starts the file once.
