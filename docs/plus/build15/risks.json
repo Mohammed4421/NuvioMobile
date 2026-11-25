@@ -103,6 +103,20 @@
       "alternatives": "Re-run once and record (chosen); investigate on recurrence",
       "decision_owner": "engineering",
       "closes_when": "No recurrence on the release candidate's runs"
+    },
+    {
+      "id": "NVP15-RISK-0015",
+      "state": "NOT TESTED",
+      "reason": "Signed-in server journeys of profiles and accounts are not tested: sign-in, sign-out, session expiry, account switch, cloud sync of profiles and settings, online PIN check and lock-out, server-side profile deletion and a second device. They need a Nuvio account server and a test account; the code is Nuvio's (Plus's local profile isolation and deletion cleanup are tested).",
+      "needs": "A Nuvio test account and server, or the owner's own account after release",
+      "requirements": [
+        "P3-03"
+      ],
+      "impact": "A defect in Nuvio's server account flows would not be caught before release; Plus's per-profile data isolation is covered by host tests",
+      "priority": "P2",
+      "alternatives": "Test with a test account before release; accept and check after release (chosen by the owner)",
+      "decision_owner": "owner",
+      "closes_when": "The owner (or a test account) runs sign-in, sync, PIN online and server-side profile deletion on Build 16 after release and reports the result"
     }
   ],
   "closed": [
