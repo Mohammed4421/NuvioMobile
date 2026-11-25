@@ -14,6 +14,10 @@
 # Usage: release-upgrade-test.sh <build-12 apk> <"label=apk;label=apk" of earlier releases, or ""> <release apk>
 #        <old-key apk> <foreign-key apk> <debug app apk> <debug test apk>   (all x86_64)
 set -uo pipefail
+# Every adb call is bounded (installs and reads take seconds to a minute): on Android 9 a single
+# adb call once never returned and a job hung until its limit (PR #132). A stuck call now fails the
+# step that needed it within 5 minutes, never as a pass.
+adb() { timeout "${NUVIO_ADB_TIMEOUT:-300}" adb "$@"; }
 exec > >(tee -a release-upgrade.log) 2>&1
 build12="$1"; previous="$2"; release="$3"; old_key="$4"; foreign="$5"; debug_app="$6"; debug_test="$7"
 here="$(cd "$(dirname "$0")" && pwd)"
