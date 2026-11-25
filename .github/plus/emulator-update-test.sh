@@ -3,6 +3,10 @@
 # new build and opens that. Fails if the update reinstalls, loses app data or the app crashes.
 # Usage: emulator-update-test.sh <previous-x86_64-apk or ""> <new-x86_64-apk>
 set -uo pipefail
+# Every adb call is bounded (installs and reads take seconds to a minute): on Android 9 a single
+# adb call once never returned and a job hung until its limit (PR #132). A stuck call now fails the
+# step that needed it within 5 minutes, never as a pass.
+adb() { timeout "${NUVIO_ADB_TIMEOUT:-300}" adb "$@"; }
 exec > >(tee -a emulator.log) 2>&1
 previous="$1"
 new="$2"
