@@ -11,12 +11,27 @@
       "requirement": "No new standalone user features (tests, tools, compatibility layers and fixes are allowed).",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_scope_guard.py",
+          "name": "test_every_feature_is_from_build_14_or_a_recorded_fix",
+          "result": "PASS",
+          "what": "Every registered Plus feature is one Build 14 had, or a Build 15 fix with its finding or owner decision (lazy-key-collisions B15-UI-01, subtitle-parser-worst-case B15-SUB-01, playback-credential-tls B15-SEC-04, safe-network-logging NVP15-CHG-0008); PortKit's test_every_plus_change_is_owned_by_a_feature makes every code change belong to one."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_portkit.py",
+          "name": "test_every_plus_change_is_owned_by_a_feature",
+          "result": "PASS",
+          "what": "Every Plus change against the upstream base is owned by a registered feature."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every Build 15 change is a fix, test, tool or polish of an existing feature; exceptions are owner decisions.",
-      "next": "Season/all pause controls (#28) recorded as owner decision D-01, not a standalone feature.",
+      "next": "test_scope_guard.py holds it on every pull request; the release run re-checks the key.",
       "nvp15": "NVP15-REQ-0001",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -28,8 +43,15 @@
       "requirement": "No change to sound behaviour without evidence or a clear engineering reason.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "IMPLEMENTED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/findings.json",
+          "result": "PASS",
+          "what": "Behaviour fixes carry findings (e.g. B15-ADD-02 for #123, B15-SEC-04, B15-SUB-01..08, B15-UI-01); pr-requirements.json and carryover.json name each pull request's requirements."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each behaviour change links to a finding.",
@@ -45,12 +67,34 @@
       "requirement": "Out of scope: identity redesign, new feature systems, provider changes without defect, Package ID or signing key change, mass dependency upgrades without need, risky unrelated fixes, PortKit support for every future fork.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_scope_guard.py",
+          "name": "test_build_files_and_dependency_versions_are_those_of_build_14",
+          "result": "PASS",
+          "what": "All 8 build files (version catalog, Gradle wrapper, settings, module build scripts, gradle.properties) are byte-identical to Build 14: no dependency upgrade, no toolchain change."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_scope_guard.py",
+          "name": "test_the_application_id_is_unchanged",
+          "result": "PASS",
+          "what": "applicationId stays com.nuvio.app."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation run: release APKs signed by the same key 99c0a98c with lineage 40335e31 -> 99c0a98c; builds 12-15 update to 16 in place (package and key unchanged)."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "No change of these kinds.",
-      "next": "Checked at release scope review.",
+      "next": "test_scope_guard.py holds it on every pull request; the release run re-checks the key.",
       "nvp15": "NVP15-REQ-0003",
       "release_class": "PRE-RELEASE REQUIRED"
     },
