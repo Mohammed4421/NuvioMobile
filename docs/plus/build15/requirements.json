@@ -552,18 +552,39 @@
       "requirement": "Architecture changes only when meeting §5 criteria (repeated defect, harmful coupling, measured performance, concurrency/state simplification, testability, upstream merge cost, PortKit enablement).",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/architecture.md",
           "what": "Decisions A-01..A-06, each with its §5 criterion and measurement; A-02/A-03 re-measured 2026-11-22"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_architecture.py",
+          "name": "test_every_decision_names_a_section_5_criterion",
+          "result": "PASS",
+          "what": "Every architecture decision A-01..A-07 names the spec §5 criterion it rests on and its evidence."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_architecture.py",
+          "name": "test_no_upstream_source_file_is_dropped_without_a_decision",
+          "result": "PASS",
+          "what": "No Kotlin or Swift file of the upstream base is moved, renamed or dropped without a recorded decision (one: LibraryDownloadsButton.kt, replaced by the library-downloads feature)."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_line_endings.py",
+          "name": "test_plus_keeps_the_line_endings_of_upstream",
+          "result": "PASS",
+          "what": "Plus keeps upstream line endings, so its changes to Nuvio files stay as small as written (#120)."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Each decision cites a §5 criterion and evidence.",
-      "next": "Re-measure at the next upstream sync.",
+      "next": "Any new structure decision is added to architecture.md with its §5 criterion; the test enforces it.",
       "nvp15": "NVP15-REQ-0017",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -575,20 +596,41 @@
       "requirement": "Refactoring constraints: visible behaviour kept, no data format change without migration, public interfaces with all callers reviewed, no refactor for line count, reviewable units, behaviour changes separate from moves/renames.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/architecture.md",
           "what": "Constraints written as the acceptance of A-02/A-03; no refactor is done in Build 15"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_architecture.py",
+          "name": "test_every_decision_names_a_section_5_criterion",
+          "result": "PASS",
+          "what": "Every architecture decision A-01..A-07 names the spec §5 criterion it rests on and its evidence."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_architecture.py",
+          "name": "test_no_upstream_source_file_is_dropped_without_a_decision",
+          "result": "PASS",
+          "what": "No Kotlin or Swift file of the upstream base is moved, renamed or dropped without a recorded decision (one: LibraryDownloadsButton.kt, replaced by the library-downloads feature)."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_line_endings.py",
+          "name": "test_plus_keeps_the_line_endings_of_upstream",
+          "result": "PASS",
+          "what": "Plus keeps upstream line endings, so its changes to Nuvio files stay as small as written (#120)."
         }
       ],
       "untested": [
-        "No refactor PR in Build 15 to apply them to."
+        "No refactor pull request in Build 15/16 (A-02/A-03 deferred to the next upstream sync): the constraints are applied there."
       ],
       "needs_physical_device": false,
       "acceptance": "Each refactor PR states how each constraint holds.",
-      "next": "Apply to A-02/A-03 at the next upstream sync.",
+      "next": "Apply to A-02/A-03 at the next upstream sync; the architecture test fails on an unrecorded move or removal.",
       "nvp15": "NVP15-REQ-0018",
       "release_class": "PRE-RELEASE REQUIRED"
     },
