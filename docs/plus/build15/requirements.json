@@ -1093,7 +1093,7 @@
       "requirement": "Interaction and button clarity.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
@@ -1115,13 +1115,16 @@
         }
       ],
       "untested": [
-        "TalkBack on a device: NEEDS PHYSICAL DEVICE."
+        "Personal device part deferred to PRV-08 (POST-RELEASE VALIDATION, NVP15-CHG-0009): TalkBack reading and focus order on the owner's phone."
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "TalkBack on a device (owner's device list); the rest is verified by the screenshot review.",
+      "next": "TalkBack on the owner's phone after release (PRV-08).",
       "nvp15": "NVP15-REQ-0029",
-      "release_class": "PRE-RELEASE REQUIRED"
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-08"
+      ]
     },
     {
       "id": "P4-03",
@@ -1382,7 +1385,7 @@
       "requirement": "Accessibility: screen readers, focus, contrast, touch target size.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
@@ -1411,14 +1414,16 @@
         }
       ],
       "untested": [
-        "Contrast and focus order not measured; TalkBack on a device: NEEDS PHYSICAL DEVICE.",
-        "Contrast: lowest 5.2:1, every measured text at or above 4.5:1 (measured). Touch areas: measured by touch bounds, all at least 48 dp on Plus screens (#117, NVP15-RISK-0013 closed)."
+        "Personal device part deferred to PRV-08 (POST-RELEASE VALIDATION, NVP15-CHG-0009): TalkBack reading and focus order on the owner's phone."
       ],
       "needs_physical_device": false,
       "acceptance": "Per-screen review with before/after screenshots and findings closed or deferred with reason.",
-      "next": "TalkBack and focus order on a device (owner's device list); contrast and touch areas are measured.",
+      "next": "TalkBack on the owner's phone after release (PRV-08).",
       "nvp15": "NVP15-REQ-0036",
-      "release_class": "PRE-RELEASE REQUIRED"
+      "release_class": "PRE-RELEASE REQUIRED",
+      "post_release": [
+        "PRV-08"
+      ]
     },
     {
       "id": "P4-10",
@@ -5401,6 +5406,29 @@
       "release_class": "POST-RELEASE VALIDATION",
       "post_release_of": [
         "P8-12"
+      ]
+    },
+    {
+      "id": "PRV-08",
+      "spec": "Owner decision 2026-11-25 (NVP15-CHG-0009)",
+      "phase": "P9",
+      "mandatory": true,
+      "requirement": "TalkBack and focus order on the owner's phone: every Plus control (download queue, library downloads, subtitle and audio panels, Plus dialogs) is read with a meaningful label and reached in a sensible order.",
+      "source": "Owner decision 2026-11-25: same mechanism as the earlier device checks (NVP15-CHG-0005)",
+      "paths": [],
+      "status": "SPECIFIED",
+      "evidence": [],
+      "untested": [
+        "NOT TESTED: the owner's check after installing the release (POST-RELEASE VALIDATION)."
+      ],
+      "needs_physical_device": true,
+      "acceptance": "The owner's result on his phone with TalkBack on, recorded with the device, Android version and build.",
+      "next": "After the release is installed on the owner's phone.",
+      "nvp15": "NVP15-REQ-0161",
+      "release_class": "POST-RELEASE VALIDATION",
+      "post_release_of": [
+        "P4-02",
+        "P4-09"
       ]
     }
   ]

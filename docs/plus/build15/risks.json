@@ -18,7 +18,8 @@
         "PRV-04",
         "PRV-06",
         "PRV-07",
-        "S16-04"
+        "S16-04",
+        "PRV-08"
       ],
       "impact": "Player, subtitle and storage behaviour on real hardware unproven",
       "priority": "P1",

@@ -131,6 +131,19 @@
       "reason": "Reduce the risk of credential-bearing addon/catalog/plugin addresses being written into logs while keeping every PortKit feature classification explicit.",
       "impact": "The PortKit feature inventory increases from 15 to 16; generated matrices and security review stay in scope. The new feature cannot be treated as a proven transfer, and release-scope evidence must include the merged security fix.",
       "decision": "Owner in chat, 2026-11-23 (Riyadh): approved PR #106 security fix and its manual PortKit addition, and instructed completion and publication of the project subject to release gates."
+    },
+    {
+      "id": "NVP15-CHG-0009",
+      "requirements": [
+        "P4-02",
+        "P4-09",
+        "PRV-08"
+      ],
+      "before": "P4-02 and P4-09 waited for TalkBack and focus order on a device before they could be verified, holding the P4 gate.",
+      "after": "As in NVP15-CHG-0005: the device part (TalkBack reading and focus order on the owner's phone) moves to a new POST-RELEASE VALIDATION requirement, PRV-08. P4-02 and P4-09 keep their ids and evidence and are verified on what is provable before release: labels on every Plus control, contrast of every text (lowest 5.2:1), touch areas of at least 48 dp, all measured in the reference screenshot test on 84 shots.",
+      "reason": "TalkBack's spoken output and focus traversal need a real device with the screen reader; every other accessibility criterion is measured in CI.",
+      "impact": "The P4 gate no longer waits for the owner's phone; TalkBack is checked after release on the owner's device.",
+      "decision": "Owner in chat, 2026-11-25: 'ماهي اليتك في التحديثات السابقه طبق نفسها' (apply the same mechanism as the earlier device checks, NVP15-CHG-0005) - answering how TalkBack and focus order (P4-02, P4-09) are handled."
     }
   ]
 }
