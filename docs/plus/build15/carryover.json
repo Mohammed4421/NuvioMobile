@@ -1660,6 +1660,32 @@
         "S16-07"
       ],
       "changes_app_source": true
+    },
+    {
+      "source": "#146",
+      "state": "REUSE VERIFIED",
+      "area": "Content languages for add-on titles (per-card TMDB lookup), home hero and TMDB rows; Build 16 changelog corrected",
+      "tests_run": "Nuvio Plus checks, device tests, download notification test, static analysis and PortKit tests passed on the head d474531a; merged as 736c76ab",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02); look on the owner's phone after release",
+      "requirements": [
+        "P7-03",
+        "S16-07"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#147",
+      "state": "REUSE VERIFIED",
+      "area": "Content languages for continue watching and downloads cards",
+      "tests_run": "Nuvio Plus checks, device tests, download notification test, static analysis and PortKit tests passed on the head of the PR; merged as baafd723",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02); look on the owner's phone after release",
+      "requirements": [
+        "P7-03",
+        "S16-07"
+      ],
+      "changes_app_source": true
     }
   ]
 }
