@@ -3139,6 +3139,13 @@
           "commit": "eb71eed902261fd003a713c19b3ffd175c4e5ce3",
           "result": "PASS",
           "what": "PR #146 (content languages for add-on titles; registry and feature records regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45862169692,
+          "commit": "b1566c1484237e3b9ad0879cd9e0bce4a2785e5f",
+          "result": "PASS",
+          "what": "PR #147 (content languages for continue watching and downloads; shared-file policy for LibraryDownloadsContent.kt, registry and reports regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
         }
       ],
       "untested": [],
@@ -3295,6 +3302,13 @@
           "commit": "f1c05146cdc3c85bb9dd6ee005a685aff45e8ea5",
           "result": "PASS",
           "what": "PR #143 after dropping the request joiner (bounded-caches registry and feature records regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45862169692,
+          "commit": "b1566c1484237e3b9ad0879cd9e0bce4a2785e5f",
+          "result": "PASS",
+          "what": "PR #147 (content languages for continue watching and downloads; shared-file policy for LibraryDownloadsContent.kt, registry and reports regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
         }
       ],
       "untested": [],
@@ -3357,6 +3371,13 @@
           "commit": "f1c05146cdc3c85bb9dd6ee005a685aff45e8ea5",
           "result": "PASS",
           "what": "PR #143 after dropping the request joiner (bounded-caches registry and feature records regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45862169692,
+          "commit": "b1566c1484237e3b9ad0879cd9e0bce4a2785e5f",
+          "result": "PASS",
+          "what": "PR #147 (content languages for continue watching and downloads; shared-file policy for LibraryDownloadsContent.kt, registry and reports regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
         }
       ],
       "untested": [],
@@ -3440,6 +3461,13 @@
           "commit": "eb71eed902261fd003a713c19b3ffd175c4e5ce3",
           "result": "PASS",
           "what": "PR #146 (content languages for add-on titles; registry and feature records regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45862169692,
+          "commit": "b1566c1484237e3b9ad0879cd9e0bce4a2785e5f",
+          "result": "PASS",
+          "what": "PR #147 (content languages for continue watching and downloads; shared-file policy for LibraryDownloadsContent.kt, registry and reports regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
         }
       ],
       "untested": [],
@@ -3602,6 +3630,13 @@
           "commit": "eb71eed902261fd003a713c19b3ffd175c4e5ce3",
           "result": "PASS",
           "what": "PR #146 (content languages for add-on titles; registry and feature records regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45862169692,
+          "commit": "b1566c1484237e3b9ad0879cd9e0bce4a2785e5f",
+          "result": "PASS",
+          "what": "PR #147 (content languages for continue watching and downloads; shared-file policy for LibraryDownloadsContent.kt, registry and reports regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
         }
       ],
       "untested": [],
