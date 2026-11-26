@@ -505,11 +505,10 @@
     },
     {
       "id": "bounded-caches",
-      "title": "In-memory caches have a size limit and identical TMDB requests at the same time share one fetch",
+      "title": "In-memory caches have a size limit and are safe to use from several coroutines",
       "since": "Build 18",
       "files": [
         "composeApp/src/commonMain/kotlin/com/nuvio/app/core/cache/BoundedCache.kt",
-        "composeApp/src/commonMain/kotlin/com/nuvio/app/core/cache/InFlightRequests.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataService.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsRepository.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/ImdbEpisodeRatingsRepository.kt",
@@ -525,9 +524,7 @@
       ],
       "keywords": [
         "BoundedCache",
-        "InFlightRequests",
-        "enrichmentRequests",
-        "episodeRequests"
+        "firstValueOrNull"
       ],
       "test_files": [
         "composeApp/src/commonTest/kotlin/com/nuvio/app/core/cache/BoundedCacheTest.kt",

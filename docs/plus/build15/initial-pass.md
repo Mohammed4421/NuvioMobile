@@ -31,7 +31,7 @@ deep audit: deep reviews are the findings in `audit.md` (Plus areas, player, dow
 | baseline profile | 3 | catch-throwable 1 | B15-NUV-01 |
 | core/auth | 10 | catch-throwable 5 | B15-NUV-01 |
 | core/build | 6 | — | reviewed, none |
-| core/cache | 2 | — | reviewed, none |
+| core/cache | 1 | — | reviewed, none |
 | core/concurrent | 1 | catch-throwable 1 | B15-NUV-01 |
 | core/deeplink | 1 | — | reviewed, none |
 | core/diagnostics | 2 | — | reviewed, none |

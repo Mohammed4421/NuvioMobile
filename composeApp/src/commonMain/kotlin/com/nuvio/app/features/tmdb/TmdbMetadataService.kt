@@ -2,7 +2,6 @@ package com.nuvio.app.features.tmdb
 
 import co.touchlab.kermit.Logger
 import com.nuvio.app.core.cache.BoundedCache
-import com.nuvio.app.core.cache.InFlightRequests
 import com.nuvio.app.features.addons.httpGetText
 import com.nuvio.app.features.details.MetaCompany
 import com.nuvio.app.features.details.MetaDetails
@@ -40,11 +39,9 @@ object TmdbMetadataService {
     }
 
     // Nuvio Plus: bounded and thread-safe (they were unbounded maps written from several
-    // coroutines); identical enrichment requests that run at the same time share one fetch.
+    // coroutines without a lock).
     private val enrichmentCache = BoundedCache<String, TmdbEnrichment>(200)
-    private val enrichmentRequests = InFlightRequests<String, TmdbEnrichment?>()
     private val episodeCache = BoundedCache<String, Map<Pair<Int, Int>, TmdbEpisodeEnrichment>>(64)
-    private val episodeRequests = InFlightRequests<String, Map<Pair<Int, Int>, TmdbEpisodeEnrichment>>()
     private val moreLikeThisCache = BoundedCache<String, List<MetaPreview>>(100)
     private val collectionCache = BoundedCache<String, Pair<String?, List<MetaPreview>>>(100)
     private val trailerCache = BoundedCache<String, List<MetaTrailer>>(100)
@@ -937,9 +934,7 @@ object TmdbMetadataService {
         val cacheKey = "$tmdbId:$mediaType:$normalizedLanguage" +
             settings.contentLanguages.signature().let { if (it.isEmpty()) "" else ":$it" }
         enrichmentCache[cacheKey]?.let { return@withContext it }
-        enrichmentRequests.join(cacheKey) {
-            fetchEnrichmentUncached(tmdbId, mediaType, normalizedLanguage, cacheKey, settings)
-        }
+        fetchEnrichmentUncached(tmdbId, mediaType, normalizedLanguage, cacheKey, settings)
     }
 
     private suspend fun fetchEnrichmentUncached(
@@ -1291,9 +1286,7 @@ object TmdbMetadataService {
 
         val cacheKey = "$numericId:${normalizedSeasons.joinToString(",")}:$normalizedLanguage"
         episodeCache[cacheKey]?.let { return@withContext it }
-        episodeRequests.join(cacheKey) {
-            fetchEpisodeEnrichmentUncached(numericId, normalizedSeasons, normalizedLanguage, cacheKey)
-        }
+        fetchEpisodeEnrichmentUncached(numericId, normalizedSeasons, normalizedLanguage, cacheKey)
     }
 
     private suspend fun fetchEpisodeEnrichmentUncached(
@@ -1399,7 +1392,6 @@ object TmdbMetadataService {
     // Nuvio Plus content languages: genre names in a language other than the details request,
     // from TMDB's genre list (one small request per type and language, kept for the session).
     private val genreNameCache = BoundedCache<String, Map<Int, String>>(16)
-    private val genreListRequests = InFlightRequests<String, Map<Int, String>>()
 
     private suspend fun localizedGenres(
         genres: List<TmdbNamedItem>,
@@ -1411,7 +1403,7 @@ object TmdbMetadataService {
             return emptyList()
         }
         val key = "$mediaType:$language"
-        val names = genreNameCache[key] ?: genreListRequests.join(key) {
+        val names = genreNameCache[key] ?: run {
             fetch<TmdbGenreListResponse>(
                 endpoint = "genre/$mediaType/list",
                 query = mapOf("language" to language),
