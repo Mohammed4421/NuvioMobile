@@ -55,8 +55,10 @@ internal object CatalogContentLanguages {
     suspend fun localize(item: MetaPreview, settings: TmdbSettings): MetaPreview {
         val key = cacheKey(item, settings) ?: return item
         val localized = cache[key] ?: permits.withPermit {
-            cache[key] ?: lookUp(item, settings).also { cache[key] = it }
-        }
+            // A failed request (offline, timeout) is not kept, so the card is asked again the
+            // next time it is shown instead of staying in the add-on's language until restart.
+            cache[key] ?: lookUp(item, settings)?.also { cache[key] = it }
+        } ?: return item
         return item.withLocalized(localized, settings.contentLanguages)
     }
 
@@ -68,11 +70,11 @@ internal object CatalogContentLanguages {
         return "$type:${item.id}:${normalizeTmdbLanguage(settings.language)}:${prefs.signature()}"
     }
 
-    private suspend fun lookUp(item: MetaPreview, settings: TmdbSettings): Localized = withContext(Dispatchers.Default) {
+    private suspend fun lookUp(item: MetaPreview, settings: TmdbSettings): Localized? = withContext(Dispatchers.Default) {
         try {
             val type = mediaType(item.type) ?: return@withContext nothing
-            val tmdbId = TmdbService.ensureTmdbId(item.id, type) ?: return@withContext nothing
-            val apiKey = TmdbSettingsRepository.effectiveApiKey().takeIf(String::isNotBlank) ?: return@withContext nothing
+            val tmdbId = TmdbService.ensureTmdbId(item.id, type) ?: return@withContext null
+            val apiKey = TmdbSettingsRepository.effectiveApiKey().takeIf(String::isNotBlank) ?: return@withContext null
             val prefs = settings.contentLanguages
             val base = normalizeTmdbLanguage(settings.language)
             // The original language is not known before the request: when a choice needs it,
@@ -96,7 +98,7 @@ internal object CatalogContentLanguages {
         } catch (error: Throwable) {
             if (error is CancellationException) throw error
             log.w { "Card language lookup failed (${error::class.simpleName})" }
-            nothing
+            null
         }
     }
 

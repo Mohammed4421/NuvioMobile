@@ -5,7 +5,7 @@
     <string name="plus_content_languages_preset_description">اختر لغة كل جزء من معلومات العمل على حدة، مستقلةً عن لغة التطبيق. «تلقائي» يستخدم لغة TMDB أعلاه.</string>
     <string name="plus_content_languages_preset_english_arabic">عناوين إنجليزية ومعلومات عربية</string>
     <string name="plus_content_languages_custom">مخصص</string>
-    <string name="plus_content_languages_footer">يتطلب تفعيل إثراء TMDB. يُطبَّق على صفحة التفاصيل والمواسم والحلقات وكل ما يعتمد عليها: المكتبة ومتابعة المشاهدة والتنزيلات والتوصيات والمشغل. صفوف الكتالوجات والبحث تعرض الأسماء التي توفرها الإضافة. عند غياب اللغة تُستخدم اللغة الاحتياطية ثم بيانات العمل الأصلية، دون أي ترجمة آلية.</string>
+    <string name="plus_content_languages_footer">يتطلب تفعيل إثراء TMDB. يُطبَّق في كل مكان تظهر فيه العناوين: الرئيسية والكتالوجات والبحث والتفاصيل والمواسم والحلقات والمكتبة ومتابعة المشاهدة والتنزيلات والتوصيات والمشغل. عناوين الإضافات تُطابَق بمعرّف IMDb أو TMDB فقط، وما سواها (مثل بعض الأنمي) يبقى ببيانات الإضافة. عند غياب اللغة تُستخدم اللغة الاحتياطية ثم بيانات العمل الأصلية، دون أي ترجمة آلية.</string>
     <string name="plus_content_languages_choose">تلقائي أو الإنجليزية أو العربية أو اللغة الأصلية للعمل.</string>
     <string name="plus_content_languages_titles">أسماء الأفلام والمسلسلات</string>
     <string name="plus_content_languages_descriptions">الوصف والمعلومات</string>

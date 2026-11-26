@@ -6,6 +6,15 @@ Newest first.
 
 ## Next build
 
+### Fixed
+- **Content languages:** a card whose language lookup failed (offline, timeout) is asked again
+  the next time it is shown, instead of keeping the add-on's language until the app restarts;
+  changing TMDB settings clears the card results.
+- **Content languages setting:** the note under the setting now says correctly where it applies
+  (everywhere titles are shown, add-on titles matched by IMDb or TMDB id only).
+
+## Build 18 — content languages for every add-on
+
 ### Changed
 - **Content languages on the home screen:** the hero at the top of the home screen shows the
   title, description, poster, backdrop and logo in the chosen content languages, from the details
