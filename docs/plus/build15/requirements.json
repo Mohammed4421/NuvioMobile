@@ -3111,6 +3111,13 @@
           "commit": "112ecf8f8aedc1cfb2d318937c8880c16af826ff",
           "result": "PASS",
           "what": "PR #134 head (download-location gains PlusWifiOnlySchedulingTest; feature records regenerated): PortKit transfer tests and script tests passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45764071915,
+          "commit": "bfd024d7fde98c9b5b0b38f30464e6f1f129cd2b",
+          "result": "PASS",
+          "what": "PR #142 (Build 17 P1, upstream base Nuvio 1.0.1 3cfc311b; inventory, matrix and feature records regenerated): PortKit transfer tests passed, the three verified portable features transferred into upstream 1.0.1 and into fork A, built and their tests run; evidence check passed."
         }
       ],
       "untested": [],
@@ -3246,6 +3253,13 @@
           "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
           "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45764071915,
+          "commit": "bfd024d7fde98c9b5b0b38f30464e6f1f129cd2b",
+          "result": "PASS",
+          "what": "PR #142 (Build 17 P1, upstream base Nuvio 1.0.1 3cfc311b; inventory, matrix and feature records regenerated): PortKit transfer tests passed, the three verified portable features transferred into upstream 1.0.1 and into fork A, built and their tests run; evidence check passed."
         }
       ],
       "untested": [],
@@ -3287,6 +3301,13 @@
           "commit": "56cdb9c78c4591204be92a50d93000e642f97d5c",
           "what": "PR #106: PortKit transfer workflow passed with the added safe-network-logging feature classified manual, matrix/feature records regenerated, and three existing verified portable features transferred and tested on both targets.",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45764071915,
+          "commit": "bfd024d7fde98c9b5b0b38f30464e6f1f129cd2b",
+          "result": "PASS",
+          "what": "PR #142 (Build 17 P1, upstream base Nuvio 1.0.1 3cfc311b; inventory, matrix and feature records regenerated): PortKit transfer tests passed, the three verified portable features transferred into upstream 1.0.1 and into fork A, built and their tests run; evidence check passed."
         }
       ],
       "untested": [],
@@ -3342,6 +3363,13 @@
           "commit": "112ecf8f8aedc1cfb2d318937c8880c16af826ff",
           "result": "PASS",
           "what": "PR #134 head (download-location gains PlusWifiOnlySchedulingTest; feature records regenerated): PortKit transfer tests and script tests passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45764071915,
+          "commit": "bfd024d7fde98c9b5b0b38f30464e6f1f129cd2b",
+          "result": "PASS",
+          "what": "PR #142 (Build 17 P1, upstream base Nuvio 1.0.1 3cfc311b; inventory, matrix and feature records regenerated): PortKit transfer tests passed, the three verified portable features transferred into upstream 1.0.1 and into fork A, built and their tests run; evidence check passed."
         }
       ],
       "untested": [],
@@ -3476,6 +3504,13 @@
           "commit": "112ecf8f8aedc1cfb2d318937c8880c16af826ff",
           "result": "PASS",
           "what": "PR #134 head (download-location gains PlusWifiOnlySchedulingTest; feature records regenerated): PortKit transfer tests and script tests passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45764071915,
+          "commit": "bfd024d7fde98c9b5b0b38f30464e6f1f129cd2b",
+          "result": "PASS",
+          "what": "PR #142 (Build 17 P1, upstream base Nuvio 1.0.1 3cfc311b; inventory, matrix and feature records regenerated): PortKit transfer tests passed, the three verified portable features transferred into upstream 1.0.1 and into fork A, built and their tests run; evidence check passed."
         }
       ],
       "untested": [],
