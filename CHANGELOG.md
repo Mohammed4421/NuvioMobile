@@ -12,6 +12,10 @@ Newest first.
   it already loads (no extra requests). TMDB rows and collections (lists, collections, people,
   discover) give their titles in the language chosen for titles. Fields left on Automatic are
   unchanged.
+- **Content languages for every add-on:** titles from add-ons (home rows, catalogs, search,
+  library, recommendations) show the chosen title, poster, backdrop and logo. Each card on screen
+  asks TMDB once (cached); only titles with an IMDb or TMDB id are matched, others (for example
+  anime ids) keep the add-on's data. The add-on's name shows for a moment until TMDB answers.
 
 ## Build 17 — Nuvio 1.0.1, smaller install and content languages
 
