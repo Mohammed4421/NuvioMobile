@@ -76,6 +76,14 @@ data class ContentLanguagePreferences(
  * The TMDB language code to ask for: Auto is the user's TMDB language, Original the title's own
  * language (known only once its details are loaded; null before).
  */
+/**
+ * The language of a request that returns a list of titles at once (TMDB rails and collection
+ * sources): the titles choice when it names a language, otherwise the TMDB language as before.
+ * "Original" differs per title, so one list request cannot honour it and keeps the TMDB language.
+ */
+internal fun ContentLanguagePreferences.listRequestLanguage(baseLanguage: String): String =
+    normalizeTmdbLanguage(baseLanguage).let { base -> titles.resolve(base, null) ?: base }
+
 internal fun ContentLanguage.resolve(baseLanguage: String, originalLanguage: String?): String? = when (this) {
     ContentLanguage.Auto -> normalizeTmdbLanguage(baseLanguage)
     ContentLanguage.Original -> originalLanguage?.trim()?.takeIf(String::isNotBlank)?.lowercase()

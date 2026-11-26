@@ -4,7 +4,16 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) 1.0.
 [`3cfc311`](https://github.com/NuvioMedia/NuvioMobile/commit/3cfc311b494f25213f5b95a3afdfa619b83ceb50).
 Newest first.
 
-## Next build — Build 17: Nuvio 1.0.1, smaller install and content languages
+## Next build
+
+### Changed
+- **Content languages on the home screen:** the hero at the top of the home screen shows the
+  title, description, poster, backdrop and logo in the chosen content languages, from the details
+  it already loads (no extra requests). TMDB rows and collections (lists, collections, people,
+  discover) give their titles in the language chosen for titles. Fields left on Automatic are
+  unchanged.
+
+## Build 17 — Nuvio 1.0.1, smaller install and content languages
 
 ### New
 - **Content languages, independent of the app language.** Settings → TMDB → Content languages:
@@ -30,8 +39,24 @@ Newest first.
 
 ## Build 16 — complete engineering checks of Build 15
 
-The complete Build 15 work, published as Build 16 (owner's decision); the app's own updater offers it
-to Build 15. Until now this build adds no change to the app itself, only tests and checks:
+The complete Build 15 work, published as Build 16 (owner's decision) on 2026-11-26 from commit
+`3a0be99`; the app's own updater offers it to Build 15. The notes published with the release said
+this build changes nothing in the app itself; that was wrong. These app changes are in it:
+
+### Fixed
+- **Deleting a profile** clears that profile's Plus data (subtitle and player settings, download
+  queue), and downloads are kept when you switch profiles (#101, finding F1).
+- **mpv subtitles:** a styled caption is read again after a seek and on pause/play, so an old
+  line no longer stays on screen (#102).
+- **Add-ons:** a refresh asked for just after another one ended is no longer dropped (#123,
+  B15-ADD-02).
+- **In-app update:** the previously downloaded APK is kept until its replacement has downloaded
+  completely (#105).
+- **Subtitle appearance settings:** the hint lines up with the text around it (#119).
+
+### Security
+- Configured add-on, plugin and catalog URLs, and request error text, are no longer written to
+  the log (#106, W5-LOG-01).
 
 ### Checked
 - **Updates from Builds 12, 13 and 14** are each tested on their own, starting from realistic data

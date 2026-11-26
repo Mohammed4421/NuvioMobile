@@ -958,7 +958,7 @@ object TmdbMetadataService {
         } else {
             normalizedLanguage
         }
-        val listLanguage = if (split) prefs.titles.resolve(normalizedLanguage, null) ?: normalizedLanguage else normalizedLanguage
+        val listLanguage = if (split) prefs.listRequestLanguage(normalizedLanguage) else normalizedLanguage
         val detailsQuery = if (split) {
             mapOf("language" to detailsLanguage, "append_to_response" to "translations")
         } else {
