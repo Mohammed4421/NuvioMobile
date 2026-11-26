@@ -90,21 +90,6 @@
       "closes_when": "Fixed upstream and synced, or fixed in Plus after a new owner decision"
     },
     {
-      "id": "NVP15-RISK-0014",
-      "state": "FAIL",
-      "reason": "Intermittent CI failures seen on 2026-11-22 without an app change: the Android 9 device-test job of #87 hung for the full 60 min and was cancelled (rerun passed); DeviceSubtitleStatesTest.libmpvHandlesADeviceSubtitleAcrossStateChanges failed once on Android 14 on #90, which changes no app code (first failure in about 50 runs; rerun passed); the Android 9 notification test twice read the downloads list during a rewrite (fixed in #97)",
-      "needs": "Watch the runs up to the release candidate; a second subtitle-delay failure is treated as an app defect",
-      "requirements": [
-        "P8-05",
-        "P3-01"
-      ],
-      "impact": "A required check can fail or hang without an app fault",
-      "priority": "P2",
-      "alternatives": "Re-run once and record (chosen); investigate on recurrence",
-      "decision_owner": "engineering",
-      "closes_when": "No recurrence on the release candidate's runs"
-    },
-    {
       "id": "NVP15-RISK-0015",
       "state": "NOT TESTED",
       "reason": "Signed-in server journeys of profiles and accounts are not tested: sign-in, sign-out, session expiry, account switch, cloud sync of profiles and settings, online PIN check and lock-out, server-side profile deletion and a second device. They need a Nuvio account server and a test account; the code is Nuvio's (Plus's local profile isolation and deletion cleanup are tested).",
@@ -159,6 +144,14 @@
       "closed_on": "2026-11-25",
       "closes_when": "Upgrade from Build 13 run as its own step, and representative user data (settings, add-ons, profiles, downloads, queue, subtitle settings) seeded and checked after 12/13/14→15, before the next release (PRE-RELEASE REQUIRED)",
       "evidence": "Signed validation-only run 45642292281 at 65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1 (owner's plus-release approval 2026-11-25): Build 13 run as its own step; representative user data (add-ons with a token for two profiles, subtitle settings, per-profile theme and library, download folder and Wi-Fi only, downloads, season queue, partial file) seeded and checked unchanged after 12/13/14/15 -> 16 on Android 9 and 14; Android 8 refused. The final head's release run repeats the matrix before publishing (S20-02)."
+    },
+    {
+      "id": "NVP15-RISK-0014",
+      "was": "FAIL",
+      "reason": "Intermittent CI failures seen on 2026-11-22 without an app change: the Android 9 device-test job of #87 hung for the full 60 min and was cancelled (rerun passed); DeviceSubtitleStatesTest.libmpvHandlesADeviceSubtitleAcrossStateChanges failed once on Android 14 on #90, which changes no app code (first failure in about 50 runs; rerun passed); the Android 9 notification test twice read the downloads list during a rewrite (fixed in #97)",
+      "closed_on": "2026-11-26",
+      "closes_when": "No recurrence on the release candidate's runs",
+      "evidence": "Causes found and fixed: jobs hung silently when a single adb call never returned (device tests, update check, notification test) - every adb call is now bounded and the Android 16 emulator has 4 cores (#132, #138); DeviceSubtitleStatesTest checked the delayed subtitle against a stale snapshot - it now waits for the seek (#137). On the release candidate da69725e the device tests (45723298134), the notification and interruption tests (45723302766) and the Plus checks (45723293617) all passed."
     }
   ]
 }

@@ -1,83 +1,84 @@
-# Build 15 — release readiness (S16, S17)
+# Build 16 — release readiness (S16, S17)
 
-Status of every readiness condition and deliverable, with where it lives. Written before the release
-candidate exists: the lines marked **on the candidate** are filled from the release run of the final
-commit (S20-02); nothing here is reused from an older commit after the source changed.
+Status of every readiness condition and deliverable on the **release candidate**, commit
+`da69725e565643a87fbae1fefee6eb767391b2c4` of `custom-subtitles` (the merge of #139, which froze the
+scope). Every workflow was run by hand on that exact commit (S20-02). Later commits change only
+`docs/plus/build15` (this report and the registers). The release run builds, signs and tests the
+final head again before anything is published.
+
+## Runs on the release candidate (`da69725e`)
+
+| Workflow | Run | Result |
+|---|---|---|
+| Nuvio Plus checks (build, signing check, update check, every host test, emulator update on Android 9 and 14, reference screenshots) | [45723293617](https://github.com/Mohammed4421/NuvioMobile/actions/runs/45723293617) | success |
+| Nuvio device tests (Android 28, 34, 36) | [45723298134](https://github.com/Mohammed4421/NuvioMobile/actions/runs/45723298134) | success |
+| Download notification and interruption tests (Android 28 full, 34 and 36 pause) | [45723302766](https://github.com/Mohammed4421/NuvioMobile/actions/runs/45723302766) | success |
+| Static analysis (lint and detekt against Build 14) | [45723307327](https://github.com/Mohammed4421/NuvioMobile/actions/runs/45723307327) | success |
+| PortKit transfer tests (upstream and a fork) | [45723311777](https://github.com/Mohammed4421/NuvioMobile/actions/runs/45723311777) | success |
+| Playback compare (Build 14 vs candidate) | [45723315831](https://github.com/Mohammed4421/NuvioMobile/actions/runs/45723315831) | success |
+| Download compare (Build 14 vs candidate) | [45723320487](https://github.com/Mohammed4421/NuvioMobile/actions/runs/45723320487) | success |
+| Build 15 requirements gate (push) | [45723222651](https://github.com/Mohammed4421/NuvioMobile/actions/runs/45723222651) | success |
+| Performance compare (APK of the checks run above) | [45725683760](https://github.com/Mohammed4421/NuvioMobile/actions/runs/45725683760) | see the register |
+| Signed validation run with the real key (upgrade matrix), on `65a5e800` | [45642292281](https://github.com/Mohammed4421/NuvioMobile/actions/runs/45642292281) | success; repeated by the release run on the final head |
 
 ## Readiness conditions (§16)
 
-| ID | Condition | State | Evidence / where |
+| ID | Condition | State | Evidence |
 |---|---|---|---|
-| S16-01 | Approved mandatory requirements done | Open | `requirements.json` (gate output: implementation / verification / acceptance) |
-| S16-02 | CI gates pass on the final commit | On the candidate | Required checks of ruleset 27721857 on the final commit |
-| S16-03 | No open release blockers | Open | `risks.json`: 0002 closed by the owner's ruleset (re-read 15:27), others listed below |
-| S16-04 | Critical function and upgrade tests pass | On the candidate | Release run: upgrade 14/13/12 → 15 with the real key, Android 8 refusal |
-| S16-05 | Data, signing and update safety | On the candidate | Release run: certificate SHA-256 `99c0a98c…1e35`, package `com.nuvio.app.plus`, data kept |
-| S16-06 | Visual polish | Done for the reviewed screens | `visual-review.md` (72 reference images, six setups); P4-11 comparison against approved baselines in every PR; labels asserted (P4-09); fixes B15-UI-02, 04, 05, 06, 08, 09. Dialogs and animations: owner's device |
-| S16-07 | No performance regression outside limits | Done on the emulator baseline (NVP15-CHG-0004) | `performance-compare.yml` runs, `performance-limits.json`; frame timing and real playback: owner's device |
-| S16-08 | Mandatory PortKit tests pass | Every PR | "Transfer, build and test (upstream and a fork)" (required check) |
-| S16-09 | Every unrun test and remaining risk documented | Done | `untested` lists in `requirements.json`, `risks.json`, the six-case matrix in `journeys.md` |
-| S16-10 | Source protection and release controls | Done | Ruleset 27721857: pull request + 6 required checks, no deletion, no force push (re-read 2026-11-21 15:27) |
-| S16-11 | Build 14 vs Build 15 comparison | Done | `CHANGELOG.md` (Build 15 section), `security-surface.json` (equal to Build 14), lint/detekt compare, performance compare |
-| S16-12 | Final owner approval | Pending | Asked only after the release run passes |
+| S16-01 | Approved mandatory requirements done | Done | `requirements.json`: every PRE-RELEASE REQUIRED item VERIFIED or ACCEPTED; `release-readiness-check.py` runs in the publish job, after signing and the upgrade matrix and before anything is published |
+| S16-02 | CI gates pass on the final commit | Done on the candidate | Runs above; the required checks of ruleset 27721857 on every merge |
+| S16-03 | No open release blockers | Done | `risks.json`: no open risk blocks the release. RISK-0004 (P0) is the owner's tap on Resume on Android 14+, deferred to PRV-05 by the owner (NVP15-CHG-0005); RISK-0003/0006/0015 are the owner's post-release checks; RISK-0010/0011 are P2 and deferred with reasons |
+| S16-04 | Critical function and upgrade tests pass | Done | Journeys on the candidate (device, notification, Plus checks); upgrade 12/13/14/15 → 16 with the real key on Android 9 and 14, Android 8 refused (signed run 45642292281), repeated in the release run |
+| S16-05 | Data, signing and update safety proven | Done | Signed run: v3 signature by `99c0a98c…`, lineage `40335e31 → 99c0a98c`, same contents as tested, data kept; in-app update check refuses foreign, old-key and damaged APKs; `test_scope_guard.py`: package `com.nuvio.app`, build files equal to Build 14 |
+| S16-06 | Visual polish meets the review criteria | Done | 84 reference shots reviewed by eye and compared with approved baselines (#119, #124), contrast ≥ 4.5:1, touch areas ≥ 48 dp; P4 gate PASS; TalkBack is PRV-08 |
+| S16-07 | No performance regression outside limits | Done | P5 gate PASS (owner, 2026-11-25); playback and download compare on the candidate; performance compare on the candidate's APK |
+| S16-08 | Mandatory PortKit tests pass | Done | PortKit transfer tests on the candidate (required check on every merge) |
+| S16-09 | Every unrun test and remaining risk documented | Done | `untested` lists in `requirements.json`, `risks.json`, PRV-01..08, the six-case matrix in `journeys.md` |
+| S16-10 | Source protection and release controls | Done | `ruleset-27721857.json`: pull request, six required checks, merge commits only, no deletion or force push, bypass limited to pull requests; `plus-release` approval for signing and for publishing |
+| S16-11 | Build 14 vs Build 16 comparison | Done | `CHANGELOG.md`, lint/detekt compare, playback/download/performance compare on the candidate, `scope-guard.json` (dependencies unchanged) |
+| S16-12 | Final owner approval | Accepted in advance | NVP15-CHG-0007: signing then publishing of Build 16 approved by the owner on condition that every PRE-RELEASE REQUIRED item holds; given at the release run through the `plus-release` environment |
 
 ## Deliverables (§17)
 
 | ID | Deliverable | Where |
 |---|---|---|
-| S17-01 | Source and commit SHA | Final commit of `custom-subtitles` (on the candidate) |
-| S17-02 | Final release after approvals | GitHub release, only after the owner approves |
+| S17-01 | Source and commit SHA | Release candidate `da69725e`; the release names its exact commit (`test_a_release_names_the_exact_commit_it_publishes`) |
+| S17-02 | Final release after approvals | GitHub release Build 16, published by the release run only after the owner's `plus-release` approval |
 | S17-03 | Audit report | `audit.md`, `findings.json`, `inventory.md` |
-| S17-04 | Architecture decision records | `architecture.md` |
-| S17-05 | Functional regression report | `journeys.md` (six-case matrix with runs) |
-| S17-06 | Visual review and screenshot baselines | `visual-review.md`; baselines in `screenshot-baselines/` compared in each PR (P4-11); findings B15-UI-* |
-| S17-07 | Performance before/after | `baseline.json` (performance), `performance-compare.yml` runs |
-| S17-08 | Security and data migration report | `security.md`; migration tests in the host tests (`PlusDownloadsMigrationTest`, `PlusSubtitleMigrationTest`) |
-| S17-09 | Device testing matrix | `docs/plus/device-test-matrix.md`; device rows in `journeys.md` |
-| S17-10 | PortKit package, tests, matrix | `portkit/`, `portkit/reports/compatibility-matrix.md` |
-| S17-11 | Release readiness report | This file; release scope `release-scope.json`, checked by the release run (S12-02) |
-| S17-12 | Known limitations and deferred issues | `known-issues.md`, deferred findings in `findings.json` |
+| S17-04 | Architecture decision records | `architecture.md` (§5 criterion per decision; guarded by `test_architecture.py`) |
+| S17-05 | Functional regression report | `journeys.md` (six-case matrix), runs on the candidate above |
+| S17-06 | Visual review and screenshot baselines | `visual-review.md`, `screenshot-baselines/` (84 shots, compared in every PR) |
+| S17-07 | Performance before/after | `baseline.json`, playback/download/performance compare runs |
+| S17-08 | Security and data migration report | `security.md`, `security-logs-storage.md`, migration tests, the signed upgrade matrix with representative data |
+| S17-09 | Device testing matrix | `docs/plus/device-test-matrix.md`; Android 9, 14 and 16 emulators on the candidate |
+| S17-10 | PortKit package, tests and matrix | `portkit/`, `portkit/reports/compatibility-matrix.md`, PortKit run on the candidate |
+| S17-11 | Release readiness report | This file; `release-scope.json` (checked by the release run) |
+| S17-12 | Known limitations and deferred issues | `known-issues.md`, deferred findings in `findings.json`, `risks.json`, PRV-01..08 |
 | S17-13 | Upgrade, rollback and maintenance guide | `docs/plus/release.md`, `docs/plus/rollback.md`, `docs/plus/signing-migration.md` |
 
 ## What blocks approval (P8-13)
 
-The owner is asked for the final approval only when every **critical** row below has passed on the
-final commit. An untested or failed critical row is a blocker, never a "known limitation".
-Non-critical gaps are listed for the owner's record and do not block.
+An untested or failed **critical** row blocks the release; it is never a "known limitation".
 
-| Kind | Check | Where it runs | Blocks approval |
-|---|---|---|---|
-| Update safety | Install over Build 14, 13 and 12 signed with the real key; installs as an update | Release run (`release-upgrade-test.sh`) | **yes** |
-| Update safety | Same package `com.nuvio.app.plus` and certificate SHA-256 `99c0a98c…1e35`; v3 signature with the verified rotation lineage from the Build 12 key | Release run (sign and verify steps) | **yes** |
-| Update safety | Android 8 refuses the APK; a foreign-signed APK is refused by the in-app updater | Release run (`release-upgrade-test.sh`); `UpdateArchiveCheckTest` | **yes** |
-| Data protection | Settings, subtitle settings, add-ons, downloads and the season queue kept after the update | Release run; `PlusDownloadsMigrationTest`, `PlusSubtitleMigrationTest`, `SeasonQueueStorageTest` | **yes** |
-| Data protection | Download files complete and unchanged after network loss and process death | `download-interruptions-test.sh` (Android 9, 14, 16) | **yes** |
-| Data protection | No credentials sent to another site on redirect | `PlaybackRedirectCredentialsTest` | **yes** |
-| Non-critical | Android 17 (emulator image fault), HDR/DV, the owner's sources, gestures, SD card, Resume from the notification on 14+, real performance | Owner's device | no (owner's record) |
-
-## Before and after the release (NVP15-CHG-0005)
-
-Every requirement in `requirements.json` has a `release_class`:
-
-- **PRE-RELEASE REQUIRED:** what can be proven without the owner: the full audit, fixes and polish,
-  unit, integration, concurrency and emulator tests, performance against Build 14 in the available
-  environments, security, data and storage, upgrade from Builds 12, 13 and 14 with the real key and
-  representative data, identity, PortKit, CI, the APK and the reports. A phase gate passes only when
-  these hold.
-- **POST-RELEASE VALIDATION:** the owner's personal checks after installing (PRV-01..07, P8-06). They stay
-  NOT TESTED / NEEDS PHYSICAL DEVICE until he reports; deferring them never marks them PASS.
-- **BLOCKED:** an engineering obstacle recorded in `risks.json` or a failing mandatory check on the release candidate.
-
-Data, signing and upgrade requirements are never post-release; the requirements gate refuses it.
+| Kind | Check | Where it runs | Blocks | State |
+|---|---|---|---|---|
+| Update safety | Install over Builds 15, 14, 13 and 12 signed with the real key, as an update | Release run (`release-upgrade-test.sh`) | **yes** | PASS on `65a5e800`; repeated on the final head |
+| Update safety | Package `com.nuvio.app.plus`, certificate `99c0a98c…`, v3 lineage from the Build 12 key | Release run (sign and verify) | **yes** | PASS on `65a5e800`; repeated |
+| Update safety | Android 8 refuses; foreign, old-key and damaged APKs refused | Release run; `UpdateArchiveCheckTest`; emulator update check | **yes** | PASS (candidate and signed run) |
+| Data protection | Settings, subtitle settings, add-ons, profiles, downloads, the season queue and a partial file kept after the update | Release run; migration tests | **yes** | PASS on `65a5e800`; repeated |
+| Data protection | Download files complete and unchanged after network loss and process death | `download-interruptions-test.sh` | **yes** | PASS on the candidate |
+| Data protection | No credentials sent to another site on redirect | `PlaybackRedirectCredentialsTest` | **yes** | PASS on the candidate |
+| Non-critical | Android 17, HDR/DV, the owner's sources and accounts, gestures, SD card, Resume from the notification on 14+, real performance, TalkBack | Owner's device (PRV-01..08) | no | Post-release |
 
 ## Owner's checks after installing the release (POST-RELEASE VALIDATION)
 
 Only a phone can show these; they stay NOT TESTED until the owner reports them:
 
-1. Your usual sources play (ExoPlayer and mpv), including ones with tokens.
-2. HDR / Dolby Vision picture on your screen.
-3. Resume a paused download from the notification on Android 14+.
-4. Subtitle gestures (move, resize) feel right.
-5. Download to an SD card or a chosen folder.
-6. Start time and smoothness in daily use.
-7. If your phone runs Android 17: open, play, subtitles and a download (not testable on the emulator, see `device-test-matrix.md`).
+1. Your usual sources and add-ons play (ExoPlayer and mpv), including ones with tokens (PRV-04, RISK-0006).
+2. HDR / Dolby Vision on your screen (PRV-01).
+3. Look and smoothness in daily use (PRV-02); start time, memory and smoothness (PRV-06).
+4. Subtitle gestures (move, resize) feel right (PRV-03).
+5. Resume a paused download from the notification on Android 14+; download to an SD card (PRV-05).
+6. If your phone runs Android 17: open, play, subtitles and a download (PRV-07).
+7. TalkBack reads the Plus screens and moves through them in a sensible order (PRV-08).
+8. Sign in, sync, PIN online and deleting a profile on the server with your account (RISK-0015).
