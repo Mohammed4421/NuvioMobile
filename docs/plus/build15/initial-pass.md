@@ -69,7 +69,7 @@ deep audit: deep reviews are the findings in `audit.md` (Plus areas, player, dow
 | features/shuffle | 8 | — | reviewed, none |
 | features/simkl | 36 | catch-throwable 5, secret-in-log 1 | B15-NUV-01 |
 | features/streams | 37 | catch-throwable 1, cleartext-url 1, run-blocking 1 | B15-NUV-01, B15-NUV-02 |
-| features/tmdb | 11 | catch-throwable 1, run-blocking 12 | B15-NUV-01, B15-NUV-02 |
+| features/tmdb | 12 | catch-throwable 1, run-blocking 12 | B15-NUV-01, B15-NUV-02 |
 | features/tracking | 13 | catch-throwable 1 | B15-NUV-01 |
 | features/trailer | 14 | cleartext-url 2, run-blocking 1 | B15-NUV-02 |
 | features/trakt | 37 | catch-throwable 4, cleartext-url 1, run-blocking 5, secret-in-log 4 | B15-NUV-01, B15-NUV-02 |

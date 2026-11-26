@@ -16,6 +16,8 @@ Newest first.
   library, recommendations) show the chosen title, poster, backdrop and logo. Each card on screen
   asks TMDB once (cached); only titles with an IMDb or TMDB id are matched, others (for example
   anime ids) keep the add-on's data. The add-on's name shows for a moment until TMDB answers.
+- **Continue watching and the downloads tab** show titles and artwork in the chosen content
+  languages too (episode titles and episode pictures stay as saved).
 
 ## Build 17 — Nuvio 1.0.1, smaller install and content languages
 
