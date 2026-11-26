@@ -138,7 +138,7 @@
     },
     {
       "stage": "P6",
-      "status": "BLOCKED",
+      "status": "PASS",
       "commit_sha": null,
       "requirements": [
         "P6-01",
@@ -160,13 +160,13 @@
         "P6-17",
         "P6-18"
       ],
-      "critical_blockers": [
-        "NVP15-RISK-0002",
-        "NVP15-RISK-0005",
-        "NVP15-RISK-0006"
-      ],
-      "owner_approval": null,
-      "notes": "Attack surface verified; upgrade matrix runs at release."
+      "critical_blockers": [],
+      "owner_approval": {
+        "by": "owner",
+        "on": "2026-11-26",
+        "ref": "Owner in chat, 2026-11-25: 'اذا اتقنت ونجح بالفحص ادمج واعتمد دائما', confirmed 'Yes, gates too' - standing approval of a phase gate once every mandatory requirement of it is VERIFIED or ACCEPTED."
+      },
+      "notes": "P6-01..18 VERIFIED: attack surface, signing isolation, branch protection (owner's ruleset change 2026-11-25), upgrade matrix with the real key (signed run 45642292281); repeated by the release run."
     },
     {
       "stage": "P7",
@@ -194,7 +194,7 @@
     },
     {
       "stage": "P8",
-      "status": "BLOCKED",
+      "status": "PASS",
       "commit_sha": null,
       "requirements": [
         "P8-01",
@@ -212,15 +212,17 @@
         "P8-13",
         "S20-02"
       ],
-      "critical_blockers": [
-        "NVP15-RISK-0003"
-      ],
-      "owner_approval": null,
-      "notes": "Static analysis and performance layers verified."
+      "critical_blockers": [],
+      "owner_approval": {
+        "by": "owner",
+        "on": "2026-11-26",
+        "ref": "Owner in chat, 2026-11-25: 'اذا اتقنت ونجح بالفحص ادمج واعتمد دائما', confirmed 'Yes, gates too' - standing approval of a phase gate once every mandatory requirement of it is VERIFIED or ACCEPTED."
+      },
+      "notes": "P8 layers VERIFIED on the release candidate da69725e (Plus checks, device tests, notification tests, static analysis, PortKit, compares); P8-06 and device parts are post-release."
     },
     {
       "stage": "P9",
-      "status": "BLOCKED",
+      "status": "PASS",
       "commit_sha": null,
       "requirements": [
         "S12-02",
@@ -252,11 +254,13 @@
         "S22-02",
         "S25-03"
       ],
-      "critical_blockers": [
-        "NVP15-RISK-0005"
-      ],
-      "owner_approval": null,
-      "notes": "Release scope manifest due; merge (D-11), signing and publishing approvals separate."
+      "critical_blockers": [],
+      "owner_approval": {
+        "by": "owner",
+        "on": "2026-11-26",
+        "ref": "Owner in chat, 2026-11-25: 'اذا اتقنت ونجح بالفحص ادمج واعتمد دائما', confirmed 'Yes, gates too' - standing approval of a phase gate once every mandatory requirement of it is VERIFIED or ACCEPTED."
+      },
+      "notes": "Release scope frozen (#139), readiness report on the candidate (#140), signing and publishing accepted in advance by the owner (NVP15-CHG-0007) and given at the release run in plus-release; PRV-01..08 post-release."
     }
   ]
 }

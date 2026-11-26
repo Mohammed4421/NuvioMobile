@@ -3531,7 +3531,7 @@
         ".github/plus/lint-report.init.gradle",
         ".github/plus/detekt-cli.init.gradle"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -3546,12 +3546,19 @@
           "commit": "ab8def38ea8bfab7806968f07ca6b9d18ded8bdb",
           "what": "Static analysis on #45's final commit (merged): lint (androidApp) and detekt (composeApp) against Build 14, compare job always reporting; no blocking finding",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723307327,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Static analysis on the release candidate: lint and detekt, no new finding against Build 14"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "static-analysis.yml uses this PR's retry script for both sides (#28): re-verify with its run.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0080",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3588,7 +3595,7 @@
       "requirement": "Test layer: Integration tests between components.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -3610,6 +3617,13 @@
           "commit": "f65cf2db94b457594574e6802e604a4b94c348b6",
           "what": "Nuvio Plus checks: the real SeasonDownloadQueue with the downloads repository in the queue race harness (r1–r23), install-update-launch on an emulator, reference screens with the P4-11 comparison",
           "result": "PASS"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723293617,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the release candidate: build, signing check, update check, every host test, emulator update on Android 9 and 14, reference screenshots"
         }
       ],
       "untested": [
@@ -3617,7 +3631,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "Cite the candidate's runs.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0082",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3654,14 +3668,36 @@
       "requirement": "Test layer: Emulator tests with runs, logs and screenshots.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45723298134,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Nuvio device tests on the release candidate: Android 28, 34 and 36"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723302766,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Download notification and interruption tests on the release candidate: Android 28 full, 34 and 36 pause"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723293617,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the release candidate: build, signing check, update check, every host test, emulator update on Android 9 and 14, reference screenshots"
+        }
+      ],
       "untested": [
         "Final run on the candidate pending."
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0084",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3724,7 +3760,7 @@
         "docs/plus/build15/security-logs-storage.md",
         "docs/plus/build15/security.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
@@ -3737,6 +3773,20 @@
           "file": "docs/plus/build15/security-logs-storage.md",
           "what": "Security test report for logs and storage (#95), with the regression guard",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723293617,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Release candidate: workflow policy (secrets, permissions), security surface equal to Build 14, no secret logging, credential and TLS tests"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate); adds the committed-secret scan (test_no_committed_secrets.py)"
         }
       ],
       "untested": [
@@ -3744,7 +3794,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "Confirmed on the candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0087",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3756,14 +3806,22 @@
       "requirement": "Test layer: PortKit transfer and compatibility matrix.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45723311777,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "PortKit transfer tests on the release candidate: upstream and a fork"
+        }
+      ],
       "untested": [
         "Final run on the candidate pending."
       ],
       "needs_physical_device": false,
       "acceptance": "Layer result on the candidate SHA with log.",
-      "next": "On the candidate.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0088",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3802,14 +3860,36 @@
       "paths": [
         ".github/plus/check-requirements.py"
       ],
-      "status": "IMPLEMENTED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_ci_run_needs_a_run_number_and_a_full_commit",
+          "result": "PASS",
+          "what": "Every ci-run result names its run and full commit."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_run_on_another_commit_fails_online",
+          "result": "PASS",
+          "what": "A run is checked online against the commit it claims."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_failed_or_pending_evidence_cannot_verify",
+          "result": "PASS",
+          "what": "States other than PASS cannot verify."
+        }
+      ],
       "untested": [
         "Gate in #31."
       ],
       "needs_physical_device": false,
       "acceptance": "Gate enforces it on every PR.",
-      "next": "Merge #31.",
+      "next": "Enforced on every pull request.",
       "nvp15": "NVP15-REQ-0090",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3821,7 +3901,7 @@
       "requirement": "Devices: emulators Android 9, 14 and a recent version; a physical device for player, HDR and external storage.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "ci-run",
@@ -3841,6 +3921,20 @@
           "kind": "review",
           "file": "docs/plus/device-test-matrix.md",
           "what": "Per-version emulator results (Android 9, 14, 16, 17) and the Android 17 image fault"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723298134,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Nuvio device tests on the release candidate: Android 28, 34 and 36"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723302766,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Download notification and interruption tests on the release candidate: Android 28 full, 34 and 36 pause"
         }
       ],
       "untested": [
@@ -3848,7 +3942,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Device matrix with results.",
-      "next": "Owner's physical device on the release candidate; re-add API 37 when a fixed emulator image ships.",
+      "next": "Android 17 and the owner's phone stay post-release (PRV-07).",
       "nvp15": "NVP15-REQ-0091",
       "release_class": "PRE-RELEASE REQUIRED",
       "post_release": [
@@ -3863,12 +3957,40 @@
       "requirement": "An untested critical data-protection or update-safety test blocks approval; non-critical gaps go to an owner risk-acceptance list.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "'What blocks approval': critical update-safety and data-protection rows block the owner's approval; non-critical gaps listed for the owner's record"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_release_readiness_check.py",
+          "name": "test_a_complete_pre_release_with_explicit_approvals_passes",
+          "result": "PASS",
+          "what": "The release run refuses to publish while a mandatory pre-release item or phase gate is open."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_release_readiness_check.py",
+          "name": "test_owner_personal_checks_do_not_block_but_stay_not_tested",
+          "result": "PASS",
+          "what": "The release run refuses to publish while a mandatory pre-release item or phase gate is open."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_release_readiness_check.py",
+          "name": "test_an_implemented_requirement_blocks_release",
+          "result": "PASS",
+          "what": "The release run refuses to publish while a mandatory pre-release item or phase gate is open."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate)"
         }
       ],
       "untested": [
@@ -3876,7 +3998,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Risk list in the readiness report.",
-      "next": "Fill from the release run of the candidate before asking for approval.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0092",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3918,13 +4040,27 @@
         ".github/plus/release-scope-check.py",
         ".github/workflows/custom-android-build.yml"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "test",
           "file": ".github/plus/tests/test_release_scope_check.py",
           "name": "ReleaseScopeTest",
           "what": "Blocks on a moved branch, an unmerged, missing or other-branch PR, a merge commit outside the release commit, the excluded trial merge merged or contained, a failed or missing gate run on the commit, a changed mandatory list or PortKit version; the repository manifest matches the gate and PortKit"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_release_scope_check.py",
+          "name": "test_the_repository_manifest_matches_the_gate_and_portkit",
+          "result": "PASS",
+          "what": "The release scope manifest is checked against GitHub and the exact commit."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_release_scope_check.py",
+          "name": "test_complete_scope_passes",
+          "result": "PASS",
+          "what": "The release scope manifest is checked against GitHub and the exact commit."
         }
       ],
       "untested": [
@@ -3932,7 +4068,7 @@
       ],
       "needs_physical_device": false,
       "acceptance": "Manifest file plus a gate step that fails on any mismatch.",
-      "next": "Release run: the 'Release scope (S12-02)' step must pass; add pull requests merged before the candidate to the manifest.",
+      "next": "The release run's 'Release scope (S12-02)' step must pass.",
       "nvp15": "NVP15-REQ-0094",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -3944,12 +4080,33 @@
       "requirement": "Approval rules (spec v1.1 §12, §23.2): final merge approved by the owner (given in advance: D-11), signing and publishing each approved separately; tests never disabled for a green result.",
       "source": "Owner decision",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_publishing_waits_for_the_owner_after_every_test",
+          "result": "PASS",
+          "what": "Publishing waits for the owner's approval after every test."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_a_validation_only_run_cannot_enter_the_publish_environment",
+          "result": "PASS",
+          "what": "Signing and publishing are separate approvals."
+        },
+        {
+          "kind": "measurement",
+          "file": "docs/plus/build15/ruleset-27721857.json",
+          "result": "PASS",
+          "what": "Merges only through a pull request with six required checks (D-11)."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Merges only after all gates; release only after owner approval.",
-      "next": "Ongoing.",
+      "next": "Signing and publishing are approved in plus-release at the release run.",
       "nvp15": "NVP15-REQ-0095",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4049,12 +4206,27 @@
       "requirement": "Release readiness: All approved mandatory requirements done.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_release_readiness_check.py",
+          "name": "test_a_complete_pre_release_with_explicit_approvals_passes",
+          "result": "PASS",
+          "what": "The release run's readiness check passes only when every mandatory pre-release item is VERIFIED or ACCEPTED."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723293617,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Release candidate checks; every mandatory pre-release item is VERIFIED or ACCEPTED in this register"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "All approved mandatory requirements done.",
-      "next": "Readiness report.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0099",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4066,12 +4238,48 @@
       "requirement": "Release readiness: Relevant CI gates pass on the final commit.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45723293617,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the release candidate: build, signing check, update check, every host test, emulator update on Android 9 and 14, reference screenshots"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723298134,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Nuvio device tests on the release candidate: Android 28, 34 and 36"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723302766,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Download notification and interruption tests on the release candidate: Android 28 full, 34 and 36 pause"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723307327,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Static analysis on the release candidate: lint and detekt, no new finding against Build 14"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723311777,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "PortKit transfer tests on the release candidate: upstream and a fork"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Relevant CI gates pass on the final commit.",
-      "next": "Readiness report.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0100",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4083,12 +4291,33 @@
       "requirement": "Release readiness: No open release blockers.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "review",
+          "file": "docs/plus/build15/risks.json",
+          "result": "PASS",
+          "what": "No open risk blocks the release: RISK-0004 is deferred to PRV-05 by the owner (CHG-0005); 0003/0006/0015 are post-release checks; 0010/0011 P2 deferred with reasons."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_risk_needs_every_field_and_known_requirements",
+          "result": "PASS",
+          "what": "Every open risk states its impact, priority and owner."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723293617,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the release candidate: build, signing check, update check, every host test, emulator update on Android 9 and 14, reference screenshots"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "No open release blockers.",
-      "next": "Readiness report.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0101",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4100,12 +4329,34 @@
       "requirement": "Release readiness: Critical function and upgrade tests pass.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45723298134,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Nuvio device tests on the release candidate: Android 28, 34 and 36"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723302766,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Download notification and interruption tests on the release candidate: Android 28 full, 34 and 36 pause"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation run: upgrade 12/13/14/15 -> 16 with the real key on Android 9 and 14 with data kept, Android 8 refused."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Critical function and upgrade tests pass.",
-      "next": "Readiness report.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0102",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4117,12 +4368,27 @@
       "requirement": "Release readiness: Data, signing and update safety proven.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45723293617,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the release candidate: build, signing check, update check, every host test, emulator update on Android 9 and 14, reference screenshots"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45642292281,
+          "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
+          "result": "PASS",
+          "what": "Signed validation run: v3 signature by 99c0a98c, lineage 40335e31 -> 99c0a98c, contents identical to the tested APKs, data kept."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Data, signing and update safety proven.",
-      "next": "Readiness report.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0103",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4134,12 +4400,20 @@
       "requirement": "Release readiness: Visual polish meets the approved review criteria.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45723293617,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the release candidate: build, signing check, update check, every host test, emulator update on Android 9 and 14, reference screenshots"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Visual polish meets the approved review criteria.",
-      "next": "Readiness report.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0104",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4151,12 +4425,34 @@
       "requirement": "Release readiness: No performance regression outside approved limits.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45723315831,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Playback compare on the release candidate against Build 14"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45723320487,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Download compare on the release candidate against Build 14"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725683760,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Performance compare on the release candidate's APK against Build 14."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "No performance regression outside approved limits.",
-      "next": "Readiness report.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0105",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4168,12 +4464,20 @@
       "requirement": "Release readiness: Mandatory PortKit tests pass.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45723311777,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "PortKit transfer tests on the release candidate: upstream and a fork"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Mandatory PortKit tests pass.",
-      "next": "Readiness report.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0106",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4187,19 +4491,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S16-09: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Every unrun test and remaining risk documented.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0107",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4213,19 +4524,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S16-10: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Source protection and release controls enabled.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0108",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4239,19 +4557,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S16-11: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Build 14 vs Build 15 comparison delivered.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0109",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4263,14 +4588,27 @@
       "requirement": "Release readiness: Final owner approval.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "ACCEPTED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_publishing_waits_for_the_owner_after_every_test",
+          "result": "PASS",
+          "what": "Publishing waits for the owner in plus-release after every test."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Final owner approval.",
-      "next": "Readiness report.",
+      "next": "Given at the release run in the plus-release environment; the published release is recorded afterwards.",
       "nvp15": "NVP15-REQ-0110",
-      "release_class": "PRE-RELEASE REQUIRED"
+      "release_class": "PRE-RELEASE REQUIRED",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-23",
+        "ref": "NVP15-CHG-0007: owner in chat, 2026-11-23 05:30 (Riyadh): signing then publishing of Build 16 approved in advance, on condition that every PRE-RELEASE REQUIRED item holds; the release run enforces the condition (release-readiness-check.py) and each step waits for the owner in the plus-release environment."
+      }
     },
     {
       "id": "S17-01",
@@ -4280,12 +4618,27 @@
       "requirement": "Deliverable: Build 15 source and commit SHA.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "ci-run",
+          "run": 45723293617,
+          "commit": "da69725e565643a87fbae1fefee6eb767391b2c4",
+          "result": "PASS",
+          "what": "Build 16 source: release candidate da69725e; the release names its exact commit"
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_a_release_names_the_exact_commit_it_publishes",
+          "result": "PASS",
+          "what": "The release names the commit it publishes."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0111",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4297,14 +4650,27 @@
       "requirement": "Deliverable: Final release after approvals.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "ACCEPTED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_workflow_policy.py",
+          "name": "test_publishing_waits_for_the_owner_after_every_test",
+          "result": "PASS",
+          "what": "Publishing waits for the owner in plus-release after every test."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "By phase.",
+      "next": "Given at the release run in the plus-release environment; the published release is recorded afterwards.",
       "nvp15": "NVP15-REQ-0112",
-      "release_class": "PRE-RELEASE REQUIRED"
+      "release_class": "PRE-RELEASE REQUIRED",
+      "accepted": {
+        "by": "owner",
+        "on": "2026-11-23",
+        "ref": "NVP15-CHG-0007: owner in chat, 2026-11-23 05:30 (Riyadh): signing then publishing of Build 16 approved in advance, on condition that every PRE-RELEASE REQUIRED item holds; the release run enforces the condition (release-readiness-check.py) and each step waits for the owner in the plus-release environment."
+      }
     },
     {
       "id": "S17-03",
@@ -4380,19 +4746,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-05: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0115",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4406,19 +4779,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-06: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0116",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4432,19 +4812,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-07: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0117",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4458,19 +4845,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-08: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0118",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4484,19 +4878,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-09: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0119",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4510,19 +4911,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-10: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0120",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4536,19 +4944,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-11: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0121",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4562,19 +4977,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-12: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0122",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -4588,19 +5010,26 @@
       "paths": [
         "docs/plus/build15/release-readiness.md"
       ],
-      "status": "IMPLEMENTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "review",
           "file": "docs/plus/build15/release-readiness.md",
           "what": "release-readiness.md row S17-13: where the deliverable or condition lives",
           "result": "documented"
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate): the report and the deliverables it lists are current on the release candidate"
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Confirmed on the release candidate",
+      "next": "Repeated by the release run on the final head.",
       "nvp15": "NVP15-REQ-0123",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -5104,12 +5533,27 @@
       "paths": [
         ".github/plus/check-requirements.py"
       ],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_a_change_after_the_evidence_fails_until_the_register_follows",
+          "result": "PASS",
+          "what": "A result is not reused after the files it covers changed."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_evidence_from_another_branch_does_not_verify_this_one",
+          "result": "PASS",
+          "what": "Evidence must be in the branch's history."
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Stale-evidence check passes on the release commit; release run tests that commit.",
-      "next": "At P8/P9.",
+      "next": "Every workflow ran on the release candidate itself; the release run builds and tests the final head itself.",
       "nvp15": "NVP15-REQ-0139",
       "release_class": "PRE-RELEASE REQUIRED"
     },
@@ -5435,12 +5879,41 @@
       "requirement": "Final delivery adds the requirement and acceptance registers, carry-over, evidence and links, stage gate files and change requests, readable without the conversation; no secrets or real personal data in public outputs.",
       "source": "Build 15 spec v1.1",
       "paths": [],
-      "status": "SPECIFIED",
-      "evidence": [],
+      "status": "VERIFIED",
+      "evidence": [
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_no_committed_secrets.py",
+          "name": "test_no_private_key_or_token_in_tracked_text",
+          "result": "PASS",
+          "what": "Secret scan: no private key or token committed."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_no_committed_secrets.py",
+          "name": "test_only_the_listed_key_files_are_tracked",
+          "result": "PASS",
+          "what": "Only the documented public key files are tracked."
+        },
+        {
+          "kind": "test",
+          "file": ".github/plus/tests/test_check_requirements.py",
+          "name": "test_the_real_side_registers_hold",
+          "result": "PASS",
+          "what": "Registers, gates, carry-over, risks and change requests present and consistent."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45725906932,
+          "commit": "abd71a5f88baa885aa3ebcf0aa45520b1711b0dd",
+          "result": "PASS",
+          "what": "Nuvio Plus checks on the readiness report's commit (only docs/plus/build15 changed since the release candidate)"
+        }
+      ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "All present in docs/plus/build15 at the release commit; secret scan clean.",
-      "next": "At P9.",
+      "next": "At the release commit.",
       "nvp15": "NVP15-REQ-0150",
       "release_class": "PRE-RELEASE REQUIRED"
     },
