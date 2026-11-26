@@ -5,7 +5,7 @@
     <string name="plus_content_languages_preset_description">Choose the language of each part of a title separately, independent of the app language. Automatic uses the TMDB language above.</string>
     <string name="plus_content_languages_preset_english_arabic">English titles, Arabic information</string>
     <string name="plus_content_languages_custom">Custom</string>
-    <string name="plus_content_languages_footer">Needs TMDB enrichment. Applies to details, seasons and episodes, and to everything that uses them: library, continue watching, downloads, recommendations and the player. Catalog rows and search show the names the add-on provides. When a language is missing, the fallback language is used, then the title's own data; nothing is machine-translated.</string>
+    <string name="plus_content_languages_footer">Needs TMDB enrichment. Applies everywhere titles are shown: home, catalogs, search, details, seasons and episodes, library, continue watching, downloads, recommendations and the player. Titles from add-ons are matched only by their IMDb or TMDB id; others (for example some anime) keep the add-on\'s data. When a language is missing, the fallback language is used, then the title\'s own data; nothing is machine-translated.</string>
     <string name="plus_content_languages_choose">Automatic, English, Arabic or the title's original language.</string>
     <string name="plus_content_languages_titles">Movie and series titles</string>
     <string name="plus_content_languages_descriptions">Descriptions and information</string>

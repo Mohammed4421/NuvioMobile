@@ -222,6 +222,7 @@ object TmdbSettingsRepository {
     private fun invalidateMetadata() {
         MetaDetailsRepository.clear()
         ContinueWatchingEnrichmentCache.clearAll(ProfileRepository.activeProfileId)
+        CatalogContentLanguages.clear() // Nuvio Plus
     }
 }
 
