@@ -1,10 +1,34 @@
 # Changelog — Nuvio Plus
 
-Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
-[`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
+Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) 1.0.1 at
+[`3cfc311`](https://github.com/NuvioMedia/NuvioMobile/commit/3cfc311b494f25213f5b95a3afdfa619b83ceb50).
 Newest first.
 
-## Next build — Build 16: complete engineering checks of Build 15
+## Next build — Build 17: Nuvio 1.0.1, smaller install and content languages
+
+### New
+- **Content languages, independent of the app language.** Settings → TMDB → Content languages:
+  titles, descriptions, episode titles, genres, posters, backdrops and logos, and a fallback
+  language, each set on its own to Automatic, English, Arabic or the title's original language.
+  One tap sets English titles with Arabic information. They apply to details, seasons and
+  episodes and everything that uses them (library, continue watching, downloads, recommendations,
+  player). A missing translation uses the fallback language, then the title's own data; nothing is
+  machine-translated. Automatic, the default, changes nothing. Needs TMDB enrichment; catalog rows
+  and search keep the names the add-on gives.
+
+### Changed
+- **Nuvio 1.0.1** is included: TorBox cache matching, a bounded Trakt library refresh, and the
+  player timeline no longer adds the gesture-navigation inset on Android.
+- **Smaller install:** native libraries are now stripped of debug symbols (one of them was 9.3 MB
+  instead of 1.4 MB): the APK is 3 % smaller and the installed app an estimated 10 MB smaller.
+- **Memory stays bounded in long sessions:** in-memory caches of details, TMDB data, ratings,
+  parental guide and skip times have a size limit and are safe when several screens load at once.
+
+### Checked
+- Start, memory, scrolling and touch response against the previous build on the same emulators:
+  all within measurement noise. Updates from the previous release and from build 12 keep all data.
+
+## Build 16 — complete engineering checks of Build 15
 
 The complete Build 15 work, published as Build 16 (owner's decision); the app's own updater offers it
 to Build 15. Until now this build adds no change to the app itself, only tests and checks:
