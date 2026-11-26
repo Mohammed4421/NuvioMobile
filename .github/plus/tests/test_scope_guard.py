@@ -37,8 +37,11 @@ class ScopeGuard(unittest.TestCase):
         changes = {c["id"] for c in json.loads((DOCS / "change-requests.json").read_text(encoding="utf-8"))["changes"]}
         for fid, entry in additions.items():
             with self.subTest(feature=fid):
-                self.assertIn(entry["kind"], {"fix", "security fix", "test", "tool"})
+                self.assertIn(entry["kind"], {"fix", "security fix", "test", "tool", "feature"})
                 self.assertIn(entry["record"], findings | changes, "no finding or owner decision")
+                if entry["kind"] == "feature":
+                    # A new feature (Build 18 on) needs the owner's decision, not only a finding.
+                    self.assertIn(entry["record"], changes, "a new feature needs an owner decision")
 
 
 if __name__ == "__main__":

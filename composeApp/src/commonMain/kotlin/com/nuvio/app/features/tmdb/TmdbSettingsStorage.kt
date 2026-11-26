@@ -31,6 +31,8 @@ internal expect object TmdbSettingsStorage {
     fun saveUseMoreLikeThis(enabled: Boolean)
     fun loadUseCollections(): Boolean?
     fun saveUseCollections(enabled: Boolean)
+    fun loadContentLanguages(): String? // Nuvio Plus
+    fun saveContentLanguages(value: String)
     fun exportToSyncPayload(): JsonObject
     fun replaceFromSyncPayload(payload: JsonObject)
 }

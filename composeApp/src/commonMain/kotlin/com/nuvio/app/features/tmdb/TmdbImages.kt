@@ -32,6 +32,7 @@ private val defaultLanguageRegions = mapOf(
 internal data class TmdbImagesResponse(
     val logos: List<TmdbImage> = emptyList(),
     val backdrops: List<TmdbImage> = emptyList(),
+    val posters: List<TmdbImage> = emptyList(), // Nuvio Plus: poster language choice
 )
 
 @Serializable

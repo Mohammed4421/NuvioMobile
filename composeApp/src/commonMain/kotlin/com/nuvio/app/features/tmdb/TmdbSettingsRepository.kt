@@ -27,6 +27,7 @@ object TmdbSettingsRepository {
     private var useSeasonPosters = true
     private var useMoreLikeThis = true
     private var useCollections = true
+    private var contentLanguages = ContentLanguagePreferences()
 
     fun ensureLoaded() {
         if (hasLoaded) return
@@ -69,6 +70,16 @@ object TmdbSettingsRepository {
         language = normalized
         publish()
         TmdbSettingsStorage.saveLanguage(normalized)
+    }
+
+    /** Nuvio Plus: languages per field; cached details are dropped so screens show the new choice. */
+    fun setContentLanguages(value: ContentLanguagePreferences) {
+        ensureLoaded()
+        if (contentLanguages == value) return
+        contentLanguages = value
+        publish()
+        TmdbSettingsStorage.saveContentLanguages(value.encode())
+        invalidateMetadata()
     }
 
     fun setUseTrailers(value: Boolean) = setBoolean(
@@ -180,8 +191,10 @@ object TmdbSettingsRepository {
         useSeasonPosters = TmdbSettingsStorage.loadUseSeasonPosters() ?: true
         useMoreLikeThis = TmdbSettingsStorage.loadUseMoreLikeThis() ?: true
         useCollections = TmdbSettingsStorage.loadUseCollections() ?: true
+        val previousContentLanguages = contentLanguages
+        contentLanguages = ContentLanguagePreferences.decode(TmdbSettingsStorage.loadContentLanguages())
         publish()
-        if (wasLoaded && previousApiKey != apiKey) {
+        if (wasLoaded && (previousApiKey != apiKey || previousContentLanguages != contentLanguages)) {
             invalidateMetadata()
         }
     }
@@ -202,6 +215,7 @@ object TmdbSettingsRepository {
             useSeasonPosters = useSeasonPosters,
             useMoreLikeThis = useMoreLikeThis,
             useCollections = useCollections,
+            contentLanguages = contentLanguages,
         )
     }
 

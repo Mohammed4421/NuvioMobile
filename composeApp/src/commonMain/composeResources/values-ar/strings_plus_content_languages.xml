@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="plus_content_languages_title">لغات المحتوى</string>
+    <string name="plus_content_languages_preset">لغات المحتوى</string>
+    <string name="plus_content_languages_preset_description">اختر لغة كل جزء من معلومات العمل على حدة، مستقلةً عن لغة التطبيق. «تلقائي» يستخدم لغة TMDB أعلاه.</string>
+    <string name="plus_content_languages_preset_english_arabic">عناوين إنجليزية ومعلومات عربية</string>
+    <string name="plus_content_languages_custom">مخصص</string>
+    <string name="plus_content_languages_footer">يتطلب تفعيل إثراء TMDB. يُطبَّق على صفحة التفاصيل والمواسم والحلقات وكل ما يعتمد عليها: المكتبة ومتابعة المشاهدة والتنزيلات والتوصيات والمشغل. صفوف الكتالوجات والبحث تعرض الأسماء التي توفرها الإضافة. عند غياب اللغة تُستخدم اللغة الاحتياطية ثم بيانات العمل الأصلية، دون أي ترجمة آلية.</string>
+    <string name="plus_content_languages_choose">تلقائي أو الإنجليزية أو العربية أو اللغة الأصلية للعمل.</string>
+    <string name="plus_content_languages_titles">أسماء الأفلام والمسلسلات</string>
+    <string name="plus_content_languages_descriptions">الوصف والمعلومات</string>
+    <string name="plus_content_languages_episode_titles">أسماء الحلقات</string>
+    <string name="plus_content_languages_genres">التصنيفات</string>
+    <string name="plus_content_languages_posters">البوسترات</string>
+    <string name="plus_content_languages_backdrops">الخلفيات والشعارات</string>
+    <string name="plus_content_languages_fallback">اللغة الاحتياطية</string>
+    <string name="plus_content_languages_fallback_description">تُستخدم عندما لا يتوفر نص أو صورة باللغة المختارة.</string>
+    <string name="plus_content_languages_auto">تلقائي</string>
+    <string name="plus_content_languages_english">الإنجليزية</string>
+    <string name="plus_content_languages_arabic">العربية</string>
+    <string name="plus_content_languages_original">الأصلية</string>
+</resources>

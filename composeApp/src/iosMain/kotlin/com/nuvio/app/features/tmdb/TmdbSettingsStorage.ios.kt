@@ -25,6 +25,7 @@ actual object TmdbSettingsStorage {
     private const val useSeasonPostersKey = "tmdb_use_season_posters"
     private const val useMoreLikeThisKey = "tmdb_use_more_like_this"
     private const val useCollectionsKey = "tmdb_use_collections"
+    private const val contentLanguagesKey = "plus_content_languages"
     private val syncKeys = listOf(
         enabledKey,
         languageKey,
@@ -125,6 +126,14 @@ actual object TmdbSettingsStorage {
 
     actual fun saveUseCollections(enabled: Boolean) {
         saveBoolean(useCollectionsKey, enabled)
+    }
+
+    // Nuvio Plus: content languages per profile; kept on this device (not in the account sync).
+    actual fun loadContentLanguages(): String? =
+        NSUserDefaults.standardUserDefaults.stringForKey(ProfileScopedKey.of(contentLanguagesKey))
+
+    actual fun saveContentLanguages(value: String) {
+        NSUserDefaults.standardUserDefaults.setObject(value, forKey = ProfileScopedKey.of(contentLanguagesKey))
     }
 
     private fun loadBoolean(key: String): Boolean? {

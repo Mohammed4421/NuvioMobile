@@ -1,6 +1,8 @@
 package com.nuvio.app.features.tmdb
 
 import co.touchlab.kermit.Logger
+import com.nuvio.app.core.cache.BoundedCache
+import com.nuvio.app.core.cache.InFlightRequests
 import com.nuvio.app.features.addons.httpGetText
 import com.nuvio.app.features.details.MetaCompany
 import com.nuvio.app.features.details.MetaDetails
@@ -11,8 +13,6 @@ import com.nuvio.app.features.details.MoreLikeThisSource
 import com.nuvio.app.features.details.PersonDetail
 import com.nuvio.app.features.home.MetaPreview
 import com.nuvio.app.features.home.PosterShape
-import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -36,21 +36,22 @@ object TmdbMetadataService {
     fun cachedOriginalTitle(tmdbId: String, type: String): String? {
         val mediaType = TmdbService.normalizeMediaType(type)
         val prefix = "$tmdbId:$mediaType:"
-        return synchronized(enrichmentCacheLock) {
-            enrichmentCache.entries.firstOrNull { it.key.startsWith(prefix) }?.value?.originalTitle
-        }
+        return enrichmentCache.firstValueOrNull { it.startsWith(prefix) }?.originalTitle
     }
 
-    private val enrichmentCache = mutableMapOf<String, TmdbEnrichment>()
-    private val enrichmentCacheLock = SynchronizedObject()
-    private val episodeCache = mutableMapOf<String, Map<Pair<Int, Int>, TmdbEpisodeEnrichment>>()
-    private val moreLikeThisCache = mutableMapOf<String, List<MetaPreview>>()
-    private val collectionCache = mutableMapOf<String, Pair<String?, List<MetaPreview>>>()
-    private val trailerCache = mutableMapOf<String, List<MetaTrailer>>()
-    private val personCache = mutableMapOf<String, PersonDetail>()
-    private val entityBrowseCache = mutableMapOf<String, TmdbEntityBrowseData>()
-    private val entityHeaderCache = mutableMapOf<String, TmdbEntityHeader>()
-    private val entityRailCache = mutableMapOf<String, List<MetaPreview>>()
+    // Nuvio Plus: bounded and thread-safe (they were unbounded maps written from several
+    // coroutines); identical enrichment requests that run at the same time share one fetch.
+    private val enrichmentCache = BoundedCache<String, TmdbEnrichment>(200)
+    private val enrichmentRequests = InFlightRequests<String, TmdbEnrichment?>()
+    private val episodeCache = BoundedCache<String, Map<Pair<Int, Int>, TmdbEpisodeEnrichment>>(64)
+    private val episodeRequests = InFlightRequests<String, Map<Pair<Int, Int>, TmdbEpisodeEnrichment>>()
+    private val moreLikeThisCache = BoundedCache<String, List<MetaPreview>>(100)
+    private val collectionCache = BoundedCache<String, Pair<String?, List<MetaPreview>>>(100)
+    private val trailerCache = BoundedCache<String, List<MetaTrailer>>(100)
+    private val personCache = BoundedCache<String, PersonDetail>(50)
+    private val entityBrowseCache = BoundedCache<String, TmdbEntityBrowseData>(30)
+    private val entityHeaderCache = BoundedCache<String, TmdbEntityHeader>(50)
+    private val entityRailCache = BoundedCache<String, List<MetaPreview>>(100)
     private val backdropCache = linkedMapOf<String, String?>()
     private val backdropCacheMutex = Mutex()
     private val backdropRequests = Semaphore(4)
@@ -704,6 +705,13 @@ object TmdbMetadataService {
         val needsEpisodes = (
             settings.useEpisodes || settings.useSeasonPosters
         ) && tmdbType == "tv"
+        val prefs = settings.contentLanguages
+        // Nuvio Plus content languages: "original" for episodes needs the title's own language,
+        // known from the enrichment, so only then do episodes wait for it.
+        val episodesNeedOriginal = !prefs.isDefault && (
+            prefs.episodeTitles == ContentLanguage.Original || prefs.descriptions == ContentLanguage.Original
+        )
+        val seasons = meta.videos.mapNotNull { it.season }.distinct()
         val (enrichment, episodeMap) = coroutineScope {
             val enrichmentDeferred = async {
                 fetchEnrichment(
@@ -715,12 +723,8 @@ object TmdbMetadataService {
             }
             val episodeDeferred = if (needsEpisodes) {
                 async {
-                    val seasons = meta.videos.mapNotNull { it.season }.distinct()
-                    fetchEpisodeEnrichment(
-                        tmdbId = tmdbId,
-                        seasonNumbers = seasons,
-                        language = settings.language,
-                    )
+                    val originalLanguage = if (episodesNeedOriginal) enrichmentDeferred.await()?.language else null
+                    fetchEpisodesInContentLanguages(tmdbId, seasons, settings, originalLanguage)
                 }
             } else {
                 null
@@ -930,17 +934,57 @@ object TmdbMetadataService {
         settings: TmdbSettings,
     ): TmdbEnrichment? = withContext(Dispatchers.Default) {
         val normalizedLanguage = normalizeTmdbLanguage(language)
-        val cacheKey = "$tmdbId:$mediaType:$normalizedLanguage"
-        synchronized(enrichmentCacheLock) { enrichmentCache[cacheKey] }?.let { return@withContext it }
+        val cacheKey = "$tmdbId:$mediaType:$normalizedLanguage" +
+            settings.contentLanguages.signature().let { if (it.isEmpty()) "" else ":$it" }
+        enrichmentCache[cacheKey]?.let { return@withContext it }
+        enrichmentRequests.join(cacheKey) {
+            fetchEnrichmentUncached(tmdbId, mediaType, normalizedLanguage, cacheKey, settings)
+        }
+    }
 
-        val numericId = tmdbId.toIntOrNull() ?: return@withContext null
+    private suspend fun fetchEnrichmentUncached(
+        tmdbId: String,
+        mediaType: String,
+        normalizedLanguage: String,
+        cacheKey: String,
+        settings: TmdbSettings,
+    ): TmdbEnrichment? = coroutineScope {
+
+        val numericId = tmdbId.toIntOrNull() ?: return@coroutineScope null
         val includeImageLanguage = tmdbImageLanguages(normalizedLanguage)
+        // Nuvio Plus content languages: separate languages per field. Default choices change none
+        // of the requests below.
+        val prefs = settings.contentLanguages
+        val split = !prefs.isDefault
+        val detailsLanguage = if (split) {
+            prefs.descriptions.resolve(normalizedLanguage, null) ?: normalizedLanguage
+        } else {
+            normalizedLanguage
+        }
+        val listLanguage = if (split) prefs.titles.resolve(normalizedLanguage, null) ?: normalizedLanguage else normalizedLanguage
+        val detailsQuery = if (split) {
+            mapOf("language" to detailsLanguage, "append_to_response" to "translations")
+        } else {
+            mapOf("language" to normalizedLanguage)
+        }
+        val imageQuery = when {
+            !split -> mapOf("include_image_language" to includeImageLanguage)
+            // The title's own language is known only after its details: ask for every image.
+            prefs.posters == ContentLanguage.Original || prefs.backdropsAndLogos == ContentLanguage.Original -> emptyMap()
+            else -> mapOf(
+                "include_image_language" to imageLanguagesParameter(
+                    languages = languageOrder(prefs.posters, prefs, normalizedLanguage, null) +
+                        languageOrder(prefs.backdropsAndLogos, prefs, normalizedLanguage, null),
+                    baseLanguage = normalizedLanguage,
+                ),
+            )
+        }
 
         val response = coroutineScope {
             val details = async {
                 fetch<TmdbDetailsResponse>(
                     endpoint = "$mediaType/$numericId",
-                    query = mapOf("language" to normalizedLanguage),
+                    query = detailsQuery,
                 )
             }
             val credits = async {
@@ -959,7 +1003,7 @@ object TmdbMetadataService {
             val images = async {
                 fetch<TmdbImagesResponse>(
                     endpoint = "$mediaType/$numericId/images",
-                    query = mapOf("include_image_language" to includeImageLanguage),
+                    query = imageQuery,
                 )
             }
             val ageRating = async {
@@ -977,7 +1021,7 @@ object TmdbMetadataService {
                     fetchMoreLikeThis(
                         tmdbId = numericId,
                         mediaType = mediaType,
-                        language = normalizedLanguage,
+                        language = listLanguage,
                     )
                 } else {
                     emptyList()
@@ -1006,7 +1050,7 @@ object TmdbMetadataService {
             )
         }
 
-        val details = response.first ?: return@withContext null
+        val details = response.first ?: return@coroutineScope null
         val credits = response.second
         val images = response.third
         val englishFallbackNames = fetchEnglishFallbackNames(
@@ -1017,10 +1061,45 @@ object TmdbMetadataService {
             credits = credits,
         )
 
-        val genres = details.genres.mapNotNull { it.name?.trim()?.takeIf(String::isNotBlank) }
-        val description = details.overview?.trim()?.takeIf(String::isNotBlank)
+        val detailsGenres = details.genres.mapNotNull { it.name?.trim()?.takeIf(String::isNotBlank) }
+        val detailsDescription = details.overview?.trim()?.takeIf(String::isNotBlank)
         val releaseInfo = details.releaseDate ?: details.firstAirDate
-        val localizedTitle = listOf(details.title, details.name).firstNotNullOfOrNull { it?.trim()?.takeIf(String::isNotBlank) }
+        val detailsTitle = listOf(details.title, details.name).firstNotNullOfOrNull { it?.trim()?.takeIf(String::isNotBlank) }
+        val originalLanguage = details.originalLanguage?.trim()?.takeIf(String::isNotBlank)
+        val translations = details.translations?.translations.orEmpty()
+        val localizedTitle = if (split) {
+            titleFor(
+                languages = languageOrder(prefs.titles, prefs, normalizedLanguage, originalLanguage),
+                originalLanguage = originalLanguage,
+                originalTitle = details.originalTitle ?: details.originalName,
+                translations = translations,
+                detailsTitle = detailsTitle,
+            )
+        } else {
+            detailsTitle
+        }
+        val description = if (split) {
+            descriptionFor(
+                languages = languageOrder(prefs.descriptions, prefs, normalizedLanguage, originalLanguage),
+                detailsLanguage = detailsLanguage,
+                detailsOverview = detailsDescription,
+                translations = translations,
+            )
+        } else {
+            detailsDescription
+        }
+        val genres = if (split) {
+            localizedGenres(
+                genres = details.genres,
+                mediaType = mediaType,
+                language = prefs.genres.resolve(normalizedLanguage, originalLanguage) ?: normalizedLanguage,
+                detailsLanguage = detailsLanguage,
+            ).ifEmpty { detailsGenres }
+        } else {
+            detailsGenres
+        }
+        val posterLanguages = languageOrder(prefs.posters, prefs, normalizedLanguage, originalLanguage)
+        val artLanguages = languageOrder(prefs.backdropsAndLogos, prefs, normalizedLanguage, originalLanguage)
         val people = buildPeople(
             details = details,
             credits = credits,
@@ -1049,9 +1128,30 @@ object TmdbMetadataService {
             originalTitle = details.originalTitle ?: details.originalName,
             description = description,
             genres = genres,
-            backdrop = buildImageUrl(details.backdropPath, "w1280"),
-            logo = buildImageUrl(images?.logos.orEmpty().selectBestLocalizedImagePath(normalizedLanguage), "w500"),
-            poster = buildImageUrl(details.posterPath, "w500"),
+            backdrop = buildImageUrl(
+                if (split && prefs.backdropsAndLogos != ContentLanguage.Auto) {
+                    images?.backdrops.orEmpty().selectByLanguages(artLanguages) ?: details.backdropPath
+                } else {
+                    details.backdropPath
+                },
+                "w1280",
+            ),
+            logo = buildImageUrl(
+                if (split) {
+                    images?.logos.orEmpty().selectByLanguages(artLanguages)
+                } else {
+                    images?.logos.orEmpty().selectBestLocalizedImagePath(normalizedLanguage)
+                },
+                "w500",
+            ),
+            poster = buildImageUrl(
+                if (split && prefs.posters != ContentLanguage.Auto) {
+                    images?.posters.orEmpty().selectByLanguages(posterLanguages) ?: details.posterPath
+                } else {
+                    details.posterPath
+                },
+                "w500",
+            ),
             people = people,
             director = directors,
             writer = writers,
@@ -1071,7 +1171,7 @@ object TmdbMetadataService {
             collectionItems = if (settings.useCollections && details.belongsToCollection?.id != null) {
                 fetchCollection(
                     collectionId = details.belongsToCollection.id,
-                    language = normalizedLanguage,
+                    language = listLanguage,
                 ).second
             } else {
                 emptyList()
@@ -1080,8 +1180,8 @@ object TmdbMetadataService {
             trailers = response.fourth.trailers,
         )
 
-        if (!enrichment.hasContent()) return@withContext null
-        synchronized(enrichmentCacheLock) { enrichmentCache[cacheKey] = enrichment }
+        if (!enrichment.hasContent()) return@coroutineScope null
+        enrichmentCache[cacheKey] = enrichment
         enrichment
     }
 
@@ -1145,6 +1245,40 @@ object TmdbMetadataService {
         }
     }
 
+    /**
+     * Nuvio Plus: episode overviews in the description language and episode names in the episode
+     * title language. One season request per language; the second only when the two differ. A name
+     * TMDB does not have in that language ("Episode 3") keeps the name in the description language.
+     */
+    private suspend fun fetchEpisodesInContentLanguages(
+        tmdbId: String,
+        seasons: List<Int>,
+        settings: TmdbSettings,
+        originalLanguage: String?,
+    ): Map<Pair<Int, Int>, TmdbEpisodeEnrichment> {
+        val prefs = settings.contentLanguages
+        if (prefs.isDefault) {
+            return fetchEpisodeEnrichment(tmdbId = tmdbId, seasonNumbers = seasons, language = settings.language)
+        }
+        val infoLanguage = prefs.descriptions.resolve(settings.language, originalLanguage)
+            ?: normalizeTmdbLanguage(settings.language)
+        val titleLanguage = prefs.episodeTitles.resolve(settings.language, originalLanguage)
+            ?: normalizeTmdbLanguage(settings.language)
+        if (titleLanguage.substringBefore('-').equals(infoLanguage.substringBefore('-'), ignoreCase = true)) {
+            return fetchEpisodeEnrichment(tmdbId = tmdbId, seasonNumbers = seasons, language = infoLanguage)
+        }
+        val (info, titles) = coroutineScope {
+            val info = async { fetchEpisodeEnrichment(tmdbId = tmdbId, seasonNumbers = seasons, language = infoLanguage) }
+            val titles = async { fetchEpisodeEnrichment(tmdbId = tmdbId, seasonNumbers = seasons, language = titleLanguage) }
+            info.await() to titles.await()
+        }
+        return (info.keys + titles.keys).associateWith { key ->
+            val base = info[key] ?: titles.getValue(key)
+            val name = titles[key]?.title?.takeUnless { isPlaceholderEpisodeName(it, key.second) }
+            if (name != null) base.copy(title = name) else base
+        }
+    }
+
     private suspend fun fetchEpisodeEnrichment(
         tmdbId: String,
         seasonNumbers: List<Int>,
@@ -1157,7 +1291,17 @@ object TmdbMetadataService {
 
         val cacheKey = "$numericId:${normalizedSeasons.joinToString(",")}:$normalizedLanguage"
         episodeCache[cacheKey]?.let { return@withContext it }
+        episodeRequests.join(cacheKey) {
+            fetchEpisodeEnrichmentUncached(numericId, normalizedSeasons, normalizedLanguage, cacheKey)
+        }
+    }
 
+    private suspend fun fetchEpisodeEnrichmentUncached(
+        numericId: Int,
+        normalizedSeasons: List<Int>,
+        normalizedLanguage: String,
+        cacheKey: String,
+    ): Map<Pair<Int, Int>, TmdbEpisodeEnrichment> {
         val pairs = coroutineScope {
             normalizedSeasons.map { season ->
                 async {
@@ -1187,7 +1331,7 @@ object TmdbMetadataService {
         if (merged.isNotEmpty()) {
             episodeCache[cacheKey] = merged
         }
-        merged
+        return merged
     }
 
     private suspend inline fun <reified T> fetch(
@@ -1250,6 +1394,38 @@ object TmdbMetadataService {
 
         moreLikeThisCache[cacheKey] = items
         return items
+    }
+
+    // Nuvio Plus content languages: genre names in a language other than the details request,
+    // from TMDB's genre list (one small request per type and language, kept for the session).
+    private val genreNameCache = BoundedCache<String, Map<Int, String>>(16)
+    private val genreListRequests = InFlightRequests<String, Map<Int, String>>()
+
+    private suspend fun localizedGenres(
+        genres: List<TmdbNamedItem>,
+        mediaType: String,
+        language: String,
+        detailsLanguage: String,
+    ): List<String> {
+        if (language.substringBefore('-').equals(detailsLanguage.substringBefore('-'), ignoreCase = true)) {
+            return emptyList()
+        }
+        val key = "$mediaType:$language"
+        val names = genreNameCache[key] ?: genreListRequests.join(key) {
+            fetch<TmdbGenreListResponse>(
+                endpoint = "genre/$mediaType/list",
+                query = mapOf("language" to language),
+            )?.genres.orEmpty()
+                .mapNotNull { genre ->
+                    val id = genre.id ?: return@mapNotNull null
+                    genre.name?.trim()?.takeIf(String::isNotBlank)?.let { id to it }
+                }
+                .toMap()
+                .also { if (it.isNotEmpty()) genreNameCache[key] = it }
+        }
+        return genres.mapNotNull { genre ->
+            genre.id?.let(names::get) ?: genre.name?.trim()?.takeIf(String::isNotBlank)
+        }
     }
 
     private suspend fun fetchCollection(
@@ -1857,6 +2033,7 @@ private data class TmdbDetailsResponse(
     val networks: List<TmdbCompany> = emptyList(),
     @SerialName("belongs_to_collection") val belongsToCollection: TmdbCollectionRef? = null,
     @SerialName("number_of_seasons") val numberOfSeasons: Int? = null,
+    val translations: TmdbTranslationsResponse? = null, // Nuvio Plus: append_to_response=translations
 )
 
 @Serializable
@@ -1900,7 +2077,13 @@ private fun TmdbVideoResult.toMetaTrailer(
 }
 
 @Serializable
+private data class TmdbGenreListResponse(
+    val genres: List<TmdbNamedItem> = emptyList(),
+)
+
+@Serializable
 private data class TmdbNamedItem(
+    val id: Int? = null,
     val name: String? = null,
 )
 
