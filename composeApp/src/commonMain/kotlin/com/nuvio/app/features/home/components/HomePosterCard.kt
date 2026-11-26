@@ -19,6 +19,8 @@ fun HomePosterCard(
     onLongClick: (() -> Unit)? = null,
     showLandscapeOverlay: Boolean = true,
 ) {
+    @Suppress("NAME_SHADOWING") // Nuvio Plus: content languages for add-on titles
+    val item = com.nuvio.app.features.tmdb.rememberContentLanguagePreview(item)
     val posterCardStyle = rememberPosterCardStyleUiState()
     val isLandscapeMode = useLandscapeBackdropMode || posterCardStyle.catalogLandscapeModeEnabled
     val effectiveLandscapePoster = if (posterCardStyle.alwaysShowLandscapeClearlogo) null else item.landscapePoster

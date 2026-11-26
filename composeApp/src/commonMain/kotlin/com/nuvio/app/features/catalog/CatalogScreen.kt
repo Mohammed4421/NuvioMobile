@@ -303,6 +303,8 @@ private fun CatalogPosterTile(
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
 ) {
+    @Suppress("NAME_SHADOWING") // Nuvio Plus: content languages for add-on titles
+    val item = com.nuvio.app.features.tmdb.rememberContentLanguagePreview(item)
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
