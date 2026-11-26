@@ -547,7 +547,14 @@
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbSettingsStorage.kt",
         "composeApp/src/androidMain/kotlin/com/nuvio/app/features/tmdb/TmdbSettingsStorage.android.kt",
         "composeApp/src/iosMain/kotlin/com/nuvio/app/features/tmdb/TmdbSettingsStorage.ios.kt",
-        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/TmdbSettingsPage.kt"
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/TmdbSettingsPage.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/CatalogContentLanguages.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/home/HomeHeroContentLanguages.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/home/HomeHeroMetaRepository.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/collection/TmdbCollectionSourceResolver.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/home/components/HomePosterCard.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/home/components/PosterGrid.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/catalog/CatalogScreen.kt"
       ],
       "depends": [
         "bounded-caches"
@@ -555,7 +562,9 @@
       "data": "plus_content_languages (profile-scoped string in nuvio_tmdb_settings; absent = automatic, the previous behaviour; not in the account sync)",
       "tests": [
         "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesTest.kt",
-        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesRepositoryTest.kt"
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesRepositoryTest.kt",
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/home/HomeHeroContentLanguagesTest.kt",
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/CatalogContentLanguagesTest.kt"
       ],
       "keywords": [
         "ContentLanguagePreferences",
@@ -568,7 +577,9 @@
       ],
       "test_files": [
         "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesTest.kt",
-        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesRepositoryTest.kt"
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesRepositoryTest.kt",
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/home/HomeHeroContentLanguagesTest.kt",
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/CatalogContentLanguagesTest.kt"
       ]
     }
   ]

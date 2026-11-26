@@ -7,6 +7,7 @@ import com.nuvio.app.features.home.MetaPreview
 import com.nuvio.app.features.home.PosterShape
 import com.nuvio.app.features.tmdb.TmdbSettingsRepository
 import com.nuvio.app.features.tmdb.buildTmdbUrl
+import com.nuvio.app.features.tmdb.listRequestLanguage
 import com.nuvio.app.features.tmdb.normalizeTmdbLanguage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -35,7 +36,8 @@ object TmdbCollectionSourceResolver {
     suspend fun resolve(source: CollectionSource, page: Int = 1): CatalogPage = withContext(Dispatchers.Default) {
         val settings = TmdbSettingsRepository.snapshot()
         val apiKey = TmdbSettingsRepository.effectiveApiKey()
-        val language = normalizeTmdbLanguage(settings.language)
+        // Nuvio Plus: list titles follow the content-language choice for titles (one request, as before).
+        val language = settings.contentLanguages.listRequestLanguage(settings.language)
         val sourceType = source.tmdbType()
 
         when (sourceType) {

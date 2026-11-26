@@ -154,10 +154,18 @@ internal fun rememberHomeHeroState(items: List<MetaPreview>): HomeHeroState {
         MetaScreenSettingsRepository.uiState
     }.collectAsStateWithLifecycle()
     val metas by HomeHeroMetaRepository.metas.collectAsStateWithLifecycle()
+    val tmdbSettings by remember {
+        TmdbSettingsRepository.ensureLoaded()
+        TmdbSettingsRepository.uiState
+    }.collectAsStateWithLifecycle()
     val showMdbListRatings = mdbListSettings.isActive && mdbListSettings.showOnHero
 
-    val heroItems = remember(items, metas) {
-        items.map { item -> metas[item.stableKey()]?.let(item::withHeroMeta) ?: item }
+    val heroItems = remember(items, metas, tmdbSettings.contentLanguages) {
+        items.map { item ->
+            metas[item.stableKey()]
+                ?.let { meta -> item.withHeroMeta(meta).withContentLanguages(meta.details, tmdbSettings.contentLanguages) }
+                ?: item
+        }
     }
     return HomeHeroState(
         items = heroItems,

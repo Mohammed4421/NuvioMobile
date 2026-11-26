@@ -40,6 +40,14 @@ class ContentLanguagesTest {
     }
 
     @Test
+    fun listRequestsFollowTheTitleLanguageWhenOneIsNamed() {
+        assertEquals("en-US", prefs.listRequestLanguage("ar-SA"))
+        assertEquals("ar", ContentLanguagePreferences(titles = ContentLanguage.Arabic).listRequestLanguage("en-US"))
+        assertEquals("fr-FR", ContentLanguagePreferences().listRequestLanguage("fr-FR"))
+        assertEquals("fr-FR", ContentLanguagePreferences(titles = ContentLanguage.Original).listRequestLanguage("fr-FR"))
+    }
+
+    @Test
     fun englishTitleOfAKoreanSeriesIsTheEnglishTranslationNotTheOriginal() {
         val title = titleFor(
             languages = listOf("en", "ar"),
