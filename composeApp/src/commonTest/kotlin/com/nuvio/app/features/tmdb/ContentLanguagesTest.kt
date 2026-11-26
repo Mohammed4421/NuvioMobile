@@ -25,8 +25,8 @@ class ContentLanguagesTest {
     fun choicesSurviveEncoding() {
         assertEquals(prefs, ContentLanguagePreferences.decode(prefs.encode()))
         assertEquals("en.ar.en.ar.en.en.en", prefs.signature())
-        // Original is no fallback: a stored one reads back as Auto.
-        assertEquals(ContentLanguage.Auto, ContentLanguagePreferences.decode("auto.auto.auto.auto.auto.auto.original").fallback)
+        // Every field, the fallback included, can be the title's own language.
+        assertEquals(ContentLanguage.Original, ContentLanguagePreferences.decode("auto.auto.auto.auto.auto.auto.original").fallback)
     }
 
     @Test
@@ -35,6 +35,8 @@ class ContentLanguagesTest {
         assertEquals(listOf("ar", "en", "fr"), languageOrder(ContentLanguage.Arabic, prefs, "fr-FR", null))
         assertEquals(listOf("ko", "en", "fr"), languageOrder(ContentLanguage.Original, prefs, "fr-FR", "ko"))
         assertEquals(listOf("fr"), languageOrder(ContentLanguage.Auto, ContentLanguagePreferences(), "fr-FR", null))
+        val originalFallback = ContentLanguagePreferences(titles = ContentLanguage.Arabic, fallback = ContentLanguage.Original)
+        assertEquals(listOf("ar", "ja", "en"), languageOrder(ContentLanguage.Arabic, originalFallback, "en-US", "ja"))
     }
 
     @Test

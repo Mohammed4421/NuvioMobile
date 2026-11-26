@@ -31,7 +31,7 @@ data class ContentLanguagePreferences(
     val genres: ContentLanguage = ContentLanguage.Auto,
     val posters: ContentLanguage = ContentLanguage.Auto,
     val backdropsAndLogos: ContentLanguage = ContentLanguage.Auto,
-    /** Used when the chosen language has no text or image; [ContentLanguage.Original] is not offered. */
+    /** Used by every field when its chosen language has no text or image. */
     val fallback: ContentLanguage = ContentLanguage.Auto,
 ) {
     val isDefault: Boolean get() = this == ContentLanguagePreferences()
@@ -66,7 +66,7 @@ data class ContentLanguagePreferences(
                 genres = choices[3],
                 posters = choices[4],
                 backdropsAndLogos = choices[5],
-                fallback = choices[6].takeUnless { it == ContentLanguage.Original } ?: ContentLanguage.Auto,
+                fallback = choices[6],
             )
         }
     }

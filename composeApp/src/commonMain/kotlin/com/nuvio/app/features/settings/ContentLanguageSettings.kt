@@ -95,7 +95,6 @@ internal fun LazyListScope.contentLanguageSettingsContent(
                     title = Res.string.plus_content_languages_fallback,
                     selected = prefs.fallback,
                     description = Res.string.plus_content_languages_fallback_description,
-                    choices = ContentLanguage.entries.filter { it != ContentLanguage.Original },
                 ) { prefs.copy(fallback = it) }
             }
         }

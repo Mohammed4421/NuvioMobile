@@ -706,7 +706,9 @@ object TmdbMetadataService {
         // Nuvio Plus content languages: "original" for episodes needs the title's own language,
         // known from the enrichment, so only then do episodes wait for it.
         val episodesNeedOriginal = !prefs.isDefault && (
-            prefs.episodeTitles == ContentLanguage.Original || prefs.descriptions == ContentLanguage.Original
+            prefs.episodeTitles == ContentLanguage.Original ||
+                prefs.descriptions == ContentLanguage.Original ||
+                prefs.fallback == ContentLanguage.Original
         )
         val seasons = meta.videos.mapNotNull { it.season }.distinct()
         val (enrichment, episodeMap) = coroutineScope {
@@ -965,7 +967,9 @@ object TmdbMetadataService {
         val imageQuery = when {
             !split -> mapOf("include_image_language" to includeImageLanguage)
             // The title's own language is known only after its details: ask for every image.
-            prefs.posters == ContentLanguage.Original || prefs.backdropsAndLogos == ContentLanguage.Original -> emptyMap()
+            prefs.posters == ContentLanguage.Original ||
+                prefs.backdropsAndLogos == ContentLanguage.Original ||
+                prefs.fallback == ContentLanguage.Original -> emptyMap()
             else -> mapOf(
                 "include_image_language" to imageLanguagesParameter(
                     languages = languageOrder(prefs.posters, prefs, normalizedLanguage, null) +
@@ -1241,9 +1245,10 @@ object TmdbMetadataService {
     }
 
     /**
-     * Nuvio Plus: episode overviews in the description language and episode names in the episode
-     * title language. One season request per language; the second only when the two differ. A name
-     * TMDB does not have in that language ("Episode 3") keeps the name in the description language.
+     * Nuvio Plus: episode names follow the episode-title choice and overviews the description
+     * choice; each falls back to the fallback language, then to the other one, so a missing
+     * translation never leaves a gap. One season request per distinct language (at most three);
+     * none extra when the choices agree. TMDB's stand-in names ("Episode 3") count as missing.
      */
     private suspend fun fetchEpisodesInContentLanguages(
         tmdbId: String,
@@ -1255,22 +1260,27 @@ object TmdbMetadataService {
         if (prefs.isDefault) {
             return fetchEpisodeEnrichment(tmdbId = tmdbId, seasonNumbers = seasons, language = settings.language)
         }
-        val infoLanguage = prefs.descriptions.resolve(settings.language, originalLanguage)
-            ?: normalizeTmdbLanguage(settings.language)
-        val titleLanguage = prefs.episodeTitles.resolve(settings.language, originalLanguage)
-            ?: normalizeTmdbLanguage(settings.language)
-        if (titleLanguage.substringBefore('-').equals(infoLanguage.substringBefore('-'), ignoreCase = true)) {
-            return fetchEpisodeEnrichment(tmdbId = tmdbId, seasonNumbers = seasons, language = infoLanguage)
+        val base = normalizeTmdbLanguage(settings.language)
+        val infoLanguage = prefs.descriptions.resolve(base, originalLanguage) ?: base
+        val titleLanguage = prefs.episodeTitles.resolve(base, originalLanguage) ?: base
+        val fallbackLanguage = prefs.fallback.resolve(base, originalLanguage) ?: base
+        fun primary(code: String) = code.substringBefore('-').lowercase()
+        val languages = listOf(infoLanguage, titleLanguage, fallbackLanguage).distinctBy(::primary)
+        val byLanguage = coroutineScope {
+            languages.map { language ->
+                async { primary(language) to fetchEpisodeEnrichment(tmdbId = tmdbId, seasonNumbers = seasons, language = language) }
+            }.awaitAll().toMap()
         }
-        val (info, titles) = coroutineScope {
-            val info = async { fetchEpisodeEnrichment(tmdbId = tmdbId, seasonNumbers = seasons, language = infoLanguage) }
-            val titles = async { fetchEpisodeEnrichment(tmdbId = tmdbId, seasonNumbers = seasons, language = titleLanguage) }
-            info.await() to titles.await()
-        }
-        return (info.keys + titles.keys).associateWith { key ->
-            val base = info[key] ?: titles.getValue(key)
-            val name = titles[key]?.title?.takeUnless { isPlaceholderEpisodeName(it, key.second) }
-            if (name != null) base.copy(title = name) else base
+        val titleOrder = listOf(titleLanguage, fallbackLanguage, infoLanguage).map(::primary).distinct()
+        val infoOrder = listOf(infoLanguage, fallbackLanguage, titleLanguage).map(::primary).distinct()
+        val keys = byLanguage.values.flatMap { it.keys }.toSet()
+        return keys.associateWith { key ->
+            val base0 = infoOrder.firstNotNullOf { byLanguage[it]?.get(key) }
+            val title = titleOrder.firstNotNullOfOrNull { language ->
+                byLanguage[language]?.get(key)?.title?.takeUnless { isPlaceholderEpisodeName(it, key.second) }
+            }
+            val overview = infoOrder.firstNotNullOfOrNull { language -> byLanguage[language]?.get(key)?.overview }
+            base0.copy(title = title ?: base0.title, overview = overview)
         }
     }
 
