@@ -1632,6 +1632,34 @@
         "P8-10"
       ],
       "changes_app_source": false
+    },
+    {
+      "source": "#142",
+      "state": "REUSE VERIFIED",
+      "area": "Build 17 phase 1: Nuvio 1.0.1 merged into custom-subtitles (review record nuvio-1.0.1.md approved)",
+      "tests_run": "Nuvio Plus checks, device, playback, download and PortKit tests passed on the head 59a3aa4b; merged as 8ace2c5d",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02)",
+      "requirements": [
+        "S16-07",
+        "P7-03"
+      ],
+      "changes_app_source": true
+    },
+    {
+      "source": "#143",
+      "state": "REUSE VERIFIED",
+      "area": "Build 18 work: native libraries stripped (ndkVersion), bounded in-memory caches, independent content languages (NVP15-CHG-0010)",
+      "tests_run": "Nuvio Plus checks (26 checks), device tests on Android 9/14/16, playback, download and PortKit tests passed on the head 670f6f30; performance compare run 45775430291 (APK -3.1 %, start-up, memory, scrolling within noise); merged as b4c8ba37",
+      "reusable": "Yes: merged into custom-subtitles",
+      "to_complete": "Re-checked by the release candidate's runs (S20-02); content languages on the owner's phone after release",
+      "requirements": [
+        "P5-04",
+        "P5-09",
+        "P7-03",
+        "S16-07"
+      ],
+      "changes_app_source": true
     }
   ]
 }

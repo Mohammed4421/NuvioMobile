@@ -1,7 +1,7 @@
 {
-  "_about": "Build 16 release scope (spec v1.1 §12, S12-02). The release run compares it with GitHub and the exact commit (.github/plus/release-scope-check.py) and refuses to publish on any mismatch: a pull request listed here not merged into the branch or not part of the commit, an excluded one merged, the branch moved past the commit, an approval test not passed on the commit, the mandatory requirement list or PortKit (portkit/portkit.py, by its SHA-256) different from the repository's.",
+  "_about": "Release scope (Build 16; Build 17 adds #142 Nuvio 1.0.1 sync and #143 size, memory and content languages) (spec v1.1 §12, S12-02). The release run compares it with GitHub and the exact commit (.github/plus/release-scope-check.py) and refuses to publish on any mismatch: a pull request listed here not merged into the branch or not part of the commit, an excluded one merged, the branch moved past the commit, an approval test not passed on the commit, the mandatory requirement list or PortKit (portkit/portkit.py, by its SHA-256) different from the repository's.",
   "schema": 1,
-  "build": 16,
+  "build": 17,
   "branch": "custom-subtitles",
   "mandatory_requirements": [
     "C-01",
@@ -287,7 +287,9 @@
     135,
     136,
     137,
-    138
+    138,
+    142,
+    143
   ],
   "excluded_pull_requests": {
     "2": "Nuvio 1.1.0-beta.2 trial merge: pre-release, never part of Build 15 (owner's rule 9)"
