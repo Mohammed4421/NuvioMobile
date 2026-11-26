@@ -3,7 +3,6 @@ package com.nuvio.app.core.cache
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.completeWith
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -37,7 +36,7 @@ class InFlightRequests<K, V> {
         }
         try {
             // A failure, cancellation included, completes the shared result and is rethrown here.
-            deferred.completeWith(runCatching { block() })
+            runCatching { block() }.fold(deferred::complete, deferred::completeExceptionally)
             return deferred.await()
         } finally {
             // Also when this caller was cancelled, so a finished request never stays registered.
