@@ -110,10 +110,10 @@ jobs:
           mkdir -p "${HOME}/.gradle/init.d"
           cp .github/plus/plugins-from-central.init.gradle "${HOME}/.gradle/init.d/"
 
-      - name: Portable features into upstream 1.0.1
+      - name: Portable features into upstream 1.0.0
         if: steps.affected.outputs.run == 'true'
         run: |
-          bash portkit/transfer-test.sh "upstream 1.0.1" - \
+          bash portkit/transfer-test.sh "upstream 1.0.0" - \
             lazy-key-collisions,subtitle-parser-worst-case,playback-credential-tls \
             com.nuvio.app.core.ui.DuplicateSafeLazyKeysTest,com.nuvio.app.features.player.SubtitleParserWorstCaseTest,com.nuvio.app.features.player.PlaybackTlsTest,com.nuvio.app.features.player.PlaybackRedirectCredentialsTest
 
