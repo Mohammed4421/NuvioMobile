@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "note": "C-01 and C-03 (spec v1.1 §1): what Build 16 may not change without an owner decision. Build files and dependency versions stay those of Build 14 (custom-14, 18276c69; blob ids below), the application id stays com.nuvio.app, and every Plus feature is one Build 14 had or a fix with its finding or owner decision. Checked by .github/plus/tests/test_scope_guard.py; the signing key and lineage are checked by the release run (release-verify).",
+  "note": "C-01 and C-03 (spec v1.1 §1): what Build 16 may not change without an owner decision. Build files and dependency versions stay those of Build 14 (custom-14, 18276c69; blob ids below), the application id stays com.nuvio.app, and every Plus feature is one Build 14 had or a fix with its finding or owner decision. Checked by .github/plus/tests/test_scope_guard.py; the signing key and lineage are checked by the release run (release-verify). Build 18 changes (ndkVersion for native stripping, bounded caches, content languages) are the owner's decision NVP15-CHG-0010.",
   "build14_commit": "18276c6944915b5b0110fd94d243cc94619281b9",
   "application_id": "com.nuvio.app",
   "build_files": {
-    "androidApp/build.gradle.kts": "ceaac64a8d9f03bf63977d29817a62f64322aeb1",
+    "androidApp/build.gradle.kts": "5329950374912dccc295a0a64b5030d1924216b7",
     "baselineprofile/build.gradle.kts": "0d58810356438559b673335d2083669bd44a77b1",
     "build.gradle.kts": "3b9ea5f8952106b53c12cc5123957764658f84a1",
     "composeApp/build.gradle.kts": "a81300f93fc3554d47a2043a95fdef759a745a36",
@@ -43,6 +43,14 @@
     "safe-network-logging": {
       "kind": "security fix",
       "record": "NVP15-CHG-0008"
+    },
+    "bounded-caches": {
+      "kind": "fix",
+      "record": "NVP15-CHG-0010"
+    },
+    "content-languages": {
+      "kind": "feature",
+      "record": "NVP15-CHG-0010"
     }
   }
 }

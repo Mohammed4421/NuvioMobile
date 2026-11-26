@@ -502,6 +502,74 @@
         "FetchBridge",
         "request logging"
       ]
+    },
+    {
+      "id": "bounded-caches",
+      "title": "In-memory caches have a size limit and are safe to use from several coroutines",
+      "since": "Build 18",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/core/cache/BoundedCache.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataService.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsRepository.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/ImdbEpisodeRatingsRepository.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/mdblist/MdbListRatingsRepository.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/ParentalGuideRepository.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/skip/SkipIntroRepository.kt"
+      ],
+      "depends": [],
+      "data": "none (memory only)",
+      "tests": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/core/cache/BoundedCacheTest.kt",
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/details/MetaDetailsPosterNavigationTest.kt"
+      ],
+      "keywords": [
+        "BoundedCache",
+        "firstValueOrNull"
+      ],
+      "test_files": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/core/cache/BoundedCacheTest.kt",
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/details/MetaDetailsPosterNavigationTest.kt"
+      ]
+    },
+    {
+      "id": "content-languages",
+      "title": "Content languages chosen per field (titles, descriptions, episode titles, genres, posters, backdrops and logos, fallback), independent of the app language",
+      "since": "Build 18",
+      "files": [
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/ContentLanguages.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/ContentLanguageSettings.kt",
+        "composeApp/src/commonMain/composeResources/values/strings_plus_content_languages.xml",
+        "composeApp/src/commonMain/composeResources/values-ar/strings_plus_content_languages.xml",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataService.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbImages.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbSettings.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbSettingsRepository.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbSettingsStorage.kt",
+        "composeApp/src/androidMain/kotlin/com/nuvio/app/features/tmdb/TmdbSettingsStorage.android.kt",
+        "composeApp/src/iosMain/kotlin/com/nuvio/app/features/tmdb/TmdbSettingsStorage.ios.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/settings/TmdbSettingsPage.kt"
+      ],
+      "depends": [
+        "bounded-caches"
+      ],
+      "data": "plus_content_languages (profile-scoped string in nuvio_tmdb_settings; absent = automatic, the previous behaviour; not in the account sync)",
+      "tests": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesTest.kt",
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesRepositoryTest.kt"
+      ],
+      "keywords": [
+        "ContentLanguagePreferences",
+        "contentLanguages",
+        "append_to_response",
+        "titleFor",
+        "descriptionFor",
+        "fetchEpisodesInContentLanguages",
+        "localizedGenres"
+      ],
+      "test_files": [
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesTest.kt",
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesRepositoryTest.kt"
+      ]
     }
   ]
 }

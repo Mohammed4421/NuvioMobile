@@ -144,6 +144,15 @@
       "reason": "TalkBack's spoken output and focus traversal need a real device with the screen reader; every other accessibility criterion is measured in CI.",
       "impact": "The P4 gate no longer waits for the owner's phone; TalkBack is checked after release on the owner's device.",
       "decision": "Owner in chat, 2026-11-25: 'ماهي اليتك في التحديثات السابقه طبق نفسها' (apply the same mechanism as the earlier device checks, NVP15-CHG-0005) - answering how TalkBack and focus order (P4-02, P4-09) are handled."
+    },
+    {
+      "id": "NVP15-CHG-0010",
+      "requirements": [],
+      "before": "Build files and the feature list stayed those of Build 14 plus recorded fixes (C-01, C-03); in-memory caches had no size limit; native libraries were packaged unstripped because no NDK was configured.",
+      "after": "Build 18 (after the Nuvio 1.0.1 sync): measured size and efficiency work and the independent content-language feature. androidApp/build.gradle.kts gains ndkVersion so release builds strip native debug symbols; caches get a size limit; content languages are a new owner-requested feature.",
+      "reason": "Owner brief 'Nuvio Plus Build 17 — Optimization & New Features' (phase 2 of Build 17, numbered Build 18 by the owner).",
+      "impact": "Smaller APK and installed size, bounded memory, one new settings section; no change to identity, signing, data formats of earlier builds or playback.",
+      "decision": "Owner in chat, 2026-11-26: brief 'Nuvio Plus Build 17 — Optimization & New Features' sent with '18'."
     }
   ]
 }

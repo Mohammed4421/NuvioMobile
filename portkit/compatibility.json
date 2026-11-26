@@ -102,6 +102,16 @@
       "level": "manual",
       "verified": false,
       "reason": "Touches five upstream Nuvio addon/search/plugin sources; must be reviewed for each target, not automatically transferred"
+    },
+    "bounded-caches": {
+      "level": "manual",
+      "verified": false,
+      "reason": "declaration changes in six Nuvio repositories that forks change often; the two cache classes are self-contained"
+    },
+    "content-languages": {
+      "level": "adapter-required",
+      "verified": false,
+      "reason": "stored setting plus hooks in TMDB enrichment, settings storage and the TMDB settings page"
     }
   },
   "shared_files": {
@@ -125,6 +135,20 @@
         "device-subtitles"
       ],
       "policy": "transfer together until hunks are attributed to features; planning refuses one owner alone"
+    },
+    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsRepository.kt": {
+      "owners": [
+        "safe-network-logging",
+        "bounded-caches"
+      ],
+      "policy": "transfer together; planning refuses one owner alone"
+    },
+    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataService.kt": {
+      "owners": [
+        "bounded-caches",
+        "content-languages"
+      ],
+      "policy": "transfer together; planning refuses one owner alone"
     }
   },
   "target_contract": {

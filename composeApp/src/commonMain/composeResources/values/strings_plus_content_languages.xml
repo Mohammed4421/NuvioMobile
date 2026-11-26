@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="plus_content_languages_title">CONTENT LANGUAGES</string>
+    <string name="plus_content_languages_preset">Content languages</string>
+    <string name="plus_content_languages_preset_description">Choose the language of each part of a title separately, independent of the app language. Automatic uses the TMDB language above.</string>
+    <string name="plus_content_languages_preset_english_arabic">English titles, Arabic information</string>
+    <string name="plus_content_languages_custom">Custom</string>
+    <string name="plus_content_languages_footer">Needs TMDB enrichment. Applies to details, seasons and episodes, and to everything that uses them: library, continue watching, downloads, recommendations and the player. Catalog rows and search show the names the add-on provides. When a language is missing, the fallback language is used, then the title's own data; nothing is machine-translated.</string>
+    <string name="plus_content_languages_choose">Automatic, English, Arabic or the title's original language.</string>
+    <string name="plus_content_languages_titles">Movie and series titles</string>
+    <string name="plus_content_languages_descriptions">Descriptions and information</string>
+    <string name="plus_content_languages_episode_titles">Episode titles</string>
+    <string name="plus_content_languages_genres">Genres</string>
+    <string name="plus_content_languages_posters">Posters</string>
+    <string name="plus_content_languages_backdrops">Backdrops and logos</string>
+    <string name="plus_content_languages_fallback">Fallback language</string>
+    <string name="plus_content_languages_fallback_description">Used when the chosen language has no text or image.</string>
+    <string name="plus_content_languages_auto">Automatic</string>
+    <string name="plus_content_languages_english">English</string>
+    <string name="plus_content_languages_arabic">Arabic</string>
+    <string name="plus_content_languages_original">Original</string>
+</resources>

@@ -104,6 +104,8 @@ internal fun LazyListScope.tmdbSettingsContent(
         }
     }
 
+    contentLanguageSettingsContent(isTablet = isTablet, settings = settings) // Nuvio Plus
+
     item {
         SettingsSection(
             title = stringResource(Res.string.settings_tmdb_section_modules),

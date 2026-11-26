@@ -54,6 +54,10 @@ android {
     namespace = "com.nuvio.android"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     compileSdkMinor = libs.versions.android.compileSdkMinor.get().toInt()
+    // Nuvio Plus: an NDK the build machines have, so release builds strip native debug symbols
+    // (without one, AGP packages libraries unstripped: libc++_shared.so alone was 9.3 MB instead
+    // of 1.4 MB). The GitHub Ubuntu runners ship this NDK.
+    ndkVersion = "27.3.13750724"
 
     signingConfigs {
         create("release") {

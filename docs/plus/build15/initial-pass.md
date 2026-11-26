@@ -31,6 +31,7 @@ deep audit: deep reviews are the findings in `audit.md` (Plus areas, player, dow
 | baseline profile | 3 | catch-throwable 1 | B15-NUV-01 |
 | core/auth | 10 | catch-throwable 5 | B15-NUV-01 |
 | core/build | 6 | — | reviewed, none |
+| core/cache | 1 | — | reviewed, none |
 | core/concurrent | 1 | catch-throwable 1 | B15-NUV-01 |
 | core/deeplink | 1 | — | reviewed, none |
 | core/diagnostics | 2 | — | reviewed, none |
@@ -64,11 +65,11 @@ deep audit: deep reviews are the findings in `audit.md` (Plus areas, player, dow
 | features/profiles | 31 | catch-throwable 3, cleartext-url 2, run-blocking 1, secret-in-log 1 | B15-NUV-01, B15-NUV-02 |
 | features/search | 11 | — | reviewed, none |
 | features/servers | 20 | catch-throwable 8, cleartext-url 1, run-blocking 1 | B15-NUV-01, B15-NUV-02 |
-| features/settings | 88 | run-blocking 2 | B15-NUV-02 |
+| features/settings | 89 | run-blocking 2 | B15-NUV-02 |
 | features/shuffle | 8 | — | reviewed, none |
 | features/simkl | 36 | catch-throwable 5, secret-in-log 1 | B15-NUV-01 |
 | features/streams | 37 | catch-throwable 1, cleartext-url 1, run-blocking 1 | B15-NUV-01, B15-NUV-02 |
-| features/tmdb | 9 | run-blocking 12 | B15-NUV-02 |
+| features/tmdb | 10 | run-blocking 12 | B15-NUV-02 |
 | features/tracking | 13 | catch-throwable 1 | B15-NUV-01 |
 | features/trailer | 14 | cleartext-url 2, run-blocking 1 | B15-NUV-02 |
 | features/trakt | 37 | catch-throwable 4, cleartext-url 1, run-blocking 5, secret-in-log 4 | B15-NUV-01, B15-NUV-02 |
@@ -77,4 +78,4 @@ deep audit: deep reviews are the findings in `audit.md` (Plus areas, player, dow
 | features/watching | 11 | — | reviewed, none |
 | features/watchprogress | 30 | catch-throwable 10 | B15-NUV-01 |
 | iOS app | 22 | — | EXCLUDED: iOS app: not part of the Android Build 15 (no iOS build is made or published) |
-| resources (strings, fonts, images) | 185 | cleartext-url 7 | reviewed, none |
+| resources (strings, fonts, images) | 187 | cleartext-url 7 | reviewed, none |
