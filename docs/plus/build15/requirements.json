@@ -4351,6 +4351,13 @@
           "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
           "result": "PASS",
           "what": "Signed validation run: upgrade 12/13/14/15 -> 16 with the real key on Android 9 and 14 with data kept, Android 8 refused."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45731042741,
+          "commit": "3a0be99d7dd051db5d4453bafb3e237f4152ba62",
+          "result": "PASS",
+          "what": "Release run on the final head: signing and publishing approved by the owner in plus-release (two approvals recorded on the run); upgrade matrix and signature checks repeated and passed."
         }
       ],
       "untested": [],
@@ -4383,6 +4390,13 @@
           "commit": "65a5e80063067d5ac62b9d7a1ce20ce4da5a40c1",
           "result": "PASS",
           "what": "Signed validation run: v3 signature by 99c0a98c, lineage 40335e31 -> 99c0a98c, contents identical to the tested APKs, data kept."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45731042741,
+          "commit": "3a0be99d7dd051db5d4453bafb3e237f4152ba62",
+          "result": "PASS",
+          "what": "Release run on the final head: signing and publishing approved by the owner in plus-release (two approvals recorded on the run); upgrade matrix and signature checks repeated and passed."
         }
       ],
       "untested": [],
@@ -4596,6 +4610,13 @@
           "name": "test_publishing_waits_for_the_owner_after_every_test",
           "result": "PASS",
           "what": "Publishing waits for the owner in plus-release after every test."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45731042741,
+          "commit": "3a0be99d7dd051db5d4453bafb3e237f4152ba62",
+          "result": "PASS",
+          "what": "Release run on the final head: signing and publishing approved by the owner in plus-release (two approvals recorded on the run); upgrade matrix and signature checks repeated and passed."
         }
       ],
       "untested": [],
@@ -4650,7 +4671,7 @@
       "requirement": "Deliverable: Final release after approvals.",
       "source": "Build 15 spec v1.0",
       "paths": [],
-      "status": "ACCEPTED",
+      "status": "VERIFIED",
       "evidence": [
         {
           "kind": "test",
@@ -4658,12 +4679,19 @@
           "name": "test_publishing_waits_for_the_owner_after_every_test",
           "result": "PASS",
           "what": "Publishing waits for the owner in plus-release after every test."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45731042741,
+          "commit": "3a0be99d7dd051db5d4453bafb3e237f4152ba62",
+          "result": "PASS",
+          "what": "Release run on the final head: signed by 99c0a98c (lineage 40335e31 -> 99c0a98c), upgrade 12/13/14/15 -> 16 with data kept on Android 9 and 14, Android 8 refused, readiness and scope checks PASS, owner approved signing and publishing in plus-release; published as custom-16 (4 APKs, SHA-256 equal to the signed set) targeting 3a0be99d."
         }
       ],
       "untested": [],
       "needs_physical_device": false,
       "acceptance": "Present in the repository or release.",
-      "next": "Given at the release run in the plus-release environment; the published release is recorded afterwards.",
+      "next": "Published 2026-11-26: https://github.com/Mohammed4421/NuvioMobile/releases/tag/custom-16; owner's checks PRV-01..08 follow.",
       "nvp15": "NVP15-REQ-0112",
       "release_class": "PRE-RELEASE REQUIRED",
       "accepted": {

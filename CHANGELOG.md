@@ -4,15 +4,36 @@ Changes on top of [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) at
 [`511ebd5`](https://github.com/NuvioMedia/NuvioMobile/commit/511ebd5f175dd39e31b9cc0e7b259259e887cf6f).
 Newest first.
 
-## Next build — Build 16: complete engineering checks of Build 15
+## Next build
 
-The complete Build 15 work, published as Build 16 (owner's decision); the app's own updater offers it
-to Build 15. Until now this build adds no change to the app itself, only tests and checks:
+Nothing yet.
+
+## Build 16 — complete engineering checks of Build 15
+
+The complete Build 15 work, published as Build 16 (owner's decision) on 2026-11-26 from commit
+`3a0be99`; the app's own updater offers it to Build 15. The notes published with the release said
+this build changes nothing in the app itself; that was wrong. These app changes are in it:
+
+### Fixed
+- **Deleting a profile** clears that profile's Plus data (subtitle and player settings, download
+  queue), and downloads are kept when you switch profiles (#101, finding F1).
+- **mpv subtitles:** a styled caption is read again after a seek and on pause/play, so an old
+  line no longer stays on screen (#102).
+- **Add-ons:** a refresh asked for just after another one ended is no longer dropped (#123,
+  B15-ADD-02).
+- **In-app update:** the previously downloaded APK is kept until its replacement has downloaded
+  completely (#105).
+- **Subtitle appearance settings:** the hint lines up with the text around it (#119).
+
+### Security
+- Configured add-on, plugin and catalog URLs, and request error text, are no longer written to
+  the log (#106, W5-LOG-01).
 
 ### Checked
-- **Updates from Builds 12, 13 and 14** are each tested on their own, starting from realistic data
-  (two profiles, add-ons with a token, subtitle and playback settings, library, theme, downloads,
-  a paused episode and the download folder), and every value is checked afterwards.
+- **Updates from Builds 12, 13, 14 and 15** with the release key on Android 9 and 14, starting from
+  realistic data (two profiles, add-ons with a token, subtitle and playback settings, library,
+  theme, downloads, a paused episode and the download folder); every value is checked afterwards.
+  Android 8 refuses the install and keeps Build 12.
 - **Performance against Build 14** on the same emulators: start, memory, scrolling smoothness and
   touch response, all within measurement noise.
 - **Audit of every part of the project**, not only Plus's changes (initial pass of every area, deep
