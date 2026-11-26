@@ -7,8 +7,8 @@
   },
   "upstream_base": {
     "repository": "NuvioMedia/NuvioMobile",
-    "version": "1.0.0",
-    "commit": "511ebd5f175dd39e31b9cc0e7b259259e887cf6f"
+    "version": "1.0.1",
+    "commit": "3cfc311b494f25213f5b95a3afdfa619b83ceb50"
   },
   "features": {
     "lazy-key-collisions": {
