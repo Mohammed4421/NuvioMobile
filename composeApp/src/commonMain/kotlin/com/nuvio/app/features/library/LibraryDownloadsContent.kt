@@ -264,6 +264,8 @@ private fun DownloadPosterTile(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    @Suppress("NAME_SHADOWING") // Nuvio Plus: content languages
+    val entry = com.nuvio.app.features.tmdb.rememberContentLanguageEntry(entry)
     val style = rememberPosterCardStyleUiState()
     val shape = RoundedCornerShape(style.cornerRadiusDp.dp)
     val state = entry.activeState

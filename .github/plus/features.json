@@ -554,7 +554,10 @@
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/collection/TmdbCollectionSourceResolver.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/home/components/HomePosterCard.kt",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/home/components/PosterGrid.kt",
-        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/catalog/CatalogScreen.kt"
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/catalog/CatalogScreen.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/ContentLanguageSurfaces.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/home/components/HomeContinueWatchingSection.kt",
+        "composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryDownloadsContent.kt"
       ],
       "depends": [
         "bounded-caches"
@@ -564,7 +567,8 @@
         "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesTest.kt",
         "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesRepositoryTest.kt",
         "composeApp/src/commonTest/kotlin/com/nuvio/app/features/home/HomeHeroContentLanguagesTest.kt",
-        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/CatalogContentLanguagesTest.kt"
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/CatalogContentLanguagesTest.kt",
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguageSurfacesTest.kt"
       ],
       "keywords": [
         "ContentLanguagePreferences",
@@ -579,7 +583,8 @@
         "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesTest.kt",
         "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguagesRepositoryTest.kt",
         "composeApp/src/commonTest/kotlin/com/nuvio/app/features/home/HomeHeroContentLanguagesTest.kt",
-        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/CatalogContentLanguagesTest.kt"
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/CatalogContentLanguagesTest.kt",
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/ContentLanguageSurfacesTest.kt"
       ]
     }
   ]

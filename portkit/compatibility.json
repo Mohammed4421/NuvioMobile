@@ -149,6 +149,13 @@
         "content-languages"
       ],
       "policy": "transfer together; planning refuses one owner alone"
+    },
+    "composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryDownloadsContent.kt": {
+      "owners": [
+        "library-downloads",
+        "content-languages"
+      ],
+      "policy": "transfer together; planning refuses one owner alone"
     }
   },
   "target_contract": {

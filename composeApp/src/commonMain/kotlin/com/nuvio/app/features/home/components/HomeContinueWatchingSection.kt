@@ -676,6 +676,8 @@ private fun ContinueWatchingCard(
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)?,
 ) {
+    @Suppress("NAME_SHADOWING") // Nuvio Plus: content languages
+    val item = com.nuvio.app.features.tmdb.rememberContentLanguageItem(item)
     val posterCardStyle = rememberPosterCardStyleUiState()
     val cardMetrics = remember(posterCardStyle.widthDp, posterCardStyle.cornerRadiusDp) {
         continueWatchingLandscapeCardMetrics(
@@ -894,6 +896,8 @@ private fun ContinueWatchingWideCard(
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)?,
 ) {
+    @Suppress("NAME_SHADOWING") // Nuvio Plus: content languages
+    val item = com.nuvio.app.features.tmdb.rememberContentLanguageItem(item)
     val cornerRadius = rememberPosterCardStyleUiState().cornerRadiusDp.dp
     Row(
         modifier = Modifier
@@ -1028,6 +1032,8 @@ private fun ContinueWatchingPosterCard(
     onClick: (() -> Unit)?,
     onLongClick: (() -> Unit)?,
 ) {
+    @Suppress("NAME_SHADOWING") // Nuvio Plus: content languages
+    val item = com.nuvio.app.features.tmdb.rememberContentLanguageItem(item)
     val cornerRadius = rememberPosterCardStyleUiState().cornerRadiusDp.dp
     val imageUrl = item.continueWatchingPosterArtworkUrl(useEpisodeThumbnails)
     Column(
