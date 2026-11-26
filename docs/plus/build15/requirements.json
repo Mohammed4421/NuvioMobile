@@ -3125,6 +3125,13 @@
           "commit": "c5f2c30732a1af8c6d51e3419c9d73eff2a6eb32",
           "result": "PASS",
           "what": "PR #143 (Build 18: features bounded-caches and content-languages registered, PortKit levels and shared files, inventory, matrix and feature records regenerated): PortKit transfer tests passed; the three verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45781287190,
+          "commit": "f1c05146cdc3c85bb9dd6ee005a685aff45e8ea5",
+          "result": "PASS",
+          "what": "PR #143 after dropping the request joiner (bounded-caches registry and feature records regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
         }
       ],
       "untested": [],
@@ -3274,6 +3281,13 @@
           "commit": "c5f2c30732a1af8c6d51e3419c9d73eff2a6eb32",
           "result": "PASS",
           "what": "PR #143 (Build 18: features bounded-caches and content-languages registered, PortKit levels and shared files, inventory, matrix and feature records regenerated): PortKit transfer tests passed; the three verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45781287190,
+          "commit": "f1c05146cdc3c85bb9dd6ee005a685aff45e8ea5",
+          "result": "PASS",
+          "what": "PR #143 after dropping the request joiner (bounded-caches registry and feature records regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
         }
       ],
       "untested": [],
@@ -3329,6 +3343,13 @@
           "commit": "c5f2c30732a1af8c6d51e3419c9d73eff2a6eb32",
           "result": "PASS",
           "what": "PR #143 (Build 18: features bounded-caches and content-languages registered, PortKit levels and shared files, inventory, matrix and feature records regenerated): PortKit transfer tests passed; the three verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45781287190,
+          "commit": "f1c05146cdc3c85bb9dd6ee005a685aff45e8ea5",
+          "result": "PASS",
+          "what": "PR #143 after dropping the request joiner (bounded-caches registry and feature records regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
         }
       ],
       "untested": [],
@@ -3398,6 +3419,13 @@
           "commit": "c5f2c30732a1af8c6d51e3419c9d73eff2a6eb32",
           "result": "PASS",
           "what": "PR #143 (Build 18: features bounded-caches and content-languages registered, PortKit levels and shared files, inventory, matrix and feature records regenerated): PortKit transfer tests passed; the three verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45781287190,
+          "commit": "f1c05146cdc3c85bb9dd6ee005a685aff45e8ea5",
+          "result": "PASS",
+          "what": "PR #143 after dropping the request joiner (bounded-caches registry and feature records regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
         }
       ],
       "untested": [],
@@ -3546,6 +3574,13 @@
           "commit": "c5f2c30732a1af8c6d51e3419c9d73eff2a6eb32",
           "result": "PASS",
           "what": "PR #143 (Build 18: features bounded-caches and content-languages registered, PortKit levels and shared files, inventory, matrix and feature records regenerated): PortKit transfer tests passed; the three verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
+        },
+        {
+          "kind": "ci-run",
+          "run": 45781287190,
+          "commit": "f1c05146cdc3c85bb9dd6ee005a685aff45e8ea5",
+          "result": "PASS",
+          "what": "PR #143 after dropping the request joiner (bounded-caches registry and feature records regenerated): PortKit transfer tests passed; verified portable features transferred into upstream 1.0.1 and fork A, built and tested; evidence check passed."
         }
       ],
       "untested": [],
