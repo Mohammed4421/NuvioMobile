@@ -53,7 +53,7 @@ deep audit: deep reviews are the findings in `audit.md` (Plus areas, player, dow
 | features/debrid | 20 | run-blocking 4 | B15-NUV-02 |
 | features/details | 55 | catch-throwable 1, cleartext-url 1, run-blocking 9 | B15-NUV-01, B15-NUV-02 |
 | features/downloads | 30 | catch-throwable 3, cleartext-url 3, run-blocking 19 | B15-NUV-01, B15-NUV-02 |
-| features/home | 28 | catch-throwable 4, run-blocking 2 | B15-NUV-01, B15-NUV-02 |
+| features/home | 29 | catch-throwable 4, run-blocking 2 | B15-NUV-01, B15-NUV-02 |
 | features/library | 32 | catch-throwable 6, run-blocking 1 | B15-NUV-01, B15-NUV-02 |
 | features/mdblist | 58 | catch-throwable 1, cleartext-url 1, run-blocking 1 | B15-NUV-01, B15-NUV-02 |
 | features/membership | 12 | — | reviewed, none |
@@ -69,7 +69,7 @@ deep audit: deep reviews are the findings in `audit.md` (Plus areas, player, dow
 | features/shuffle | 8 | — | reviewed, none |
 | features/simkl | 36 | catch-throwable 5, secret-in-log 1 | B15-NUV-01 |
 | features/streams | 37 | catch-throwable 1, cleartext-url 1, run-blocking 1 | B15-NUV-01, B15-NUV-02 |
-| features/tmdb | 10 | run-blocking 12 | B15-NUV-02 |
+| features/tmdb | 11 | catch-throwable 1, run-blocking 12 | B15-NUV-01, B15-NUV-02 |
 | features/tracking | 13 | catch-throwable 1 | B15-NUV-01 |
 | features/trailer | 14 | cleartext-url 2, run-blocking 1 | B15-NUV-02 |
 | features/trakt | 37 | catch-throwable 4, cleartext-url 1, run-blocking 5, secret-in-log 4 | B15-NUV-01, B15-NUV-02 |
