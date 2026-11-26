@@ -520,7 +520,8 @@
       "depends": [],
       "data": "none (memory only)",
       "tests": [
-        "composeApp/src/commonTest/kotlin/com/nuvio/app/core/cache/BoundedCacheTest.kt"
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/core/cache/BoundedCacheTest.kt",
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/details/MetaDetailsPosterNavigationTest.kt"
       ],
       "keywords": [
         "BoundedCache",
@@ -529,7 +530,8 @@
         "episodeRequests"
       ],
       "test_files": [
-        "composeApp/src/commonTest/kotlin/com/nuvio/app/core/cache/BoundedCacheTest.kt"
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/core/cache/BoundedCacheTest.kt",
+        "composeApp/src/androidHostTest/kotlin/com/nuvio/app/features/details/MetaDetailsPosterNavigationTest.kt"
       ]
     },
     {

@@ -130,9 +130,10 @@ class MetaDetailsPosterNavigationTest {
             String::class.java,
         ).apply { isAccessible = true }
             .newInstance(meta, meta.takeIf { enriched }, fingerprint.takeIf { enriched })
+        // Nuvio Plus: the details cache is a BoundedCache (size limit), not a plain map.
         val cache = repositoryClass.getDeclaredField("cachedMetaByRequestKey")
             .apply { isAccessible = true }
-            .get(MetaDetailsRepository) as MutableMap<String, Any>
+            .get(MetaDetailsRepository) as com.nuvio.app.core.cache.BoundedCache<String, Any>
         cache["${meta.type}:${meta.id}"] = entry
     }
 }
