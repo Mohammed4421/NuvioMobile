@@ -20,12 +20,7 @@ jobs:
           apk="$(ls signed/NuvioPlus-build*-arm64-v8a.apk | head -n1)"
           echo "APK: $apk $(stat -c %s "$apk")"
           mkdir x && (cd x && unzip -q "../$apk")
-          echo "=== composeResources by folder ==="
-          du -ab x/composeResources 2>/dev/null | sort -n -r | head -5 || true
-          find x -path '*composeResources*' -type f | awk -F/ '{print $(NF-1)}' | sort | uniq -c | sort -rn | head -60
-          find x -path '*composeResources*' -type f -printf '%s %p\n' | sort -rn | head -40
-          echo "=== strings per locale ==="
-          find x -path '*composeResources*' -name '*.cvr' -printf '%s %h\n' | sort -rn | head -60
+          set +o pipefail
           echo "=== native strip potential ==="
           ST="$(ls ${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip)"
           echo "strip: $ST"; ls ${ANDROID_HOME}/ndk || true
